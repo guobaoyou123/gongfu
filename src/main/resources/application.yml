@@ -1,1 +1,117 @@
-
+spring:
+  profiles:
+    active: "base,dev,mssql_remote,redis_local"
+---
+spring:
+  config:
+    activate:
+      on-profile: base
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-test-query: SELECT 1
+      minimum-idle: 1
+      maximum-pool-size: 20
+      idle-timeout: 60000
+      connection-timeout: 120000
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          timezone: Asia/Shanghai
+  flyway:
+    connect-retries: 3
+    baseline-on-migrate: true
+jetcache:
+  statIntervalMinutes: 15
+  areaInCacheName: false
+  local:
+    default:
+      type: caffeine
+      limit: 100
+      keyConvertor: fastjson
+      expireAfterWriteInMillis: 100000
+  remote:
+    default:
+      type: redis.lettuce
+      keyConvertor: fastjson
+      valueEncoder: kyro
+      valueDecoder: kyro
+server:
+  port: 8080
+debug: false
+logging:
+  level:
+    com.linzhi.gongfu: info
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+  jpa:
+    show-sql: true
+  redis:
+    port: 6379
+    database: 0
+    connect-timeout: 5000
+    timeout: 5000
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 0
+debug: true
+logging:
+  level:
+    com.linzhi.gongfu: debug
+---
+spring:
+  config:
+    activate:
+      on-profile: mssql_remote
+  datasource:
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    url: jdbc:sqlserver://124.71.134.200:1433;databaseName=gongfu
+    username: sa
+    password: cxfh@83864830
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServer2012Dialect
+  flyway:
+    locations:
+      - classpath:db/migration/mssql
+---
+spring:
+  config:
+    activate:
+      on-profile: postgres_local
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://192.168.2.5:5432/gongfu
+    username: postgres
+    password: 123456
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+  flyway:
+    locations:
+      - classpath:db/migration/postgres
+---
+spring:
+  config:
+    activate:
+      on-profile: redis_local
+  redis:
+    host: 192.168.2.5
+    lettuce:
+      pool:
+        max-active: 5
+        max-idle: 5
+jetcache:
+  remote:
+    default:
+      uri: redis://192.168.2.5:6379/
