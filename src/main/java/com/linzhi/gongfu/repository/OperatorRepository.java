@@ -8,5 +8,5 @@ import org.springframework.data.repository.CrudRepository;
  * @author xutao
  * @create_at 2021-12-23
  */
-public interface OperatorRepository extends CrudRepository<String, DOperator> {
+public interface OperatorRepository extends CrudRepository<DOperator, String> {
 }
