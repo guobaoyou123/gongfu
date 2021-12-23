@@ -9,6 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -34,6 +35,8 @@ public class DCompany implements Serializable {
     @Id
     @Column(name = "code", length = 20, nullable = false)
     @NonNull
+    @NotNull
+    @NotBlank
     private String code;
 
     /**
@@ -47,24 +50,31 @@ public class DCompany implements Serializable {
      * 可取值：一级、二级、云仓库管理
      */
     @Column(name = "type", length = 40)
+    @NotNull
+    @NotBlank
     private String type;
 
     /**
      * 单位类型编号
      */
     @Column(name = "type_code", length = 40)
+    @NotNull
+    @NotBlank
     private String typeCode;
 
     /**
      * 入格标志
      */
     @Column
+    @NotNull
     private Enrollment flag;
 
     /**
      * 中文名称
      */
     @Column(name = "chi_name", length = 100)
+    @NotNull
+    @NotBlank
     private String nameInChinese;
 
     /**
@@ -83,12 +93,15 @@ public class DCompany implements Serializable {
      * 公司启停用状态
      */
     @Column(length = 1)
+    @NotNull
     private Availability state;
 
     /**
      * 公司简称
      */
     @Column(name = "chi_short", length = 20)
+    @NotNull
+    @NotBlank
     private String shortNameInChinese;
 
     /**
@@ -137,12 +150,14 @@ public class DCompany implements Serializable {
      * 公司成立日期
      */
     @Column(name = "Date_of_esta")
+    @Past
     private LocalDate establishedAt;
 
     /**
      * 公司经营期限
      */
     @Column(name = "Term_of_business")
+    @FutureOrPresent
     private LocalDate lifetimeUntil;
 
     /**
@@ -161,6 +176,8 @@ public class DCompany implements Serializable {
      * 社会统一信用代码（Unified Social Credit Identifier）
      */
     @Column(name = "Credit_Code", length = 40)
+    @NotNull
+    @NotBlank
     private String USCI;
 
     /**
@@ -209,6 +226,7 @@ public class DCompany implements Serializable {
      * 税模式
      */
     @Column(length = 1)
+    @NotNull
     private TaxModel taxModel;
 
     /**

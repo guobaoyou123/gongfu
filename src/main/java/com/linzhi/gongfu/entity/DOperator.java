@@ -6,6 +6,8 @@ import com.linzhi.gongfu.enumeration.Whether;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 /**
@@ -29,6 +31,8 @@ public class DOperator {
     @Id
     @Column(name = "code", length = 10, nullable = false)
     @NonNull
+    @NotNull
+    @NotBlank
     private String code;
 
     /**
@@ -36,6 +40,8 @@ public class DOperator {
      */
     @Column(name = "comp_code", length = 50, nullable = false)
     @NonNull
+    @NotNull
+    @NotBlank
     private String companyCode;
 
     /**
@@ -51,6 +57,8 @@ public class DOperator {
      */
     @Column(length = 100, nullable = false)
     @NonNull
+    @NotNull
+    @NotBlank
     private String name;
 
     /**
@@ -58,6 +66,8 @@ public class DOperator {
      */
     @Column(length = 100, nullable = false)
     @NonNull
+    @NotNull
+    @NotBlank
     private String loginPassword;
 
     /**
