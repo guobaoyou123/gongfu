@@ -20,6 +20,7 @@
         <jetcache.version>2.6.1</jetcache.version>
         <caffeine.version>3.0.5</caffeine.version>
         <itext.version>5.5.13.2</itext.version>
+        <springdoc.version>1.6.2</springdoc.version>
     </properties>
     <dependencies>
         <dependency>
@@ -106,7 +107,17 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.6.2</version>
+            <version>${springdoc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-security</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-javadoc</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -144,6 +155,11 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
                             <version>0.1.0</version>
+                        </path>
+                        <path>
+                            <groupId>com.github.therapi</groupId>
+                            <artifactId>therapi-runtime-javadoc-scribe</artifactId>
+                            <version>0.12.0</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
