@@ -1,8 +1,11 @@
 package com.linzhi.gongfu.entity;
 
 import lombok.Builder;
+import lombok.Data;
+import lombok.With;
 import lombok.extern.jackson.Jacksonized;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -11,11 +14,14 @@ import java.time.LocalDateTime;
  * @create_at 2021-12-22
  */
 @Jacksonized
+@Data
+@With
 @Builder
-public record DSession (
-        String companyCode,
-        String companyName,
-        String operatorCode,
-        String operatorName,
-        LocalDateTime expriesAt
-) {}
+public class DSession implements Serializable {
+    private String token;
+    private String companyCode;
+    private String companyName;
+    private String operatorCode;
+    private String operatorName;
+    private LocalDateTime expriesAt;
+}
