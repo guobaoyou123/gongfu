@@ -1,6 +1,8 @@
 package com.linzhi.gongfu.infrastructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.linzhi.gongfu.entity.DSession;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,5 +40,16 @@ public class BeanFactory {
         template.setHashValueSerializer(jsonSerializer);
 
         return template;
+    }
+
+    /**
+     * 为Jackson进行日期时间转换的时候增加新版Java Time支持。
+     * @return 增加了Java Time处理的对象映射处理器
+     */
+    @Bean
+    public ObjectMapper getObjectMapper() {
+        return JsonMapper.builder()
+                .addModule(new JavaTimeModule())
+                .build();
     }
 }

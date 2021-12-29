@@ -22,26 +22,50 @@ import java.time.LocalDateTime;
 @With
 @Builder
 public class DSession implements Serializable {
+    /**
+     * 用户令牌
+     */
     @NotNull
     @NotBlank
     private String token;
 
+    /**
+     * 操作员所属公司编号
+     */
     @NotNull
     @NotBlank
     private String companyCode;
 
+    /**
+     * 操作员所属公司中文名称
+     */
     @NotNull
     @NotBlank
     private String companyName;
 
+    /**
+     * 操作员编号
+     */
     @NotNull
     @NotBlank
     private String operatorCode;
 
+    /**
+     * 操作员名称
+     */
     @NotNull
     @NotBlank
     private String operatorName;
 
+    /**
+     * 操作员是否是管理员
+     */
+    @NotNull
+    private boolean admin;
+
+    /**
+     * 操作员本次登录的过期时间
+     */
     @NotNull
     @NotBlank
     @FutureOrPresent

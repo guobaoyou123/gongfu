@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 
 /**
  * 公司操作员实体
+ *
  * @author xutao
  * @create_at 2021-12-15
  */
@@ -28,21 +29,8 @@ public class DOperator {
     /**
      * 操作员编号
      */
-    @Id
-    @Column(name = "code", length = 10, nullable = false)
-    @NonNull
-    @NotNull
-    @NotBlank
-    private String code;
-
-    /**
-     * 操作员所属公司编号
-     */
-    @Column(name = "comp_code", length = 50, nullable = false)
-    @NonNull
-    @NotNull
-    @NotBlank
-    private String companyCode;
+    @EmbeddedId
+    private DOperatorId identity;
 
     /**
      * 关联公司基本信息
