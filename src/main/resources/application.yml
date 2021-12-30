@@ -22,9 +22,6 @@ spring:
       hibernate:
         jdbc:
           timezone: Asia/Shanghai
-  flyway:
-    connect-retries: 3
-    baseline-on-migrate: true
 jetcache:
   statIntervalMinutes: 15
   areaInCacheName: false
@@ -82,9 +79,6 @@ spring:
     password: cxfh@83864830
   jpa:
     database-platform: org.hibernate.dialect.SQLServer2012Dialect
-  flyway:
-    locations:
-      - classpath:db/migration/mssql
 ---
 spring:
   config:
@@ -97,9 +91,6 @@ spring:
     password: 123456
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQL10Dialect
-  flyway:
-    locations:
-      - classpath:db/migration/postgres
 ---
 spring:
   config:
