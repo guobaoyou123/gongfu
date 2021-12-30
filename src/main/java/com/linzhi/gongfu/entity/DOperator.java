@@ -36,7 +36,7 @@ public class DOperator {
      * 关联公司基本信息
      */
     @ManyToOne
-    @JoinColumn(name = "comp_code")
+    @JoinColumn(name = "comp_code", insertable = false, updatable = false)
     @JsonBackReference
     private DCompany company;
 
