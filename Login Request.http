@@ -1,0 +1,12 @@
+POST http://localhost:8080/login
+Host: hongli.gongfu.com
+Content-Type: application/x-www-form-urlencoded
+
+code=1003000&password=1
+
+###
+
+GET http://localhost:8080/login
+Host: aaaa.gongfu.com
+
+###

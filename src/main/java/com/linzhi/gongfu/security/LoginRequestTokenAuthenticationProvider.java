@@ -76,7 +76,8 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return OperatorLoginRequestToken.class.isAssignableFrom(authentication);
+        log.debug("检查Provider支持类型，传入类型：[{}]", authentication.getSimpleName());
+        return (OperatorLoginRequestToken.class.isAssignableFrom(authentication));
     }
 
     /**

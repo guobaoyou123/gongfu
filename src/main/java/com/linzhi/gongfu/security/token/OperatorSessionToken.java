@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * 用于存放操作员登录会话认证信息的Token
@@ -65,7 +66,11 @@ public class OperatorSessionToken extends AbstractAuthenticationToken {
 
     @Override
     public boolean isAuthenticated() {
-        return this.session.getExpiresAt().isAfter(LocalDateTime.now()) && super.isAuthenticated();
+        var expired = Optional.ofNullable(this.session)
+            .map(OperatorSessionToken.Session::getExpiresAt)
+            .map(t -> t.isBefore(LocalDateTime.now()))
+            .orElse(false);
+        return !expired && super.isAuthenticated();
     }
 
     /**

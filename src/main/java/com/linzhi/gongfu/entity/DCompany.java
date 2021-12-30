@@ -9,12 +9,16 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.*;
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
 import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
  * 公司基本信息实体
+ *
  * @author xutao
  * @create_at 2021-12-22
  */
@@ -86,7 +90,7 @@ public class DCompany implements Serializable {
     /**
      * 地址邮编
      */
-    @Column(length = 20)
+    @Column(name = "post_code", length = 20)
     private String postCode;
 
     /**
@@ -183,13 +187,13 @@ public class DCompany implements Serializable {
     /**
      * 区域编号，区级行政区划编号
      */
-    @Column(length = 10)
+    @Column(name = "area_code", length = 10)
     private String areaCode;
 
     /**
      * 区域名称，区级行政区划全称
      */
-    @Column(length = 60)
+    @Column(name = "area_name", length = 60)
     private String areaName;
 
     /**
@@ -225,7 +229,7 @@ public class DCompany implements Serializable {
     /**
      * 税模式
      */
-    @Column(length = 1)
+    @Column(name = "tax_model", length = 1)
     @NotNull
     private TaxModel taxModel;
 

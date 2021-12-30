@@ -2,7 +2,6 @@ package com.linzhi.gongfu.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -39,9 +38,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         var loginProcessingFilter = new RequestLoginProcessingFilter(successHandler, failureHandler, authenticationManagerBean());
         var sessionProcessingFilter = new SessionLoginProcessingFilter(failureHandler, authenticationManagerBean());
         http
-            .addFilterBefore(loginProcessingFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(sessionProcessingFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
+            .antMatchers("/login").permitAll()
             .anyRequest().authenticated()
             .and()
             .logout()
@@ -56,18 +54,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .csrf().disable()
             .cors().disable();
+        http
+            .addFilterBefore(loginProcessingFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(sessionProcessingFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        super.configure(auth);
         auth
             .authenticationProvider(loginTokenProvider)
             .authenticationProvider(sessionTokenProvider);
-    }
-
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
     }
 }

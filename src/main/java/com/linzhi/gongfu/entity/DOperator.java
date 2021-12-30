@@ -52,7 +52,7 @@ public class DOperator {
     /**
      * 操作员登录密码
      */
-    @Column(length = 100, nullable = false)
+    @Column(name = "login_password", length = 100, nullable = false)
     @NonNull
     @NotNull
     @NotBlank

@@ -2,6 +2,7 @@ package com.linzhi.gongfu.security;
 
 import com.linzhi.gongfu.security.token.OperatorLoginRequestToken;
 import com.linzhi.gongfu.util.URLTools;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,7 @@ import java.io.IOException;
  * @author xutao
  * @create_at 2021-12-29
  */
+@Slf4j
 public final class RequestLoginProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
     private static final AntPathRequestMatcher DEFAULT_LOGIN_PATH_MATCHER = new AntPathRequestMatcher("/login", "POST");
@@ -38,12 +40,13 @@ public final class RequestLoginProcessingFilter extends AbstractAuthenticationPr
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        if (request.getMethod().equals("POST")) {
+        if (!request.getMethod().equals("POST")) {
             throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
         } else {
             var domainName = URLTools.extractSubdomainName(request.getHeader("Host"));
             var operatorCode = request.getParameter("code");
             var loginPassword = request.getParameter("password");
+            log.debug("收到操作员登录请求：[{}@{}] - [{}]", operatorCode, domainName, loginPassword);
             var requestToken = new OperatorLoginRequestToken(operatorCode, domainName, loginPassword);
             return this.getAuthenticationManager().authenticate(requestToken);
         }
