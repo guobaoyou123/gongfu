@@ -1,0 +1,6 @@
+GET http://localhost:8080/actuator/health
+Host: hongli.gongfu.com
+Authorization: Bearer fb61cdaa-923e-418e-a521-62b88c25f937
+Accept: application/json
+
+###
