@@ -18,34 +18,34 @@ spring:
     show-sql: false
     hibernate:
       ddl-auto: none
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
       hibernate:
         jdbc:
           timezone: Asia/Shanghai
-  flyway:
-    connect-retries: 3
-    baseline-on-migrate: true
-jetcache:
-  statIntervalMinutes: 15
-  areaInCacheName: false
-  local:
-    default:
-      type: caffeine
-      limit: 100
-      keyConvertor: fastjson
-      expireAfterWriteInMillis: 100000
-  remote:
-    default:
-      type: redis.lettuce
-      keyConvertor: fastjson
-      valueEncoder: kyro
-      valueDecoder: kyro
 server:
   port: 8080
 debug: false
 logging:
   level:
     com.linzhi.gongfu: info
+springdoc:
+  show-actuator: true
+  use-management-port: true
+  api-docs:
+    path: /api-docs
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - openapi
+          - swaggerui
+  server:
+    port: 9090
 ---
 spring:
   config:
@@ -82,9 +82,6 @@ spring:
     password: cxfh@83864830
   jpa:
     database-platform: org.hibernate.dialect.SQLServer2012Dialect
-  flyway:
-    locations:
-      - classpath:db/migration/mssql
 ---
 spring:
   config:
@@ -97,9 +94,6 @@ spring:
     password: 123456
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQL10Dialect
-  flyway:
-    locations:
-      - classpath:db/migration/postgres
 ---
 spring:
   config:
