@@ -46,7 +46,7 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
             Assert.isInstanceOf(OperatorAuthenticationToken.class, authentication);
             String[] principals = (String[]) authentication.getPrincipal();
             var session = tokenStore.fetch(principals[0], principals[1]);
-            var operator = companyRepository.findBySubdomainName(session.getCompanyCode())
+            var operator = companyRepository.findBySubdomainName(principals[0])
                 .map(DCompany::getCode)
                 .flatMap(companyCode -> operatorRepository.findById(
                     DOperatorId.builder().companyCode(companyCode).operatorCode(session.getOperatorCode()).build()))

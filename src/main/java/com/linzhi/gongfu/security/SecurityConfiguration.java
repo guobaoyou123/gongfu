@@ -32,6 +32,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final AuthenticationFailureEntryPoint failureEntryPoint;
     private final LoginRequestTokenAuthenticationProvider loginTokenProvider;
     private final SessionRequestTokenAuthenticationProvider sessionTokenProvider;
+    private final SessionTokenAuthenticaitonProvider sessionProvider;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -62,6 +63,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
+            .authenticationProvider(sessionProvider)
             .authenticationProvider(loginTokenProvider)
             .authenticationProvider(sessionTokenProvider);
     }
