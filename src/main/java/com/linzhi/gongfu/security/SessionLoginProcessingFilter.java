@@ -36,11 +36,10 @@ public final class SessionLoginProcessingFilter extends AbstractAuthenticationPr
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         var domainName = URLTools.extractSubdomainName(request.getHeader("Host"));
-        var authorizationHeader = request.getHeader("Authorization");
-        if (Objects.isNull(authorizationHeader) || !authorizationHeader.startsWith("Bearer ")) {
-            throw new BadCredentialsException("来自用户的请求未提供合格的认证头信息。");
+        final var token = obtainToken(request, URLTools.isRunningLocally(domainName));
+        if (URLTools.isRunningLocally(domainName)) {
+            domainName = request.getParameter("host");
         }
-        final var token = authorizationHeader.substring("Bearer ".length());
         var requestToken = new OperatorAuthenticationToken(domainName, token);
         return this.getAuthenticationManager().authenticate(requestToken);
     }
@@ -54,5 +53,27 @@ public final class SessionLoginProcessingFilter extends AbstractAuthenticationPr
             this.eventPublisher.publishEvent(new InteractiveAuthenticationSuccessEvent(authResult, this.getClass()));
         }
         chain.doFilter(request, response);
+    }
+
+    /**
+     * 从用户HTTP请求中分离用户会话令牌。
+     * <p>
+     * 如果是使用本地模式，那么令牌将从请求参数中的{@code token}参数中获取，否则从请求头{@code token}中获取。
+     * </p>
+     *
+     * @param request 用户HTTP请求
+     * @param locally 是否采用本地提取模式
+     * @return 从用户请求中提取的用户会话令牌
+     * @throws BadCredentialsException 当用户请求中不能分离得到令牌或者令牌不符合标准格式时抛出
+     */
+    private String obtainToken(HttpServletRequest request, boolean locally) throws BadCredentialsException {
+        var authorization = locally ? request.getParameter("token") : request.getHeader("Authorization");
+        if (!locally) {
+            if (!authorization.startsWith("Bearer ")) {
+                throw new BadCredentialsException("来自用户的请求未提供合格的认证头信息。");
+            }
+            authorization = authorization.substring("Bearer ".length());
+        }
+        return authorization;
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -40,7 +41,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         var sessionProcessingFilter = new SessionLoginProcessingFilter(failureHandler, authenticationManagerBean());
         http
             .authorizeRequests()
-            .antMatchers("/login").permitAll()
+            .antMatchers("/api-docs").anonymous()
+            .antMatchers("/login", "/error", "/actuator/**", "/api-docs").permitAll()
             .anyRequest().authenticated()
             .and()
             .logout()
@@ -66,5 +68,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authenticationProvider(sessionProvider)
             .authenticationProvider(loginTokenProvider)
             .authenticationProvider(sessionTokenProvider);
+    }
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web
+            .ignoring()
+            .antMatchers("/**/*.js", "/**/*.css");
     }
 }
