@@ -2,6 +2,7 @@ package com.linzhi.gongfu.security;
 
 import com.linzhi.gongfu.security.token.OperatorAuthenticationToken;
 import com.linzhi.gongfu.util.URLTools;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
@@ -11,7 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -26,11 +26,10 @@ import java.util.Objects;
  * @author xutao
  * @create_at 2021-12-29
  */
-@Component
 public final class SessionLoginProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
-    public SessionLoginProcessingFilter(AuthenticationFailureHandler failureHandler) {
-        super(AnyRequestMatcher.INSTANCE);
+    public SessionLoginProcessingFilter(AuthenticationFailureHandler failureHandler, AuthenticationManager authenticationManager) {
+        super(AnyRequestMatcher.INSTANCE, authenticationManager);
         setAuthenticationFailureHandler(failureHandler);
     }
 

@@ -2,6 +2,7 @@ package com.linzhi.gongfu.security;
 
 import com.linzhi.gongfu.security.token.OperatorLoginRequestToken;
 import com.linzhi.gongfu.util.URLTools;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -9,7 +10,6 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,19 +19,19 @@ import java.io.IOException;
 /**
  * 用于处理用户使用表单登录，并完成登录响应的过滤器
  *
- * @author cutao
+ * @author xutao
  * @create_at 2021-12-29
  */
-@Component
 public final class RequestLoginProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
     private static final AntPathRequestMatcher DEFAULT_LOGIN_PATH_MATCHER = new AntPathRequestMatcher("/login", "POST");
 
     public RequestLoginProcessingFilter(
         AuthenticationSuccessHandler successHandler,
-        AuthenticationFailureHandler failureHandler
+        AuthenticationFailureHandler failureHandler,
+        AuthenticationManager authenticationManager
     ) {
-        super(DEFAULT_LOGIN_PATH_MATCHER);
+        super(DEFAULT_LOGIN_PATH_MATCHER, authenticationManager);
         setAuthenticationSuccessHandler(successHandler);
         setAuthenticationFailureHandler(failureHandler);
     }
