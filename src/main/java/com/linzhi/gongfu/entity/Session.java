@@ -1,19 +1,20 @@
 package com.linzhi.gongfu.entity;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.With;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.validation.constraints.Future;
-import javax.validation.constraints.FutureOrPresent;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
 /**
  * 用户会话信息
+ *
  * @author xutao
  * @create_at 2021-12-22
  */
@@ -21,7 +22,7 @@ import java.time.LocalDateTime;
 @Data
 @With
 @Builder
-public class DSession implements Serializable {
+public class Session implements Serializable {
     /**
      * 用户令牌
      */

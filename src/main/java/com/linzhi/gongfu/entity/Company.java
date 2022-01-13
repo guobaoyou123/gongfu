@@ -1,9 +1,7 @@
 package com.linzhi.gongfu.entity;
 
-import com.linzhi.gongfu.enumeration.Availability;
-import com.linzhi.gongfu.enumeration.Enrollment;
-import com.linzhi.gongfu.enumeration.TaxModel;
-import lombok.*;
+import java.io.Serializable;
+import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,8 +11,19 @@ import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
-import java.io.Serializable;
-import java.time.LocalDate;
+
+import com.linzhi.gongfu.enumeration.Availability;
+import com.linzhi.gongfu.enumeration.Enrollment;
+import com.linzhi.gongfu.enumeration.TaxModel;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 公司基本信息实体
@@ -31,7 +40,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 @Entity
 @Table(name = "comp_base")
-public class DCompany implements Serializable {
+public class Company implements Serializable {
     /**
      * 公司编号
      * 公司编号在每个公司中有效，同一公司可以有不同的多个编号

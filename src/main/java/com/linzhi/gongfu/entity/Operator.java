@@ -1,14 +1,28 @@
 package com.linzhi.gongfu.entity;
 
+import java.time.LocalDateTime;
+
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Whether;
-import lombok.*;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 公司操作员实体
@@ -25,12 +39,12 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Entity
 @Table(name = "comp_user")
-public class DOperator {
+public class Operator {
     /**
      * 操作员编号
      */
     @EmbeddedId
-    private DOperatorId identity;
+    private OperatorId identity;
 
     /**
      * 关联公司基本信息
@@ -38,7 +52,7 @@ public class DOperator {
     @ManyToOne
     @JoinColumn(name = "comp_code", insertable = false, updatable = false)
     @JsonBackReference
-    private DCompany company;
+    private Company company;
 
     /**
      * 操作员名称

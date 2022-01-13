@@ -1,7 +1,7 @@
 package com.linzhi.gongfu.repository;
 
-import com.linzhi.gongfu.entity.DOperator;
-import com.linzhi.gongfu.entity.DOperatorId;
+import com.linzhi.gongfu.entity.Operator;
+import com.linzhi.gongfu.entity.OperatorId;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -11,5 +11,5 @@ import org.springframework.data.repository.CrudRepository;
  * @author xutao
  * @create_at 2021-12-23
  */
-public interface OperatorRepository extends CrudRepository<DOperator, DOperatorId> {
+public interface OperatorRepository extends CrudRepository<Operator, OperatorId> {
 }

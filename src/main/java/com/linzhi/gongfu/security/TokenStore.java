@@ -1,22 +1,24 @@
 package com.linzhi.gongfu.security;
 
-import com.linzhi.gongfu.entity.DCompany;
-import com.linzhi.gongfu.entity.DOperatorId;
-import com.linzhi.gongfu.entity.DSession;
-import com.linzhi.gongfu.enumeration.Whether;
-import com.linzhi.gongfu.repository.CompanyRepository;
-import com.linzhi.gongfu.repository.OperatorRepository;
-import com.linzhi.gongfu.security.exception.NonexistentTokenException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import com.linzhi.gongfu.entity.Company;
+import com.linzhi.gongfu.entity.OperatorId;
+import com.linzhi.gongfu.entity.Session;
+import com.linzhi.gongfu.enumeration.Whether;
+import com.linzhi.gongfu.repository.CompanyRepository;
+import com.linzhi.gongfu.repository.OperatorRepository;
+import com.linzhi.gongfu.security.exception.NonexistentTokenException;
+
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * 在Spring Security中用于管理用户令牌的功能类
@@ -29,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 public final class TokenStore {
     private final CompanyRepository companyRepository;
     private final OperatorRepository operatorRepository;
-    private final RedisTemplate<String, DSession> sessionTemplate;
+    private final RedisTemplate<String, Session> sessionTemplate;
 
     /**
      * 将给定的令牌组装成Redis存储键
@@ -79,11 +81,12 @@ public final class TokenStore {
 
     /**
      * 生成指定用户的会话信息，并将其保存到Redis中
+     *
      * @param operatorCode 用户的操作员编号
-     * @param domain 用户所属公司所使用的二级域名
-     * @param token 用户令牌
+     * @param domain       用户所属公司所使用的二级域名
+     * @param token        用户令牌
      * @param expiresAfter 用户令牌的过期时间，或用户有效登录时间
-     * @param unit 描述用户令牌过期时间的时间单位
+     * @param unit         描述用户令牌过期时间的时间单位
      * @throws IllegalArgumentException 如果提供了空的域名或者令牌，将会抛出异常
      */
     public void store(String operatorCode, String domain, String token, Long expiresAfter, TimeUnit unit) {
@@ -91,25 +94,25 @@ public final class TokenStore {
         Assert.notNull(token, "提供的操作员令牌为空白。");
         var operation = sessionTemplate.opsForValue();
         companyRepository.findBySubdomainName(domain)
-            .map(DCompany::getCode)
-            .flatMap(code -> operatorRepository.findById(DOperatorId.builder().companyCode(code).operatorCode(operatorCode).build()))
-            .ifPresent(operator -> {
-                var session = DSession.builder()
-                        .token(token)
-                        .operatorCode(operator.getIdentity().getOperatorCode())
-                        .operatorName(operator.getName())
-                        .companyCode(operator.getCompany().getCode())
-                        .companyName(operator.getCompany().getNameInChinese())
-                        .admin(operator.getAdmin().equals(Whether.YES))
-                        .expriesAt(LocalDateTime.now().plus(expiresAfter, unit.toChronoUnit()))
-                        .build();
-                operation.set(
-                        assembleKey(domain, token),
-                        session,
-                        expiresAfter,
-                        unit
-                );
-            });
+                .map(Company::getCode)
+                .flatMap(code -> operatorRepository
+                        .findById(OperatorId.builder().companyCode(code).operatorCode(operatorCode).build()))
+                .ifPresent(operator -> {
+                    var session = Session.builder()
+                            .token(token)
+                            .operatorCode(operator.getIdentity().getOperatorCode())
+                            .operatorName(operator.getName())
+                            .companyCode(operator.getCompany().getCode())
+                            .companyName(operator.getCompany().getNameInChinese())
+                            .admin(operator.getAdmin().equals(Whether.YES))
+                            .expriesAt(LocalDateTime.now().plus(expiresAfter, unit.toChronoUnit()))
+                            .build();
+                    operation.set(
+                            assembleKey(domain, token),
+                            session,
+                            expiresAfter,
+                            unit);
+                });
     }
 
     /**
@@ -121,7 +124,7 @@ public final class TokenStore {
      * @throws IllegalArgumentException  如果提供了空的域名或者令牌，将会抛出异常
      * @throws NonexistentTokenException 表示Redis中目前没有保存用户令牌或其对应的用户会话信息
      */
-    public DSession fetch(String domain, String token) throws IllegalArgumentException, NonexistentTokenException {
+    public Session fetch(String domain, String token) throws IllegalArgumentException, NonexistentTokenException {
         var operation = sessionTemplate.opsForValue();
         var tokenKey = assembleKey(domain, token);
         return Optional.of(tokenKey)
