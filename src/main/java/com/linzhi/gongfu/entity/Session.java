@@ -2,6 +2,7 @@ package com.linzhi.gongfu.entity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
@@ -63,6 +64,11 @@ public class Session implements Serializable {
      */
     @NotNull
     private boolean admin;
+
+    /**
+     * 操作员所拥有的场景（权限）信息
+     */
+    private Set<Scene> scenes;
 
     /**
      * 操作员本次登录的过期时间

@@ -46,7 +46,7 @@ public class EnrolledCompany {
     @Column(name = "chi_name", length = 100)
     @NotNull
     @NotBlank
-    private String nameInChinese;
+    private String nameInCN;
 
     /**
      * 社会统一信用代码（Unified Social Credit Identifier）

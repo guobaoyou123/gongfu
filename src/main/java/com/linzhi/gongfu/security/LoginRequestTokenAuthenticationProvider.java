@@ -2,13 +2,15 @@ package com.linzhi.gongfu.security;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-import com.linzhi.gongfu.entity.Company;
+import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.entity.Operator;
 import com.linzhi.gongfu.entity.OperatorId;
+import com.linzhi.gongfu.entity.Scene;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Whether;
-import com.linzhi.gongfu.repository.CompanyRepository;
+import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
 import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.security.token.OperatorLoginRequestToken;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
@@ -39,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public final class LoginRequestTokenAuthenticationProvider implements AuthenticationProvider {
-    private final CompanyRepository companyRepository;
+    private final EnrolledCompanyRepository enrolledCompanyRepository;
     private final OperatorRepository operatorRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -53,10 +55,11 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
                 log.info("操作员 [{}@{}] 试图使用空白的密码登录，登录请求已拒绝。", principals[0], principals[1]);
                 throw new BadCredentialsException("操作员试图使用空白密码登录。");
             }
-            var operator = companyRepository.findBySubdomainName(principals[1])
-                    .map(Company::getCode)
-                    .flatMap(companyCode -> operatorRepository.findById(
-                            OperatorId.builder().operatorCode(principals[0]).companyCode(companyCode).build()))
+            var operator = enrolledCompanyRepository.findBySubdomainName(principals[1])
+                    .map(EnrolledCompany::getId)
+                    .map(companyCode -> OperatorId.builder().operatorCode(principals[0]).companyCode(companyCode)
+                            .build())
+                    .flatMap(operatorRepository::findById)
                     .orElseThrow(() -> new UsernameNotFoundException("请求的操作员不存在"));
             // 这里对操作员的其他状态进行处理
             if (operator.getState().equals(Availability.DISABLED)) {
@@ -65,7 +68,7 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
             }
             // 如果需要对密码进行加盐等额外处理，在此处进行
             var attemptPassword = authentication.getCredentials().toString();
-            if (!passwordEncoder.matches(attemptPassword, operator.getLoginPassword())) {
+            if (!passwordEncoder.matches(attemptPassword, operator.getPassword())) {
                 log.info("操作员 [{}@{}] 试图使用错误的密码登录，登录请求已拒绝。", principals[0], principals[1]);
                 throw new BadCredentialsException("操作员提供的密码不正确");
             }
@@ -94,11 +97,16 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
         if (operator.getAdmin().equals(Whether.YES)) {
             privileges.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
+        var sceneCodes = operator.getScenes().stream()
+                .map(Scene::getCode)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+        privileges.addAll(sceneCodes);
         OperatorSessionToken sessionToken = new OperatorSessionToken(
                 operator.getIdentity().getOperatorCode(),
                 operator.getName(),
-                operator.getCompany().getCode(),
-                operator.getCompany().getNameInChinese(),
+                operator.getCompany().getId(),
+                operator.getCompany().getNameInCN(),
                 operator.getCompany().getSubdomainName(),
                 null,
                 null,
