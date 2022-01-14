@@ -2,6 +2,7 @@ package com.linzhi.gongfu.enumeration;
 
 /**
  * 公司入格标记
+ *
  * @author xutao
  * @create_at 2021-12-22
  */

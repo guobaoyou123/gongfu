@@ -13,8 +13,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 
 import com.linzhi.gongfu.enumeration.Availability;
-import com.linzhi.gongfu.enumeration.Enrollment;
-import com.linzhi.gongfu.enumeration.TaxModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +42,7 @@ public class Company implements Serializable {
     /**
      * 公司编号
      * 公司编号在每个公司中有效，同一公司可以有不同的多个编号
+     * 入格的公司，其公司编号与id字段相同
      */
     @Id
     @Column(name = "code", length = 20, nullable = false)
@@ -59,28 +58,13 @@ public class Company implements Serializable {
     private String encode;
 
     /**
-     * 单位类型
-     * 可取值：一级、二级、云仓库管理
+     * 单位角色，表示单位目前在平台上可以执行的任务，值以逗号分割
+     * 可取值：[0]平台、[1]经销商、[2]品牌管理方、[3]云仓、[4]预制中心、[5]现场服务、[6]外供商、[7]外客户
      */
-    @Column(name = "type", length = 40)
+    @Column(name = "role", length = 40)
     @NotNull
     @NotBlank
-    private String type;
-
-    /**
-     * 单位类型编号
-     */
-    @Column(name = "type_code", length = 40)
-    @NotNull
-    @NotBlank
-    private String typeCode;
-
-    /**
-     * 入格标志
-     */
-    @Column
-    @NotNull
-    private Enrollment flag;
+    private String role;
 
     /**
      * 中文名称
@@ -88,12 +72,12 @@ public class Company implements Serializable {
     @Column(name = "chi_name", length = 100)
     @NotNull
     @NotBlank
-    private String nameInChinese;
+    private String nameInCN;
 
     /**
      * 公司地址
      */
-    @Column(length = 256)
+    @Column(length = 100)
     private String address;
 
     /**
@@ -115,19 +99,19 @@ public class Company implements Serializable {
     @Column(name = "chi_short", length = 20)
     @NotNull
     @NotBlank
-    private String shortNameInChinese;
+    private String shortNameInCN;
 
     /**
      * 公司英文全称
      */
     @Column(name = "eng_name", length = 100)
-    private String nameInEnglish;
+    private String nameInEN;
 
     /**
      * 公司英文简称
      */
     @Column(name = "eng_short", length = 40)
-    private String shortNameInEnglish;
+    private String shortNameInEN;
 
     /**
      * 公司Logo文本
@@ -162,16 +146,16 @@ public class Company implements Serializable {
     /**
      * 公司成立日期
      */
-    @Column(name = "Date_of_esta")
+    @Column(name = "establish_at")
     @Past
     private LocalDate establishedAt;
 
     /**
      * 公司经营期限
      */
-    @Column(name = "Term_of_business")
+    @Column(name = "expire_at")
     @FutureOrPresent
-    private LocalDate lifetimeUntil;
+    private LocalDate expiresAt;
 
     /**
      * 公司联系电话
@@ -188,7 +172,7 @@ public class Company implements Serializable {
     /**
      * 社会统一信用代码（Unified Social Credit Identifier）
      */
-    @Column(name = "Credit_Code", length = 40)
+    @Column(name = "credit_code", length = 40)
     @NotNull
     @NotBlank
     private String USCI;
@@ -196,7 +180,7 @@ public class Company implements Serializable {
     /**
      * 区域编号，区级行政区划编号
      */
-    @Column(name = "area_code", length = 10)
+    @Column(name = "area_code", length = 6)
     private String areaCode;
 
     /**
@@ -204,12 +188,6 @@ public class Company implements Serializable {
      */
     @Column(name = "area_name", length = 60)
     private String areaName;
-
-    /**
-     * 公司使用的二级域名，仅二级域名部分
-     */
-    @Column(name = "domian_name", length = 50)
-    private String subdomainName;
 
     /**
      * 公司企业电子邮件地址
@@ -220,13 +198,13 @@ public class Company implements Serializable {
     /**
      * 公司联系人
      */
-    @Column(name = "Cont_name", length = 40)
+    @Column(name = "cont_name", length = 40)
     private String contactName;
 
     /**
      * 公司联系人电话
      */
-    @Column(name = "Cont_phone", length = 20)
+    @Column(name = "cont_phone", length = 20)
     private String contactPhone;
 
     /**
@@ -234,13 +212,6 @@ public class Company implements Serializable {
      */
     @Column(name = "id", length = 40)
     private String identityCode;
-
-    /**
-     * 税模式
-     */
-    @Column(name = "tax_model", length = 1)
-    @NotNull
-    private TaxModel taxModel;
 
     /**
      * 对应廪实平台客户编号
