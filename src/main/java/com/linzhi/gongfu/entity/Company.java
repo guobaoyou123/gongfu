@@ -7,6 +7,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -147,6 +149,7 @@ public class Company implements Serializable {
      * 公司成立日期
      */
     @Column(name = "establish_at")
+    @Temporal(TemporalType.DATE)
     @Past
     private LocalDate establishedAt;
 
@@ -154,6 +157,7 @@ public class Company implements Serializable {
      * 公司经营期限
      */
     @Column(name = "expire_at")
+    @Temporal(TemporalType.DATE)
     @FutureOrPresent
     private LocalDate expiresAt;
 
