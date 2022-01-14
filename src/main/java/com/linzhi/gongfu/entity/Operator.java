@@ -107,9 +107,9 @@ public class Operator {
     @ManyToMany
     @JoinTable(name = "dc_operator_scene", joinColumns = {
             @JoinColumn(name = "dc_comp_id", referencedColumnName = "dc_comp_id", insertable = true, updatable = true),
-            @JoinColumn(name = "code", referencedColumnName = "operator_code", insertable = true, updatable = true)
+            @JoinColumn(name = "operator_code", referencedColumnName = "code", insertable = true, updatable = true)
     }, inverseJoinColumns = {
-            @JoinColumn(name = "code", referencedColumnName = "scene_code", insertable = true, updatable = true)
+            @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = true, updatable = true)
     })
     private Set<Scene> scenes;
 }
