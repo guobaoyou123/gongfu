@@ -41,7 +41,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Entity
-@Table(name = "comp_user")
+@Table(name = "comp_operator")
 public class Operator {
     /**
      * 操作员编号
