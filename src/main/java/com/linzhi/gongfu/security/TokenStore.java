@@ -6,11 +6,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import com.linzhi.gongfu.entity.Company;
+import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.entity.Session;
 import com.linzhi.gongfu.enumeration.Whether;
-import com.linzhi.gongfu.repository.CompanyRepository;
+import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
 import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.security.exception.NonexistentTokenException;
 
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public final class TokenStore {
-    private final CompanyRepository companyRepository;
+    private final EnrolledCompanyRepository enrolledCompanyRepository;
     private final OperatorRepository operatorRepository;
     private final RedisTemplate<String, Session> sessionTemplate;
 
@@ -93,18 +93,20 @@ public final class TokenStore {
         Assert.notNull(domain, "必须提供操作员所属的企业域名。");
         Assert.notNull(token, "提供的操作员令牌为空白。");
         var operation = sessionTemplate.opsForValue();
-        companyRepository.findBySubdomainName(domain)
-                .map(Company::getCode)
-                .flatMap(code -> operatorRepository
-                        .findById(OperatorId.builder().companyCode(code).operatorCode(operatorCode).build()))
+        enrolledCompanyRepository.findBySubdomainName(domain)
+                .map(EnrolledCompany::getId)
+                .map(code -> OperatorId.builder().companyCode(code).operatorCode(operatorCode)
+                        .build())
+                .flatMap(operatorRepository::findById)
                 .ifPresent(operator -> {
                     var session = Session.builder()
                             .token(token)
                             .operatorCode(operator.getIdentity().getOperatorCode())
                             .operatorName(operator.getName())
-                            .companyCode(operator.getCompany().getCode())
-                            .companyName(operator.getCompany().getNameInChinese())
+                            .companyCode(operator.getCompany().getId())
+                            .companyName(operator.getCompany().getNameInCN())
                             .admin(operator.getAdmin().equals(Whether.YES))
+                            .scenes(operator.getScenes())
                             .expriesAt(LocalDateTime.now().plus(expiresAfter, unit.toChronoUnit()))
                             .build();
                     operation.set(

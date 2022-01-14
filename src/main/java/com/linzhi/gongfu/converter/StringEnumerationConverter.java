@@ -8,41 +8,41 @@ import java.util.Optional;
 import javax.persistence.AttributeConverter;
 
 /**
- * 抽象对于转换数据库中使用字符记录枚举量的通用实现
+ * 抽象对于转换数据库中使用字符串记录枚举量的通用实现
  *
  * @author xutao
- * @create_at 2021-12-23
+ * @create_at 2022-01-14
  */
-public abstract class CharacterEnumerationConverter<T extends Enum<T>> implements AttributeConverter<T, Character> {
+public abstract class StringEnumerationConverter<T extends Enum<T>> implements AttributeConverter<T, String> {
     private final Class<T> enumerationClazz;
-    private final Method charValueGetter;
+    private final Method stringValueGetter;
 
-    protected CharacterEnumerationConverter(Class<T> clazz, String methodName) throws NoSuchMethodException {
+    protected StringEnumerationConverter(Class<T> clazz, String methodName) throws NoSuchMethodException {
         this.enumerationClazz = clazz;
-        this.charValueGetter = clazz.getDeclaredMethod(methodName);
+        this.stringValueGetter = clazz.getDeclaredMethod(methodName);
     }
 
     @Override
-    public Character convertToDatabaseColumn(T t) {
+    public String convertToDatabaseColumn(T t) {
         return Optional.ofNullable(t)
                 .map(value -> {
                     try {
-                        return this.charValueGetter.invoke(value);
+                        return this.stringValueGetter.invoke(value);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         return null;
                     }
                 })
-                .map(Character.class::cast)
+                .map(String.class::cast)
                 .orElse(null);
     }
 
     @Override
-    public T convertToEntityAttribute(Character character) {
+    public T convertToEntityAttribute(String string) {
         return Arrays.stream(this.enumerationClazz.getEnumConstants())
                 .filter(cons -> {
                     try {
-                        var value = (Character) this.charValueGetter.invoke(cons);
-                        return value.equals(character);
+                        var value = (String) this.stringValueGetter.invoke(cons);
+                        return value.equals(string);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         return false;
                     }

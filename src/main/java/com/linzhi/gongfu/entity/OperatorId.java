@@ -18,7 +18,7 @@ import lombok.NonNull;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OperatorId implements Serializable {
-    @Column(name = "comp_code", length = 50, nullable = false)
+    @Column(name = "dc_comp_id", length = 50, nullable = false)
     @NonNull
     @NotNull
     @NotBlank

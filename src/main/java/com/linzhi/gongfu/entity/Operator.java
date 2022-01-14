@@ -1,12 +1,14 @@
 package com.linzhi.gongfu.entity;
 
-import java.time.LocalDateTime;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -22,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.Singular;
 import lombok.ToString;
 
 /**
@@ -38,7 +41,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Entity
-@Table(name = "comp_user")
+@Table(name = "comp_operator")
 public class Operator {
     /**
      * 操作员编号
@@ -49,10 +52,10 @@ public class Operator {
     /**
      * 关联公司基本信息
      */
-    @ManyToOne
-    @JoinColumn(name = "comp_code", insertable = false, updatable = false)
+    @OneToOne
+    @JoinColumn(name = "dc_comp_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonBackReference
-    private Company company;
+    private EnrolledCompany company;
 
     /**
      * 操作员名称
@@ -70,7 +73,7 @@ public class Operator {
     @NonNull
     @NotNull
     @NotBlank
-    private String loginPassword;
+    private String password;
 
     /**
      * 操作员状态
@@ -88,7 +91,7 @@ public class Operator {
     /**
      * 是否为管理员
      */
-    @Column(name = "admin_YesNo", length = 1)
+    @Column(name = "is_admin", length = 1)
     private Whether admin;
 
     /**
@@ -98,14 +101,15 @@ public class Operator {
     private String LSCode;
 
     /**
-     * 操作员使用的语言
+     * 操作员所拥有的场景（权限）
      */
-    @Column(length = 1)
-    private String language;
-
-    /**
-     * 操作员最后一次登录时间
-     */
-    @Column(name = "last_login_time")
-    private LocalDateTime lastLoginAt;
+    @Singular
+    @ManyToMany
+    @JoinTable(name = "dc_operator_scene", joinColumns = {
+            @JoinColumn(name = "dc_comp_id", referencedColumnName = "dc_comp_id", insertable = true, updatable = true),
+            @JoinColumn(name = "operator_code", referencedColumnName = "code", insertable = true, updatable = true)
+    }, inverseJoinColumns = {
+            @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = true, updatable = true)
+    })
+    private Set<Scene> scenes;
 }

@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: "base,dev,mssql_remote,redis_local"
+    active: 'base,dev,mssql_remote,redis_local'
 ---
 spring:
   config:
@@ -25,6 +25,7 @@ spring:
       hibernate:
         jdbc:
           timezone: Asia/Shanghai
+        '[enable_lazy_load_no_trans]': true
 server:
   port: 8080
 debug: false
