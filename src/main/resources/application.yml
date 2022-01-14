@@ -25,7 +25,7 @@ spring:
       hibernate:
         jdbc:
           timezone: Asia/Shanghai
-        enable_lazy_load_no_trans: true
+        '[enable_lazy_load_no_trans]': true
 server:
   port: 8080
 debug: false
