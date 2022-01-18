@@ -35,7 +35,7 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler {
             throws IOException, ServletException {
         try {
             String tokenHeader = request.getHeader("Authorization");
-            String requestDomain = URLTools.extractSubdomainName(request.getHeader("Host"));
+            String requestDomain = URLTools.extractSubdomainName(request.getHeader("CompanyDomain"));
             if (Objects.nonNull(tokenHeader) && tokenHeader.startsWith("Bearer ")) {
                 final String token = tokenHeader.substring("Bearer ".length());
                 tokenStore.revoke(requestDomain, token);

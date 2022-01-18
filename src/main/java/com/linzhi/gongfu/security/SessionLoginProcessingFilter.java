@@ -1,7 +1,16 @@
 package com.linzhi.gongfu.security;
 
+import java.io.IOException;
+import java.util.Objects;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.linzhi.gongfu.security.token.OperatorAuthenticationToken;
 import com.linzhi.gongfu.util.URLTools;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
@@ -13,13 +22,6 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Objects;
-
 /**
  * 用于解析用户请求中携带的Authorization头，并使用其完成登录的过滤器
  *
@@ -28,14 +30,16 @@ import java.util.Objects;
  */
 public final class SessionLoginProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
-    public SessionLoginProcessingFilter(AuthenticationFailureHandler failureHandler, AuthenticationManager authenticationManager) {
+    public SessionLoginProcessingFilter(AuthenticationFailureHandler failureHandler,
+            AuthenticationManager authenticationManager) {
         super(AnyRequestMatcher.INSTANCE, authenticationManager);
         setAuthenticationFailureHandler(failureHandler);
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        var domainName = URLTools.extractSubdomainName(request.getHeader("Host"));
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException, IOException, ServletException {
+        var domainName = URLTools.extractSubdomainName(request.getHeader("CompanyDomain"));
         final var token = obtainToken(request, URLTools.isRunningLocally(domainName));
         if (URLTools.isRunningLocally(domainName)) {
             domainName = request.getParameter("host");
@@ -45,7 +49,8 @@ public final class SessionLoginProcessingFilter extends AbstractAuthenticationPr
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+            Authentication authResult) throws IOException, ServletException {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authResult);
         SecurityContextHolder.setContext(context);
