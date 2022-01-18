@@ -1,16 +1,29 @@
 package com.linzhi.gongfu.infrastructure;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
+import javax.servlet.http.HttpServletResponse;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.http.MediaType;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import org.springframework.http.MediaType;
 
 /**
  * 将原始Http Servlet响应包装成返回Application/Json的响应
+ *
  * @author xutao
  * @create_at 2021-12-23
  */
@@ -20,13 +33,30 @@ public class HttpServletJsonResponseWrapper {
 
     private HttpServletJsonResponseWrapper(HttpServletResponse httpServletResponse) {
         this.httpServletResponse = httpServletResponse;
+        var timeModule = new JavaTimeModule();
+
+        // 日期序列化
+        timeModule.addSerializer(LocalDateTime.class,
+                new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+        timeModule.addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        timeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern("HH:mm:ss.SSS")));
+
+        // 日期反序列化
+        timeModule.addDeserializer(LocalDateTime.class,
+                new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+        timeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter
+                .ofPattern("yyyy-MM-dd")));
+        timeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter
+                .ofPattern("HH:mm:ss.SSS")));
+
         this.mapper = JsonMapper.builder()
-            .addModule(new JavaTimeModule())
-            .build();
+                .addModule(timeModule)
+                .build();
     }
 
     /**
      * 对Http Servlet响应进行包装
+     *
      * @param httpServletResponse 原始的Http Servlet响应
      * @return 包装后的Http Servlet响应
      */
@@ -36,8 +66,9 @@ public class HttpServletJsonResponseWrapper {
 
     /**
      * 将Http状态码和JSON对象写入Http Servlet响应中
+     *
      * @param statusCode Http状态码
-     * @param object 需要写入的JSON对象
+     * @param object     需要写入的JSON对象
      * @throws IOException 当JSON写入发生错误时抛出
      */
     public void write(int statusCode, Object object) throws IOException {
