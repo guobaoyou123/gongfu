@@ -25,6 +25,13 @@ public class PreloadController {
     private final CompanyService companyService;
     private final CompanyMapper companyMapper;
 
+    /**
+     * 通过给定的主机域名名称获取对应的公司基本信息接口
+     *
+     * @param domain   在请求头信息中包含的主机域名名称
+     * @param hostname 在查询串中包含的主机域名名称
+     * @return 对应的公司基本信息或者无法找到的提示
+     */
     @GetMapping("/host")
     public VPreloadCompanyInfoResponse fetchCompanyInfoByHost(
             @RequestHeader("CompanyDomain") Optional<String> domain, @RequestParam("host") Optional<String> hostname) {
