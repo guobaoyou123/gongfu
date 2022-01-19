@@ -1,6 +1,9 @@
 package com.linzhi.gongfu.security;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.linzhi.gongfu.entity.EnrolledCompany;
@@ -47,6 +50,9 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         try {
+            if (isAnonymousOperatorAuthenticationToken(authentication)) {
+                return createAnonymousAuthentication();
+            }
             Assert.isInstanceOf(OperatorAuthenticationToken.class, authentication);
             String[] principals = (String[]) authentication.getPrincipal();
             var session = tokenStore.fetch(principals[0], principals[1]);
@@ -105,6 +111,28 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
                 session.getExpriesAt(),
                 privileges);
         sessionToken.setDetails(authentication);
+        return sessionToken;
+    }
+
+    /**
+     * 判断当前提供的认证信息是否属于匿名用户信息。
+     *
+     * @param authentication 原始认证信息
+     * @return 是否是匿名用户信息
+     */
+    private boolean isAnonymousOperatorAuthenticationToken(Authentication authentication) {
+        String[] principals = (String[]) authentication.getPrincipal();
+        return Objects.isNull(principals[1]);
+    }
+
+    /**
+     * 生成一个无任何合法信息的匿名用户Token。
+     *
+     * @return 代表匿名用户的空白Token
+     */
+    private OperatorSessionToken createAnonymousAuthentication() {
+        var sessionToken = new OperatorSessionToken("-1", "Anonymous", "-1", "Anonymous", "NOWHERE", "Anonymous",
+                LocalDateTime.of(2099, 12, 31, 23, 59), Collections.emptyList());
         return sessionToken;
     }
 }
