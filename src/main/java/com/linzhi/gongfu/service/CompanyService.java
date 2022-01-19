@@ -5,7 +5,6 @@ import java.util.Optional;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
-import com.linzhi.gongfu.util.URLTools;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -32,8 +31,7 @@ public class CompanyService {
      */
     @Cacheable("Company_Host")
     public Optional<TCompanyBaseInformation> findCompanyInformationByHostname(String hostname) {
-        var subdomainName = URLTools.extractSubdomainName(hostname);
-        return enrolledCompanyRepository.findBySubdomainName(subdomainName)
+        return enrolledCompanyRepository.findBySubdomainName(hostname)
                 .map(companyMapper::toBaseInformation);
     }
 }

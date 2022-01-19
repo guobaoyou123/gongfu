@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.util.URLTools;
 import com.linzhi.gongfu.vo.VPreloadCompanyInfoResponse;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +37,7 @@ public class PreloadController {
     public VPreloadCompanyInfoResponse fetchCompanyInfoByHost(
             @RequestHeader("CompanyDomain") Optional<String> domain, @RequestParam("host") Optional<String> hostname) {
         return hostname.or(() -> domain)
+                .map(URLTools::extractSubdomainName)
                 .flatMap(companyService::findCompanyInformationByHostname)
                 .map(companyMapper::toPreload)
                 .orElse(VPreloadCompanyInfoResponse.builder()
