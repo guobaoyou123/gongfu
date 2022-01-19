@@ -74,7 +74,7 @@ public final class SessionLoginProcessingFilter extends AbstractAuthenticationPr
     private String obtainToken(HttpServletRequest request, boolean locally) throws BadCredentialsException {
         var authorization = locally ? request.getParameter("token") : request.getHeader("Authorization");
         if (!locally) {
-            if (!authorization.startsWith("Bearer ")) {
+            if (Objects.isNull(authorization) || !authorization.startsWith("Bearer ")) {
                 throw new BadCredentialsException("来自用户的请求未提供合格的认证头信息。");
             }
             authorization = authorization.substring("Bearer ".length());
