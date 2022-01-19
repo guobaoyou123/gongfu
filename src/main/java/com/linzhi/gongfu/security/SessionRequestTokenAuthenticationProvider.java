@@ -50,10 +50,10 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         try {
+            Assert.isInstanceOf(OperatorAuthenticationToken.class, authentication);
             if (isAnonymousOperatorAuthenticationToken(authentication)) {
                 return createAnonymousAuthentication();
             }
-            Assert.isInstanceOf(OperatorAuthenticationToken.class, authentication);
             String[] principals = (String[]) authentication.getPrincipal();
             var session = tokenStore.fetch(principals[0], principals[1]);
             var operator = enrolledCompanyRepository.findBySubdomainName(principals[0])
