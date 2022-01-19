@@ -108,4 +108,4 @@ spring:
         max-idle: 5
   cache:
     redis:
-      time-to-live: 5m
+      time-to-live: 10m
