@@ -44,10 +44,10 @@ public class HttpServletJsonResponseWrapper {
         // 日期反序列化
         timeModule.addDeserializer(LocalDateTime.class,
                 new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        timeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter
-                .ofPattern("yyyy-MM-dd")));
-        timeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter
-                .ofPattern("HH:mm:ss.SSS")));
+        timeModule.addDeserializer(LocalDate.class,
+                new LocalDateDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        timeModule.addDeserializer(LocalTime.class,
+                new LocalTimeDeserializer(DateTimeFormatter.ofPattern("HH:mm:ss.SSS")));
 
         this.mapper = JsonMapper.builder()
                 .addModule(timeModule)
