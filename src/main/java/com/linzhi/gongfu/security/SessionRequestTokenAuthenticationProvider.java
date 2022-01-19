@@ -6,19 +6,19 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.linzhi.gongfu.entity.EnrolledCompany;
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.entity.Operator;
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.entity.Scene;
 import com.linzhi.gongfu.entity.Session;
 import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.exception.UnexistOperatorException;
-import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
-import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.security.exception.NonexistentTokenException;
 import com.linzhi.gongfu.security.exception.OperatorNotFoundException;
 import com.linzhi.gongfu.security.token.OperatorAuthenticationToken;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
+import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.service.OperatorService;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -43,8 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public final class SessionRequestTokenAuthenticationProvider implements AuthenticationProvider {
-    private final EnrolledCompanyRepository enrolledCompanyRepository;
-    private final OperatorRepository operatorRepository;
+    private final CompanyService companyService;
+    private final OperatorService operatorService;
     private final TokenStore tokenStore;
 
     @Override
@@ -56,12 +56,12 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
             }
             String[] principals = (String[]) authentication.getPrincipal();
             var session = tokenStore.fetch(principals[0], principals[1]);
-            var operator = enrolledCompanyRepository.findBySubdomainName(principals[0])
-                    .map(EnrolledCompany::getId)
+            var operator = companyService.findCompanyInformationByHostname(principals[0])
+                    .map(TCompanyBaseInformation::getCode)
                     .map(companyCode -> OperatorId.builder().companyCode(companyCode)
                             .operatorCode(session.getOperatorCode())
                             .build())
-                    .flatMap(operatorRepository::findById)
+                    .flatMap(operatorService::findOperatorByID)
                     .orElseThrow(UnexistOperatorException::new);
             return createSuccessAuthentication(session, operator, authentication);
         } catch (NonexistentTokenException e) {
