@@ -3,7 +3,6 @@ package com.linzhi.gongfu.security;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
@@ -121,8 +120,7 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
      * @return 是否是匿名用户信息
      */
     private boolean isAnonymousOperatorAuthenticationToken(Authentication authentication) {
-        String[] principals = (String[]) authentication.getPrincipal();
-        return Objects.isNull(principals[1]);
+        return ((OperatorAuthenticationToken) authentication).isBlankToken();
     }
 
     /**

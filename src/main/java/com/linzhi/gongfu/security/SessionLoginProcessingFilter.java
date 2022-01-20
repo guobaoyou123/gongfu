@@ -2,6 +2,7 @@ package com.linzhi.gongfu.security;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -39,12 +40,12 @@ public final class SessionLoginProcessingFilter extends AbstractAuthenticationPr
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
-        var domainName = URLTools.extractSubdomainName(request.getHeader("CompanyDomain"));
-        final var token = obtainToken(request, URLTools.isRunningLocally(domainName));
-        if (URLTools.isRunningLocally(domainName)) {
-            domainName = request.getParameter("host");
-        }
-        var requestToken = new OperatorAuthenticationToken(domainName, token);
+        Optional<String> domainName = Optional.ofNullable(request.getHeader("CompanyDomain"))
+                .or(() -> Optional.ofNullable(request.getParameter("host")))
+                .map(URLTools::extractSubdomainName);
+        final var token = domainName.isPresent() ? obtainToken(request, URLTools.isRunningLocally(domainName.get()))
+                : null;
+        var requestToken = new OperatorAuthenticationToken(domainName.orElse(null), token);
         return this.getAuthenticationManager().authenticate(requestToken);
     }
 
