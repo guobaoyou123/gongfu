@@ -5,9 +5,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
-import com.linzhi.gongfu.entity.Operator;
+import com.linzhi.gongfu.dto.TOperatorInfo;
+import com.linzhi.gongfu.dto.TScene;
 import com.linzhi.gongfu.entity.OperatorId;
-import com.linzhi.gongfu.entity.Scene;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.security.token.OperatorLoginRequestToken;
@@ -91,23 +91,23 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
      * @param authentication 原始登录表单信息
      * @return 代表认证成功的会话Token
      */
-    private Authentication createSuccessAuthentication(Operator operator, Authentication authentication) {
+    private Authentication createSuccessAuthentication(TOperatorInfo operator, Authentication authentication) {
         var privileges = new ArrayList<GrantedAuthority>();
         privileges.add(new SimpleGrantedAuthority("ROLE_OPERATOR"));
         if (operator.getAdmin().equals(Whether.YES)) {
             privileges.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
         var sceneCodes = operator.getScenes().stream()
-                .map(Scene::getCode)
+                .map(TScene::getCode)
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
         privileges.addAll(sceneCodes);
         OperatorSessionToken sessionToken = new OperatorSessionToken(
-                operator.getIdentity().getOperatorCode(),
+                operator.getCode(),
                 operator.getName(),
-                operator.getCompany().getId(),
-                operator.getCompany().getNameInCN(),
-                operator.getCompany().getSubdomainName(),
+                operator.getCompanyCode(),
+                operator.getCompanyName(),
+                operator.getCompanyDomain(),
                 null,
                 null,
                 privileges);

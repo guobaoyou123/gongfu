@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
-import com.linzhi.gongfu.entity.Operator;
+import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.entity.Scene;
 import com.linzhi.gongfu.entity.Session;
@@ -89,7 +89,7 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
      * @param authentication 原始认证信息
      * @return 代表认证成功的会话Token
      */
-    private OperatorSessionToken createSuccessAuthentication(Session session, Operator operator,
+    private OperatorSessionToken createSuccessAuthentication(Session session, TOperatorInfo operator,
             Authentication authentication) {
         var privileges = new ArrayList<GrantedAuthority>();
         privileges.add(new SimpleGrantedAuthority("ROLE_OPERATOR"));
@@ -102,11 +102,11 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
                 .collect(Collectors.toList());
         privileges.addAll(sceneCodes);
         var sessionToken = new OperatorSessionToken(
-                operator.getIdentity().getOperatorCode(),
+                operator.getCode(),
                 operator.getName(),
-                operator.getCompany().getId(),
-                operator.getCompany().getNameInCN(),
-                operator.getCompany().getSubdomainName(),
+                operator.getCompanyCode(),
+                operator.getCompanyName(),
+                operator.getCompanyDomain(),
                 session.getToken(),
                 session.getExpriesAt(),
                 privileges);
