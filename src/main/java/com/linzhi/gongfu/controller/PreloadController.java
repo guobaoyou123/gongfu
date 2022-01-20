@@ -53,6 +53,11 @@ public class PreloadController {
                         .companyShortName("UNKNOWN").build());
     }
 
+    /**
+     * 获取前端界面所需要使用的全部菜单结构
+     *
+     * @return 完整的前端功能菜单结构
+     */
     @GetMapping("/menus")
     public VPreloadMenuResponse fetchFrontendMenus() {
         var mainMenus = menuService.fetchAllMenus().stream()
