@@ -29,7 +29,7 @@ public class CompanyService {
      * @param hostname 主机域名名称
      * @return 公司基本信息
      */
-    @Cacheable("Company_Host")
+    @Cacheable(value = "Company_Host;1800", unless = "#result == null")
     public Optional<TCompanyBaseInformation> findCompanyInformationByHostname(String hostname) {
         return enrolledCompanyRepository.findBySubdomainName(hostname)
                 .map(companyMapper::toBaseInformation);
