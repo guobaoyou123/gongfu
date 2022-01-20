@@ -1,11 +1,15 @@
 package com.linzhi.gongfu.controller;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.linzhi.gongfu.mapper.CompanyMapper;
+import com.linzhi.gongfu.mapper.MenuMapper;
 import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.service.MenuService;
 import com.linzhi.gongfu.util.URLTools;
 import com.linzhi.gongfu.vo.VPreloadCompanyInfoResponse;
+import com.linzhi.gongfu.vo.VPreloadMenuResponse;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -24,7 +28,9 @@ import lombok.RequiredArgsConstructor;
 @RestController
 public class PreloadController {
     private final CompanyService companyService;
+    private final MenuService menuService;
     private final CompanyMapper companyMapper;
+    private final MenuMapper menuMapper;
 
     /**
      * 通过给定的主机域名名称获取对应的公司基本信息接口
@@ -45,5 +51,17 @@ public class PreloadController {
                         .message("请求的公司信息没有找到。")
                         .companyName("UNKNOWN")
                         .companyShortName("UNKNOWN").build());
+    }
+
+    @GetMapping("/menus")
+    public VPreloadMenuResponse fetchFrontendMenus() {
+        var mainMenus = menuService.fetchAllMenus().stream()
+                .map(menuMapper::toPreloadMainMenu)
+                .collect(Collectors.toSet());
+        return VPreloadMenuResponse.builder()
+                .code(200)
+                .message("所有菜单结构已经获取，使用时请保证菜单顺序。")
+                .menus(mainMenus)
+                .build();
     }
 }
