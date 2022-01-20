@@ -56,7 +56,7 @@ spring:
     hikari:
       maximum-pool-size: 5
   jpa:
-    show-sql: true
+    show-sql: false
   redis:
     port: 6379
     database: 0
