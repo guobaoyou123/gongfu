@@ -5,11 +5,14 @@ import java.util.stream.Collectors;
 
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.mapper.MenuMapper;
+import com.linzhi.gongfu.mapper.WordMapper;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.MenuService;
+import com.linzhi.gongfu.service.WordService;
 import com.linzhi.gongfu.util.URLTools;
 import com.linzhi.gongfu.vo.VPreloadCompanyInfoResponse;
 import com.linzhi.gongfu.vo.VPreloadMenuResponse;
+import com.linzhi.gongfu.vo.VPreloadWordsResponse;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -31,6 +34,8 @@ public class PreloadController {
     private final MenuService menuService;
     private final CompanyMapper companyMapper;
     private final MenuMapper menuMapper;
+    private final WordService wordService;
+    private final WordMapper wordMapper;
 
     /**
      * 通过给定的主机域名名称获取对应的公司基本信息接口
@@ -67,6 +72,23 @@ public class PreloadController {
                 .code(200)
                 .message("所有菜单结构已经获取，使用时请保证菜单顺序。")
                 .menus(mainMenus)
+                .build();
+    }
+
+    /**
+     * 获取前端界面所需要使用的全部文案词汇
+     *
+     * @return 全部不分类的前端文案词汇
+     */
+    @GetMapping("/strings")
+    public VPreloadWordsResponse fetchFrontendWords() {
+        var words = wordService.fetchAllWords().stream()
+                .map(wordMapper::toVO)
+                .collect(Collectors.toSet());
+        return VPreloadWordsResponse.builder()
+                .code(200)
+                .message("所有文案词汇已经获取，使用时请注意定位键。")
+                .words(words)
                 .build();
     }
 }
