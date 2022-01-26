@@ -1,15 +1,21 @@
 package com.linzhi.gongfu.infrastructure;
 
+import java.time.Duration;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.linzhi.gongfu.entity.Session;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
@@ -44,15 +50,26 @@ public class BeanFactory {
         return template;
     }
 
-    /**
-     * 为Jackson进行日期时间转换的时候增加新版Java Time支持。
-     *
-     * @return 增加了Java Time处理的对象映射处理器
-     */
     @Bean
-    public ObjectMapper getObjectMapper() {
-        return JsonMapper.builder()
-                .addModule(new JavaTimeModule())
-                .build();
+    public RedisCacheConfiguration getRedisCacheConfiguration(
+            @Value("${spring.cache.redis.time-to-live}") Integer seconds,
+            SerializationPair<Object> serializationPair) {
+
+        var configuration = RedisCacheConfiguration.defaultCacheConfig();
+        configuration = configuration
+                .serializeValuesWith(serializationPair)
+                .entryTtl(Duration.ofSeconds(seconds));
+
+        return configuration;
+    }
+
+    @Primary
+    @Bean
+    public RedisCacheManager ttlCacheManager(
+            RedisConnectionFactory redisConnectionFactory,
+            RedisCacheConfiguration redisCacheConfiguration) {
+        return new CustomTtlRedisCacheManager(
+                RedisCacheWriter.lockingRedisCacheWriter(redisConnectionFactory),
+                redisCacheConfiguration);
     }
 }

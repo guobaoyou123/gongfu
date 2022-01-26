@@ -1,21 +1,23 @@
 package com.linzhi.gongfu.security;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
-import com.linzhi.gongfu.entity.EnrolledCompany;
-import com.linzhi.gongfu.entity.Operator;
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
+import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.entity.Scene;
 import com.linzhi.gongfu.entity.Session;
 import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.exception.UnexistOperatorException;
-import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
-import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.security.exception.NonexistentTokenException;
 import com.linzhi.gongfu.security.exception.OperatorNotFoundException;
 import com.linzhi.gongfu.security.token.OperatorAuthenticationToken;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
+import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.service.OperatorService;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -40,22 +42,25 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public final class SessionRequestTokenAuthenticationProvider implements AuthenticationProvider {
-    private final EnrolledCompanyRepository enrolledCompanyRepository;
-    private final OperatorRepository operatorRepository;
+    private final CompanyService companyService;
+    private final OperatorService operatorService;
     private final TokenStore tokenStore;
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         try {
             Assert.isInstanceOf(OperatorAuthenticationToken.class, authentication);
+            if (isAnonymousOperatorAuthenticationToken(authentication)) {
+                return createAnonymousAuthentication();
+            }
             String[] principals = (String[]) authentication.getPrincipal();
             var session = tokenStore.fetch(principals[0], principals[1]);
-            var operator = enrolledCompanyRepository.findBySubdomainName(principals[0])
-                    .map(EnrolledCompany::getId)
+            var operator = companyService.findCompanyInformationByHostname(principals[0])
+                    .map(TCompanyBaseInformation::getCode)
                     .map(companyCode -> OperatorId.builder().companyCode(companyCode)
                             .operatorCode(session.getOperatorCode())
                             .build())
-                    .flatMap(operatorRepository::findById)
+                    .flatMap(operatorService::findOperatorByID)
                     .orElseThrow(UnexistOperatorException::new);
             return createSuccessAuthentication(session, operator, authentication);
         } catch (NonexistentTokenException e) {
@@ -83,7 +88,7 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
      * @param authentication 原始认证信息
      * @return 代表认证成功的会话Token
      */
-    private OperatorSessionToken createSuccessAuthentication(Session session, Operator operator,
+    private OperatorSessionToken createSuccessAuthentication(Session session, TOperatorInfo operator,
             Authentication authentication) {
         var privileges = new ArrayList<GrantedAuthority>();
         privileges.add(new SimpleGrantedAuthority("ROLE_OPERATOR"));
@@ -96,15 +101,36 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
                 .collect(Collectors.toList());
         privileges.addAll(sceneCodes);
         var sessionToken = new OperatorSessionToken(
-                operator.getIdentity().getOperatorCode(),
+                operator.getCode(),
                 operator.getName(),
-                operator.getCompany().getId(),
-                operator.getCompany().getNameInCN(),
-                operator.getCompany().getSubdomainName(),
+                operator.getCompanyCode(),
+                operator.getCompanyName(),
+                operator.getCompanyDomain(),
                 session.getToken(),
                 session.getExpriesAt(),
                 privileges);
         sessionToken.setDetails(authentication);
+        return sessionToken;
+    }
+
+    /**
+     * 判断当前提供的认证信息是否属于匿名用户信息。
+     *
+     * @param authentication 原始认证信息
+     * @return 是否是匿名用户信息
+     */
+    private boolean isAnonymousOperatorAuthenticationToken(Authentication authentication) {
+        return ((OperatorAuthenticationToken) authentication).isBlankToken();
+    }
+
+    /**
+     * 生成一个无任何合法信息的匿名用户Token。
+     *
+     * @return 代表匿名用户的空白Token
+     */
+    private OperatorSessionToken createAnonymousAuthentication() {
+        var sessionToken = new OperatorSessionToken("-1", "Anonymous", "-1", "Anonymous", "NOWHERE", "Anonymous",
+                LocalDateTime.of(2099, 12, 31, 23, 59), Collections.emptyList());
         return sessionToken;
     }
 }

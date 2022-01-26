@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.linzhi.gongfu.entity.EnrolledCompany;
-import com.linzhi.gongfu.entity.Operator;
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
+import com.linzhi.gongfu.dto.TOperatorInfo;
+import com.linzhi.gongfu.dto.TScene;
 import com.linzhi.gongfu.entity.OperatorId;
-import com.linzhi.gongfu.entity.Scene;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Whether;
-import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
-import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.security.token.OperatorLoginRequestToken;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
+import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.service.OperatorService;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -41,8 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public final class LoginRequestTokenAuthenticationProvider implements AuthenticationProvider {
-    private final EnrolledCompanyRepository enrolledCompanyRepository;
-    private final OperatorRepository operatorRepository;
+    private final CompanyService companyService;
+    private final OperatorService operatorService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -55,11 +55,11 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
                 log.info("操作员 [{}@{}] 试图使用空白的密码登录，登录请求已拒绝。", principals[0], principals[1]);
                 throw new BadCredentialsException("操作员试图使用空白密码登录。");
             }
-            var operator = enrolledCompanyRepository.findBySubdomainName(principals[1])
-                    .map(EnrolledCompany::getId)
+            var operator = companyService.findCompanyInformationByHostname(principals[1])
+                    .map(TCompanyBaseInformation::getCode)
                     .map(companyCode -> OperatorId.builder().operatorCode(principals[0]).companyCode(companyCode)
                             .build())
-                    .flatMap(operatorRepository::findById)
+                    .flatMap(operatorService::findOperatorByID)
                     .orElseThrow(() -> new UsernameNotFoundException("请求的操作员不存在"));
             // 这里对操作员的其他状态进行处理
             if (operator.getState().equals(Availability.DISABLED)) {
@@ -91,23 +91,23 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
      * @param authentication 原始登录表单信息
      * @return 代表认证成功的会话Token
      */
-    private Authentication createSuccessAuthentication(Operator operator, Authentication authentication) {
+    private Authentication createSuccessAuthentication(TOperatorInfo operator, Authentication authentication) {
         var privileges = new ArrayList<GrantedAuthority>();
         privileges.add(new SimpleGrantedAuthority("ROLE_OPERATOR"));
         if (operator.getAdmin().equals(Whether.YES)) {
             privileges.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
         var sceneCodes = operator.getScenes().stream()
-                .map(Scene::getCode)
+                .map(TScene::getCode)
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
         privileges.addAll(sceneCodes);
         OperatorSessionToken sessionToken = new OperatorSessionToken(
-                operator.getIdentity().getOperatorCode(),
+                operator.getCode(),
                 operator.getName(),
-                operator.getCompany().getId(),
-                operator.getCompany().getNameInCN(),
-                operator.getCompany().getSubdomainName(),
+                operator.getCompanyCode(),
+                operator.getCompanyName(),
+                operator.getCompanyDomain(),
                 null,
                 null,
                 privileges);

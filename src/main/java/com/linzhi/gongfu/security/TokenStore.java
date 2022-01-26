@@ -6,13 +6,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import com.linzhi.gongfu.entity.EnrolledCompany;
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.entity.Session;
 import com.linzhi.gongfu.enumeration.Whether;
-import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
-import com.linzhi.gongfu.repository.OperatorRepository;
+import com.linzhi.gongfu.mapper.SceneMapper;
 import com.linzhi.gongfu.security.exception.NonexistentTokenException;
+import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.service.OperatorService;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -29,9 +30,10 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public final class TokenStore {
-    private final EnrolledCompanyRepository enrolledCompanyRepository;
-    private final OperatorRepository operatorRepository;
+    private final CompanyService companyService;
+    private final OperatorService operatorService;
     private final RedisTemplate<String, Session> sessionTemplate;
+    private final SceneMapper sceneMapper;
 
     /**
      * 将给定的令牌组装成Redis存储键
@@ -93,20 +95,20 @@ public final class TokenStore {
         Assert.notNull(domain, "必须提供操作员所属的企业域名。");
         Assert.notNull(token, "提供的操作员令牌为空白。");
         var operation = sessionTemplate.opsForValue();
-        enrolledCompanyRepository.findBySubdomainName(domain)
-                .map(EnrolledCompany::getId)
+        companyService.findCompanyInformationByHostname(domain)
+                .map(TCompanyBaseInformation::getCode)
                 .map(code -> OperatorId.builder().companyCode(code).operatorCode(operatorCode)
                         .build())
-                .flatMap(operatorRepository::findById)
+                .flatMap(operatorService::findOperatorByID)
                 .ifPresent(operator -> {
                     var session = Session.builder()
                             .token(token)
-                            .operatorCode(operator.getIdentity().getOperatorCode())
+                            .operatorCode(operator.getCode())
                             .operatorName(operator.getName())
-                            .companyCode(operator.getCompany().getId())
-                            .companyName(operator.getCompany().getNameInCN())
+                            .companyCode(operator.getCompanyCode())
+                            .companyName(operator.getCompanyName())
                             .admin(operator.getAdmin().equals(Whether.YES))
-                            .scenes(operator.getScenes())
+                            .scenes(sceneMapper.toEntities(operator.getScenes()))
                             .expriesAt(LocalDateTime.now().plus(expiresAfter, unit.toChronoUnit()))
                             .build();
                     operation.set(
