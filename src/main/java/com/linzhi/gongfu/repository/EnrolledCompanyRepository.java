@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.linzhi.gongfu.entity.EnrolledCompany;
 
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 /**
@@ -12,6 +13,7 @@ import org.springframework.data.repository.CrudRepository;
  * @author xutao
  * @create_at 2022-01-14
  */
-public interface EnrolledCompanyRepository extends CrudRepository<EnrolledCompany, String> {
+public interface EnrolledCompanyRepository
+        extends CrudRepository<EnrolledCompany, String>, QuerydslPredicateExecutor<EnrolledCompany> {
     Optional<EnrolledCompany> findBySubdomainName(String subdomainName);
 }

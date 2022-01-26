@@ -2,6 +2,7 @@ package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.Company;
 
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 /**
@@ -10,5 +11,5 @@ import org.springframework.data.repository.CrudRepository;
  * @author xutao
  * @create_at 2021-12-23
  */
-public interface CompanyRepository extends CrudRepository<Company, String> {
+public interface CompanyRepository extends CrudRepository<Company, String>, QuerydslPredicateExecutor<Company> {
 }
