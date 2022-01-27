@@ -1,4 +1,4 @@
-package com.linzhi.gongfu;
+package com.linzhi.gongfu.infrastructure;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

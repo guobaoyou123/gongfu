@@ -1,4 +1,4 @@
-package com.linzhi.gongfu;
+package com.linzhi.gongfu.infrastructure;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
