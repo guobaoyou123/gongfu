@@ -1,0 +1,30 @@
+package com.linzhi.gongfu.entity;
+
+import lombok.*;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Set;
+
+/**
+ * 我经营的品牌
+ * @author zgh
+ * @create_time 2022-01-28
+ */
+@Setter
+@Getter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name="comp_allowed_brand")
+public class CompAllowedBrand implements Serializable {
+    @EmbeddedId
+    private CompAllowedBrandId compAllowedBrandId;
+ /*   *//**
+     * 品牌
+     *//*
+    @OneToOne
+    @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = true, updatable = true)
+    private BaseBrand brand;*/
+}

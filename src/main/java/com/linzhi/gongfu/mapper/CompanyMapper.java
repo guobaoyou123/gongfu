@@ -1,11 +1,15 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
+import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
+import com.linzhi.gongfu.entity.CompTrad;
 import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.vo.VPreloadCompanyInfoResponse;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.Set;
 
 /**
  * 用于转换公司相关信息
@@ -39,4 +43,6 @@ public interface CompanyMapper {
     @Mapping(target = "shortName", source = "details.shortNameInCN")
     @Mapping(target = "subdomain", source = "subdomainName")
     TCompanyBaseInformation toBaseInformation(EnrolledCompany company);
+
+
 }
