@@ -27,10 +27,10 @@ public class CompanyController {
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
      */
     @GetMapping("/suppliers/paged")
-    public VSuppliersIncludeBrandsResponse suppliersIncludeBrands(@RequestParam("page") Optional<Integer> pageNum,@RequestParam("pageSize") Optional<Integer> pageSize) {
+    public VSuppliersIncludeBrandsResponse suppliersIncludeBrands(@RequestParam("pageNum") Optional<Integer> pageNum,@RequestParam("pageSize") Optional<Integer> pageSize) {
         AtomicInteger i = new AtomicInteger();
-        OperatorSessionToken.Session session = (OperatorSessionToken.Session) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var supplier = companyService.CompanyIncludeBrandbyId(session.getCompanyCode(),pageNum,pageSize);
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var supplier = companyService.CompanyIncludeBrandbyId(session.getSession().getCompanyCode(),pageNum,pageSize);
         supplier.getContent().forEach(vSupplier -> {
             i.getAndIncrement();
             vSupplier.setSort(i.get());
@@ -39,7 +39,7 @@ public class CompanyController {
                .code(200)
                .message("获取我的供应以及品牌列表成功。")
                .total(supplier.getTotalPages())
-               .current(supplier.getNumberOfElements())
+               .current(supplier.getNumber())
                 .suppliers(supplier.getContent())
                 .build();
 

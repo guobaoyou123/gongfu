@@ -33,17 +33,16 @@ public class BrandController {
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
      */
     @GetMapping("/brands/paged")
-    public VBrandResponse brandsPage(@RequestParam("page") Optional<Integer> pageNum, @RequestParam("pageSize") Optional<Integer> pageSize) {
+    public VBrandResponse brandsPage(@RequestParam("pageNum") Optional<Integer> pageNum, @RequestParam("pageSize") Optional<Integer> pageSize) {
 
-        OperatorSessionToken.Session session = (OperatorSessionToken.Session) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var brandPage = brandService.brandsPagebyId(session.getCompanyCode(),pageNum,pageSize);
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var brandPage = brandService.brandsPagebyId(session.getSession().getCompanyCode(),pageNum,pageSize);
         return VBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
-            .total(brandPage.getTotal())
+            .total(brandPage.getPages())
             .current(brandPage.getPageNum())
             .brands(brandPage.getList().stream().map(brandMapper::toBrandPreload).collect(Collectors.toList()))
             .build();
-
     }
 }

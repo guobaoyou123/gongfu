@@ -59,20 +59,21 @@ public class CompanyService {
         Page<TCompanyIncludeBrand> tCompanyIncludeBrands =compTradPage.map(compTradeMapper::toSuppliersIncludeBrand);
         tCompanyIncludeBrands.forEach(compTrad ->  {
             //将供应商中的经营品牌与授权品牌和自营品牌对比进行去重
-            List<TBrand> managerBrands =  compTrad.getManageBrands().stream().filter(tBrand -> !compTrad.getAuthBrands().contains(tBrand))
-                .collect(Collectors.toList());
-            managerBrands = managerBrands.stream().filter(tBrand -> !compTrad.getSelfSupportBrands().contains(tBrand))
-                .collect(Collectors.toList());
-
-            compTrad.getSelfSupportBrands().forEach(dcBrand -> dcBrand.setOwned(true));
-            compTrad.getAuthBrands().forEach(dcBrand -> dcBrand.setVending(true));
+            List<TBrand>   selfSupportBrands =  compTrad.getSelfSupportBrands().stream().filter(tBrand -> compTrad.getManageBrands().contains(tBrand)).collect(Collectors.toList());
+            List<TBrand>      authBrands     =  compTrad.getAuthBrands().stream().filter(tBrand -> compTrad.getManageBrands().contains(tBrand)).collect(Collectors.toList());
+            List<TBrand>    managerBrands    =  compTrad.getManageBrands().stream().filter(tBrand -> !selfSupportBrands.contains(tBrand))
+                                                    .collect(Collectors.toList());
+                             managerBrands   =  managerBrands.stream().filter(tBrand -> !authBrands.contains(tBrand))
+                                                   .collect(Collectors.toList());
+            selfSupportBrands.forEach(dcBrand -> dcBrand.setOwned(true));
+            authBrands.forEach(dcBrand -> dcBrand.setVending(true));
              //将供应商中的经营品牌、授权品牌、自营品牌合并在一个集合中
-            if(compTrad.getSelfSupportBrands().isEmpty())
+            if(selfSupportBrands.isEmpty())
                 compTrad.setSelfSupportBrands(new ArrayList<>());
             else
-                compTrad.setSelfSupportBrands(compTrad.getSelfSupportBrands());
-            if(!compTrad.getAuthBrands().isEmpty())
-                compTrad.getSelfSupportBrands().addAll(compTrad.getAuthBrands());
+                compTrad.setSelfSupportBrands(selfSupportBrands);
+            if(!authBrands.isEmpty())
+                compTrad.getSelfSupportBrands().addAll(authBrands);
 
             if(!managerBrands.isEmpty())
                 compTrad.getSelfSupportBrands().addAll(managerBrands);

@@ -8,10 +8,10 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Set;
 /**
- * 二级主菜单信息实体
+ * 品牌（包括品牌管理方）信息实体
  *
- * @author xutao
- * @create_at 2022-01-20
+ * @author zgh
+ * @create_at 2022-02-07
  */
 @Setter
 @Getter

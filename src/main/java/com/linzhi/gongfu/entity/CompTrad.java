@@ -35,7 +35,7 @@ public class CompTrad implements Serializable {
 
 
     /**
-     * 经营品牌
+     * 可见经营品牌
      */
     @Singular
     @ManyToMany

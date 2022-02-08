@@ -49,7 +49,7 @@ public class VSuppliersIncludeBrandsResponse extends VBaseResponse  {
          * 自营品牌
          */
         @Singular
-        private List<VBrand> brands;
+        private Set<VBrand> brands;
     }
 
     @Data

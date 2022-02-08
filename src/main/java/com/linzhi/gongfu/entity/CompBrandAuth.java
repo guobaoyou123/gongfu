@@ -38,10 +38,4 @@ public class CompBrandAuth {
      */
     @Column(name = "auth_at", columnDefinition = "DATE")
     private LocalDate auth_at;
-   /* *//**
-     * 品牌
-     *//*
-    @OneToOne
-    @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = true, updatable = true)
-    private BaseBrand brand;*/
 }

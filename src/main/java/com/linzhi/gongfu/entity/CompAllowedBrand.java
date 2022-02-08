@@ -21,10 +21,4 @@ import java.util.Set;
 public class CompAllowedBrand implements Serializable {
     @EmbeddedId
     private CompAllowedBrandId compAllowedBrandId;
- /*   *//**
-     * 品牌
-     *//*
-    @OneToOne
-    @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = true, updatable = true)
-    private BaseBrand brand;*/
 }

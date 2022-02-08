@@ -19,10 +19,4 @@ import javax.persistence.*;
 public class CompBrandOwner {
     @EmbeddedId
     private CompBrandOwnerId compBrandOwnerId;
- /*   *//**
-     * 品牌
-     *//*
-    @OneToOne
-    @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = true, updatable = true)
-    private BaseBrand brand;*/
 }
