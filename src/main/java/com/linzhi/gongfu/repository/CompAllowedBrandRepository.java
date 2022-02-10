@@ -5,8 +5,9 @@ import com.linzhi.gongfu.entity.CompAllowedBrandId;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
 import java.util.Set;
 
 public interface CompAllowedBrandRepository extends CrudRepository<CompAllowedBrand, CompAllowedBrandId>, QuerydslPredicateExecutor<CompAllowedBrand> {
-    Set<CompAllowedBrand>  findBrandsByCompAllowedBrandIdCompCode(String compBuyer);
+    List<CompAllowedBrand> findBrandsByCompAllowedBrandIdCompCode(String compBuyer);
 }

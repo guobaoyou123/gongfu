@@ -5,6 +5,7 @@ import com.linzhi.gongfu.entity.CompBrandOwnerId;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -15,5 +16,5 @@ import java.util.Set;
  */
 public interface CompBrandOwnerRepository extends CrudRepository<CompBrandOwner, CompBrandOwnerId>, QuerydslPredicateExecutor<CompBrandOwner> {
 
-   Set<CompBrandOwner> findCompBrandOwnerByCompBrandOwnerId_OwnerCode(String ownerCode);
+    List<CompBrandOwner> findCompBrandOwnerByCompBrandOwnerId_OwnerCode(String ownerCode);
 }

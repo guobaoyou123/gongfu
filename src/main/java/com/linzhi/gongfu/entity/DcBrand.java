@@ -14,7 +14,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Entity
 @Table(name = "dc_brand")
-public class BaseBrand implements Serializable {
+public class DcBrand implements Serializable {
 
     /**
      * 品牌编号

@@ -45,7 +45,7 @@ public class CompTrad implements Serializable {
     },inverseJoinColumns = {
         @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
     })
-    private Set<BaseBrand> manageBrands;
+    private Set<DcBrand> manageBrands;
 
     /**
      * 授权品牌
@@ -57,7 +57,7 @@ public class CompTrad implements Serializable {
    },inverseJoinColumns = {
         @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
     })
-    private Set<BaseBrand> authBrands;
+    private Set<DcBrand> authBrands;
     /**
      * 自营品牌
      */
@@ -68,5 +68,5 @@ public class CompTrad implements Serializable {
     },inverseJoinColumns = {
         @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = true, updatable = true)
     })
-    private Set<BaseBrand> selfSupportBrands;
+    private Set<DcBrand> selfSupportBrands;
 }
