@@ -30,22 +30,22 @@ public class TemporaryPlan implements Serializable {
     /**
      * 品牌代码
      */
-    @Column(name = "brand_code",length = 10,nullable = false)
+    @Column(name = "brand_code",length = 10)
     private String brandCode;
     /**
      *品牌
      */
-    @Column(name = "brand",length = 10,nullable = false)
+    @Column(name = "brand",length = 10)
     private String brand;
     /**
      * 产品描述
      */
-    @Column(length = 100,nullable = false)
+    @Column(length = 100)
     private String describe;
     /**
      * 计价单位
      */
-    @Column(name = "charge_unit",length = 10,nullable = false)
+    @Column(name = "charge_unit",length = 10)
     private String chargeUnit;
     /**
      * 需求

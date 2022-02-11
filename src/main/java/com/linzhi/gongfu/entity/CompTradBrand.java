@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 供应商对经销商设置可见品牌表
@@ -21,4 +22,10 @@ public class CompTradBrand implements Serializable {
     private CompTradBrandId compTradBrandId;
     @Column
     private Integer sort;
+    /**
+     * 供应商
+     */
+    @OneToOne
+    @JoinColumn(name = "code", referencedColumnName = "comp_saler")
+    private Company company;
 }

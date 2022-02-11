@@ -10,5 +10,5 @@ import java.util.Set;
 
 public interface CompTradBrandRepository extends CrudRepository<CompTradBrand, CompTradBrandId> , QuerydslPredicateExecutor<CompTradBrand> {
    Set<CompTradBrand> findCompTradBrandByCompTradBrandId_CompSalerInAndCompTradBrandId_CompBuyerOrderBySortDesc(List<String> compSaler ,String compBuyer);
-
+   List<CompTradBrand> findCompTradBrandByCompTradBrandId_BrandCodeInAndCompTradBrandId_CompBuyerOrderBySortDesc(List<String> brandCode,String compBuyer);
 }
