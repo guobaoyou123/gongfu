@@ -4,6 +4,8 @@ import com.linzhi.gongfu.entity.Product;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
-public interface ProductRepository extends CrudRepository<Product,String>, QuerydslPredicateExecutor<Product> {
+import java.util.List;
 
+public interface ProductRepository extends CrudRepository<Product,String>, QuerydslPredicateExecutor<Product> {
+    List<Product> findProductByIdIn(List<String> id);
 }

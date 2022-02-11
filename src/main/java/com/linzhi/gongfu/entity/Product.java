@@ -93,4 +93,9 @@ public class Product implements Serializable {
     @Column(name = "conn2_type",length = 20,nullable = false)
     private String conn2Type;
 
+    /**
+     * 计价单位
+     */
+    @Column(name = "charge_unit",length = 10,nullable = false)
+    private String chargeUnit;
 }
