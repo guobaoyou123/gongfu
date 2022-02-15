@@ -1,20 +1,20 @@
 package com.linzhi.gongfu.controller;
 
-import com.linzhi.gongfu.entity.*;
+import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.PlanService;
 import com.linzhi.gongfu.vo.*;
-;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+;
 
 /**
  * 用于处理采购、销售流程等
@@ -124,18 +124,22 @@ public class ContractController {
      * @return
      */
     @PostMapping("/contract/purchase/plan")
-    public VPurchasePlanResponse  savePlan(@RequestBody VVerificationPlanRequest products){
+    public VPlanResponse savePlan(@RequestBody VVerificationPlanRequest products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
         var code =planService.savaPurchasePlan(products.getProducts(),products.getSuppliers(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
         if(code.get().equals("1"))
-            return VPurchasePlanResponse.builder()
+            return VPlanResponse.builder()
                 .message("产品已不存在于临时计划表中，开始计划失败")
                 .code(202)
                 .build();
-        return VPurchasePlanResponse.builder()
+        return VPlanResponse.builder()
             .message("开始计划成功！")
             .code(200)
             .planCode(code.get())
             .build();
     }
+    /**
+     * 采购计划
+     * @return 采购计划信息
+     */
 }

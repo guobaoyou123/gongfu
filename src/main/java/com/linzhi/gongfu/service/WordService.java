@@ -1,17 +1,15 @@
 package com.linzhi.gongfu.service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 import com.linzhi.gongfu.dto.TWord;
 import com.linzhi.gongfu.mapper.WordMapper;
 import com.linzhi.gongfu.repository.WordRepository;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * 前端文案词汇相关处理服务

@@ -1,16 +1,14 @@
 package com.linzhi.gongfu.service;
 
-import java.util.Optional;
-
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.repository.OperatorRepository;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
 
 /**
  * 操作员相关信息处理及业务服务

@@ -1,26 +1,29 @@
 package com.linzhi.gongfu.service;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
-import com.linzhi.gongfu.entity.*;
+import com.linzhi.gongfu.entity.CompTrad;
+import com.linzhi.gongfu.entity.Company;
+import com.linzhi.gongfu.entity.QCompTradBrand;
+import com.linzhi.gongfu.entity.QCompany;
 import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.repository.CompTradeRepository;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
-
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 公司信息及处理业务服务

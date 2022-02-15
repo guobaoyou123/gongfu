@@ -31,7 +31,7 @@ public class PurchasePlan implements Serializable {
     @Column(name = "sales_code",length = 50)
     private String salesCode;
     /**
-     * 对应销售合同号
+     * 创建时间
      */
     @Column(name = "created_at", columnDefinition = "DATE")
     private LocalDate createdAt;

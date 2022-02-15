@@ -1,17 +1,15 @@
 package com.linzhi.gongfu.service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 import com.linzhi.gongfu.dto.TMenu;
 import com.linzhi.gongfu.mapper.MenuMapper;
 import com.linzhi.gongfu.repository.MainMenuRepository;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * 前端菜单相关业务处理服务

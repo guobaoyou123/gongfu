@@ -3,15 +3,11 @@ package com.linzhi.gongfu.controller;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.BrandService;
-import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.vo.VBrandResponse;
 import com.linzhi.gongfu.vo.VDcBrandResponse;
-import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 

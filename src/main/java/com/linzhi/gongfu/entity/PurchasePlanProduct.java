@@ -77,7 +77,7 @@ public class PurchasePlanProduct implements Serializable {
     @Column(name = "charge_unit",length = 50)
     private String chargeUnit;
     /**
-     * 上次采购价格
+     * 面价
      */
     @Column(name = "face_price")
     private BigDecimal facePrice;

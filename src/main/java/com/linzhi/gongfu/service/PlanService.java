@@ -12,11 +12,9 @@ import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.vo.VTemporaryPlanRequest;
 import com.linzhi.gongfu.vo.VVerificationPlanRequest;
 import com.linzhi.gongfu.vo.VVerificationPlanResponse;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
