@@ -12,6 +12,12 @@ import java.util.List;
 @Jacksonized
 @SuperBuilder(toBuilder = true)
 public class VPurchasePlanResponse extends VBaseResponse{
-
     private String planCode;
+    private VPurchasePlan plan;
+
+    @Data
+    public static  class VPurchasePlan{
+        private String planCode;
+        private 
+    }
 }
