@@ -16,7 +16,7 @@ public class VTemporaryPlanRequest implements Serializable {
    List<VProduct> products;
     @Data
    public static  class VProduct{
-       private String id ;
+       private String productId ;
        private BigDecimal demand;
    }
 

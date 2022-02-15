@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface TemporaryPlanRepository extends CrudRepository<TemporaryPlan, TemporaryPlanId>, QuerydslPredicateExecutor<TemporaryPlan> {
     List<TemporaryPlan> findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedBy(String dcCompId,String createdBy);
@@ -17,4 +18,6 @@ public interface TemporaryPlanRepository extends CrudRepository<TemporaryPlan, T
     @Query("update TemporaryPlan as c set c.demand = ?1 where c.temporaryPlanId = ?2")
     @Transactional
     int updateNameById(BigDecimal name, TemporaryPlanId temporaryPlanId);
+
+    List<TemporaryPlan> findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByAndTemporaryPlanId_ProductIdIn(String dcCompId, String createdBy, List<String> productId);
 }

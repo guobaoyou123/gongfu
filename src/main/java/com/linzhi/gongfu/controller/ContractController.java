@@ -86,7 +86,7 @@ public class ContractController {
             .build();
     }
     /**
-     * 修改临时采购计划
+     * 删除临时采购计划
      * @return
      */
     @DeleteMapping("/contract/temporary/purchase/plan")
@@ -94,21 +94,48 @@ public class ContractController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
         planService.deleteTemporaryPlan(products.orElse(new VVerificationPlanRequest()).getProducts(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
         return VBaseResponse.builder()
-            .message("修改计划成功")
+            .message("删除计划成功")
             .code(200)
             .build();
     }
     /**
-     * 修改临时采购计划
+     * 验证所选产品品牌是否有供应商
+     * @return 品牌列表
+     */
+    @GetMapping("/contract/temporary/purchase/plan/brand/verification")
+    public VVerificationBrandResponse  brandVerification(@RequestParam  Optional<List<String>> brand){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        List<String> brands =brand.
+             map(b -> planService.brandVerification(b,session.getSession().getCompanyCode())).get();
+        if(brands.size()>0)
+            return VVerificationBrandResponse.builder()
+                .message("验证未通过，部分品牌没有供应商")
+                .brands(brands)
+                .code(401)
+                .build();
+        return VVerificationBrandResponse.builder()
+                .message("验证成功")
+                .brands(new ArrayList<>())
+                .code(200)
+                .build();
+    }
+    /**
+     * 开始计划，生成采购计划
      * @return
      */
     @PostMapping("/contract/purchase/plan")
-    public VBaseResponse  savePlan(@RequestBody VVerificationPlanRequest products){
+    public VPurchasePlanResponse  savePlan(@RequestBody VVerificationPlanRequest products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        planService.deleteTemporaryPlan(products.getProducts(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
-        return VBaseResponse.builder()
-            .message("修改计划成功")
+        var code =planService.savaPurchasePlan(products.getProducts(),products.getSuppliers(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        if(code.get().equals("1"))
+            return VPurchasePlanResponse.builder()
+                .message("产品已不存在于临时计划表中，开始计划失败")
+                .code(202)
+                .build();
+        return VPurchasePlanResponse.builder()
+            .message("开始计划成功！")
             .code(200)
+            .planCode(code.get())
             .build();
     }
 }

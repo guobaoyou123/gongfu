@@ -2,10 +2,7 @@ package com.linzhi.gongfu.entity;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -52,4 +49,7 @@ public class TemporaryPlan implements Serializable {
      */
     @Column
     private BigDecimal demand;
+    @OneToOne
+    @JoinColumn(name ="product_id",referencedColumnName = "id", insertable = false, updatable = false)
+    private Product product;
 }

@@ -12,4 +12,5 @@ import java.util.List;
 public class VVerificationPlanRequest {
     List<String> products;
     List<String> suppliers;
+    List<String> brands;
 }
