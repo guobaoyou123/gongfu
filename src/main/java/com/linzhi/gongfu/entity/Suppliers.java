@@ -52,7 +52,7 @@ public class Suppliers implements Serializable {
     },inverseJoinColumns = {
         @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
     })
-    private Set<BaseBrand> manageBrands;
+    private Set<DcBrand> manageBrands;
     /**
      * 自营品牌
      */
@@ -63,5 +63,5 @@ public class Suppliers implements Serializable {
     },inverseJoinColumns = {
         @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = true, updatable = true)
     })
-    private Set<BaseBrand> selfSupportBrands;
+    private Set<DcBrand> selfSupportBrands;
 }

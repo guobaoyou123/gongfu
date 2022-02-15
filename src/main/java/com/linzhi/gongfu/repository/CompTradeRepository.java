@@ -4,6 +4,7 @@ import com.linzhi.gongfu.converter.EnrollmentConverter;
 import com.linzhi.gongfu.entity.CompTrad;
 import com.linzhi.gongfu.entity.CompTradId;
 import com.linzhi.gongfu.entity.OperatorId;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -22,4 +23,7 @@ import java.util.Set;
 public interface CompTradeRepository
     extends CrudRepository<CompTrad, CompTradId>, QuerydslPredicateExecutor<CompTrad> {
     Page<CompTrad> findSuppliersByCompTradIdCompBuyer(@Param("compBuyer") String compBuyer, Pageable pageable);
+
+
+
 }

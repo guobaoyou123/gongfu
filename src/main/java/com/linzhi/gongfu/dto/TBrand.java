@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -52,5 +53,5 @@ public class TBrand implements Serializable {
     /**
      * 品牌方
      */
-    private Set<CompBrandOwner> compBrandOwnerSet;
+    private List<CompBrandOwner> compBrandOwner;
 }

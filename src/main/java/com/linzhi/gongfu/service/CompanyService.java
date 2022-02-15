@@ -7,14 +7,14 @@ import java.util.stream.StreamSupport;
 import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
-import com.linzhi.gongfu.entity.CompTrad;
-import com.linzhi.gongfu.entity.CompTradId;
+import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.repository.CompTradeRepository;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
 
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +35,7 @@ public class CompanyService {
     private final CompanyMapper companyMapper;
     private final CompTradeRepository compTradeRepository;
     private final CompTradeMapper compTradeMapper;
+    private final JPAQueryFactory queryFactory;
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -53,7 +54,7 @@ public class CompanyService {
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 供应商信息列表
      */
-    /*@Cacheable(value = "SuppliersPage;1800", unless = "#result == null")*/
+
     public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandbyId(String id, Optional<Integer> pageNum,Optional<Integer> pageSize) {
         Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyer(id, PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10)));
         Page<TCompanyIncludeBrand> tCompanyIncludeBrands =compTradPage.map(compTradeMapper::toSuppliersIncludeBrand);
@@ -82,5 +83,19 @@ public class CompanyService {
         });
 
         return   tCompanyIncludeBrands .map(compTradeMapper::toPreloadSuppliersIncludeBrandDTOs);
+    }
+    @Cacheable(value = "suppliers_brand;1800", unless = "#result == null")
+    public Set<TCompanyBaseInformation> findCompanyInformationByBrands(Optional<List<String>> brands,String id){
+        QCompany qCompany = QCompany.company;
+        QCompTradBrand qCompTradBrand = QCompTradBrand.compTradBrand;
+        List<Company> companies =queryFactory.selectDistinct(qCompany)
+                                     .from(qCompTradBrand)
+                                     .leftJoin(qCompany).on(qCompany.code.eq(qCompTradBrand.compTradBrandId.compSaler))
+                                     .where(qCompTradBrand.compTradBrandId.compBuyer.eq(id).and(qCompTradBrand.compTradBrandId.brandCode.in(brands.orElse(new ArrayList<>()))))
+                                     .orderBy(qCompany.code.desc())
+                                     .fetch();
+        return companies.stream()
+            .map(companyMapper::toBaseInformation)
+            .collect(Collectors.toSet());
     }
 }

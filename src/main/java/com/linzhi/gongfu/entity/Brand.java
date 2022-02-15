@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 /**
  * 品牌（包括品牌管理方）信息实体
@@ -73,5 +74,5 @@ public class Brand implements Serializable {
     @Singular
     @OneToMany
     @JoinColumn(name = "brand_code", referencedColumnName = "code")
-    private Set<CompBrandOwner>  compBrandOwnerSet;
+    private List<CompBrandOwner> compBrandOwner;
 }
