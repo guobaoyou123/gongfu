@@ -49,7 +49,7 @@ public class ContractController {
      * @return 临时计划列表信息
      */
     @GetMapping("/contract/temporary/purchase/plan/product/verification")
-    public VVerificationPlanResponse  verification(@RequestBody  Optional<VVerificationPlanRequest> products){
+    public VVerificationPlanResponse  verification(@RequestBody  Optional<List<String>> products){
        return products
            .flatMap(planService::TemporaryPlanVerification)
            .orElse(VVerificationPlanResponse.builder()
@@ -63,10 +63,9 @@ public class ContractController {
      * @return
      */
     @PostMapping("/contract/temporary/purchase/plan")
-
-    public VBaseResponse  saveTemporaryPlan(@RequestBody Optional<VTemporaryPlanRequest> products){
+    public VBaseResponse  saveTemporaryPlan(@RequestBody Optional<List<VTemporaryPlanRequest>> products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        planService.saveTemporaryPlan(products.orElse(new VTemporaryPlanRequest()).getProducts(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        planService.saveTemporaryPlan(products.get(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
         return VBaseResponse.builder()
             .message("加入计划成功")
             .code(200)
@@ -77,9 +76,9 @@ public class ContractController {
      * @return
      */
     @PutMapping("/contract/temporary/purchase/plan")
-    public VBaseResponse  modifyTemporaryPlan(@RequestBody Optional<VTemporaryPlanRequest> products){
+    public VBaseResponse  modifyTemporaryPlan(@RequestBody Optional<List<VTemporaryPlanRequest>> products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        planService.modifyTemporaryPlan(products.orElse(new VTemporaryPlanRequest()),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        planService.modifyTemporaryPlan(products.get(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
         return VBaseResponse.builder()
             .message("修改计划成功")
             .code(200)
@@ -90,12 +89,17 @@ public class ContractController {
      * @return
      */
     @DeleteMapping("/contract/temporary/purchase/plan")
-    public VBaseResponse  deleteTemporaryPlan(@RequestBody Optional<VVerificationPlanRequest> products){
+    public VBaseResponse  deleteTemporaryPlan(@RequestBody Optional<List<String>> products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        planService.deleteTemporaryPlan(products.orElse(new VVerificationPlanRequest()).getProducts(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        var flag = planService.deleteTemporaryPlan(products.get(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        if(flag)
+            return VBaseResponse.builder()
+                .message("删除计划成功")
+                .code(200)
+                .build();
         return VBaseResponse.builder()
-            .message("删除计划成功")
-            .code(200)
+            .message("删除计划失败")
+            .code(500)
             .build();
     }
     /**
@@ -111,7 +115,7 @@ public class ContractController {
             return VVerificationBrandResponse.builder()
                 .message("验证未通过，部分品牌没有供应商")
                 .brands(brands)
-                .code(401)
+                .code(201)
                 .build();
         return VVerificationBrandResponse.builder()
                 .message("验证成功")
@@ -124,12 +128,13 @@ public class ContractController {
      * @return
      */
     @PostMapping("/contract/purchase/plan")
-    public VPlanResponse savePlan(@RequestBody VVerificationPlanRequest products){
+    public VPlanResponse savePlan(@RequestBody VPurchasePlanRequest products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
         var code =planService.savaPurchasePlan(products.getProducts(),products.getSuppliers(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
-        if(code.get().equals("1"))
+        if(code.isEmpty())
             return VPlanResponse.builder()
                 .message("产品已不存在于临时计划表中，开始计划失败")
+                .planCode("UNKNOWN")
                 .code(202)
                 .build();
         return VPlanResponse.builder()
@@ -142,4 +147,54 @@ public class ContractController {
      * 采购计划
      * @return 采购计划信息
      */
+    @GetMapping("/contract/purchase/plan")
+     public VPurchasePlanResponse purchasePlan(@RequestParam Optional<String> planCode){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+         return  planService.findPurchasePlanByCode(planCode.get(),session.getSession().getCompanyCode())
+             .orElse(VPurchasePlanResponse.builder()
+                 .code(202)
+                 .message("采购计划不存在")
+                 .planCode("UNKNOWN")
+                 .products(new ArrayList<>())
+                 .build());
+     }
+
+    /**
+     * 采购计划替换供应商
+     * @return
+     */
+    @PutMapping("/contract/purchase/plan/supplier")
+    public VBaseResponse modifyPlanSupplier(@RequestParam Optional<String> planCode,@RequestParam Optional<String> productId,
+                                             @RequestParam Optional<String> oldSupplierCode ,@RequestParam Optional<String> newSupplierCode){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var flag = planService.modifyPlanSupplier(session.getSession().getCompanyCode(),planCode.get(),productId.get(),oldSupplierCode.get(),newSupplierCode.get());
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("保存成功")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("保存失败！")
+            .build();
+    }
+    /**
+     * 修改采购计划中的需求
+     * @return
+     */
+    @PutMapping("/contract/purchase/plan")
+    public VBaseResponse modifyPurchasePlan(@RequestBody Optional<List<VPlanDemandRequest>> demands){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var flag = planService.modifyPurchasePlan(session.getSession().getCompanyCode(),demands.get());
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("修改采购计划需求成功！")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("修改失败！")
+            .build();
+    }
+
 }

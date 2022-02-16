@@ -1,6 +1,5 @@
 package com.linzhi.gongfu.entity;
 
-import com.linzhi.gongfu.enumeration.DemandSource;
 import lombok.*;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
@@ -8,7 +7,6 @@ import org.hibernate.annotations.NotFoundAction;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 
 @Builder
@@ -87,7 +85,7 @@ public class PurchasePlanProduct implements Serializable {
         @JoinColumn(name = "dc_comp_id",referencedColumnName = "dc_comp_id", insertable = true, updatable = true),
     @JoinColumn(name = "product_id",referencedColumnName = "product_id", insertable = true, updatable = true)})
     @NotFound(action= NotFoundAction.IGNORE)
-    private List<PurchasePlanProductSaler> salers;
+    private List<PurchasePlanProductSupplier> salers;
 
 
 }

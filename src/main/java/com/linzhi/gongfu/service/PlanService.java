@@ -3,21 +3,20 @@ package com.linzhi.gongfu.service;
 import com.linzhi.gongfu.dto.TTemporaryPlan;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.DemandSource;
+import com.linzhi.gongfu.mapper.PurchasePlanMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
-import com.linzhi.gongfu.repository.CompTradBrandRepository;
-import com.linzhi.gongfu.repository.ProductRepository;
-import com.linzhi.gongfu.repository.PurchasePlanRepository;
-import com.linzhi.gongfu.repository.TemporaryPlanRepository;
+import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
+import com.linzhi.gongfu.vo.VPlanDemandRequest;
+import com.linzhi.gongfu.vo.VPurchasePlanResponse;
 import com.linzhi.gongfu.vo.VTemporaryPlanRequest;
-import com.linzhi.gongfu.vo.VVerificationPlanRequest;
 import com.linzhi.gongfu.vo.VVerificationPlanResponse;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -35,9 +34,11 @@ public class PlanService {
     private final TemporaryPlanRepository temporaryPlanRepository;
     private final TemporaryPlanMapper temporaryPlanMapper;
     private final ProductRepository productRepository;
-    private final JPAQueryFactory queryFactory;
+    private final PurchasePlanMapper purchasePlanMapper;
     private final CompTradBrandRepository compTradBrandRepository;
     private final PurchasePlanRepository purchasePlanRepository;
+    private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
+    private final CompanyRepository companyRepository;
     /**
      * 根据单位id、操作员编码查询该操作员的临时采购计划列表
      * @param temporaryPlanId 单位id 操作员编码
@@ -53,10 +54,10 @@ public class PlanService {
      * 根据单位id、操作员编码查询该操作员的临时采购计划列表
      * @return 已经存在于采购临时计划表中的产品列表
      */
-    public Optional<VVerificationPlanResponse>  TemporaryPlanVerification(VVerificationPlanRequest product){
+    public Optional<VVerificationPlanResponse>  TemporaryPlanVerification(List<String> product){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
         var list =temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedBy(session.getSession().getCompanyCode(),session.getSession().getOperatorCode()).stream()
-            .filter(temporaryPlan -> product.getProducts().contains(temporaryPlan.getTemporaryPlanId().getProductId()))
+            .filter(temporaryPlan -> product.contains(temporaryPlan.getTemporaryPlanId().getProductId()))
             .map(temporaryPlanMapper::toTemporaryPlan)
             .map(temporaryPlanMapper::toPreloadVerificationTemporaryPlan)
             .collect(Collectors.toList());
@@ -65,7 +66,7 @@ public class PlanService {
         return Optional.of(
             VVerificationPlanResponse.builder()
                 .code(201)
-                .message("需要加入计划的产品有部分已存在于计划列表，请重新添加")
+                .message("验证未通过，需要加入计划的产品有部分已存在于计划列表，请重新添加")
                 .products(list)
                 .build()
         ) ;
@@ -77,7 +78,7 @@ public class PlanService {
      * @param operatorCode 操作员编码
      */
     @Transactional
-    public void saveTemporaryPlan(List<VTemporaryPlanRequest.VProduct> product, String id, String operatorCode){
+    public void saveTemporaryPlan(List<VTemporaryPlanRequest> product, String id, String operatorCode){
         List<String> proCodeList = new ArrayList<>();
         Map<String, Product> productMap = new HashMap<>();
         product.stream().forEach(p -> proCodeList.add(p.getProductId()));
@@ -109,8 +110,8 @@ public class PlanService {
      * @param operatorCode 操作员编码
      */
     @Transactional
-    public void modifyTemporaryPlan(VTemporaryPlanRequest product, String id, String operatorCode){
-        product.getProducts().stream().forEach(pr -> {
+    public void modifyTemporaryPlan(List<VTemporaryPlanRequest> product, String id, String operatorCode){
+        product.stream().forEach(pr -> {
             temporaryPlanRepository.updateNameById(pr.getDemand(),TemporaryPlanId.builder().dcCompId(id).productId(pr.getProductId()).createdBy(operatorCode).build());
         });
     }
@@ -120,25 +121,38 @@ public class PlanService {
      * @param id 单位id
      * @param operatorCode 操作员编码
      */
-    @Transactional
-    public void deleteTemporaryPlan( List<String> product, String id, String operatorCode){
-        List<TemporaryPlanId> list = new ArrayList<>();
-        product.stream().forEach(pr -> {
-            list.add(TemporaryPlanId.builder().dcCompId(id).productId(pr).createdBy(operatorCode).build());
-        });
-        temporaryPlanRepository.deleteAllById(list);
+    public boolean deleteTemporaryPlan( List<String> product, String id, String operatorCode){
+        try{
+            List<TemporaryPlanId> list = new ArrayList<>();
+            product.stream().forEach(pr -> {
+                list.add(TemporaryPlanId.builder().dcCompId(id).productId(pr).createdBy(operatorCode).build());
+            });
+            temporaryPlanRepository.deleteAllById(list);
+            return  true;
+        }catch (Exception e){
+           return false;
+        }
+
     }
 
+    /**
+     * 保存采购计划
+     * @param products 产品id列表
+     * @param suppliers 供应商编码列表
+     * @param id 单位id
+     * @param operatorCode 操作员编号
+     * @return 返回采购计划号
+     */
     @Transactional
-    public Optional<String> savaPurchasePlan(List<String> products,List<String> compCode,String id, String operatorCode){
+    public Optional<String> savaPurchasePlan(List<String> products,List<String> suppliers,String id, String operatorCode){
         Map<String,List<Company>>  brandCompMap = new HashMap<>();
              //查出所选计划
             List<TemporaryPlan> temporaryPlans = temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByAndTemporaryPlanId_ProductIdIn(id,operatorCode,products);
             if(temporaryPlans.size()==0)
-                return Optional.of("1");
+                return Optional.empty();
             //查看有几个品牌,每个品牌所属供应商有哪些
             List<String> brands =temporaryPlans.stream().map(TemporaryPlan::getBrandCode).distinct().collect(Collectors.toList());
-            Map<String,List<Company>> brandsSuppliers = findSuppliersByBrandsAndCompBuyer(brands,id,compCode);
+            Map<String,List<Company>> brandsSuppliers = findSuppliersByBrandsAndCompBuyer(brands,id,suppliers);
             //查询采购计划号最大编号
             String maxCode= purchasePlanRepository.findMaxCode(id,operatorCode, LocalDate.now());
             //计划编码
@@ -148,17 +162,20 @@ public class PlanService {
             List<PurchasePlanProduct> purchasePlanProducts = new ArrayList<>();
             //保存
             temporaryPlans.forEach(temporaryPlan -> {
-                List<PurchasePlanProductSaler> purchasePlanProductSalers = new ArrayList<>();
+                List<PurchasePlanProductSupplier> purchasePlanProductSalers = new ArrayList<>();
                 List<Company> companies = brandsSuppliers.get(temporaryPlan.getBrandCode());
                 companies.forEach(company -> {
-                    PurchasePlanProductSaler productSaler = PurchasePlanProductSaler.builder()
-                        .purchasePlanProductSalerId(PurchasePlanProductSalerId.builder()
+                    PurchasePlanProductSupplier productSaler = PurchasePlanProductSupplier.builder()
+                        .purchasePlanProductSalerId(PurchasePlanProductSupplierId.builder()
                             .productId(temporaryPlan.getTemporaryPlanId().getProductId())
                             .planCode(planCode)
                             .dcCompId(id)
                             .salerCode(company.getCode())
                             .build())
                         .salerName(company.getShortNameInCN())
+                        .demand(BigDecimal.ZERO)
+                        .deliverNum(BigDecimal.ZERO)
+                        .tranNum(BigDecimal.ZERO)
                         .build();
                     purchasePlanProductSalers.add(productSaler);
                 });
@@ -175,6 +192,11 @@ public class PlanService {
                     .facePrice(temporaryPlan.getProduct().getFacePrice())
                     .demand(temporaryPlan.getDemand())
                     .salers(purchasePlanProductSalers)
+                    .deliverNum(BigDecimal.ZERO)
+                    .beforeSalesPrice(BigDecimal.ZERO)
+                    .inquiryNum(BigDecimal.ZERO)
+                    .safetyStock(BigDecimal.ZERO)
+                    .tranNum(BigDecimal.ZERO)
                     .build();
                 purchasePlanProducts.add(product);
             });
@@ -188,7 +210,6 @@ public class PlanService {
                 .source(DemandSource.FUZZY_QUERY)
                 .product(purchasePlanProducts)
                 .build();
-
             purchasePlanRepository.save(purchasePlan);
             deleteTemporaryPlan(products,id,operatorCode);
             return Optional.of(planCode);
@@ -269,5 +290,59 @@ public class PlanService {
         });
 
         return  brandList;
+    }
+
+    /**
+     * 根据计划号查询采购计划
+     * @param planCode 采购计划号
+     * @return 返回采购计划信息
+     */
+    public Optional<VPurchasePlanResponse> findPurchasePlanByCode(String planCode, String id){
+        return purchasePlanRepository.findById(PurchasePlanId.builder().planCode(planCode).dcCompId(id).build())
+            .map(purchasePlanMapper::toDTO)
+            .map(purchasePlanMapper::toPruchasePlan);
+    }
+
+    /**
+     * 替换采购计划中的供应商
+     * @param id 单位id
+     * @param planCode 采购计划号
+     * @param productId 产品id
+     * @param oldSupplier 原供应商编号
+     * @param newSupplier 新的供应编号
+     */
+    @Transactional
+    public boolean  modifyPlanSupplier(String id,String planCode,String productId,String oldSupplier,String newSupplier){
+        try{
+            Optional<Company> supplier =companyRepository.findById(newSupplier);
+            purchasePlanProductSupplierRepository.deleteById(PurchasePlanProductSupplierId.builder()
+                .productId(productId).dcCompId(id).planCode(planCode).salerCode(oldSupplier).build());
+            purchasePlanProductSupplierRepository.save(PurchasePlanProductSupplier.builder()
+                .purchasePlanProductSalerId(PurchasePlanProductSupplierId.builder()
+                    .productId(productId).dcCompId(id).planCode(planCode).salerCode(newSupplier).build())
+                .salerName(supplier.get().getShortNameInCN())
+                .demand(BigDecimal.ZERO)
+                .build());
+            return   true;
+        }catch (Exception e){
+            return false;
+        }
+
+    }
+    @Transactional
+    public boolean modifyPurchasePlan(String id, List<VPlanDemandRequest> demands){
+        try{
+            demands.forEach(v -> {
+                purchasePlanProductSupplierRepository.updateDemandById(v.getDemand(),PurchasePlanProductSupplierId.builder()
+                    .productId(v.getProductId())
+                    .dcCompId(id)
+                    .salerCode(v.getSupplierCode())
+                    .planCode(v.getPlanCode())
+                    .build());
+            });
+            return true;
+        }catch (Exception e){
+            return  false;
+        }
     }
 }
