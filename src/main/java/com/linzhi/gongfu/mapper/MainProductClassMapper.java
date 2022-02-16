@@ -3,6 +3,7 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TProductClass;
 import com.linzhi.gongfu.entity.MainProductClass;
 import com.linzhi.gongfu.entity.SubProductClass;
+import com.linzhi.gongfu.vo.VMaterialResponse;
 import com.linzhi.gongfu.vo.VProductClassResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -29,4 +30,6 @@ public interface MainProductClassMapper {
     VProductClassResponse.VProductClass toPreloadMainProductClass(TProductClass tProductClass);
     List<VProductClassResponse.VSubProductClass> toPreloadSubProductClasses(List<TProductClass> tProductClasses);
     VProductClassResponse.VSubProductClass toPreloadSubProductClass(TProductClass tProductClass);
+
+    VMaterialResponse.VMaterial toPreLoadMaterial(TProductClass tProductClass);
 }

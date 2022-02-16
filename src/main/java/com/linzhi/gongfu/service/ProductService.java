@@ -46,8 +46,8 @@ public class ProductService {
      * @return 产品分类信息列表
      */
     @Cacheable(value = "product_class;1800", unless = "#result == null")
-    public List<TProductClass> productClassList() {
-        List<TProductClass>  tProductClasses=   mainProductClassRepository.findMainProductClassByBaseProductClassId_Type("001").stream()
+    public List<TProductClass> productClassList(String type) {
+        List<TProductClass>  tProductClasses=   mainProductClassRepository.findMainProductClassByBaseProductClassId_Type(type).stream()
              .map(mainProductClassMapper::toDTO)
             .collect(Collectors.toList());
         return tProductClasses;
