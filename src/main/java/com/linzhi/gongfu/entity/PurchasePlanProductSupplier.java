@@ -5,7 +5,6 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.List;
 
 @Builder
 @Getter
@@ -14,9 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "purchase_plan_product_saler")
-public class PurchasePlanProductSaler implements Serializable {
+public class PurchasePlanProductSupplier implements Serializable {
     @EmbeddedId
-    private PurchasePlanProductSalerId purchasePlanProductSalerId;
+    private PurchasePlanProductSupplierId purchasePlanProductSalerId;
     /**
      * 供应商公司名称
      */

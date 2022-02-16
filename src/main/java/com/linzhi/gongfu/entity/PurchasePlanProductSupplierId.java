@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Embeddable
 @NoArgsConstructor
 @AllArgsConstructor
-public class PurchasePlanProductSalerId implements Serializable {
+public class PurchasePlanProductSupplierId implements Serializable {
     /**
      * 采购计划编码
      */

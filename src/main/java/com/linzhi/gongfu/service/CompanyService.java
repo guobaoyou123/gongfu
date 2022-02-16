@@ -12,6 +12,7 @@ import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.repository.CompTradeRepository;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -88,14 +89,21 @@ public class CompanyService {
         return   tCompanyIncludeBrands .map(compTradeMapper::toPreloadSuppliersIncludeBrandDTOs);
     }
     @Cacheable(value = "suppliers_brand;1800", unless = "#result == null")
-    public Set<TCompanyBaseInformation> findCompanyInformationByBrands(Optional<List<String>> brands,String id){
+    public Set<TCompanyBaseInformation> findSuppliersByBrands(Optional<List<String>> brands,String id,Optional<List<String>> suppliers){
         QCompany qCompany = QCompany.company;
         QCompTradBrand qCompTradBrand = QCompTradBrand.compTradBrand;
-        List<Company> companies =queryFactory.selectDistinct(qCompany)
-                                     .from(qCompTradBrand)
-                                     .leftJoin(qCompany).on(qCompany.code.eq(qCompTradBrand.compTradBrandId.compSaler))
-                                     .where(qCompTradBrand.compTradBrandId.compBuyer.eq(id).and(qCompTradBrand.compTradBrandId.brandCode.in(brands.orElse(new ArrayList<>()))))
-                                     .orderBy(qCompany.code.desc())
+        JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompTradBrand).leftJoin(qCompany)
+            .on(qCompany.code.eq(qCompTradBrand.compTradBrandId.compSaler));
+        if(!brands.isEmpty()){
+            query.where(qCompTradBrand.compTradBrandId.brandCode.in(brands.get()));
+        }
+        if(!id.isEmpty()){
+            query.where(qCompTradBrand.compTradBrandId.compBuyer.eq(id));
+        }
+        if(!suppliers.isEmpty()){
+            query.where(qCompTradBrand.compTradBrandId.compSaler.notIn(suppliers.get()));
+        }
+        List<Company> companies =query.orderBy(qCompany.code.desc())
                                      .fetch();
         return companies.stream()
             .map(companyMapper::toBaseInformation)

@@ -56,10 +56,9 @@ public class CompanyController {
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
      */
     @GetMapping("/suppliers/by/brand")
-    public VSuppliersResponse suppliersByBrand(@RequestParam("brand") Optional<List<String>> brands) {
+    public VSuppliersResponse suppliersByBrands(@RequestParam("brand") Optional<List<String>> brands,@RequestParam("suppliers")Optional<List<String>> suppliers) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var supplier = companyService.findCompanyInformationByBrands(brands,session.getSession().getCompanyCode());
-
+        var supplier = companyService.findSuppliersByBrands(brands,session.getSession().getCompanyCode(),suppliers);
         return VSuppliersResponse.builder()
             .code(200)
             .message("获取我的供应列表成功。")
