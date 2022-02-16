@@ -4,11 +4,13 @@ package com.linzhi.gongfu.controller;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.vo.VBaseResponse;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
 import com.linzhi.gongfu.vo.VSuppliersResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,7 +66,5 @@ public class CompanyController {
             .message("获取我的供应列表成功。")
             .suppliers(supplier.stream().map(companyMapper::toPreloadSupliers).collect(Collectors.toSet()))
             .build();
-
     }
-
 }

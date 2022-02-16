@@ -39,6 +39,7 @@ public class PlanService {
     private final PurchasePlanRepository purchasePlanRepository;
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
     private final CompanyRepository companyRepository;
+    private final PurchasePlanProductRepository purchasePlanProductRepository;
     /**
      * 根据单位id、操作员编码查询该操作员的临时采购计划列表
      * @param temporaryPlanId 单位id 操作员编码
@@ -343,6 +344,56 @@ public class PlanService {
             return true;
         }catch (Exception e){
             return  false;
+        }
+    }
+    @Transactional
+    public  boolean savePlanProduct(String id,String productId,String planCode,BigDecimal demand){
+        try{
+            Optional<Product> product = productRepository.findById(productId);
+            List<String> brands = new ArrayList<>();
+            brands.add(product.get().getBrandCode());
+           List<Company> suppliers =  findSuppliersByBrandsAndCompBuyer(brands,id,new ArrayList<>()).get(product.get().getBrandCode());
+           List<PurchasePlanProductSupplier> purchasePlanProductSuppliers = new ArrayList<>();
+           suppliers.forEach(company -> {
+                   PurchasePlanProductSupplier productSaler = PurchasePlanProductSupplier.builder()
+                       .purchasePlanProductSalerId(PurchasePlanProductSupplierId.builder()
+                           .productId(productId)
+                           .planCode(planCode)
+                           .dcCompId(id)
+                           .salerCode(company.getCode())
+                           .build())
+                       .salerName(company.getShortNameInCN())
+                       .demand(BigDecimal.ZERO)
+                       .deliverNum(BigDecimal.ZERO)
+                       .tranNum(BigDecimal.ZERO)
+                       .build();
+               purchasePlanProductSuppliers.add(productSaler);
+           });
+
+            PurchasePlanProduct purchasePlanProduct=PurchasePlanProduct.builder()
+                .purchasePlanProductId(PurchasePlanProductId.builder()
+                    .planCode(planCode)
+                    .dcCompId(id)
+                    .productId(productId)
+                    .build())
+                .productCode(product.get().getCode())
+                .brandCode(product.get().getBrandCode())
+                .brand(product.get().getBrand())
+                .chargeUnit(product.get().getChargeUnit())
+                .describe(product.get().getDescribe())
+                .facePrice(product.get().getFacePrice())
+                .demand(demand)
+                .salers(purchasePlanProductSuppliers)
+                .deliverNum(BigDecimal.ZERO)
+                .beforeSalesPrice(BigDecimal.ZERO)
+                .inquiryNum(BigDecimal.ZERO)
+                .safetyStock(BigDecimal.ZERO)
+                .tranNum(BigDecimal.ZERO)
+                .build();
+            purchasePlanProductRepository.save(purchasePlanProduct);
+            return true;
+        }catch (Exception e){
+            return false;
         }
     }
 }

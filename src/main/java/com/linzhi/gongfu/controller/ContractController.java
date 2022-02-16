@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -196,5 +197,18 @@ public class ContractController {
             .message("修改失败！")
             .build();
     }
-
+    @PostMapping("/contract/purchase/plan/product")
+    public VBaseResponse  savePlanProduct(@RequestParam("planCode")Optional<String> planCode,@RequestParam("productId")Optional<String> productId,@RequestParam("demand") Optional<BigDecimal> demand){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var flag = planService.savePlanProduct(session.getSession().getCompanyCode(),productId.get(),planCode.get(),demand.get());
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("添加产品成功！")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("添加产品失败！")
+            .build();
+    }
 }
