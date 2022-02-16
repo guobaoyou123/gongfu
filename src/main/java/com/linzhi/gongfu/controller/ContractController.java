@@ -184,9 +184,27 @@ public class ContractController {
      * @return
      */
     @PutMapping("/contract/purchase/plan/forseveral")
-    public VBaseResponse modifyPurchasePlan(@RequestBody Optional<List<VPlanDemandRequest>> demands){
+    public VBaseResponse modifyPurchasePlanForseveral(@RequestBody Optional<List<VPlanDemandRequest>> forSeveral){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.modifyPurchasePlan(session.getSession().getCompanyCode(),demands.get());
+        var flag = planService.modifyPurchasePlanForSeveral(session.getSession().getCompanyCode(),forSeveral.get());
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("修改采购计划需求成功！")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("修改失败！")
+            .build();
+    }
+    /**
+     * 修改采购计划中的需求
+     * @return
+     */
+    @PutMapping("/contract/purchase/plan/demand")
+    public VBaseResponse modifyPurchasePlanDemand(@RequestBody Optional<List<VPlanDemandRequest>> demand){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var flag = planService.modifyPurchasePlanDemand(session.getSession().getCompanyCode(),demand.get());
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
