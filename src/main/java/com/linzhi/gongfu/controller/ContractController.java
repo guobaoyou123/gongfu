@@ -183,7 +183,7 @@ public class ContractController {
      * 修改采购计划中的需求
      * @return
      */
-    @PutMapping("/contract/purchase/plan")
+    @PutMapping("/contract/purchase/plan/forseveral")
     public VBaseResponse modifyPurchasePlan(@RequestBody Optional<List<VPlanDemandRequest>> demands){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
         var flag = planService.modifyPurchasePlan(session.getSession().getCompanyCode(),demands.get());
