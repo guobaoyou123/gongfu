@@ -63,7 +63,7 @@ public class ProductController {
      * 查询所有产品主材质
      * @return 主材质列表
      */
-    @GetMapping("/product/material")
+    @GetMapping("/product/materials")
     public VMaterialResponse productMaterials() {
         var materials =   productService.productClassList("002").stream()
             .map(mainProductClassMapper::toPreLoadMaterial)
@@ -97,14 +97,6 @@ public class ProductController {
     @GetMapping("/products")
     public VProductResponse products(@RequestParam("brand")Optional<List<String>> brands, @RequestParam("class")Optional<String> classes, @RequestParam("material")Optional<String> material
         , @RequestParam("drive")Optional<String> drive, @RequestParam("connection1")Optional<String> connection1, @RequestParam("connection2")Optional<String> connection2, @RequestParam("pageSize")Optional<Integer> pageSize, @RequestParam("pageNum")Optional<Integer> pageNum){
-
-        var products = productService.productList(brands,classes,material,drive,connection1,connection2,pageSize,pageNum);
-        return VProductResponse.builder()
-            .code(200)
-            .message("获取连接方式列表成功。")
-            .total(products.getTotalPages())
-            .current(products.getNumber())
-            .products(products.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
-            .build();
+        return productService.productList(brands,classes,material,drive,connection1,connection2,pageSize,pageNum);
     }
 }

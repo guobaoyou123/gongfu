@@ -11,6 +11,7 @@ import com.linzhi.gongfu.mapper.SysCompareDetailMapper;
 import com.linzhi.gongfu.repository.MainProductClassRepository;
 import com.linzhi.gongfu.repository.SysCompareTableRepository;
 import com.linzhi.gongfu.util.PageTools;
+import com.linzhi.gongfu.vo.VProductResponse;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -69,16 +71,54 @@ public class ProductService {
      * @param
      * @return 产品驱动信息列表
      */
-    public  Page<TProduct>  productList(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
+    public VProductResponse  productList(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
         , Optional<String> drive, Optional<String> connection1, Optional<String> connection2, Optional<Integer> pageSize, Optional<Integer> pageNum){
         Pageable pageable = PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10));
         //根据条件查询产品信息
-        List<TProduct> products = findProductAll(brands, classes, material, drive, connection1, connection2).stream()
+        List<TProduct> products = findProductAll(Optional.empty(), classes, material, drive, connection1, connection2).stream()
             .map(productMapper::toProduct)
             .collect(Collectors.toList());
+        if(!brands.isEmpty()){
+            List<TProduct> tProducts = products.stream()
+                .filter(product -> brands.get().contains(product.getBrandCode()))
+                .collect(Collectors.toList());
+            List<TProduct> otherProduct = products.stream()
+                .filter(product -> !brands.get().contains(product.getBrandCode()))
+                .collect(Collectors.toList());
+            Page<TProduct> otherproductPage = PageTools.listConvertToPage(otherProduct,pageable);
+            if(tProducts.size()==0)
+                return VProductResponse.builder()
+                    .code(200)
+                    .message("获取产品列表成功。")
+                    .total(otherproductPage.getTotalPages())
+                    .current(otherproductPage.getNumber())
+                    .products(new ArrayList<>())
+                    .otherproducts(otherproductPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
+                    .build();
+            //进行分页
+            Page<TProduct> productPage = PageTools.listConvertToPage(tProducts,pageable);
+            return  VProductResponse.builder()
+                .code(200)
+                .message("获取产品列表成功。")
+                .total(productPage.getTotalPages())
+                .current(productPage.getNumber())
+                .otherproducts(new ArrayList<>())
+                .products(productPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
+                .build();
+        }
+
         //进行分页
         Page<TProduct> productPage = PageTools.listConvertToPage(products,pageable);
-        return productPage;
+        return  VProductResponse.builder()
+            .code(200)
+            .message("获取产品列表成功。")
+            .total(productPage.getTotalPages())
+            .current(productPage.getNumber())
+            .otherproducts(new ArrayList<>())
+            .products(productPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
+            .build();
+
+
     }
 
     /**
