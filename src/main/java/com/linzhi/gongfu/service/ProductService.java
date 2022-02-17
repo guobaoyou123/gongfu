@@ -75,18 +75,14 @@ public class ProductService {
         , Optional<String> drive, Optional<String> connection1, Optional<String> connection2, Optional<Integer> pageSize, Optional<Integer> pageNum){
         Pageable pageable = PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10));
         //根据条件查询产品信息
-        List<TProduct> products = findProductAll(Optional.empty(), classes, material, drive, connection1, connection2).stream()
+        List<TProduct> products = findProductAll(brands, classes, material, drive, connection1, connection2).stream()
             .map(productMapper::toProduct)
             .collect(Collectors.toList());
-        if(!brands.isEmpty()){
-            List<TProduct> tProducts = products.stream()
-                .filter(product -> brands.get().contains(product.getBrandCode()))
+        if(products.size()==0){
+            products = findProductAll(Optional.empty(), classes, material, drive, connection1, connection2).stream()
+                .map(productMapper::toProduct)
                 .collect(Collectors.toList());
-            List<TProduct> otherProduct = products.stream()
-                .filter(product -> !brands.get().contains(product.getBrandCode()))
-                .collect(Collectors.toList());
-            Page<TProduct> otherproductPage = PageTools.listConvertToPage(otherProduct,pageable);
-            if(tProducts.size()==0)
+            Page<TProduct> otherproductPage = PageTools.listConvertToPage(products,pageable);
                 return VProductResponse.builder()
                     .code(200)
                     .message("获取产品列表成功。")
@@ -95,18 +91,7 @@ public class ProductService {
                     .products(new ArrayList<>())
                     .otherproducts(otherproductPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
                     .build();
-            //进行分页
-            Page<TProduct> productPage = PageTools.listConvertToPage(tProducts,pageable);
-            return  VProductResponse.builder()
-                .code(200)
-                .message("获取产品列表成功。")
-                .total(productPage.getTotalPages())
-                .current(productPage.getNumber())
-                .otherproducts(new ArrayList<>())
-                .products(productPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
-                .build();
         }
-
         //进行分页
         Page<TProduct> productPage = PageTools.listConvertToPage(products,pageable);
         return  VProductResponse.builder()
@@ -117,8 +102,6 @@ public class ProductService {
             .otherproducts(new ArrayList<>())
             .products(productPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
             .build();
-
-
     }
 
     /**
