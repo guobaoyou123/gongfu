@@ -10,11 +10,12 @@ import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.PurchasePlanMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
 import com.linzhi.gongfu.repository.*;
-import com.linzhi.gongfu.security.token.OperatorSessionToken;
-import com.linzhi.gongfu.vo.*;
+import com.linzhi.gongfu.vo.VBaseResponse;
+import com.linzhi.gongfu.vo.VPlanDemandRequest;
+import com.linzhi.gongfu.vo.VPurchasePlanResponse;
+import com.linzhi.gongfu.vo.VTemporaryPlanRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,28 +57,7 @@ public class PlanService {
             .map(temporaryPlanMapper::toTemporaryPlan)
             .collect(Collectors.toList());
     }
-    //
-    /**
-     * 根据单位id、操作员编码查询该操作员的临时采购计划列表
-     * @return 已经存在于采购临时计划表中的产品列表
-     */
-    public Optional<VVerificationPlanResponse>  TemporaryPlanVerification(List<String> product){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var list =temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedBy(session.getSession().getCompanyCode(),session.getSession().getOperatorCode()).stream()
-            .filter(temporaryPlan -> product.contains(temporaryPlan.getTemporaryPlanId().getProductId()))
-            .map(temporaryPlanMapper::toTemporaryPlan)
-            .map(temporaryPlanMapper::toPreloadVerificationTemporaryPlan)
-            .collect(Collectors.toList());
-        if(list.size()==0)
-            return Optional.empty();
-        return Optional.of(
-            VVerificationPlanResponse.builder()
-                .code(201)
-                .message("验证未通过，需要加入计划的产品有部分已存在于计划列表，请重新添加")
-                .products(list)
-                .build()
-        ) ;
-    }
+
     /**
      * 保存临时采购计划
      * @param product 产品列表
@@ -85,29 +65,62 @@ public class PlanService {
      * @param operatorCode 操作员编码
      */
     @Transactional
-    public void saveTemporaryPlan(List<VTemporaryPlanRequest> product, String id, String operatorCode){
+    public Map saveTemporaryPlan(List<VTemporaryPlanRequest> product, String id, String operatorCode){
+        Map resultMap = new HashMap<>();
+        List<String> resultList = new ArrayList<>();
+        final String[] message = {""};
         List<String> proCodeList = new ArrayList<>();
         Map<String, Product> productMap = new HashMap<>();
-        product.stream().forEach(p -> proCodeList.add(p.getProductId()));
-        List<Product> products=productRepository.findProductByIdIn(proCodeList);
-        products.stream().forEach(product1 ->
-            productMap.put(product1.getId(),product1)
-        );
-        List<TemporaryPlan>  saveList = new ArrayList<>();
-        product.forEach(pr -> {
-            Product  p=productMap.get(pr.getProductId());
-            TemporaryPlan temporaryPlan =TemporaryPlan.builder()
-                .temporaryPlanId(TemporaryPlanId.builder().dcCompId(id).productId(p.getId()).createdBy(operatorCode).build())
-                .productCode(p.getCode())
-                .chargeUnit(p.getChargeUnit())
-                .brand(p.getBrand())
-                .brandCode(p.getBrandCode())
-                .describe(p.getDescribe())
-                .demand(pr.getDemand())
-                .build();
-            saveList.add(temporaryPlan);
-        });
-        temporaryPlanRepository.saveAll(saveList);
+        try{
+            product.stream().forEach(p ->
+                proCodeList.add(p.getProductId())
+            );
+            List<Product> products=productRepository.findProductByIdIn(proCodeList);
+            products.stream().forEach(product1 ->
+                productMap.put(product1.getId(),product1)
+            );
+            //判断是否有已存在于计划列表中的产品
+            var list =temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedBy(id,operatorCode).stream()
+                .filter(temporaryPlan -> proCodeList.contains(temporaryPlan.getTemporaryPlanId().getProductId()))
+                .collect(Collectors.toList());
+            Map<String,TemporaryPlan> temporaryPlanMap = new HashMap<>();
+            list.forEach(temporaryPlan -> {
+                resultList.add(temporaryPlan.getProductCode());
+                temporaryPlanMap.put(temporaryPlan.getTemporaryPlanId().getProductId(),temporaryPlan);
+            });
+            //保存产品
+            List<TemporaryPlan>  saveList = new ArrayList<>();
+            product.forEach(pr -> {
+                Product  p=productMap.get(pr.getProductId());
+                TemporaryPlan temporaryPlan =temporaryPlanMap.get(pr.getProductId());
+                if (temporaryPlan==null) {
+                    temporaryPlan= TemporaryPlan.builder()
+                        .temporaryPlanId(TemporaryPlanId.builder().dcCompId(id).productId(p.getId()).createdBy(operatorCode).build())
+                        .productCode(p.getCode())
+                        .chargeUnit(p.getChargeUnit())
+                        .brand(p.getBrand())
+                        .brandCode(p.getBrandCode())
+                        .describe(p.getDescribe())
+                        .demand(pr.getDemand())
+                        .build();
+                }else{
+                    message[0] = message[0] +temporaryPlan.getProductCode()+",";
+                    temporaryPlan.setDemand(temporaryPlan.getDemand().add(pr.getDemand()));
+                }
+                temporaryPlan.setCreatedAt(LocalDateTime.now());
+                saveList.add(temporaryPlan);
+            });
+            temporaryPlanRepository.saveAll(saveList);
+            resultMap.put("flag",true);
+            resultMap.put("message","加入计划成功");
+            if(resultList.size()>0)
+                resultMap.put("message","加入计划成功，产品编号为："+message[0]+"以存在于计划表中，并对需求数进行累加");
+        }catch (Exception e){
+            resultMap.put("flag",false);
+            resultMap.put("message","加入计划失败");
+            return  resultMap;
+        }
+        return  resultMap;
     }
 
     /**

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -48,30 +49,21 @@ public class ContractController {
             .build();
     }
     /**
-     * 根据操作员编码、单位id查询该操作员的临时计划表
-     * @return 临时计划列表信息
-     */
-    @GetMapping("/contract/temporary/purchase/plan/product/verification")
-    public VVerificationPlanResponse  verification(@RequestBody  Optional<List<String>> products){
-       return products
-           .flatMap(planService::TemporaryPlanVerification)
-           .orElse(VVerificationPlanResponse.builder()
-               .message("验证成功")
-               .products(new ArrayList<>())
-               .code(200)
-               .build());
-    }
-    /**
      * 保存临时采购计划
      * @return
      */
     @PostMapping("/contract/temporary/purchase/plan")
     public VBaseResponse  saveTemporaryPlan(@RequestBody Optional<List<VTemporaryPlanRequest>> products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        planService.saveTemporaryPlan(products.get(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        Map map=planService.saveTemporaryPlan(products.get(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        if((boolean)map.get("flag"))
+            return VBaseResponse.builder()
+                .message((String)map.get("message"))
+                .code(200)
+                .build();
         return VBaseResponse.builder()
-            .message("加入计划成功")
-            .code(200)
+            .message((String)map.get("message"))
+            .code(500)
             .build();
     }
     /**
