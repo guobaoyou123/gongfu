@@ -13,4 +13,7 @@ public interface PurchasePlanProductRepository extends CrudRepository<PurchasePl
     @Modifying
     @Query("update PurchasePlanProduct as c set c.demand =?1 where c.purchasePlanProductId=?2")
     int updateDemandById(BigDecimal demand, PurchasePlanProductId purchasePlanProductId);
+    @Modifying
+    @Query("delete from PurchasePlanProduct as c  where c.purchasePlanProductId.dcCompId=?1 and  c.purchasePlanProductId.planCode=?2 ")
+    void  deleteProduct(String dcCompId , String planCode);
 }

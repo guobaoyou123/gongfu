@@ -7,6 +7,7 @@ import com.linzhi.gongfu.entity.CompTrad;
 import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.QCompTradBrand;
 import com.linzhi.gongfu.entity.QCompany;
+import com.linzhi.gongfu.enumeration.Trade;
 import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.repository.CompTradeRepository;
@@ -60,7 +61,7 @@ public class CompanyService {
      */
 
     public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandbyId(String id, Optional<Integer> pageNum,Optional<Integer> pageSize) {
-        Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyer(id, PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10)));
+        Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyerAndState(id, PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10)), Trade.TRANSACTION);
         Page<TCompanyIncludeBrand> tCompanyIncludeBrands =compTradPage.map(compTradeMapper::toSuppliersIncludeBrand);
         tCompanyIncludeBrands.forEach(compTrad ->  {
             //将供应商中的经营品牌与授权品牌和自营品牌对比进行去重

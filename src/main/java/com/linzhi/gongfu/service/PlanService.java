@@ -1,25 +1,29 @@
 package com.linzhi.gongfu.service;
 
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TTemporaryPlan;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.DemandSource;
+import com.linzhi.gongfu.enumeration.Trade;
+import com.linzhi.gongfu.enumeration.VatRateType;
+import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.PurchasePlanMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
-import com.linzhi.gongfu.vo.VPlanDemandRequest;
-import com.linzhi.gongfu.vo.VPurchasePlanResponse;
-import com.linzhi.gongfu.vo.VTemporaryPlanRequest;
-import com.linzhi.gongfu.vo.VVerificationPlanResponse;
+import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +44,8 @@ public class PlanService {
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
     private final CompanyRepository companyRepository;
     private final PurchasePlanProductRepository purchasePlanProductRepository;
+    private final InquiryRepository inquiryRepository;
+    private final CompTradeRepository compTradeRepository;
     /**
      * 根据单位id、操作员编码查询该操作员的临时采购计划列表
      * @param temporaryPlanId 单位id 操作员编码
@@ -156,6 +162,9 @@ public class PlanService {
             Map<String,List<Company>> brandsSuppliers = findSuppliersByBrandsAndCompBuyer(brands,id,suppliers);
             //查询采购计划号最大编号
             String maxCode= purchasePlanRepository.findMaxCode(id,operatorCode, LocalDate.now());
+            if(maxCode==null){
+                maxCode="01";
+            }
             //计划编码
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
             LocalDate data=LocalDate.now();
@@ -167,7 +176,7 @@ public class PlanService {
                 List<Company> companies = brandsSuppliers.get(temporaryPlan.getBrandCode());
                 companies.forEach(company -> {
                     PurchasePlanProductSupplier productSaler = PurchasePlanProductSupplier.builder()
-                        .purchasePlanProductSalerId(PurchasePlanProductSupplierId.builder()
+                        .purchasePlanProductSupplierId(PurchasePlanProductSupplierId.builder()
                             .productId(temporaryPlan.getTemporaryPlanId().getProductId())
                             .planCode(planCode)
                             .dcCompId(id)
@@ -319,10 +328,16 @@ public class PlanService {
             purchasePlanProductSupplierRepository.deleteById(PurchasePlanProductSupplierId.builder()
                 .productId(productId).dcCompId(id).planCode(planCode).salerCode(oldSupplier).build());
             purchasePlanProductSupplierRepository.save(PurchasePlanProductSupplier.builder()
-                .purchasePlanProductSalerId(PurchasePlanProductSupplierId.builder()
-                    .productId(productId).dcCompId(id).planCode(planCode).salerCode(newSupplier).build())
+                .purchasePlanProductSupplierId(PurchasePlanProductSupplierId.builder()
+                    .productId(productId)
+                    .dcCompId(id)
+                    .planCode(planCode)
+                    .salerCode(newSupplier)
+                    .build())
                 .salerName(supplier.get().getShortNameInCN())
                 .demand(BigDecimal.ZERO)
+                .tranNum(BigDecimal.ZERO)
+                .deliverNum(BigDecimal.ZERO)
                 .build());
             return   true;
         }catch (Exception e){
@@ -361,6 +376,15 @@ public class PlanService {
             return  false;
         }
     }
+
+    /**
+     * 添加产品
+     * @param id
+     * @param productId
+     * @param planCode
+     * @param demand
+     * @return
+     */
     @Transactional
     public  boolean savePlanProduct(String id,String productId,String planCode,BigDecimal demand){
         try{
@@ -371,7 +395,7 @@ public class PlanService {
            List<PurchasePlanProductSupplier> purchasePlanProductSuppliers = new ArrayList<>();
            suppliers.forEach(company -> {
                    PurchasePlanProductSupplier productSaler = PurchasePlanProductSupplier.builder()
-                       .purchasePlanProductSalerId(PurchasePlanProductSupplierId.builder()
+                       .purchasePlanProductSupplierId(PurchasePlanProductSupplierId.builder()
                            .productId(productId)
                            .planCode(planCode)
                            .dcCompId(id)
@@ -409,6 +433,182 @@ public class PlanService {
             return true;
         }catch (Exception e){
             return false;
+        }
+    }
+    /**
+     * 删除产品
+     * @param id
+     * @param productId 产品id列表
+     * @param planCode 采购计划号
+     * @return
+     */
+    @Transactional
+    public  boolean deletePlanProduct(String id,List<String> productId,String planCode){
+        try{
+            purchasePlanProductSupplierRepository.deleteSupplier(id,planCode,productId);
+            List<PurchasePlanProductId> list = new ArrayList<>();
+            productId.forEach(s -> {
+                list.add(PurchasePlanProductId.builder()
+                    .productId(s)
+                    .dcCompId(id)
+                    .planCode(planCode)
+                    .build()) ;
+            });
+            purchasePlanProductRepository.deleteAllById(list);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+    /**
+     * 撤销采购计划
+     * @param id
+     * @param planCode 采购计划号
+     * @return
+     */
+    @Transactional
+    public  boolean deletePurchasePlan(String id,String planCode){
+        try{
+            purchasePlanProductSupplierRepository.deleteSupplier(id,planCode);
+            purchasePlanProductRepository.deleteProduct(id, planCode);
+            purchasePlanRepository.deletePurchasePlan(PurchasePlanId.builder()
+                .dcCompId(id)
+                .planCode(planCode)
+                .build());
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    /**
+     * 获取采购计划中的需求量不为0的供应商列表
+     * @param planCode
+     * @param id
+     * @return 供应商列表
+     */
+    public List<TCompanyBaseInformation> findSuppliersByPlanCode(String planCode, String id){
+        return purchasePlanProductSupplierRepository.findDistinctSuppliers(id,planCode)
+            .stream().map(stringStringMap -> {
+               return TCompanyBaseInformation.builder()
+                    .code(stringStringMap.get("saler_code"))
+                    .shortName(stringStringMap.get("saler_name"))
+                    .build();
+            })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 保存询价单
+     * @param planCode
+     * @param id
+     * @param compName
+     * @param operatorCode
+     * @return
+     */
+    @CachePut(value="inquiry_List;1800", key="T(String).valueOf(#id).concat(#operatorCode)")
+    public VBaseResponse savePurchaseInquiry(String planCode, String id,String compName, String operatorCode){
+        try{
+            Map<String,List<InquiryRecord>> supplierInquerRecordMap = new HashMap<>();
+            List<String> suppliers = new ArrayList<>();
+            List<Inquiry> inquiries = new ArrayList<>();
+            //查找采购计划
+            Optional<PurchasePlan> purchasePlan = purchasePlanRepository.findById(
+                PurchasePlanId.builder()
+                    .dcCompId(id)
+                    .planCode(planCode)
+                    .build()
+            );
+            if(purchasePlan.isEmpty())
+                return VBaseResponse.builder()
+                    .code(202)
+                    .message("数据不存在")
+                    .build();
+            //查出向每个供应商询价商品有哪些
+            purchasePlan.get().getProduct().forEach(purchasePlanProduct -> {
+                purchasePlanProduct.getSalers().forEach(supplier -> {
+                    if(supplier.getDemand().intValue()>0) {
+                        InquiryRecord record = InquiryRecord.builder()
+                            .productId(purchasePlanProduct.getPurchasePlanProductId().getProductId())
+                            .productCode(purchasePlanProduct.getProductCode())
+                            .productDescription(purchasePlanProduct.getDescribe())
+                            .compBuyer(id)
+                            .compSaler(supplier.getPurchasePlanProductSupplierId().getSalerCode())
+                            .brandCode(purchasePlanProduct.getBrandCode())
+                            .brand(purchasePlanProduct.getBrand())
+                            .amount(supplier.getDemand())
+                            .charge_unit(purchasePlanProduct.getChargeUnit())
+                            .type(VatRateType.GOODS)
+                            .vatRate(BigDecimal.valueOf(0.13))
+                            .build();
+                        List<InquiryRecord> list = supplierInquerRecordMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode());
+                        if (list==null) {
+                            list = new ArrayList<>();
+                            suppliers.add(supplier.getPurchasePlanProductSupplierId().getSalerCode());
+                        }
+                        list.add(record);
+                        supplierInquerRecordMap.put(supplier.getPurchasePlanProductSupplierId().getSalerCode(),list);
+                    }
+                });
+            });
+            //查询每个供应商税模式对本单位设置的税模式
+            List<CompTrad>compTades=compTradeRepository.findSuppliersByCompTradIdCompBuyerAndState(id, Trade.TRANSACTION);
+            Map<String,CompTrad> compTradMap = new HashMap<>();
+            compTades.forEach(compTrad -> {
+                compTradMap.put(compTrad.getCompTradId().getCompSaler(),compTrad);
+            });
+            //查询询价单最大编号
+             String maxCode = inquiryRepository.findMaxCode(id, operatorCode);
+            if(maxCode ==null)
+                maxCode ="01";
+            AtomicInteger max = new AtomicInteger(Integer.valueOf(maxCode));
+            //对每个供应商生成询价单
+            companyRepository.findAllById(suppliers).forEach(company -> {
+               String mCode = ("0000"+(max.get()+1)).substring(("0000"+(Integer.valueOf(max.get())+1)).length()-2);
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+               LocalDate data=LocalDate.now();
+               String inquiryId = "XJ-"+id+"-"+operatorCode+"-"+company.getCode()+"-"+dtf.format(data)+"-"+mCode;
+               String inquiryCode ="XJ-"+operatorCode+"-"+company.getCode()+"-"+dtf.format(data)+"-"+mCode;
+               List<InquiryRecord> records = supplierInquerRecordMap.get(company.getCode());
+               AtomicInteger code = new AtomicInteger();
+               records.forEach(inquiryRecord -> {
+                   code.getAndIncrement();
+                   inquiryRecord.setInquiryRecordId(InquiryRecordId.builder().code(code.get()).inquiryId(inquiryId).build());
+                   inquiryRecord.setCreatedAt(LocalDateTime.now());
+               });
+               inquiries.add(Inquiry.builder()
+                   .records(records)
+                   .id(inquiryId)
+                   .code(inquiryCode)
+                       .buyerCreatedBy(operatorCode)
+                       .compBuyer(id)
+                       .compBuyerName(compName)
+                       .compSaler(company.getCode())
+                       .compSalerName(company.getNameInCN())
+                       .createdAt(LocalDateTime.now())
+                       .salesOrderCode(purchasePlan.get().getSalesCode())
+                       .state(Whether.NO)
+                       .taxModel(compTradMap.get(company.getCode()).getTaxModel())
+                       .vatProductRate(BigDecimal.valueOf(0.13))
+                       .vatServiceRate(BigDecimal.valueOf(0.06))
+                       .createdAt(LocalDateTime.now())
+                   .build());
+               max.getAndIncrement();
+
+           });
+            //保存询价单
+           inquiryRepository.saveAll(inquiries);
+           //删除计划
+            deletePurchasePlan(id, planCode);
+            return VBaseResponse.builder()
+                .code(200)
+                .message("生成询价单成功")
+                .build();
+        }catch (Exception e){
+            return VBaseResponse.builder()
+                .code(500)
+                .message("生成询价单失败")
+                .build();
         }
     }
 }

@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @Table(name = "purchase_plan_product_saler")
 public class PurchasePlanProductSupplier implements Serializable {
     @EmbeddedId
-    private PurchasePlanProductSupplierId purchasePlanProductSalerId;
+    private PurchasePlanProductSupplierId purchasePlanProductSupplierId;
     /**
      * 供应商公司名称
      */

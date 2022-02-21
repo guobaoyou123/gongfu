@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.entity.TemporaryPlanId;
+import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.PlanService;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 public class ContractController {
     private final PlanService planService;
     private final TemporaryPlanMapper temporaryPlanMapper;
+    private final CompanyMapper companyMapper;
 
     /**
      * 根据操作员编码、单位id查询该操作员的临时计划表
@@ -215,6 +217,14 @@ public class ContractController {
             .message("修改失败！")
             .build();
     }
+
+    /**
+     * 采购计划添加产品
+     * @param planCode
+     * @param productId
+     * @param demand
+     * @return
+     */
     @PostMapping("/contract/purchase/plan/product")
     public VBaseResponse  savePlanProduct(@RequestParam("planCode")Optional<String> planCode,@RequestParam("productId")Optional<String> productId,@RequestParam("demand") Optional<BigDecimal> demand){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
@@ -228,5 +238,62 @@ public class ContractController {
             .code(500)
             .message("添加产品失败！")
             .build();
+    }
+
+    /**
+     * 采购计划删除产品
+     */
+    @DeleteMapping("/contract/purchase/plan/product")
+    public VBaseResponse  deletePlanProduct(@RequestBody Optional<VDeletePlanProductRequest> productId){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var flag = planService.deletePlanProduct(session.getSession().getCompanyCode(),productId.get().getProducts(),productId.get().getPlanCode());
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("删除产品成功！")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("删除产品失败！")
+            .build();
+    }
+    @DeleteMapping("/contract/purchase/plan")
+    public VBaseResponse deletePurchasePlan(@RequestParam("planCode") Optional<String> planCode){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var flag = planService.deletePurchasePlan(session.getSession().getCompanyCode(),planCode.get());
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("删除采购计划成功！")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("删除采购计划失败！")
+            .build();
+    }
+    /**
+     * 通过本公司id,采购计划编号查询采购询价预览表头供应商列表
+     * @return 供应商列表
+     */
+    @GetMapping("/contract/purchase/inquiry/preview/suppliers")
+    public VSuppliersResponse suppliersByPlancode(@RequestParam("planCode") Optional<String> planCode) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var supplier = planService.findSuppliersByPlanCode(planCode.get(),session.getSession().getCompanyCode());
+        return VSuppliersResponse.builder()
+            .code(200)
+            .message("获取我的供应列表成功。")
+            .suppliers(supplier.stream().map(companyMapper::toPreloadSupliers).collect(Collectors.toSet()))
+            .build();
+    }
+
+    /**
+     * 根据采购计划生成询价单
+     * @param planCode 采购计划号
+     * @return
+     */
+    @PostMapping("/contract/purchase/inquiry")
+    public VBaseResponse savePurchaseInquiry(@RequestParam("planCode") Optional<String> planCode){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        return planService.savePurchaseInquiry(planCode.get(),session.getSession().getCompanyCode(),session.getSession().getCompanyName(),session.getSession().getOperatorCode());
     }
 }

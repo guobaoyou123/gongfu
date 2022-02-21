@@ -1,17 +1,20 @@
 package com.linzhi.gongfu.mapper;
 
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TPurchasePlanProductSupplier;
+import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.PurchasePlanProductSupplier;
 import com.linzhi.gongfu.vo.VPurchasePlanResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper(componentModel = "spring")
 public interface PurchasePlanProductSupplierMapper {
     List<TPurchasePlanProductSupplier> toDTOs(List<TPurchasePlanProductSupplier> salers);
-    @Mapping(target = "code",source = "purchasePlanProductSalerId.salerCode")
+    @Mapping(target = "code",source = "purchasePlanProductSupplierId.salerCode")
     @Mapping(target = "name",source = "salerName")
     @Mapping(target = "deliverNum",source = "deliverNum")
     @Mapping(target = "tranNum",source = "tranNum")
@@ -26,8 +29,6 @@ public interface PurchasePlanProductSupplierMapper {
     @Mapping(target = "tranNum",source = "tranNum")
     @Mapping(target = "demand",source = "demand")
     VPurchasePlanResponse.VSupplier toSupplier(TPurchasePlanProductSupplier tPurchasePlanProductSupplier);
-
-
 
 
 

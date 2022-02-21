@@ -43,5 +43,6 @@ public class PurchasePlan implements Serializable {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumns({@JoinColumn(name = "plan_code",referencedColumnName = "plan_code", insertable = true, updatable = true),
     @JoinColumn(name = "dc_comp_id",referencedColumnName = "dc_comp_id", insertable = true, updatable = true)})
+    @NotFound(action= NotFoundAction.IGNORE)
     private List<PurchasePlanProduct> product;
 }
