@@ -84,9 +84,9 @@ public class ContractController {
      * @return
      */
     @DeleteMapping("/contract/temporary/purchase/plan")
-    public VBaseResponse  deleteTemporaryPlan(@RequestBody Optional<List<String>> products){
+    public VBaseResponse  deleteTemporaryPlan(@RequestParam("products") List<String> products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.deleteTemporaryPlan(products.get(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        var flag = planService.deleteTemporaryPlan(products,session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
         if(flag)
             return VBaseResponse.builder()
                 .message("删除计划成功")
@@ -96,27 +96,6 @@ public class ContractController {
             .message("删除计划失败")
             .code(500)
             .build();
-    }
-    /**
-     * 验证所选产品品牌是否有供应商
-     * @return 品牌列表
-     */
-    @GetMapping("/contract/temporary/purchase/plan/brand/verification")
-    public VVerificationBrandResponse  brandVerification(@RequestParam  Optional<List<String>> brand){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        List<String> brands =brand.
-             map(b -> planService.brandVerification(b,session.getSession().getCompanyCode())).get();
-        if(brands.size()>0)
-            return VVerificationBrandResponse.builder()
-                .message("验证未通过，部分品牌没有供应商")
-                .brands(brands)
-                .code(201)
-                .build();
-        return VVerificationBrandResponse.builder()
-                .message("验证成功")
-                .brands(new ArrayList<>())
-                .code(200)
-                .build();
     }
     /**
      * 开始计划，生成采购计划
@@ -236,9 +215,9 @@ public class ContractController {
      * 采购计划删除产品
      */
     @DeleteMapping("/contract/purchase/plan/product")
-    public VBaseResponse  deletePlanProduct(@RequestBody Optional<VDeletePlanProductRequest> productId){
+    public VBaseResponse  deletePlanProduct(@RequestParam String planCode,@RequestParam List<String> productId){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.deletePlanProduct(session.getSession().getCompanyCode(),productId.get().getProducts(),productId.get().getPlanCode());
+        var flag = planService.deletePlanProduct(session.getSession().getCompanyCode(),productId,planCode);
         if(flag)
             return VBaseResponse.builder()
                 .code(200)

@@ -3,10 +3,7 @@ package com.linzhi.gongfu.service;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TTemporaryPlan;
 import com.linzhi.gongfu.entity.*;
-import com.linzhi.gongfu.enumeration.DemandSource;
-import com.linzhi.gongfu.enumeration.Trade;
-import com.linzhi.gongfu.enumeration.VatRateType;
-import com.linzhi.gongfu.enumeration.Whether;
+import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.PurchasePlanMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
 import com.linzhi.gongfu.repository.*;
@@ -150,6 +147,7 @@ public class PlanService {
             temporaryPlanRepository.deleteAllById(list);
             return  true;
         }catch (Exception e){
+            e.printStackTrace();
            return false;
         }
 
@@ -187,21 +185,23 @@ public class PlanService {
             temporaryPlans.forEach(temporaryPlan -> {
                 List<PurchasePlanProductSupplier> purchasePlanProductSalers = new ArrayList<>();
                 List<Company> companies = brandsSuppliers.get(temporaryPlan.getBrandCode());
-                companies.forEach(company -> {
-                    PurchasePlanProductSupplier productSaler = PurchasePlanProductSupplier.builder()
-                        .purchasePlanProductSupplierId(PurchasePlanProductSupplierId.builder()
-                            .productId(temporaryPlan.getTemporaryPlanId().getProductId())
-                            .planCode(planCode)
-                            .dcCompId(id)
-                            .salerCode(company.getCode())
-                            .build())
-                        .salerName(company.getShortNameInCN())
-                        .demand(BigDecimal.ZERO)
-                        .deliverNum(BigDecimal.ZERO)
-                        .tranNum(BigDecimal.ZERO)
-                        .build();
-                    purchasePlanProductSalers.add(productSaler);
-                });
+                if(companies!=null){
+                    companies.forEach(company -> {
+                        PurchasePlanProductSupplier productSaler = PurchasePlanProductSupplier.builder()
+                            .purchasePlanProductSupplierId(PurchasePlanProductSupplierId.builder()
+                                .productId(temporaryPlan.getTemporaryPlanId().getProductId())
+                                .planCode(planCode)
+                                .dcCompId(id)
+                                .salerCode(company.getCode())
+                                .build())
+                            .salerName(company.getShortNameInCN())
+                            .demand(BigDecimal.ZERO)
+                            .deliverNum(BigDecimal.ZERO)
+                            .tranNum(BigDecimal.ZERO)
+                            .build();
+                        purchasePlanProductSalers.add(productSaler);
+                    });
+                }
                 PurchasePlanProduct product=PurchasePlanProduct.builder()
                     .purchasePlanProductId(PurchasePlanProductId.builder()
                         .planCode(planCode)
@@ -286,35 +286,6 @@ public class PlanService {
         });
         return IncludeCompMap;
     }
-
-    /**
-     * 根据品牌列表，本单位id，供应商列表查询 每个品牌有哪些供应商
-     * @param brands
-     * @param compBuyer
-     * @return 返回 品牌
-     */
-    public List<String> brandVerification(List<String> brands,String compBuyer){
-        //查询这几个牌子的供应商有哪些
-        List<CompTradBrand> compTradBrands= compTradBrandRepository.findCompTradBrandByCompTradBrandId_BrandCodeInAndCompTradBrandId_CompBuyerOrderBySortDesc(brands,compBuyer);
-        List<String> brandList = new ArrayList<>();
-        Map<String,List<Company>>  map = new HashMap<>();
-        compTradBrands.stream()
-            .forEach(compTradBrand -> {
-                List<Company> list = map.get(compTradBrand.getCompTradBrandId().getBrandCode());
-                if(list==null)
-                    list = new ArrayList<>();
-                list.add(compTradBrand.getCompany());
-                map.put(compTradBrand.getCompTradBrandId().getBrandCode(),list);
-            });
-        brands.forEach(s -> {
-            List<Company> list = map.get(s);
-            if(list==null)
-                brandList.add(s);
-        });
-
-        return  brandList;
-    }
-
     /**
      * 根据计划号查询采购计划
      * @param planCode 采购计划号
@@ -325,7 +296,6 @@ public class PlanService {
             .map(purchasePlanMapper::toDTO)
             .map(purchasePlanMapper::toPruchasePlan);
     }
-
     /**
      * 替换采购计划中的供应商
      * @param id 单位id
@@ -354,6 +324,7 @@ public class PlanService {
                 .build());
             return   true;
         }catch (Exception e){
+            e.printStackTrace();
             return false;
         }
 
@@ -371,6 +342,7 @@ public class PlanService {
             });
             return true;
         }catch (Exception e){
+            e.printStackTrace();
             return  false;
         }
     }
@@ -386,6 +358,7 @@ public class PlanService {
             });
             return true;
         }catch (Exception e){
+            e.printStackTrace();
             return  false;
         }
     }
@@ -445,6 +418,7 @@ public class PlanService {
             purchasePlanProductRepository.save(purchasePlanProduct);
             return true;
         }catch (Exception e){
+            e.printStackTrace();
             return false;
         }
     }
@@ -470,6 +444,7 @@ public class PlanService {
             purchasePlanProductRepository.deleteAllById(list);
             return true;
         }catch (Exception e){
+            e.printStackTrace();
             return false;
         }
     }
@@ -490,6 +465,7 @@ public class PlanService {
                 .build());
             return true;
         }catch (Exception e){
+            e.printStackTrace();
             return false;
         }
     }
@@ -520,6 +496,7 @@ public class PlanService {
      * @return
      */
     @CachePut(value="inquiry_List;1800", key="T(String).valueOf(#id).concat(#operatorCode)")
+    @Transactional
     public VBaseResponse savePurchaseInquiry(String planCode, String id,String compName, String operatorCode){
         try{
             Map<String,List<InquiryRecord>> supplierInquerRecordMap = new HashMap<>();
@@ -581,7 +558,7 @@ public class PlanService {
             AtomicInteger max = new AtomicInteger(Integer.valueOf(maxCode));
             //对每个供应商生成询价单
             companyRepository.findAllById(suppliers).forEach(company -> {
-               String mCode = ("0000"+(max.get()+1)).substring(("0000"+(Integer.valueOf(max.get())+1)).length()-2);
+               String mCode = ("0000"+max.get()).substring(("0000"+max.get()).length()-2);
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
                LocalDate data=LocalDate.now();
                String inquiryId = "XJ-"+id+"-"+operatorCode+"-"+company.getCode()+"-"+dtf.format(data)+"-"+mCode;
@@ -597,18 +574,18 @@ public class PlanService {
                    .records(records)
                    .id(inquiryId)
                    .code(inquiryCode)
-                       .buyerCreatedBy(operatorCode)
-                       .compBuyer(id)
-                       .compBuyerName(compName)
-                       .compSaler(company.getCode())
-                       .compSalerName(company.getNameInCN())
-                       .createdAt(LocalDateTime.now())
-                       .salesOrderCode(purchasePlan.get().getSalesCode())
-                       .state(Whether.NO)
-                       .taxModel(compTradMap.get(company.getCode()).getTaxModel())
-                       .vatProductRate(goods.get().getRate())
-                       .vatServiceRate(service.get().getRate())
-                       .createdAt(LocalDateTime.now())
+                   .buyerCreatedBy(operatorCode)
+                   .compBuyer(id)
+                   .compBuyerName(compName)
+                   .compSaler(company.getCode())
+                   .compSalerName(company.getNameInCN())
+                   .createdAt(LocalDateTime.now())
+                   .salesOrderCode(purchasePlan.get().getSalesCode())
+                   .state(Whether.NO)
+                   .taxModel(compTradMap.get(company.getCode())==null? TaxModel.UNTAXED :compTradMap.get(company.getCode()).getTaxModel())
+                   .vatProductRate(goods.get().getRate())
+                   .vatServiceRate(service.get().getRate())
+                   .createdAt(LocalDateTime.now())
                    .build());
                max.getAndIncrement();
 
@@ -616,12 +593,18 @@ public class PlanService {
             //保存询价单
            inquiryRepository.saveAll(inquiries);
            //删除计划
-            deletePurchasePlan(id, planCode);
+            purchasePlanProductSupplierRepository.deleteSupplier(id,planCode);
+            purchasePlanProductRepository.deleteProduct(id, planCode);
+            purchasePlanRepository.deletePurchasePlan(PurchasePlanId.builder()
+                .dcCompId(id)
+                .planCode(planCode)
+                .build());
             return VBaseResponse.builder()
                 .code(200)
                 .message("生成询价单成功")
                 .build();
         }catch (Exception e){
+            e.printStackTrace();
             return VBaseResponse.builder()
                 .code(500)
                 .message("生成询价单失败")
