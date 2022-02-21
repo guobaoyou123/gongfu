@@ -93,6 +93,7 @@ public class CompanyService {
     public Set<TCompanyBaseInformation> findSuppliersByBrands(Optional<List<String>> brands,String id,Optional<List<String>> suppliers){
         QCompany qCompany = QCompany.company;
         QCompTradBrand qCompTradBrand = QCompTradBrand.compTradBrand;
+
         JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompTradBrand).leftJoin(qCompany)
             .on(qCompany.code.eq(qCompTradBrand.compTradBrandId.compSaler));
         if(!brands.isEmpty()){

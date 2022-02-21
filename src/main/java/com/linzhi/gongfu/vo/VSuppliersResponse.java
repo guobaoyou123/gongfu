@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 用于前端首页供应商列表的响应体组建
+ * 用于前端查询供应商列表的响应体组建
  *
  * @author zgh
  * @create_at 2022-01-28
@@ -23,7 +23,7 @@ public class VSuppliersResponse extends VBaseResponse  {
 
     Set<VSupplier> suppliers;
     /**
-     * 用于表示一个首页展示供应商
+     * 用于表示一个供应商
      */
     @Data
     public static class VSupplier {
@@ -36,7 +36,6 @@ public class VSuppliersResponse extends VBaseResponse  {
          * 公司简称
          */
         private String name;
-
     }
 
 }

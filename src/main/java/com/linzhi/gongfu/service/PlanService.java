@@ -47,6 +47,7 @@ public class PlanService {
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final InquiryRepository inquiryRepository;
     private final CompTradeRepository compTradeRepository;
+    private final VatRatesRepository vatRatesRepository;
     /**
      * 根据单位id、操作员编码查询该操作员的临时采购计划列表
      * @param temporaryPlanId 单位id 操作员编码
@@ -122,7 +123,6 @@ public class PlanService {
         }
         return  resultMap;
     }
-
     /**
      * 修改计划需求
      * @param product 计划产品列表
@@ -537,6 +537,10 @@ public class PlanService {
                     .code(202)
                     .message("数据不存在")
                     .build();
+            //查出货物税率
+           Optional<VatRates> goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001");
+            Optional<VatRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
+            //查出服务税率
             //查出向每个供应商询价商品有哪些
             purchasePlan.get().getProduct().forEach(purchasePlanProduct -> {
                 purchasePlanProduct.getSalers().forEach(supplier -> {
@@ -552,7 +556,7 @@ public class PlanService {
                             .amount(supplier.getDemand())
                             .charge_unit(purchasePlanProduct.getChargeUnit())
                             .type(VatRateType.GOODS)
-                            .vatRate(BigDecimal.valueOf(0.13))
+                            .vatRate(goods.get().getRate())
                             .build();
                         List<InquiryRecord> list = supplierInquerRecordMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode());
                         if (list==null) {
@@ -602,8 +606,8 @@ public class PlanService {
                        .salesOrderCode(purchasePlan.get().getSalesCode())
                        .state(Whether.NO)
                        .taxModel(compTradMap.get(company.getCode()).getTaxModel())
-                       .vatProductRate(BigDecimal.valueOf(0.13))
-                       .vatServiceRate(BigDecimal.valueOf(0.06))
+                       .vatProductRate(goods.get().getRate())
+                       .vatServiceRate(service.get().getRate())
                        .createdAt(LocalDateTime.now())
                    .build());
                max.getAndIncrement();
