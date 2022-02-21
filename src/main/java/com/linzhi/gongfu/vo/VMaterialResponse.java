@@ -2,40 +2,33 @@ package com.linzhi.gongfu.vo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Singular;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
-import java.util.Set;
 
 /**
- * 用于前端查询供应商列表的响应体组建
+ * 用于响应前端对于驱动方式的预加载请求
  *
  * @author zgh
- * @create_at 2022-01-28
+ * @create_at 2022-02-09
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VSuppliersResponse extends VBaseResponse  {
+public class VMaterialResponse extends VBaseResponse{
 
-    Set<VSupplier> suppliers;
-    /**
-     * 用于表示一个供应商
-     */
+    List<VMaterial> materials;
     @Data
-    public static class VSupplier {
+    public static class  VMaterial{
         /**
-         * 公司编号
+         * 驱动编码
          */
         private String code;
-
         /**
-         * 公司简称
+         * 中文名称
          */
         private String name;
     }
-
 }

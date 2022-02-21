@@ -31,7 +31,7 @@ public class PurchasePlan implements Serializable {
     @Column(name = "sales_code",length = 50)
     private String salesCode;
     /**
-     * 对应销售合同号
+     * 创建时间
      */
     @Column(name = "created_at", columnDefinition = "DATE")
     private LocalDate createdAt;
@@ -43,5 +43,6 @@ public class PurchasePlan implements Serializable {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumns({@JoinColumn(name = "plan_code",referencedColumnName = "plan_code", insertable = true, updatable = true),
     @JoinColumn(name = "dc_comp_id",referencedColumnName = "dc_comp_id", insertable = true, updatable = true)})
+    @NotFound(action= NotFoundAction.IGNORE)
     private List<PurchasePlanProduct> product;
 }

@@ -9,8 +9,7 @@ import java.util.List;
 @Data
 @Jacksonized
 @NoArgsConstructor
-public class VVerificationPlanRequest {
+public class VPurchasePlanRequest {
     List<String> products;
     List<String> suppliers;
-    List<String> brands;
 }

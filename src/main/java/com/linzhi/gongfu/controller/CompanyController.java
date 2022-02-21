@@ -1,15 +1,18 @@
 package com.linzhi.gongfu.controller;
 
 
-
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.vo.VBaseResponse;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
 import com.linzhi.gongfu.vo.VSuppliersResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,16 +58,13 @@ public class CompanyController {
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
      */
     @GetMapping("/suppliers/by/brand")
-    public VSuppliersResponse suppliersByBrand(@RequestParam("brand") Optional<List<String>> brands) {
+    public VSuppliersResponse suppliersByBrands(@RequestParam("brand") Optional<List<String>> brands,@RequestParam("suppliers")Optional<List<String>> suppliers) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var supplier = companyService.findCompanyInformationByBrands(brands,session.getSession().getCompanyCode());
-
+        var supplier = companyService.findSuppliersByBrands(brands,session.getSession().getCompanyCode(),suppliers);
         return VSuppliersResponse.builder()
             .code(200)
             .message("获取我的供应列表成功。")
             .suppliers(supplier.stream().map(companyMapper::toPreloadSupliers).collect(Collectors.toSet()))
             .build();
-
     }
-
 }

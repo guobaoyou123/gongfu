@@ -5,6 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 采购临时计划实体
@@ -49,6 +50,11 @@ public class TemporaryPlan implements Serializable {
      */
     @Column
     private BigDecimal demand;
+    /**
+     * 创建时间
+     */
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
     @OneToOne
     @JoinColumn(name ="product_id",referencedColumnName = "id", insertable = false, updatable = false)
     private Product product;

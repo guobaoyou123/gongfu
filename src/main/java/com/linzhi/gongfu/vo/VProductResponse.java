@@ -15,6 +15,7 @@ public class VProductResponse extends VBaseResponse{
     private int current;
     private int total;
     List<VProduct> products;
+    List<VProduct> otherproducts;
     @Data
     public static class VProduct{
         /**

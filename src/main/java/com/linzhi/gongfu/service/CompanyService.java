@@ -1,26 +1,31 @@
 package com.linzhi.gongfu.service;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
-import com.linzhi.gongfu.entity.*;
+import com.linzhi.gongfu.entity.CompTrad;
+import com.linzhi.gongfu.entity.Company;
+import com.linzhi.gongfu.entity.QCompTradBrand;
+import com.linzhi.gongfu.entity.QCompany;
+import com.linzhi.gongfu.enumeration.Trade;
 import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.repository.CompTradeRepository;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
-
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 公司信息及处理业务服务
@@ -56,7 +61,7 @@ public class CompanyService {
      */
 
     public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandbyId(String id, Optional<Integer> pageNum,Optional<Integer> pageSize) {
-        Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyer(id, PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10)));
+        Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyerAndState(id, PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10)), Trade.TRANSACTION);
         Page<TCompanyIncludeBrand> tCompanyIncludeBrands =compTradPage.map(compTradeMapper::toSuppliersIncludeBrand);
         tCompanyIncludeBrands.forEach(compTrad ->  {
             //将供应商中的经营品牌与授权品牌和自营品牌对比进行去重
@@ -85,14 +90,22 @@ public class CompanyService {
         return   tCompanyIncludeBrands .map(compTradeMapper::toPreloadSuppliersIncludeBrandDTOs);
     }
     @Cacheable(value = "suppliers_brand;1800", unless = "#result == null")
-    public Set<TCompanyBaseInformation> findCompanyInformationByBrands(Optional<List<String>> brands,String id){
+    public Set<TCompanyBaseInformation> findSuppliersByBrands(Optional<List<String>> brands,String id,Optional<List<String>> suppliers){
         QCompany qCompany = QCompany.company;
         QCompTradBrand qCompTradBrand = QCompTradBrand.compTradBrand;
-        List<Company> companies =queryFactory.selectDistinct(qCompany)
-                                     .from(qCompTradBrand)
-                                     .leftJoin(qCompany).on(qCompany.code.eq(qCompTradBrand.compTradBrandId.compSaler))
-                                     .where(qCompTradBrand.compTradBrandId.compBuyer.eq(id).and(qCompTradBrand.compTradBrandId.brandCode.in(brands.orElse(new ArrayList<>()))))
-                                     .orderBy(qCompany.code.desc())
+
+        JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompTradBrand).leftJoin(qCompany)
+            .on(qCompany.code.eq(qCompTradBrand.compTradBrandId.compSaler));
+        if(!brands.isEmpty()){
+            query.where(qCompTradBrand.compTradBrandId.brandCode.in(brands.get()));
+        }
+        if(!id.isEmpty()){
+            query.where(qCompTradBrand.compTradBrandId.compBuyer.eq(id));
+        }
+        if(!suppliers.isEmpty()){
+            query.where(qCompTradBrand.compTradBrandId.compSaler.notIn(suppliers.get()));
+        }
+        List<Company> companies =query.orderBy(qCompany.code.desc())
                                      .fetch();
         return companies.stream()
             .map(companyMapper::toBaseInformation)

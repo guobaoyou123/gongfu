@@ -4,10 +4,7 @@ import com.linzhi.gongfu.mapper.MainProductClassMapper;
 import com.linzhi.gongfu.mapper.ProductMapper;
 import com.linzhi.gongfu.mapper.SysCompareDetailMapper;
 import com.linzhi.gongfu.service.ProductService;
-import com.linzhi.gongfu.vo.VConnectionsResponse;
-import com.linzhi.gongfu.vo.VDriversResponse;
-import com.linzhi.gongfu.vo.VProductClassResponse;
-import com.linzhi.gongfu.vo.VProductResponse;
+import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,7 +33,7 @@ public class ProductController {
      */
     @GetMapping("/product/classes")
     public VProductClassResponse productClasses() {
-        var classList =   productService.productClassList().stream()
+        var classList =   productService.productClassList("001").stream()
             .map(mainProductClassMapper::toPreloadMainProductClass)
             .collect(Collectors.toList());
 
@@ -62,7 +59,22 @@ public class ProductController {
             .drives(drivers)
             .build();
     }
+    /**
+     * 查询所有产品主材质
+     * @return 主材质列表
+     */
+    @GetMapping("/product/materials")
+    public VMaterialResponse productMaterials() {
+        var materials =   productService.productClassList("002").stream()
+            .map(mainProductClassMapper::toPreLoadMaterial)
+            .collect(Collectors.toList());
 
+        return VMaterialResponse.builder()
+            .code(200)
+            .message("获取主材质列表成功。")
+            .materials(materials)
+            .build();
+    }
     /**
      * 查询所有产品连接方式
      * @return 连接方式列表
@@ -85,14 +97,6 @@ public class ProductController {
     @GetMapping("/products")
     public VProductResponse products(@RequestParam("brand")Optional<List<String>> brands, @RequestParam("class")Optional<String> classes, @RequestParam("material")Optional<String> material
         , @RequestParam("drive")Optional<String> drive, @RequestParam("connection1")Optional<String> connection1, @RequestParam("connection2")Optional<String> connection2, @RequestParam("pageSize")Optional<Integer> pageSize, @RequestParam("pageNum")Optional<Integer> pageNum){
-
-        var products = productService.productList(brands,classes,material,drive,connection1,connection2,pageSize,pageNum);
-        return VProductResponse.builder()
-            .code(200)
-            .message("获取连接方式列表成功。")
-            .total(products.getTotalPages())
-            .current(products.getNumber())
-            .products(products.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
-            .build();
+        return productService.productList(brands,classes,material,drive,connection1,connection2,pageSize,pageNum);
     }
 }

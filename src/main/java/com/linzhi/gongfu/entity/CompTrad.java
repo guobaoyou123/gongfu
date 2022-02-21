@@ -1,5 +1,7 @@
 package com.linzhi.gongfu.entity;
 
+import com.linzhi.gongfu.enumeration.TaxModel;
+import com.linzhi.gongfu.enumeration.Trade;
 import lombok.*;
 
 import javax.persistence.*;
@@ -26,6 +28,17 @@ public class CompTrad implements Serializable {
      */
     @EmbeddedId
     private CompTradId compTradId;
+    /**
+     * 税模式（0：不含税，1：含税）
+     */
+    @Column(name = "tax_model")
+    private TaxModel taxModel;
+    /**
+     * 状态（0不可交易，2申请交易，1可交易）
+     */
+    @Column(name = "state")
+    private Trade state;
+
     /**
      * 供应商
      */
@@ -69,4 +82,7 @@ public class CompTrad implements Serializable {
         @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = true, updatable = true)
     })
     private Set<DcBrand> selfSupportBrands;
+
+
+
 }
