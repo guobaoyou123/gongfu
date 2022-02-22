@@ -16,9 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-;
-
 /**
  * 用于处理采购、销售流程等
  *
@@ -38,24 +35,35 @@ public class ContractController {
      */
     @GetMapping("/contract/temporary/purchase/plan")
     public VTemporaryPlanResponse  temporaryPlans(){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var temporaryPlans = planService.findTemporaryPlanByOperator(TemporaryPlanId.builder()
-                                                                                             .createdBy(session.getSession().getOperatorCode())
-                                                                                             .dcCompId(session.getSession().getCompanyCode()).build());
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var temporaryPlans = planService.findTemporaryPlanByOperator
+            (TemporaryPlanId.builder()
+                .createdBy(session.getSession().getOperatorCode())
+                .dcCompId(session.getSession().getCompanyCode())
+                .build());
         return VTemporaryPlanResponse.builder()
             .message("获取采购临时计划表成功")
             .code(200)
-            .products(temporaryPlans.stream().map(temporaryPlanMapper::toPreloadTemporaryPlan).collect(Collectors.toList()))
+            .products(temporaryPlans.stream().
+                map(temporaryPlanMapper::toPreloadTemporaryPlan)
+                .collect(Collectors.toList()))
             .build();
     }
+
     /**
      * 保存临时采购计划
      * @return
      */
     @PostMapping("/contract/temporary/purchase/plan")
     public VBaseResponse  saveTemporaryPlan(@RequestBody Optional<List<VTemporaryPlanRequest>> products){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        Map map=planService.saveTemporaryPlan(products.get(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        Map map=planService.saveTemporaryPlan(
+            products.get(),
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
         if((boolean)map.get("flag"))
             return VBaseResponse.builder()
                 .message((String)map.get("message"))
@@ -72,8 +80,12 @@ public class ContractController {
      */
     @PutMapping("/contract/temporary/purchase/plan")
     public VBaseResponse  modifyTemporaryPlan(@RequestBody Optional<List<VTemporaryPlanRequest>> products){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        planService.modifyTemporaryPlan(products.get(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        planService.modifyTemporaryPlan(products.get(),
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
         return VBaseResponse.builder()
             .message("修改计划成功")
             .code(200)
@@ -84,9 +96,14 @@ public class ContractController {
      * @return
      */
     @DeleteMapping("/contract/temporary/purchase/plan")
-    public VBaseResponse  deleteTemporaryPlan(@RequestBody Optional<List<String>> products){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.deleteTemporaryPlan(products.get(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+    public VBaseResponse  deleteTemporaryPlan(@RequestParam("products") List<String> products){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = planService.deleteTemporaryPlan(
+            products,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode())
+            ;
         if(flag)
             return VBaseResponse.builder()
                 .message("删除计划成功")
@@ -98,34 +115,19 @@ public class ContractController {
             .build();
     }
     /**
-     * 验证所选产品品牌是否有供应商
-     * @return 品牌列表
-     */
-    @GetMapping("/contract/temporary/purchase/plan/brand/verification")
-    public VVerificationBrandResponse  brandVerification(@RequestParam  Optional<List<String>> brand){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        List<String> brands =brand.
-             map(b -> planService.brandVerification(b,session.getSession().getCompanyCode())).get();
-        if(brands.size()>0)
-            return VVerificationBrandResponse.builder()
-                .message("验证未通过，部分品牌没有供应商")
-                .brands(brands)
-                .code(201)
-                .build();
-        return VVerificationBrandResponse.builder()
-                .message("验证成功")
-                .brands(new ArrayList<>())
-                .code(200)
-                .build();
-    }
-    /**
      * 开始计划，生成采购计划
      * @return
      */
     @PostMapping("/contract/purchase/plan")
     public VPlanResponse savePlan(@RequestBody VPurchasePlanRequest products){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var code =planService.savaPurchasePlan(products.getProducts(),products.getSuppliers(),session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var code =planService.savaPurchasePlan(
+            products.getProducts(),
+            products.getSuppliers(),
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
         if(code.isEmpty())
             return VPlanResponse.builder()
                 .message("产品已不存在于临时计划表中，开始计划失败")
@@ -144,7 +146,8 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/plan")
      public VPurchasePlanResponse purchasePlan(@RequestParam Optional<String> planCode){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
          return  planService.findPurchasePlanByCode(planCode.get(),session.getSession().getCompanyCode())
              .orElse(VPurchasePlanResponse.builder()
                  .code(202)
@@ -159,10 +162,21 @@ public class ContractController {
      * @return
      */
     @PutMapping("/contract/purchase/plan/supplier")
-    public VBaseResponse modifyPlanSupplier(@RequestParam Optional<String> planCode,@RequestParam Optional<String> productId,
-                                             @RequestParam Optional<String> oldSupplierCode ,@RequestParam Optional<String> newSupplierCode){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.modifyPlanSupplier(session.getSession().getCompanyCode(),planCode.get(),productId.get(),oldSupplierCode.get(),newSupplierCode.get());
+    public VBaseResponse modifyPlanSupplier(
+        @RequestParam Optional<String> planCode,
+        @RequestParam Optional<String> productId,
+        @RequestParam Optional<String> oldSupplierCode ,
+        @RequestParam Optional<String> newSupplierCode
+    ){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = planService.modifyPlanSupplier(
+            session.getSession().getCompanyCode(),
+            planCode.get(),
+            productId.get(),
+            oldSupplierCode.get(),
+            newSupplierCode.get()
+        );
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -178,9 +192,15 @@ public class ContractController {
      * @return
      */
     @PutMapping("/contract/purchase/plan/forseveral")
-    public VBaseResponse modifyPurchasePlanForseveral(@RequestBody Optional<List<VPlanDemandRequest>> forSeveral){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.modifyPurchasePlanForSeveral(session.getSession().getCompanyCode(),forSeveral.get());
+    public VBaseResponse modifyPurchasePlanForseveral(
+        @RequestBody Optional<List<VPlanDemandRequest>> forSeveral
+    ){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = planService.modifyPurchasePlanForSeveral(
+            session.getSession().getCompanyCode(),
+            forSeveral.get()
+        );
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -197,8 +217,12 @@ public class ContractController {
      */
     @PutMapping("/contract/purchase/plan/demand")
     public VBaseResponse modifyPurchasePlanDemand(@RequestBody Optional<List<VPlanDemandRequest>> demand){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.modifyPurchasePlanDemand(session.getSession().getCompanyCode(),demand.get());
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = planService.modifyPurchasePlanDemand(
+            session.getSession().getCompanyCode(),
+            demand.get()
+        );
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -218,9 +242,19 @@ public class ContractController {
      * @return
      */
     @PostMapping("/contract/purchase/plan/product")
-    public VBaseResponse  savePlanProduct(@RequestParam("planCode")Optional<String> planCode,@RequestParam("productId")Optional<String> productId,@RequestParam("demand") Optional<BigDecimal> demand){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.savePlanProduct(session.getSession().getCompanyCode(),productId.get(),planCode.get(),demand.get());
+    public VBaseResponse  savePlanProduct(
+        @RequestParam("planCode")Optional<String> planCode,
+        @RequestParam("productId")Optional<String> productId,
+        @RequestParam("demand") Optional<BigDecimal> demand
+    ){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = planService.savePlanProduct(
+            session.getSession().getCompanyCode(),
+            productId.get(),
+            planCode.get(),
+            demand.get()
+        );
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -236,9 +270,16 @@ public class ContractController {
      * 采购计划删除产品
      */
     @DeleteMapping("/contract/purchase/plan/product")
-    public VBaseResponse  deletePlanProduct(@RequestBody Optional<VDeletePlanProductRequest> productId){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.deletePlanProduct(session.getSession().getCompanyCode(),productId.get().getProducts(),productId.get().getPlanCode());
+    public VBaseResponse  deletePlanProduct(
+        @RequestParam String planCode,
+        @RequestParam List<String> productId
+    ){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = planService.deletePlanProduct(
+            session.getSession().getCompanyCode(),
+            productId,planCode
+        );
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -251,8 +292,12 @@ public class ContractController {
     }
     @DeleteMapping("/contract/purchase/plan")
     public VBaseResponse deletePurchasePlan(@RequestParam("planCode") Optional<String> planCode){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var flag = planService.deletePurchasePlan(session.getSession().getCompanyCode(),planCode.get());
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = planService.deletePurchasePlan(
+            session.getSession().getCompanyCode(),
+            planCode.get()
+        );
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -269,12 +314,19 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/inquiry/preview/suppliers")
     public VSuppliersResponse suppliersByPlancode(@RequestParam("planCode") Optional<String> planCode) {
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var supplier = planService.findSuppliersByPlanCode(planCode.get(),session.getSession().getCompanyCode());
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var supplier = planService.findSuppliersByPlanCode(
+            planCode.get(),
+            session.getSession().getCompanyCode()
+        );
         return VSuppliersResponse.builder()
             .code(200)
             .message("获取我的供应列表成功。")
-            .suppliers(supplier.stream().map(companyMapper::toPreloadSupliers).collect(Collectors.toSet()))
+            .suppliers(supplier.stream()
+                .map(companyMapper::toPreloadSupliers)
+                .collect(Collectors.toSet())
+            )
             .build();
     }
 
@@ -285,7 +337,13 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase/inquiry")
     public VBaseResponse savePurchaseInquiry(@RequestParam("planCode") Optional<String> planCode){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        return planService.savePurchaseInquiry(planCode.get(),session.getSession().getCompanyCode(),session.getSession().getCompanyName(),session.getSession().getOperatorCode());
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        return planService.savePurchaseInquiry(
+            planCode.get(),
+            session.getSession().getCompanyCode(),
+            session.getSession().getCompanyName(),
+            session.getSession().getOperatorCode()
+        );
     }
 }

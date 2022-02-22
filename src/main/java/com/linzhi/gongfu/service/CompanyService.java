@@ -61,7 +61,7 @@ public class CompanyService {
      */
 
     public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandbyId(String id, Optional<Integer> pageNum,Optional<Integer> pageSize) {
-        Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyerAndState(id, PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10)), Trade.TRANSACTION);
+        Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyer(id, PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10)));
         Page<TCompanyIncludeBrand> tCompanyIncludeBrands =compTradPage.map(compTradeMapper::toSuppliersIncludeBrand);
         tCompanyIncludeBrands.forEach(compTrad ->  {
             //将供应商中的经营品牌与授权品牌和自营品牌对比进行去重

@@ -1,7 +1,6 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.mapper.MainProductClassMapper;
-import com.linzhi.gongfu.mapper.ProductMapper;
 import com.linzhi.gongfu.mapper.SysCompareDetailMapper;
 import com.linzhi.gongfu.service.ProductService;
 import com.linzhi.gongfu.vo.*;
@@ -26,14 +25,14 @@ public class ProductController {
     private final ProductService productService;
     private final MainProductClassMapper mainProductClassMapper;
     private final SysCompareDetailMapper sysCompareDetailMapper;
-    private final ProductMapper productMapper;
     /**
      * 查询所有产品分类
      * @return 对系统所有的产品分类信息
      */
     @GetMapping("/product/classes")
     public VProductClassResponse productClasses() {
-        var classList =   productService.productClassList("001").stream()
+        var classList =   productService.productClassList("001")
+            .stream()
             .map(mainProductClassMapper::toPreloadMainProductClass)
             .collect(Collectors.toList());
 
@@ -81,7 +80,8 @@ public class ProductController {
      */
     @GetMapping("/product/connections")
     public VConnectionsResponse productConnections() {
-        var connections=productService.productDrivesList("连接方式").stream()
+        var connections=productService.productDrivesList("连接方式")
+            .stream()
             .map(sysCompareDetailMapper::toPreloadConnection)
             .collect(Collectors.toList());
         return VConnectionsResponse.builder()
@@ -95,8 +95,24 @@ public class ProductController {
      * @return 返回产品列表
      */
     @GetMapping("/products")
-    public VProductResponse products(@RequestParam("brand")Optional<List<String>> brands, @RequestParam("class")Optional<String> classes, @RequestParam("material")Optional<String> material
-        , @RequestParam("drive")Optional<String> drive, @RequestParam("connection1")Optional<String> connection1, @RequestParam("connection2")Optional<String> connection2, @RequestParam("pageSize")Optional<Integer> pageSize, @RequestParam("pageNum")Optional<Integer> pageNum){
-        return productService.productList(brands,classes,material,drive,connection1,connection2,pageSize,pageNum);
+    public VProductResponse products(
+        @RequestParam("brand")Optional<List<String>> brands,
+        @RequestParam("class")Optional<String> classes,
+        @RequestParam("material")Optional<String> material,
+        @RequestParam("drive")Optional<String> drive,
+        @RequestParam("connection1")Optional<String> connection1,
+        @RequestParam("connection2")Optional<String> connection2,
+        @RequestParam("pageSize")Optional<Integer> pageSize,
+        @RequestParam("pageNum")Optional<Integer> pageNum){
+
+        return productService.productList(brands,
+            classes,
+            material,
+            drive,
+            connection1,
+            connection2,
+            pageSize,
+            pageNum
+        );
     }
 }

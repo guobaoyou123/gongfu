@@ -3,6 +3,8 @@ package com.linzhi.gongfu.entity;
 import com.linzhi.gongfu.enumeration.TaxModel;
 import com.linzhi.gongfu.enumeration.Whether;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -140,7 +142,8 @@ public class Inquiry {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToMany
-    @JoinColumn(name = "inquiry_id",referencedColumnName = "id")
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "inquiry_id",referencedColumnName = "id", insertable = true, updatable = true)
+    @NotFound(action= NotFoundAction.IGNORE)
     private List<InquiryRecord> records;
 }

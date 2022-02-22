@@ -30,9 +30,8 @@ public class InquiryRecordId implements Serializable {
      * 序号
      */
 
-    @Column(nullable = false)
+    @Column(name = "code",nullable = false)
     @NotNull
     @NotBlank
-    @NonNull
     private Integer code ;
 }

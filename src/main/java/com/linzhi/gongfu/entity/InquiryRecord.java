@@ -104,4 +104,10 @@ public class InquiryRecord {
      */
     @Column(name = "total_price_vat")
     private BigDecimal totalPriceVat;
+
+    /**
+     * 含税总价
+     */
+    @Column(name = "stock_time")
+    private BigDecimal stockTime;
 }
