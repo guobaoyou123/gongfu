@@ -32,7 +32,7 @@ public abstract class StringEnumerationConverter<T extends Enum<T>> implements A
                         return null;
                     }
                 })
-                .map(String.class::cast)
+                .map(v -> v.toString())
                 .orElse(null);
     }
 

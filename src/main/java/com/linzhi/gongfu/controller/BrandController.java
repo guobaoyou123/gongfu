@@ -34,17 +34,29 @@ public class BrandController {
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
      */
     @GetMapping("/brands/paged")
-    public VBrandResponse brandsPage(@RequestParam("pageNum") Optional<Integer> pageNum, @RequestParam("pageSize") Optional<Integer> pageSize) {
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-       var brandPage = brandService.brandsPagebyId(session.getSession().getCompanyCode(),pageNum,pageSize);
+    public VBrandResponse brandsPage(
+        @RequestParam("pageNum") Optional<Integer> pageNum,
+        @RequestParam("pageSize") Optional<Integer> pageSize
+    ) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+       var brandPage = brandService.brandsPagebyId(
+           session.getSession().getCompanyCode(),
+           pageNum,
+           pageSize
+       );
         return VBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
-            .total(brandPage.getTotalPages())
-            .current(brandPage.getNumber())
-            .brands(brandPage.getContent().stream().map(brandMapper::toBrandPreload).collect(Collectors.toList()))
+            .total(Integer.valueOf(String.valueOf(brandPage.getTotalElements())))
+            .current(pageNum.orElse(1))
+            .brands(brandPage.getContent().stream()
+                .map(brandMapper::toBrandPreload)
+                .collect(Collectors.toList())
+            )
             .build();
     }
+
     /**
      * 查询所有品牌
      * @return 对系统所有的品牌信息
@@ -55,7 +67,10 @@ public class BrandController {
         return VDcBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
-            .brands(brandList.stream().map(brandMapper::toProductBrandPreload).collect(Collectors.toSet()))
+            .brands(brandList.stream()
+                .map(brandMapper::toProductBrandPreload)
+                .collect(Collectors.toSet())
+            )
             .build();
     }
 
@@ -69,7 +84,10 @@ public class BrandController {
         return VDcBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
-            .brands(brandList.stream().map(brandMapper::toProductBrandPreload).collect(Collectors.toSet()))
+            .brands(brandList.stream()
+                .map(brandMapper::toProductBrandPreload)
+                .collect(Collectors.toSet())
+            )
             .build();
     }
 
@@ -79,12 +97,18 @@ public class BrandController {
      */
     @GetMapping("/brands/by/company")
     public VDcBrandResponse brandsByCompany(@RequestParam("company") Optional<List<String>> company) {
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var brandList = brandService.brandListBySupliers(company,session.getSession().getCompanyCode());
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var brandList = brandService.brandListBySupliers(
+            company,
+            session.getSession().getCompanyCode()
+        );
         return VDcBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
-            .brands(brandList.stream().map(brandMapper::toProductBrandPreload).collect(Collectors.toSet()))
+            .brands(brandList.stream()
+                .map(brandMapper::toProductBrandPreload)
+                .collect(Collectors.toSet()))
             .build();
     }
 }

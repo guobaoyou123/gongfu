@@ -87,7 +87,7 @@ public class ProductService {
                     .code(200)
                     .message("获取产品列表成功。")
                     .total(otherproductPage.getTotalPages())
-                    .current(otherproductPage.getNumber())
+                    .current(pageNum.orElse(1))
                     .products(new ArrayList<>())
                     .otherproducts(otherproductPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
                     .build();
@@ -97,8 +97,8 @@ public class ProductService {
         return  VProductResponse.builder()
             .code(200)
             .message("获取产品列表成功。")
-            .total(productPage.getTotalPages())
-            .current(productPage.getNumber())
+            .total(Integer.valueOf(String.valueOf(productPage.getTotalElements())))
+            .current(pageNum.orElse(1))
             .otherproducts(new ArrayList<>())
             .products(productPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
             .build();
