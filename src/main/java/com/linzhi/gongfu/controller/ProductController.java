@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class ProductController {
     private final ProductService productService;
     private final MainProductClassMapper mainProductClassMapper;
     private final SysCompareDetailMapper sysCompareDetailMapper;
+
     /**
      * 查询所有产品分类
      * @return 对系统所有的产品分类信息
@@ -58,6 +60,7 @@ public class ProductController {
             .drives(drivers)
             .build();
     }
+
     /**
      * 查询所有产品主材质
      * @return 主材质列表
@@ -65,15 +68,15 @@ public class ProductController {
     @GetMapping("/product/materials")
     public VMaterialResponse productMaterials() {
         var materials =   productService.productClassList("002").stream()
-            .map(mainProductClassMapper::toPreLoadMaterial)
+            .map(mainProductClassMapper::toPreloadMainMaterial)
             .collect(Collectors.toList());
-
         return VMaterialResponse.builder()
             .code(200)
             .message("获取主材质列表成功。")
             .materials(materials)
             .build();
     }
+
     /**
      * 查询所有产品连接方式
      * @return 连接方式列表
@@ -90,6 +93,7 @@ public class ProductController {
             .connections(connections)
             .build();
     }
+
     /**
      * 查询产品列表
      * @return 返回产品列表

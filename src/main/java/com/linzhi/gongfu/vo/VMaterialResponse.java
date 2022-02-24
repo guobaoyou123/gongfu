@@ -21,14 +21,14 @@ public class VMaterialResponse extends VBaseResponse{
 
     List<VMaterial> materials;
     @Data
-    public static class  VMaterial{
-        /**
-         * 驱动编码
-         */
+    public static class VMaterial{
         private String code;
-        /**
-         * 中文名称
-         */
+        private String name;
+        private List<VSubMaterial> children;
+    }
+    @Data
+    public static class VSubMaterial{
+        private String code;
         private String name;
     }
 }
