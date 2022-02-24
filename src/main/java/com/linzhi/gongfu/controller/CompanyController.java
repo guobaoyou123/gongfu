@@ -52,7 +52,6 @@ public class CompanyController {
                .current(pageNum.orElse(1))
                 .suppliers(supplier.getContent())
                 .build();
-
     }
 
     /**
@@ -65,11 +64,18 @@ public class CompanyController {
         @RequestParam("suppliers")Optional<List<String>> suppliers
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var supplier = companyService.findSuppliersByBrands(brands,session.getSession().getCompanyCode(),suppliers);
+        var supplier = companyService.findSuppliersByBrands(
+            brands,session.getSession().getCompanyCode(),
+            suppliers
+        );
         return VSuppliersResponse.builder()
             .code(200)
             .message("获取我的供应列表成功。")
-            .suppliers(supplier.stream().map(companyMapper::toPreloadSupliers).collect(Collectors.toSet()))
+            .suppliers(
+                 supplier.stream()
+                .map(companyMapper::toPreloadSupliers)
+                .collect(Collectors.toSet())
+            )
             .build();
     }
 }
