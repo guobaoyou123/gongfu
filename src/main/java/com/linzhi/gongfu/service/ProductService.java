@@ -72,8 +72,11 @@ public class ProductService {
      * @return 产品驱动信息列表
      */
     public VProductResponse  productList(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
-        , Optional<String> drive, Optional<String> connection1, Optional<String> connection2, Optional<Integer> pageSize, Optional<Integer> pageNum){
-        Pageable pageable = PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10));
+        , Optional<String> drive, Optional<String> connection1, Optional<String> connection2, Optional<String> pageSize, Optional<String> pageNum){
+        Pageable pageable = PageRequest.of(
+            pageNum.map(PageTools::verificationPageNum).orElse(0),
+            pageSize.map(PageTools::verificationPageSize).orElse(10)
+        );
         //根据条件查询产品信息
         List<TProduct> products = findProductAll(brands, classes, material, drive, connection1, connection2).stream()
             .map(productMapper::toProduct)
@@ -87,7 +90,7 @@ public class ProductService {
                     .code(200)
                     .message("获取产品列表成功。")
                     .total(otherproductPage.getTotalPages())
-                    .current(pageNum.orElse(1))
+                    .current(otherproductPage.getNumber()+1)
                     .products(new ArrayList<>())
                     .otherproducts(otherproductPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
                     .build();
@@ -98,7 +101,7 @@ public class ProductService {
             .code(200)
             .message("获取产品列表成功。")
             .total(Integer.valueOf(String.valueOf(productPage.getTotalElements())))
-            .current(pageNum.orElse(1))
+            .current(productPage.getNumber()+1)
             .otherproducts(new ArrayList<>())
             .products(productPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
             .build();

@@ -12,6 +12,7 @@ import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.repository.CompTradeRepository;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
+import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -60,8 +61,13 @@ public class CompanyService {
      * @return 供应商信息列表
      */
 
-    public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandbyId(String id, Optional<Integer> pageNum,Optional<Integer> pageSize) {
-        Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyer(id, PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10)));
+    public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandbyId(String id, Optional<String> pageNum,Optional<String> pageSize) {
+
+        Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyer(id,
+            PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),
+                pageSize.map(PageTools::verificationPageSize).orElse(10)
+            )
+        );
         Page<TCompanyIncludeBrand> tCompanyIncludeBrands =compTradPage.map(compTradeMapper::toSuppliersIncludeBrand);
         tCompanyIncludeBrands.forEach(compTrad ->  {
             //将供应商中的经营品牌与授权品牌和自营品牌对比进行去重
@@ -80,13 +86,11 @@ public class CompanyService {
                 compTrad.setSelfSupportBrands(selfSupportBrands);
             if(!authBrands.isEmpty())
                 compTrad.getSelfSupportBrands().addAll(authBrands);
-
             if(!managerBrands.isEmpty())
                 compTrad.getSelfSupportBrands().addAll(managerBrands);
             if(compTrad.getSelfSupportBrands().size()>5)
                 compTrad.setSelfSupportBrands(compTrad.getSelfSupportBrands().subList(0,5));
         });
-
         return   tCompanyIncludeBrands .map(compTradeMapper::toPreloadSuppliersIncludeBrandDTOs);
     }
     @Cacheable(value = "suppliers_brand;1800", unless = "#result == null")

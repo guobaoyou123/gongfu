@@ -92,6 +92,7 @@ public class ContractController {
             .code(200)
             .build();
     }
+
     /**
      * 删除临时采购计划
      * @return
@@ -309,6 +310,12 @@ public class ContractController {
             .message("删除产品失败！")
             .build();
     }
+
+    /**
+     * 移除采购计划
+     * @param planCode 采购计划编号
+     * @return
+     */
     @DeleteMapping("/contract/purchase/plan")
     public VBaseResponse deletePurchasePlan(@RequestParam("planCode") Optional<String> planCode){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
@@ -327,6 +334,7 @@ public class ContractController {
             .message("删除采购计划失败！")
             .build();
     }
+
     /**
      * 通过本公司id,采购计划编号查询采购询价预览表头供应商列表
      * @return 供应商列表

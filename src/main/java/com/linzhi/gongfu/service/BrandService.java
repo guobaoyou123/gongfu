@@ -46,11 +46,14 @@ public class BrandService {
      * @return 品牌信息列表
      */
 
-    public Page<TBrand> brandsPagebyId(String id, Optional<Integer> pageNum, Optional<Integer> pageSize) {
+    public Page<TBrand> brandsPagebyId(String id, Optional<String> pageNum, Optional<String> pageSize) {
         //根据单位id查询全部品牌信息（包括自营、经营、授权等信息）
          List<TBrand> list= findBrandsAllById(id);
         //分页
-        Pageable pageable = PageRequest.of(pageNum.orElse(1)-1,pageSize.orElse(10));
+        Pageable pageable = PageRequest.of(
+            pageNum.map(PageTools::verificationPageNum).orElse(0),
+            pageSize.map(PageTools::verificationPageSize).orElse(10)
+        );
         return PageTools.listConvertToPage(list,pageable);
     }
     @Cacheable(value = "brands_ID;1800" ,key = "#id", unless = "#result == null")

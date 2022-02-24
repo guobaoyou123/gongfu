@@ -106,8 +106,8 @@ public class ProductController {
         @RequestParam("drive")Optional<String> drive,
         @RequestParam("connection1")Optional<String> connection1,
         @RequestParam("connection2")Optional<String> connection2,
-        @RequestParam("pageSize")Optional<Integer> pageSize,
-        @RequestParam("pageNum")Optional<Integer> pageNum){
+        @RequestParam("pageSize")Optional<String> pageSize,
+        @RequestParam("pageNum")Optional<String> pageNum){
 
         return productService.productList(brands,
             classes,

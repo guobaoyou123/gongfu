@@ -35,21 +35,16 @@ public class CompanyController {
      */
     @GetMapping("/suppliers/paged")
     public VSuppliersIncludeBrandsResponse suppliersIncludeBrands(
-        @RequestParam("pageNum") Optional<Integer> pageNum,
-        @RequestParam("pageSize") Optional<Integer> pageSize
+        @RequestParam("pageNum") Optional<String> pageNum,
+        @RequestParam("pageSize") Optional<String> pageSize
     ) {
-        AtomicInteger i = new AtomicInteger();
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
         var supplier = companyService.CompanyIncludeBrandbyId(session.getSession().getCompanyCode(),pageNum,pageSize);
-        supplier.getContent().forEach(vSupplier -> {
-            i.getAndIncrement();
-            vSupplier.setSort(i.get());
-        });
         return VSuppliersIncludeBrandsResponse.builder()
                .code(200)
                .message("获取我的供应以及品牌列表成功。")
                .total(Integer.valueOf(String.valueOf(supplier.getTotalElements())))
-               .current(pageNum.orElse(1))
+               .current(supplier.getNumber()+1)
                 .suppliers(supplier.getContent())
                 .build();
     }

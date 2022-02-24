@@ -36,6 +36,10 @@ public class VSuppliersResponse extends VBaseResponse  {
          * 公司简称
          */
         private String name;
+        /**
+         * 排序
+         */
+        private Integer sort;
     }
 
 }
