@@ -45,6 +45,7 @@ public class PlanService {
     private final InquiryRepository inquiryRepository;
     private final CompTradeRepository compTradeRepository;
     private final VatRatesRepository vatRatesRepository;
+
     /**
      * 根据单位id、操作员编码查询该操作员的临时采购计划列表
      * @param temporaryPlanId 单位id 操作员编码
@@ -120,6 +121,7 @@ public class PlanService {
         }
         return  resultMap;
     }
+
     /**
      * 修改计划需求
      * @param product 计划产品列表
@@ -132,6 +134,7 @@ public class PlanService {
             temporaryPlanRepository.updateNameById(pr.getDemand(),TemporaryPlanId.builder().dcCompId(id).productId(pr.getProductId()).createdBy(operatorCode).build());
         });
     }
+
     /**
      * 删除计划需求
      * @param product 产品id列表
@@ -303,16 +306,43 @@ public class PlanService {
         });
         return IncludeCompMap;
     }
+
     /**
-     * 根据计划号查询采购计划
-     * @param planCode 采购计划号
+     * 验证是否有未完成的采购计划
+     * @param id 单位编号 operateorCode 操作员编号
      * @return 返回采购计划信息
      */
-    public Optional<VPurchasePlanResponse> findPurchasePlanByCode(String planCode, String id){
-        return purchasePlanRepository.findById(PurchasePlanId.builder().planCode(planCode).dcCompId(id).build())
+    public Optional<VBaseResponse> verification(String id, String operateorCode){
+        var list = purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndAndCreatedBy(id, operateorCode);
+        if(list.size()>0)
+            return Optional.of(
+                VBaseResponse.builder()
+                    .code(200)
+                    .message("存在未完成的计划，请前往采购计划详情完成计划，在开始新的计划！")
+                    .build()
+            );
+        return Optional.of(
+            VBaseResponse.builder()
+                .code(404)
+                .message("不存在未完成的采购计划")
+                .build()
+        );
+    }
+
+    /**
+     * 根据计划号查询采购计划
+     * @param operateorCode 操作员编号 id 单位id
+     * @return 返回采购计划信息
+     */
+    public Optional<VPurchasePlanResponse> findPurchasePlanByCode(String id, String operateorCode){
+        var list = purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndAndCreatedBy(id, operateorCode);
+        if(list.size()==0)
+            return  null;
+        return Optional.of(list.get(0))
             .map(purchasePlanMapper::toDTO)
             .map(purchasePlanMapper::toPruchasePlan);
     }
+
     /**
      * 替换采购计划中的供应商
      * @param id 单位id
@@ -528,7 +558,7 @@ public class PlanService {
             );
             if(purchasePlan.isEmpty())
                 return VBaseResponse.builder()
-                    .code(202)
+                    .code(404)
                     .message("数据不存在")
                     .build();
             //查出货物税率

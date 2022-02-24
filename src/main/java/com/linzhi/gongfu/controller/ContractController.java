@@ -133,7 +133,7 @@ public class ContractController {
             return VPlanResponse.builder()
                 .message(map.get("message").toString())
                 .planCode("UNKNOWN")
-                .code(202)
+                .code(404)
                 .build();
         return VPlanResponse.builder()
             .message("开始计划成功！")
@@ -143,21 +143,39 @@ public class ContractController {
     }
 
     /**
+     * 验证是否存在未完成的计划
+     * @return
+     */
+    @GetMapping("/contract/purchase/plan/verification")
+    public VBaseResponse verification(){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        return  planService.verification(session.getSession().getCompanyCode(),session.getSession().getOperatorCode())
+            .orElse(VPurchasePlanResponse.builder()
+                .code(404)
+                .message("采购计划")
+                .planCode("UNKNOWN")
+                .products(new ArrayList<>())
+                .build());
+    }
+
+    /**
      * 采购计划
      * @return 采购计划信息
      */
     @GetMapping("/contract/purchase/plan")
-     public VPurchasePlanResponse purchasePlan(@RequestParam Optional<String> planCode){
+     public VPurchasePlanResponse purchasePlan(){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        return  planService.findPurchasePlanByCode(planCode.get(),session.getSession().getCompanyCode())
+        return  planService.findPurchasePlanByCode(session.getSession().getCompanyCode(),session.getSession().getOperatorCode())
              .orElse(VPurchasePlanResponse.builder()
-                 .code(202)
+                 .code(404)
                  .message("采购计划不存在")
                  .planCode("UNKNOWN")
                  .products(new ArrayList<>())
                  .build());
      }
+
     /**
      * 采购计划替换供应商
      * @return
@@ -188,6 +206,7 @@ public class ContractController {
             .message("保存失败！")
             .build();
     }
+
     /**
      * 修改采购计划中的需求
      * @return
@@ -212,6 +231,7 @@ public class ContractController {
             .message("修改失败！")
             .build();
     }
+
     /**
      * 修改采购计划中的需求
      * @return
