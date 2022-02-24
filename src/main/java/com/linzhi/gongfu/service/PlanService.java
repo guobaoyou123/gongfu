@@ -172,6 +172,7 @@ public class PlanService {
             //查出所选计划
             List<TemporaryPlan> temporaryPlans = temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByAndTemporaryPlanId_ProductIdIn(id,operatorCode,products);
             if(temporaryPlans.size()==0) {
+                result.put("code", 404);
                 result.put("flag", false);
                 result.put("message", "数据不存在");
                 return result;
@@ -251,6 +252,7 @@ public class PlanService {
             return result;
         }catch (Exception e){
             e.printStackTrace();
+            result.put("code", 500);
             result.put("flag",false);
             result.put("message",e.getMessage());
             return result;

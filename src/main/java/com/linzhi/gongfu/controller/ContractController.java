@@ -120,7 +120,7 @@ public class ContractController {
      * @return
      */
     @PostMapping("/contract/purchase/plan")
-    public VPlanResponse savePlan(@RequestBody VPurchasePlanRequest products){
+    public VBaseResponse savePlan(@RequestBody VPurchasePlanRequest products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var map =planService.savaPurchasePlan(
@@ -130,15 +130,13 @@ public class ContractController {
             session.getSession().getOperatorCode()
         );
         if(!(boolean)map.get("flag"))
-            return VPlanResponse.builder()
+            return VBaseResponse.builder()
                 .message(map.get("message").toString())
-                .planCode("UNKNOWN")
-                .code(404)
+                .code((Integer) map.get("code"))
                 .build();
-        return VPlanResponse.builder()
+        return VBaseResponse.builder()
             .message("开始计划成功！")
             .code(200)
-            .planCode(map.get("planCode").toString())
             .build();
     }
 
