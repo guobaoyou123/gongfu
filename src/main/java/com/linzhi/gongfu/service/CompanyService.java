@@ -12,6 +12,7 @@ import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.repository.CompTradeRepository;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
+import com.linzhi.gongfu.repository.PurchasePlanProductSupplierRepository;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -42,6 +43,7 @@ public class CompanyService {
     private final CompTradeRepository compTradeRepository;
     private final CompTradeMapper compTradeMapper;
     private final JPAQueryFactory queryFactory;
+    private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -60,7 +62,6 @@ public class CompanyService {
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 供应商信息列表
      */
-
     public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandbyId(String id, Optional<String> pageNum,Optional<String> pageSize) {
 
         Page<CompTrad> compTradPage =compTradeRepository.findSuppliersByCompTradIdCompBuyer(id,
@@ -93,8 +94,8 @@ public class CompanyService {
         });
         return   tCompanyIncludeBrands .map(compTradeMapper::toPreloadSuppliersIncludeBrandDTOs);
     }
-    @Cacheable(value = "suppliers_brand;1800", unless = "#result == null")
-    public Set<TCompanyBaseInformation> findSuppliersByBrands(Optional<List<String>> brands,String id,Optional<List<String>> suppliers){
+    @Cacheable(value = "suppliers_brands;1800", unless = "#result == null")
+    public List<TCompanyBaseInformation> findSuppliersByBrands(Optional<List<String>> brands,String id){
         QCompany qCompany = QCompany.company;
         QCompTradBrand qCompTradBrand = QCompTradBrand.compTradBrand;
 
@@ -106,13 +107,24 @@ public class CompanyService {
         if(!id.isEmpty()){
             query.where(qCompTradBrand.compTradBrandId.compBuyer.eq(id));
         }
-        if(!suppliers.isEmpty()){
-            query.where(qCompTradBrand.compTradBrandId.compSaler.notIn(suppliers.get()));
-        }
         List<Company> companies =query.orderBy(qCompany.code.desc())
                                      .fetch();
         return companies.stream()
             .map(companyMapper::toBaseInformation)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
+    }
+
+    public List<TCompanyBaseInformation> findSuppliersByBrandsAndSuppliers(Optional<String> brands,String id,Optional<List<String>> suppliers){
+        List<String> list = new ArrayList<>();
+        list.add(brands.get());
+        List<TCompanyBaseInformation> supplier= findSuppliersByBrands(
+            Optional.of(list),
+            id
+        ).stream()
+            .filter(
+                tCompanyBaseInformation -> !suppliers.orElse(new ArrayList<>()).contains(tCompanyBaseInformation.getCode())
+            )
+            .collect(Collectors.toList());
+        return supplier;
     }
 }

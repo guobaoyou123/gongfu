@@ -191,7 +191,7 @@ public class PlanService {
             //计划编码
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
             LocalDate data=LocalDate.now();
-            String planCode = "HJ-"+operatorCode+"-"+dtf.format(data)+"-"+maxCode;
+            String planCode = "JH-"+operatorCode+"-"+dtf.format(data)+"-"+maxCode;
             List<PurchasePlanProduct> purchasePlanProducts = new ArrayList<>();
             //保存
             temporaryPlans.forEach(temporaryPlan -> {

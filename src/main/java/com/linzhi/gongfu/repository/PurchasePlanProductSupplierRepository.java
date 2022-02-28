@@ -24,4 +24,6 @@ public interface PurchasePlanProductSupplierRepository extends CrudRepository<Pu
     void  deleteSupplier(String dcCompId , String planCode);
     @Query(value = "select distinct saler_code,saler_name from  purchase_plan_product_saler  where dc_comp_id=?1 and plan_code=?2 and demand>0 ",nativeQuery = true)
     List<Map<String,String>> findDistinctSuppliers(String dcCompId , String planCode);
+
+    List<PurchasePlanProductSupplier> findPurchasePlanProductSuppliersByPurchasePlanProductSupplierId_DcCompIdAndPurchasePlanProductSupplierId_ProductIdAndPurchasePlanProductSupplierId_PlanCode(String dcCompId,String productUd,String planCode);
 }

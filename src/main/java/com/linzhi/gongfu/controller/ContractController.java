@@ -60,7 +60,7 @@ public class ContractController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         Map map=planService.saveTemporaryPlan(
-            products.get(),
+            products.orElse(new ArrayList<>()),
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
         );
@@ -353,7 +353,7 @@ public class ContractController {
             .suppliers(
                 supplier.stream()
                 .map(companyMapper::toPreloadSupliers)
-                .collect(Collectors.toSet())
+                .collect(Collectors.toList())
             )
             .build();
     }

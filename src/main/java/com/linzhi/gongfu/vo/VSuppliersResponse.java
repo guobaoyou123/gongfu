@@ -21,7 +21,7 @@ import java.util.Set;
 @SuperBuilder(toBuilder = true)
 public class VSuppliersResponse extends VBaseResponse  {
 
-    Set<VSupplier> suppliers;
+    List<VSupplier> suppliers;
     /**
      * 用于表示一个供应商
      */

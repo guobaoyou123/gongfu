@@ -50,18 +50,17 @@ public class CompanyController {
     }
 
     /**
-     * 通过本公司id查询所有供应商以及经营，自营的品牌
-     * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
+     * 查询本公司所有供应商
+     * @param brands
+     * @return 对应的本公司id查询所有供应商
      */
     @GetMapping("/suppliers/by/brand")
     public VSuppliersResponse suppliersByBrands(
-        @RequestParam("brand") Optional<List<String>> brands,
-        @RequestParam("suppliers")Optional<List<String>> suppliers
+        @RequestParam("brand") Optional<List<String>> brands
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
         var supplier = companyService.findSuppliersByBrands(
-            brands,session.getSession().getCompanyCode(),
-            suppliers
+            brands,session.getSession().getCompanyCode()
         );
         return VSuppliersResponse.builder()
             .code(200)
@@ -69,7 +68,32 @@ public class CompanyController {
             .suppliers(
                  supplier.stream()
                 .map(companyMapper::toPreloadSupliers)
-                .collect(Collectors.toSet())
+                .collect(Collectors.toList())
+            )
+            .build();
+    }
+
+    /**
+     * 查询本公司所有供应商
+     * @param brands
+     * @return 对应的本公司id查询所有供应商
+     */
+    @GetMapping("/suppliers/by/brand/suppliers")
+    public VSuppliersResponse suppliers(
+        @RequestParam("brand") Optional<String> brand,
+        @RequestParam("suppliers") Optional<List<String>> suppliers
+    ) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var supplier = companyService.findSuppliersByBrandsAndSuppliers(
+            brand,session.getSession().getCompanyCode(),suppliers
+        );
+        return VSuppliersResponse.builder()
+            .code(200)
+            .message("获取我的供应列表成功。")
+            .suppliers(
+                supplier.stream()
+                    .map(companyMapper::toPreloadSupliers)
+                    .collect(Collectors.toList())
             )
             .build();
     }
