@@ -21,7 +21,7 @@ import java.util.Set;
 @SuperBuilder(toBuilder = true)
 public class VSuppliersResponse extends VBaseResponse  {
 
-    Set<VSupplier> suppliers;
+    List<VSupplier> suppliers;
     /**
      * 用于表示一个供应商
      */
@@ -36,6 +36,10 @@ public class VSuppliersResponse extends VBaseResponse  {
          * 公司简称
          */
         private String name;
+        /**
+         * 排序
+         */
+        private Integer sort;
     }
 
 }

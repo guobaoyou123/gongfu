@@ -65,5 +65,6 @@ public interface CompanyMapper {
      */
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "shortName")
+    @Mapping(target = "sort",constant = "1")
     VSuppliersResponse.VSupplier toPreloadSupliers(TCompanyBaseInformation info);
 }

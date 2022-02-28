@@ -31,5 +31,7 @@ public interface MainProductClassMapper {
     List<VProductClassResponse.VSubProductClass> toPreloadSubProductClasses(List<TProductClass> tProductClasses);
     VProductClassResponse.VSubProductClass toPreloadSubProductClass(TProductClass tProductClass);
 
-    VMaterialResponse.VMaterial toPreLoadMaterial(TProductClass tProductClass);
+    VMaterialResponse.VMaterial toPreloadMainMaterial(TProductClass tProductClass);
+    List<VMaterialResponse.VSubMaterial> toPreloadSubMaterials(List<TProductClass> tProductClasses);
+    VMaterialResponse.VSubMaterial toPreloadSubMaterial(TProductClass tProductClass);
 }

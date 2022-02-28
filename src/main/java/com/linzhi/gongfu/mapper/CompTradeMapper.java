@@ -26,6 +26,7 @@ public interface CompTradeMapper {
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "name")
     @Mapping(target = "brands", source = "selfSupportBrands")
+    @Mapping(target = "sort",constant = "1")
     VSuppliersIncludeBrandsResponse.VSupplier toPreloadSuppliersIncludeBrandDTOs(TCompanyIncludeBrand tCompanyIncludeBrand);
     /**
      * 将获取到的入格公司信息，转换成可供使用的公司基础信息

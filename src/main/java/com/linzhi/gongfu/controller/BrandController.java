@@ -35,8 +35,8 @@ public class BrandController {
      */
     @GetMapping("/brands/paged")
     public VBrandResponse brandsPage(
-        @RequestParam("pageNum") Optional<Integer> pageNum,
-        @RequestParam("pageSize") Optional<Integer> pageSize
+        @RequestParam("pageNum") Optional<String> pageNum,
+        @RequestParam("pageSize") Optional<String> pageSize
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
@@ -49,7 +49,7 @@ public class BrandController {
             .code(200)
             .message("获取品牌列表成功。")
             .total(Integer.valueOf(String.valueOf(brandPage.getTotalElements())))
-            .current(pageNum.orElse(1))
+            .current(brandPage.getNumber()+1)
             .brands(brandPage.getContent().stream()
                 .map(brandMapper::toBrandPreload)
                 .collect(Collectors.toList())

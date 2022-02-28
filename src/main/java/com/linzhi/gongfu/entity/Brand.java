@@ -31,6 +31,7 @@ public class Brand implements Serializable {
     @NotNull
     @NotBlank
     private String code;
+
     /**
      * 品牌名称
      */
@@ -38,6 +39,7 @@ public class Brand implements Serializable {
     @NotNull
     @NotBlank
     private String name;
+
     /**
      * 品牌简称
      */
@@ -53,6 +55,7 @@ public class Brand implements Serializable {
     @NotNull
     @NotBlank
     private String engName;
+
     /**
      * 状态
      */
@@ -66,7 +69,6 @@ public class Brand implements Serializable {
      */
     @Column(name = "sort", length = 20)
     private int sort;
-
 
     /**
      * 品牌方

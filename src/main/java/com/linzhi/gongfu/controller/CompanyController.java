@@ -35,41 +35,66 @@ public class CompanyController {
      */
     @GetMapping("/suppliers/paged")
     public VSuppliersIncludeBrandsResponse suppliersIncludeBrands(
-        @RequestParam("pageNum") Optional<Integer> pageNum,
-        @RequestParam("pageSize") Optional<Integer> pageSize
+        @RequestParam("pageNum") Optional<String> pageNum,
+        @RequestParam("pageSize") Optional<String> pageSize
     ) {
-        AtomicInteger i = new AtomicInteger();
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
         var supplier = companyService.CompanyIncludeBrandbyId(session.getSession().getCompanyCode(),pageNum,pageSize);
-        supplier.getContent().forEach(vSupplier -> {
-            i.getAndIncrement();
-            vSupplier.setSort(i.get());
-        });
         return VSuppliersIncludeBrandsResponse.builder()
                .code(200)
                .message("获取我的供应以及品牌列表成功。")
                .total(Integer.valueOf(String.valueOf(supplier.getTotalElements())))
-               .current(pageNum.orElse(1))
+               .current(supplier.getNumber()+1)
                 .suppliers(supplier.getContent())
                 .build();
-
     }
 
     /**
-     * 通过本公司id查询所有供应商以及经营，自营的品牌
-     * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
+     * 查询本公司所有供应商
+     * @param brands
+     * @return 对应的本公司id查询所有供应商
      */
     @GetMapping("/suppliers/by/brand")
     public VSuppliersResponse suppliersByBrands(
-        @RequestParam("brand") Optional<List<String>> brands,
-        @RequestParam("suppliers")Optional<List<String>> suppliers
+        @RequestParam("brand") Optional<List<String>> brands
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var supplier = companyService.findSuppliersByBrands(brands,session.getSession().getCompanyCode(),suppliers);
+        var supplier = companyService.findSuppliersByBrands(
+            brands,session.getSession().getCompanyCode()
+        );
         return VSuppliersResponse.builder()
             .code(200)
             .message("获取我的供应列表成功。")
-            .suppliers(supplier.stream().map(companyMapper::toPreloadSupliers).collect(Collectors.toSet()))
+            .suppliers(
+                 supplier.stream()
+                .map(companyMapper::toPreloadSupliers)
+                .collect(Collectors.toList())
+            )
+            .build();
+    }
+
+    /**
+     * 查询本公司所有供应商
+     * @param brands
+     * @return 对应的本公司id查询所有供应商
+     */
+    @GetMapping("/suppliers/by/brand/suppliers")
+    public VSuppliersResponse suppliers(
+        @RequestParam("brand") Optional<String> brand,
+        @RequestParam("suppliers") Optional<List<String>> suppliers
+    ) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
+        var supplier = companyService.findSuppliersByBrandsAndSuppliers(
+            brand,session.getSession().getCompanyCode(),suppliers
+        );
+        return VSuppliersResponse.builder()
+            .code(200)
+            .message("获取我的供应列表成功。")
+            .suppliers(
+                supplier.stream()
+                    .map(companyMapper::toPreloadSupliers)
+                    .collect(Collectors.toList())
+            )
             .build();
     }
 }
