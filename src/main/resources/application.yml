@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: 'base,dev,mssql_remote,redis_local'
+    active: 'base,dev,mssql_remote,redis_remote'
 ---
 spring:
   config:
@@ -102,6 +102,21 @@ spring:
       on-profile: redis_local
   redis:
     host: 192.168.2.5
+    lettuce:
+      pool:
+        max-active: 5
+        max-idle: 5
+  cache:
+    redis:
+      time-to-live: 60
+---
+spring:
+  config:
+    activate:
+      on-profile: redis_remote
+  redis:
+    host: 124.71.134.200
+    port: 8086
     lettuce:
       pool:
         max-active: 5
