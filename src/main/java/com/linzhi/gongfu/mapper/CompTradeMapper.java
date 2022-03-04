@@ -15,7 +15,7 @@ import java.util.Set;
  * @author xutao
  * @create_at 2022-01-19
  */
-@Mapper(componentModel = "spring",uses = { BrandMapper.class })
+@Mapper(componentModel = "spring",uses = { BrandMapper.class,BrandMapper.class })
 public interface CompTradeMapper {
     /**
      * 将获取到的我的供应商信息信息，转换成可供使用的我的供应商信息基础信息

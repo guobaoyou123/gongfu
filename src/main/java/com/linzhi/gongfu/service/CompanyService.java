@@ -78,8 +78,12 @@ public class CompanyService {
                                                     .collect(Collectors.toList());
                              managerBrands   =  managerBrands.stream().filter(tBrand -> !authBrands.contains(tBrand))
                                                    .collect(Collectors.toList());
-            selfSupportBrands.forEach(dcBrand -> dcBrand.setOwned(true));
-            authBrands.forEach(dcBrand -> dcBrand.setVending(true));
+            selfSupportBrands.forEach(dcBrand -> {
+                dcBrand.setOwned(true);
+            });
+            authBrands.forEach(dcBrand -> {
+                dcBrand.setVending(true);
+            });
              //将供应商中的经营品牌、授权品牌、自营品牌合并在一个集合中
             if(selfSupportBrands.isEmpty())
                 compTrad.setSelfSupportBrands(new ArrayList<>());

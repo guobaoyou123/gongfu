@@ -70,9 +70,6 @@ public class BrandService {
            .map(brandMapper::toBrand)
            .collect(Collectors.toList());
        tBrandSet.forEach(brands -> {
-           brands.setHaveOwned(false);
-           brands.setOwned(false);
-           brands.setVending(false);
            brands.getCompBrandOwner().forEach(compBrandOwner -> {
                brands.setHaveOwned(true);
                if(compBrandOwner.getCompBrandOwnerId().getOwnerCode().equals(id)){

@@ -1,6 +1,8 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TBrand;
+import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
+import com.linzhi.gongfu.entity.CompTrad;
 import com.linzhi.gongfu.entity.DcBrand;
 import com.linzhi.gongfu.entity.Brand;
 import com.linzhi.gongfu.entity.ViewBrand;
@@ -33,6 +35,9 @@ public interface BrandMapper {
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "chiShort")
     @Mapping(target = "sort", source = "sort")
+    @Mapping(target = "haveOwned", constant = "false")
+    @Mapping(target = "owned", constant = "false")
+    @Mapping(target = "vending", constant = "false")
     @Mapping(target = "compBrandOwner", source = "compBrandOwner")
     TBrand toBrand(Brand brand);
     /**
@@ -44,6 +49,9 @@ public interface BrandMapper {
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "chiShort")
     @Mapping(target = "sort", source = "sort")
+    @Mapping(target = "haveOwned", constant = "false")
+    @Mapping(target = "owned", constant = "false")
+    @Mapping(target = "vending", constant = "false")
     TBrand toBrand(DcBrand brand);
     /**
      * 将获取到的品牌信息，转换成可供使用的品牌信息
@@ -72,5 +80,10 @@ public interface BrandMapper {
 
     TBrand toViewBrand(ViewBrand viewBrand);
 
-
+    /*@Mapping(target = "code", source = "companys.code")
+    @Mapping(target = "name", source = "companys.shortNameInCN")
+    @Mapping(target = "selfSupportBrands", source = "selfSupportBrands")
+    @Mapping(target = "authBrands", source = "authBrands")
+    @Mapping(target = "manageBrands", source = "manageBrands")
+    TBrand toDTOs(DcBrand brand);*/
 }

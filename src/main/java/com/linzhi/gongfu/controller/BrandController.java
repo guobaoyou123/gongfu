@@ -40,11 +40,11 @@ public class BrandController {
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-       var brandPage = brandService.brandsPagebyId(
+        var brandPage = brandService.brandsPagebyId(
            session.getSession().getCompanyCode(),
            pageNum,
            pageSize
-       );
+        );
         return VBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
@@ -108,7 +108,8 @@ public class BrandController {
             .message("获取品牌列表成功。")
             .brands(brandList.stream()
                 .map(brandMapper::toProductBrandPreload)
-                .collect(Collectors.toSet()))
+                .collect(Collectors.toSet())
+            )
             .build();
     }
 }
