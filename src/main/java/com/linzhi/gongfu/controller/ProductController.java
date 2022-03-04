@@ -109,7 +109,8 @@ public class ProductController {
         @RequestParam("pageSize")Optional<String> pageSize,
         @RequestParam("pageNum")Optional<String> pageNum){
 
-        return productService.productList(brands,
+        return productService.productList(
+            brands,
             classes,
             material,
             drive,

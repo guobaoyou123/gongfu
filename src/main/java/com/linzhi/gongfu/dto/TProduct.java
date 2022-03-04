@@ -76,4 +76,8 @@ public class TProduct implements Serializable {
      * 产品连接方式
      */
     private String conn2Type;
+    /**
+     * 计价单位
+     */
+    private  String chargeUnit;
 }

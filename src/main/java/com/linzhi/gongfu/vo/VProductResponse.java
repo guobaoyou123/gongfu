@@ -35,5 +35,10 @@ public class VProductResponse extends VBaseResponse{
          * 产品描述
          */
         private String describe;
+
+        /**
+         * 计价单位
+         */
+        private String chargeUnit;
     }
 }

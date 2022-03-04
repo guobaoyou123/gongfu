@@ -75,7 +75,8 @@ public class CompanyController {
 
     /**
      * 查询本公司所有供应商
-     * @param brands
+     * @param brand
+     * @param suppliers
      * @return 对应的本公司id查询所有供应商
      */
     @GetMapping("/suppliers/by/brand/suppliers")
@@ -85,11 +86,13 @@ public class CompanyController {
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
         var supplier = companyService.findSuppliersByBrandsAndSuppliers(
-            brand,session.getSession().getCompanyCode(),suppliers
+            brand,
+            session.getSession().getCompanyCode(),
+            suppliers
         );
         return VSuppliersResponse.builder()
             .code(200)
-            .message("获取我的供应列表成功。")
+            .message("获取我的供应商列表成功。")
             .suppliers(
                 supplier.stream()
                     .map(companyMapper::toPreloadSupliers)
