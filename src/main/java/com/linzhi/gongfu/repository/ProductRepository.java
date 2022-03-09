@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ProductRepository extends CrudRepository<Product,String>, QuerydslPredicateExecutor<Product> {
     List<Product> findProductByIdIn(List<String> id);
+
+    List<Product> findProductByCode(String code);
 }

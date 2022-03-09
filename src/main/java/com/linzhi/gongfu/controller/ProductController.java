@@ -1,15 +1,16 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.mapper.MainProductClassMapper;
+import com.linzhi.gongfu.mapper.ProductMapper;
 import com.linzhi.gongfu.mapper.SysCompareDetailMapper;
 import com.linzhi.gongfu.service.ProductService;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ public class ProductController {
     private final ProductService productService;
     private final MainProductClassMapper mainProductClassMapper;
     private final SysCompareDetailMapper sysCompareDetailMapper;
+    private final ProductMapper productMapper;
 
     /**
      * 查询所有产品分类
@@ -99,7 +101,7 @@ public class ProductController {
      * @return 返回产品列表
      */
     @GetMapping("/products")
-    public VProductResponse products(
+    public VProductPageResponse products(
         @RequestParam("brand")Optional<List<String>> brands,
         @RequestParam("class")Optional<String> classes,
         @RequestParam("material")Optional<String> material,
@@ -120,4 +122,20 @@ public class ProductController {
             pageNum
         );
     }
+
+    /**
+     * 根据产品编码查询产品
+     * @return 返回产品列表
+     */
+    @GetMapping("/product/{productCode}")
+    public VProductListResponse productsByCode(
+        @PathVariable Optional<String> productCode){
+        var productList = productService.productsByCode(productCode.orElse(""));
+        return VProductListResponse.builder()
+            .code(200)
+            .message("查询成功")
+            .products(productList)
+            .build();
+    }
+
 }
