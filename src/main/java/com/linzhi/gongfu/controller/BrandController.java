@@ -3,7 +3,7 @@ package com.linzhi.gongfu.controller;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.BrandService;
-import com.linzhi.gongfu.vo.VBrandResponse;
+import com.linzhi.gongfu.vo.VBrandPageResponse;
 import com.linzhi.gongfu.vo.VDcBrandResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,7 +34,7 @@ public class BrandController {
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
      */
     @GetMapping("/brands/paged")
-    public VBrandResponse brandsPage(
+    public VBrandPageResponse brandsPage(
         @RequestParam("pageNum") Optional<String> pageNum,
         @RequestParam("pageSize") Optional<String> pageSize
     ) {
@@ -45,7 +45,7 @@ public class BrandController {
            pageNum,
            pageSize
         );
-        return VBrandResponse.builder()
+        return VBrandPageResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
             .total(Integer.valueOf(String.valueOf(brandPage.getTotalElements())))
@@ -106,7 +106,8 @@ public class BrandController {
         return VDcBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
-            .brands(brandList.stream()
+            .brands(
+                brandList.stream()
                 .map(brandMapper::toProductBrandPreload)
                 .collect(Collectors.toSet())
             )

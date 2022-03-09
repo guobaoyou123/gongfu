@@ -2,7 +2,6 @@ package com.linzhi.gongfu.vo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Singular;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
@@ -18,10 +17,10 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VBrandResponse extends  VBaseResponse{
+public class VBrandPageResponse extends  VBaseResponse{
     private int current;
     private int total;
-    List<VBrandResponse.VBrand> brands;
+    List<VBrandPageResponse.VBrand> brands;
     /**
      * 用于表示一个首页展示供应商品牌
      */

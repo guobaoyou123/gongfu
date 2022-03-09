@@ -357,20 +357,31 @@ public class PlanService {
     public boolean  modifyPlanSupplier(String id,String planCode,String productId,String oldSupplier,String newSupplier){
         try{
             Optional<Company> supplier =companyRepository.findById(newSupplier);
-            purchasePlanProductSupplierRepository.deleteById(PurchasePlanProductSupplierId.builder()
-                .productId(productId).dcCompId(id).planCode(planCode).salerCode(oldSupplier).build());
-            purchasePlanProductSupplierRepository.save(PurchasePlanProductSupplier.builder()
-                .purchasePlanProductSupplierId(PurchasePlanProductSupplierId.builder()
+            if(!oldSupplier.isEmpty())
+                purchasePlanProductSupplierRepository.deleteById(
+                    PurchasePlanProductSupplierId.builder()
+                    .productId(productId)
+                        .dcCompId(id)
+                        .planCode(planCode)
+                        .salerCode(oldSupplier)
+                        .build()
+                );
+            purchasePlanProductSupplierRepository.save(
+                PurchasePlanProductSupplier.builder()
+                .purchasePlanProductSupplierId(
+                    PurchasePlanProductSupplierId.builder()
                     .productId(productId)
                     .dcCompId(id)
                     .planCode(planCode)
                     .salerCode(newSupplier)
-                    .build())
+                    .build()
+                )
                 .salerName(supplier.get().getShortNameInCN())
                 .demand(BigDecimal.ZERO)
                 .tranNum(BigDecimal.ZERO)
                 .deliverNum(BigDecimal.ZERO)
-                .build());
+                .build()
+            );
             return   true;
         }catch (Exception e){
             e.printStackTrace();
