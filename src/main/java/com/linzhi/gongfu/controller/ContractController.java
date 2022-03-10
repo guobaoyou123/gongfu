@@ -181,19 +181,16 @@ public class ContractController {
      */
     @PutMapping("/contract/purchase/plan/supplier")
     public VBaseResponse modifyPlanSupplier(
-        @RequestParam Optional<String> planCode,
-        @RequestParam Optional<String> productId,
-        @RequestParam Optional<String> oldSupplierCode ,
-        @RequestParam Optional<String> newSupplierCode
-    ){
+        @RequestBody VPlanSupplierRequest request
+        ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = planService.modifyPlanSupplier(
             session.getSession().getCompanyCode(),
-            planCode.get(),
-            productId.get(),
-            oldSupplierCode.get(),
-            newSupplierCode.get()
+            request.getPlanCode(),
+            request.getProductId(),
+            request.getOldSupplierCode(),
+            request.getNewSupplierCode()
         );
         if(flag)
             return VBaseResponse.builder()
@@ -254,26 +251,23 @@ public class ContractController {
             .build();
     }
 
+
     /**
      * 采购计划添加产品
-     * @param planCode
-     * @param productId
-     * @param demand
+     * @param request
      * @return
      */
     @PostMapping("/contract/purchase/plan/product")
     public VBaseResponse  savePlanProduct(
-        @RequestParam("planCode")Optional<String> planCode,
-        @RequestParam("productId")Optional<String> productId,
-        @RequestParam("demand") Optional<BigDecimal> demand
+        @RequestBody VPlanDemandRequest request
     ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = planService.savePlanProduct(
             session.getSession().getCompanyCode(),
-            productId.get(),
-            planCode.get(),
-            demand.get()
+            request.getProductId(),
+            request.getPlanCode(),
+            request.getDemand()
         );
         if(flag)
             return VBaseResponse.builder()
@@ -360,15 +354,15 @@ public class ContractController {
 
     /**
      * 根据采购计划生成询价单
-     * @param planCode 采购计划号
+     * @param request  采购计划号
      * @return
      */
     @PostMapping("/contract/purchase/inquiry")
-    public VBaseResponse savePurchaseInquiry(@RequestParam("planCode") Optional<String> planCode){
+    public VBaseResponse savePurchaseInquiry(@RequestBody VPurchasePlanRequest request){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         return planService.savePurchaseInquiry(
-            planCode.get(),
+            request.getPlanCode(),
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
             session.getSession().getOperatorCode()
