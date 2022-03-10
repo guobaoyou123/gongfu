@@ -123,19 +123,19 @@ public class ProductService {
         JPAQuery<Product> query = queryFactory.select(qProduct).from(qProduct);
         if(!brands.isEmpty())
             query.where(qProduct.brandCode.in(brands.get()));
-        if(!classes.get().isEmpty())
+        if(!classes.isEmpty())
             query.where(qProduct.class2.eq(classes.get()));
-        if ( !drive.get().isEmpty())
+        if ( !drive.isEmpty())
             query.where(qProduct.drivMode.eq(drive.get()));
-        if ( !material.get().isEmpty())
+        if ( !material.isEmpty())
             query.where(qProduct.mainMate.eq(material.get()));
-        if ( !connection1.get().isEmpty() &&  !connection2.get().isEmpty())
+        if ( !connection1.isEmpty() &&  !connection2.isEmpty())
             query.where((qProduct.conn1Type.eq(connection1.get()).and(qProduct.conn2Type.eq(connection2.get()))).or((qProduct.conn1Type.eq(connection2.get()).and(qProduct.conn2Type.eq(connection1.get())))));
-        if ( !connection1.get().isEmpty() &&connection2.get().isEmpty())
+        if ( !connection1.isEmpty() &&connection2.isEmpty())
             query.where(qProduct.conn1Type.eq(connection1.get()).or(qProduct.conn2Type.eq(connection1.get())));
-        if (connection1.get().isEmpty() && !connection2.get().isEmpty())
+        if (connection1.isEmpty() && !connection2.isEmpty())
             query.where(qProduct.conn1Type.eq(connection2.get()).or(qProduct.conn2Type.eq(connection2.get())));
-        if (!productCode.get().isEmpty())
+        if (!productCode.isEmpty())
             query.where(qProduct.code.eq(productCode.get()));
         return query.fetch();
     }
