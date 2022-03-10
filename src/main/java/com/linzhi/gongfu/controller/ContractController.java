@@ -185,21 +185,16 @@ public class ContractController {
         ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = planService.modifyPlanSupplier(
+        var map = planService.modifyPlanSupplier(
             session.getSession().getCompanyCode(),
             request.getPlanCode(),
             request.getProductId(),
             request.getOldSupplierCode(),
             request.getNewSupplierCode()
         );
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("保存成功")
-                .build();
         return VBaseResponse.builder()
-            .code(500)
-            .message("保存失败！")
+            .code((Integer) map.get("code"))
+            .message((String) map.get("message"))
             .build();
     }
 

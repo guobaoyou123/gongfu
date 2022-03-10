@@ -351,18 +351,39 @@ public class PlanService {
      * @param newSupplier 新的供应编号
      */
     @Transactional
-    public boolean  modifyPlanSupplier(String id,String planCode,String productId,String oldSupplier,String newSupplier){
+    public Map  modifyPlanSupplier(String id,String planCode,String productId,String oldSupplier,String newSupplier){
+          Map map= new HashMap();
         try{
             Optional<Company> supplier =companyRepository.findById(newSupplier);
-            if(!oldSupplier.isEmpty())
-                purchasePlanProductSupplierRepository.deleteById(
+            if(supplier.isEmpty()) {
+                map.put("code", 404);
+                map.put("flag", false);
+                map.put("message", "更换失败，更换的供应商不存在");
+                return map;
+            }
+            if(!oldSupplier.isEmpty()) {
+                Optional<PurchasePlanProductSupplier> supplier1 = purchasePlanProductSupplierRepository.findById(
                     PurchasePlanProductSupplierId.builder()
                     .productId(productId)
+                    .dcCompId(id)
+                    .planCode(planCode)
+                    .salerCode(oldSupplier)
+                    .build());
+                if(supplier1.isEmpty()) {
+                    map.put("code", 404);
+                    map.put("flag", false);
+                    map.put("message", "更换失败，被更换的供应商不存在");
+                    return map;
+                }
+                purchasePlanProductSupplierRepository.deleteById(
+                    PurchasePlanProductSupplierId.builder()
+                        .productId(productId)
                         .dcCompId(id)
                         .planCode(planCode)
                         .salerCode(oldSupplier)
                         .build()
                 );
+            }
             purchasePlanProductSupplierRepository.save(
                 PurchasePlanProductSupplier.builder()
                 .purchasePlanProductSupplierId(
@@ -379,10 +400,16 @@ public class PlanService {
                 .deliverNum(BigDecimal.ZERO)
                 .build()
             );
-            return   true;
+            map.put("flag",true);
+            map.put("code",200);
+            map.put("message","供应商替换成功！");
+            return   map;
         }catch (Exception e){
             e.printStackTrace();
-            return false;
+            map.put("flag",false);
+            map.put("code",500);
+            map.put("message","供应商替换失败！");
+            return map;
         }
 
     }
