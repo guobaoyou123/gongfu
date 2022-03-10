@@ -315,8 +315,8 @@ public class PlanService {
      * @return 返回采购计划信息
      */
     public Optional<VBaseResponse> verification(String id, String operateorCode){
-        var list = purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndAndCreatedBy(id, operateorCode);
-        if(list.size()>0)
+        var purchasePlan = purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndAndCreatedBy(id, operateorCode);
+        if(!purchasePlan.isEmpty())
             return Optional.of(
                 VBaseResponse.builder()
                     .code(200)
@@ -337,12 +337,9 @@ public class PlanService {
      * @return 返回采购计划信息
      */
     public Optional<VPurchasePlanResponse> findPurchasePlanByCode(String id, String operateorCode){
-        var list = purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndAndCreatedBy(id, operateorCode);
-        if(list.size()==0)
-            return  null;
-        return Optional.of(list.get(0))
-            .map(purchasePlanMapper::toDTO)
-            .map(purchasePlanMapper::toPruchasePlan);
+        return  purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndAndCreatedBy(id, operateorCode)
+             .map(purchasePlanMapper::toDTO)
+             .map(purchasePlanMapper::toPruchasePlan);
     }
 
     /**
