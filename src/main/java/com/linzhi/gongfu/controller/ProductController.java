@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -131,10 +132,38 @@ public class ProductController {
     public VProductListResponse productsByCode(
         @PathVariable Optional<String> productCode){
         var productList = productService.productsByCode(productCode.orElse(""));
+        if(productList.size()==0)
+            return VProductListResponse.builder()
+                .code(404)
+                .message("未找到")
+                .products(new ArrayList<>())
+                .build();
         return VProductListResponse.builder()
             .code(200)
             .message("查询成功")
-            .products(productList)
+            .products(productList.stream().map(productMapper::tProductList).collect(Collectors.toList()))
+            .build();
+    }
+    /**
+     * 根据产品id查找产品详情
+     * @param productId
+     * @return 返回产品详情
+     */
+   @GetMapping("/product/detail")
+    public  VProductDetailResponse     productDetail(@RequestParam("productId")Optional<String> productId){
+        var productDetail = productId
+            .flatMap(productService::findProduct)
+            .map(productMapper::tProductDetail);
+        if(productDetail.isEmpty())
+            return  VProductDetailResponse.builder()
+                .code(404)
+                .message("请求的产品信息没有找到")
+                .product(new VProductDetailResponse.VProduct())
+                .build();
+        return VProductDetailResponse.builder()
+            .code(200)
+            .message("成功找到请求的产品信息")
+            .product(productDetail.get())
             .build();
     }
 

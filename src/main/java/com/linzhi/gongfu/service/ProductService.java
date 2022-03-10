@@ -12,7 +12,6 @@ import com.linzhi.gongfu.repository.MainProductClassRepository;
 import com.linzhi.gongfu.repository.ProductRepository;
 import com.linzhi.gongfu.repository.SysCompareTableRepository;
 import com.linzhi.gongfu.util.PageTools;
-import com.linzhi.gongfu.vo.VProductListResponse;
 import com.linzhi.gongfu.vo.VProductPageResponse;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -74,7 +73,8 @@ public class ProductService {
      * @param
      * @return 产品驱动信息列表
      */
-    public VProductPageResponse productList(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
+    public VProductPageResponse  productList(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
+
         , Optional<String> drive, Optional<String> connection1, Optional<String> connection2, Optional<String> pageSize, Optional<String> pageNum){
         Pageable pageable = PageRequest.of(
             pageNum.map(PageTools::verificationPageNum).orElse(0),
@@ -140,11 +140,19 @@ public class ProductService {
         return query.fetch();
     }
 
-
-    public List<VProductListResponse.VProduct> productsByCode(String productCode){
-        return   productRepository.findProductByCode(productCode).stream()
+    /**
+     * 获取产品信息
+     * @param
+     * @return 产品驱动信息列表
+     */
+    @Cacheable(value = "productDetail;1800", unless = "#result == null")
+    public Optional<TProduct> findProduct(String productId){
+        return productRepository.findById(productId)
             .map(productMapper::toProduct)
-            .map(productMapper::toProductByCode)
-            .collect(Collectors.toList());
+            ;
+    }
+    public List<TProduct> productsByCode(String productCode){
+        return   productRepository.findProductByCode(productCode).stream()
+            .map(productMapper::toProduct).collect(Collectors.toList());
     }
 }

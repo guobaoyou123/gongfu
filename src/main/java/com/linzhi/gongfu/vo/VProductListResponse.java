@@ -29,6 +29,12 @@ public class VProductListResponse extends VBaseResponse{
         private String brandName;
 
         /**
+         * 品牌编号
+         */
+        private String brandCode;
+
+
+        /**
          * 产品描述
          */
         private String describe;
@@ -37,9 +43,6 @@ public class VProductListResponse extends VBaseResponse{
          * 计价单位
          */
         private String chargeUnit;
-        /**
-         * 计价单位
-         */
-        private String brandCode;
+
     }
 }

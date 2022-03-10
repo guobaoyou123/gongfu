@@ -3,6 +3,7 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.entity.DcBrand;
 import com.linzhi.gongfu.entity.Brand;
+import com.linzhi.gongfu.entity.DcBrand;
 import com.linzhi.gongfu.entity.ViewBrand;
 import com.linzhi.gongfu.vo.VBrandPageResponse;
 import com.linzhi.gongfu.vo.VDcBrandResponse;
