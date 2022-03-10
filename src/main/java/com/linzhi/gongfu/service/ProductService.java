@@ -81,11 +81,11 @@ public class ProductService {
             pageSize.map(PageTools::verificationPageSize).orElse(10)
         );
         //根据条件查询产品信息
-        List<TProduct> products = findProductAll(brands, classes, material, drive, connection1, connection2,Optional.empty()).stream()
+        List<TProduct> products = findProductAll(brands, classes, material, drive, connection1, connection2).stream()
             .map(productMapper::toProduct)
             .collect(Collectors.toList());
         if(products.size()==0){
-            products = findProductAll(Optional.empty(), classes, material, drive, connection1, connection2,Optional.empty()).stream()
+            products = findProductAll(Optional.empty(), classes, material, drive, connection1, connection2).stream()
                 .map(productMapper::toProduct)
                 .collect(Collectors.toList());
             Page<TProduct> otherproductPage = PageTools.listConvertToPage(products,pageable);
@@ -117,26 +117,24 @@ public class ProductService {
      */
     @Cacheable(value = "products;1800", unless = "#result == null")
     public  List<Product>  findProductAll(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
-        , Optional<String> drive, Optional<String> connection1, Optional<String> connection2,Optional<String> productCode){
+        , Optional<String> drive, Optional<String> connection1, Optional<String> connection2){
         //根据条件查询产品信息
         QProduct qProduct = QProduct.product;
         JPAQuery<Product> query = queryFactory.select(qProduct).from(qProduct);
         if(!brands.isEmpty())
             query.where(qProduct.brandCode.in(brands.get()));
-        if(!classes.isEmpty())
+        if(!classes.get().isEmpty())
             query.where(qProduct.class2.eq(classes.get()));
-        if ( !drive.isEmpty())
+        if ( !drive.get().isEmpty())
             query.where(qProduct.drivMode.eq(drive.get()));
-        if ( !material.isEmpty())
+        if ( !material.get().isEmpty())
             query.where(qProduct.mainMate.eq(material.get()));
-        if ( !connection1.isEmpty() &&  !connection2.isEmpty())
+        if ( !connection1.get().isEmpty() &&  !connection2.get().isEmpty())
             query.where((qProduct.conn1Type.eq(connection1.get()).and(qProduct.conn2Type.eq(connection2.get()))).or((qProduct.conn1Type.eq(connection2.get()).and(qProduct.conn2Type.eq(connection1.get())))));
-        if ( !connection1.isEmpty() &&connection2.isEmpty())
+        if ( !connection1.get().isEmpty() &&connection2.get().isEmpty())
             query.where(qProduct.conn1Type.eq(connection1.get()).or(qProduct.conn2Type.eq(connection1.get())));
-        if (connection1.isEmpty() && !connection2.isEmpty())
+        if (connection1.get().isEmpty() && !connection2.get().isEmpty())
             query.where(qProduct.conn1Type.eq(connection2.get()).or(qProduct.conn2Type.eq(connection2.get())));
-        if (!productCode.isEmpty())
-            query.where(qProduct.code.eq(productCode.get()));
         return query.fetch();
     }
 
