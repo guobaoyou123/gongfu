@@ -431,15 +431,14 @@ public class PlanService {
         }
     }
     @Transactional
-    public boolean modifyPurchasePlanDemand(String id, List<VPlanDemandRequest> demands){
+    public boolean modifyPurchasePlanDemand(String id, VPlanDemandRequest demands){
         try{
-            demands.forEach(v -> {
-                purchasePlanProductRepository.updateDemandById(v.getDemand(),PurchasePlanProductId.builder()
-                    .productId(v.getProductId())
+            purchasePlanProductRepository.updateDemandById(demands.getDemand(),PurchasePlanProductId.builder()
+                    .productId(demands.getProductId())
                     .dcCompId(id)
-                    .planCode(v.getPlanCode())
+                    .planCode(demands.getPlanCode())
                     .build());
-            });
+
             return true;
         }catch (Exception e){
             e.printStackTrace();

@@ -228,7 +228,7 @@ public class ContractController {
      * @return
      */
     @PutMapping("/contract/purchase/plan/demand")
-    public VBaseResponse modifyPurchasePlanDemand(@RequestBody Optional<List<VPlanDemandRequest>> demand){
+    public VBaseResponse modifyPurchasePlanDemand(@RequestBody Optional<VPlanDemandRequest> demand){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = planService.modifyPurchasePlanDemand(
