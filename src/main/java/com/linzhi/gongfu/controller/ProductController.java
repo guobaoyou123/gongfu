@@ -123,6 +123,7 @@ public class ProductController {
             pageNum
         );
     }
+
     /**
      * 根据产品编码查询产品
      * @return 返回产品列表
@@ -165,4 +166,5 @@ public class ProductController {
             .product(productDetail.get())
             .build();
     }
+
 }

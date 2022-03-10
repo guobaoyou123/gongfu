@@ -106,7 +106,8 @@ public class BrandController {
         return VDcBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
-            .brands(brandList.stream()
+            .brands(
+                brandList.stream()
                 .map(brandMapper::toProductBrandPreload)
                 .collect(Collectors.toSet())
             )

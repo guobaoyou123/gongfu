@@ -74,17 +74,18 @@ public class ProductService {
      * @return 产品驱动信息列表
      */
     public VProductPageResponse  productList(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
+
         , Optional<String> drive, Optional<String> connection1, Optional<String> connection2, Optional<String> pageSize, Optional<String> pageNum){
         Pageable pageable = PageRequest.of(
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10)
         );
         //根据条件查询产品信息
-        List<TProduct> products = findProductAll(brands, classes, material, drive, connection1, connection2).stream()
+        List<TProduct> products = findProductAll(brands, classes, material, drive, connection1, connection2,Optional.empty()).stream()
             .map(productMapper::toProduct)
             .collect(Collectors.toList());
         if(products.size()==0){
-            products = findProductAll(Optional.empty(), classes, material, drive, connection1, connection2).stream()
+            products = findProductAll(Optional.empty(), classes, material, drive, connection1, connection2,Optional.empty()).stream()
                 .map(productMapper::toProduct)
                 .collect(Collectors.toList());
             Page<TProduct> otherproductPage = PageTools.listConvertToPage(products,pageable);
@@ -116,7 +117,7 @@ public class ProductService {
      */
     @Cacheable(value = "products;1800", unless = "#result == null")
     public  List<Product>  findProductAll(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
-        , Optional<String> drive, Optional<String> connection1, Optional<String> connection2){
+        , Optional<String> drive, Optional<String> connection1, Optional<String> connection2,Optional<String> productCode){
         //根据条件查询产品信息
         QProduct qProduct = QProduct.product;
         JPAQuery<Product> query = queryFactory.select(qProduct).from(qProduct);
@@ -134,7 +135,8 @@ public class ProductService {
             query.where(qProduct.conn1Type.eq(connection1.get()).or(qProduct.conn2Type.eq(connection1.get())));
         if (connection1.get().isEmpty() && !connection2.get().isEmpty())
             query.where(qProduct.conn1Type.eq(connection2.get()).or(qProduct.conn2Type.eq(connection2.get())));
-
+        if (!productCode.get().isEmpty())
+            query.where(qProduct.code.eq(productCode.get()));
         return query.fetch();
     }
 
@@ -151,7 +153,6 @@ public class ProductService {
     }
     public List<TProduct> productsByCode(String productCode){
         return   productRepository.findProductByCode(productCode).stream()
-            .map(productMapper::toProduct)
-            .collect(Collectors.toList());
+            .map(productMapper::toProduct).collect(Collectors.toList());
     }
 }

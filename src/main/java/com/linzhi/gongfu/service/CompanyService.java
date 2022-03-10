@@ -118,17 +118,5 @@ public class CompanyService {
             .collect(Collectors.toList());
     }
 
-    public List<TCompanyBaseInformation> findSuppliersByBrandsAndSuppliers(Optional<String> brands,String id,Optional<List<String>> suppliers){
-        List<String> list = new ArrayList<>();
-        list.add(brands.get());
-        List<TCompanyBaseInformation> supplier= findSuppliersByBrands(
-            Optional.of(list),
-            id
-        ).stream()
-            .filter(
-                tCompanyBaseInformation -> !suppliers.orElse(new ArrayList<>()).contains(tCompanyBaseInformation.getCode())
-            )
-            .collect(Collectors.toList());
-        return supplier;
-    }
+
 }
