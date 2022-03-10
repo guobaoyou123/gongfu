@@ -45,9 +45,9 @@ public class ProductService {
     private final JPAQueryFactory queryFactory;
     private final ProductRepository productRepository;
     /**
-     * 获取产品分类信息
-     * @param
-     * @return 产品分类信息列表
+     * 获取产品一级二级分类信息
+     * @param type
+     * @return 产品一级二级分类信息列表
      */
     @Cacheable(value = "product_class;1800", unless = "#result == null")
     public List<TProductClass> productClassList(String type) {
@@ -58,7 +58,7 @@ public class ProductService {
     }
     /**
      * 获取产品对照表信息
-     * @param
+     * @param name
      * @return 产品对照表信息列表
      */
     @Cacheable(value = "product_compare;1800", unless = "#result == null")
@@ -68,10 +68,18 @@ public class ProductService {
             .collect(Collectors.toList());
 
     }
+
     /**
-     * 获取产品信息
-     * @param
-     * @return 产品驱动信息列表
+     * 根据查询条件获取产品列表信息
+     * @param brands 品牌编码列表
+     * @param classes 二级分类编码
+     * @param material 主材质编码
+     * @param drive 驱动方式名称
+     * @param connection1 连接方式名称
+     * @param connection2 连接方式名称
+     * @param pageSize 第几页
+     * @param pageNum 每页显示的数量
+     * @return 产品列表信息
      */
     public VProductPageResponse  productList(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
 
@@ -111,9 +119,14 @@ public class ProductService {
     }
 
     /**
-     * 获取产品信息
-     * @param
-     * @return 产品驱动信息列表
+     *  获取产品信息列表
+     * @param brands
+     * @param classes
+     * @param material
+     * @param drive
+     * @param connection1
+     * @param connection2
+     * @return 产品列表
      */
     @Cacheable(value = "products;1800", unless = "#result == null")
     public  List<Product>  findProductAll(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
@@ -141,7 +154,7 @@ public class ProductService {
     /**
      * 获取产品信息
      * @param
-     * @return 产品驱动信息列表
+     * @return 产品详细信息
      */
     @Cacheable(value = "productDetail;1800", unless = "#result == null")
     public Optional<TProduct> findProduct(String productId){
@@ -149,6 +162,13 @@ public class ProductService {
             .map(productMapper::toProduct)
             ;
     }
+
+    /**
+     * 根据产品编码获取产品列表
+     * @param productCode
+     * @return 产品列表信息
+     */
+    @Cacheable(value = "productsByCode;1800",key = "T(String).valueOf(#productCode)", unless = "#result == null")
     public List<TProduct> productsByCode(String productCode){
         return   productRepository.findProductByCode(productCode).stream()
             .map(productMapper::toProduct).collect(Collectors.toList());

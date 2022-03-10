@@ -64,14 +64,9 @@ public class ContractController {
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
         );
-        if((boolean)map.get("flag"))
-            return VBaseResponse.builder()
-                .message((String)map.get("message"))
-                .code(200)
-                .build();
         return VBaseResponse.builder()
             .message((String)map.get("message"))
-            .code(500)
+            .code((Integer)map.get("code"))
             .build();
     }
 

@@ -98,6 +98,13 @@ public class CompanyService {
         });
         return   tCompanyIncludeBrands .map(compTradeMapper::toPreloadSuppliersIncludeBrandDTOs);
     }
+
+    /**
+     * 根据品牌查询本单位的供应商
+     * @param brands
+     * @param id
+     * @return 返回供应商列表
+     */
     @Cacheable(value = "suppliers_brands;1800", unless = "#result == null")
     public List<TCompanyBaseInformation> findSuppliersByBrands(Optional<List<String>> brands,String id){
         QCompany qCompany = QCompany.company;

@@ -39,13 +39,13 @@ public class BrandService {
     private final DcBrandRepository dcBrandRepository;
     private  final ViewBrandRepository viewBrandRepository;
     private final JPAQueryFactory queryFactory;
+
     /**
      * 根据本单位id,页码，页数，获取品牌信息
      *
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 品牌信息列表
      */
-
     public Page<TBrand> brandsPagebyId(String id, Optional<String> pageNum, Optional<String> pageSize) {
         //根据单位id查询全部品牌信息（包括自营、经营、授权等信息）
          List<TBrand> list= findBrandsAllById(id);
@@ -56,6 +56,12 @@ public class BrandService {
         );
         return PageTools.listConvertToPage(list,pageable);
     }
+
+    /**
+     * 根据单位id查找品牌列表（是否自营，是否授权，是否经营）
+     * @param id
+     * @return 品牌列表
+     */
     @Cacheable(value = "brands_ID;1800" ,key = "#id", unless = "#result == null")
     public  List<TBrand> findBrandsAllById(String id){
        //查询系统所有品牌
@@ -111,6 +117,7 @@ public class BrandService {
        List<TBrand> list =StreamSupport.stream(tBrandSet.spliterator(), false).collect(Collectors.toList());
         return list;
    }
+
     /**
      * 获取品牌信息
      * @param
@@ -137,12 +144,12 @@ public class BrandService {
                      .collect(Collectors.toSet());
 
     }
+
     /**
      * 根据供应商获取品牌列表
      * @param
      * @return 品牌列表
      */
-
     @Cacheable(value = "brands_company;1800", unless = "#result == null")
     public List<TBrand> brandListBySupliers(Optional<List<String>>  company,String id){
         QDcBrand qDcBrand = QDcBrand.dcBrand;

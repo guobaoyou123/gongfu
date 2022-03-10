@@ -39,6 +39,7 @@ public interface BrandMapper {
     @Mapping(target = "vending", constant = "false")
     @Mapping(target = "compBrandOwner", source = "compBrandOwner")
     TBrand toBrand(Brand brand);
+
     /**
      * 将获取到的品牌信息，转换成可供使用的品牌信息
      *
@@ -52,6 +53,7 @@ public interface BrandMapper {
     @Mapping(target = "owned", constant = "false")
     @Mapping(target = "vending", constant = "false")
     TBrand toBrand(DcBrand brand);
+
     /**
      * 将获取到的品牌信息，转换成可供使用的品牌信息
      *
@@ -78,11 +80,4 @@ public interface BrandMapper {
     VDcBrandResponse.VBrand toProductBrandPreload(TBrand brand);
 
     TBrand toViewBrand(ViewBrand viewBrand);
-
-    /*@Mapping(target = "code", source = "companys.code")
-    @Mapping(target = "name", source = "companys.shortNameInCN")
-    @Mapping(target = "selfSupportBrands", source = "selfSupportBrands")
-    @Mapping(target = "authBrands", source = "authBrands")
-    @Mapping(target = "manageBrands", source = "manageBrands")
-    TBrand toDTOs(DcBrand brand);*/
 }

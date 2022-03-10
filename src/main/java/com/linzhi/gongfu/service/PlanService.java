@@ -110,12 +110,12 @@ public class PlanService {
                 saveList.add(temporaryPlan);
             });
             temporaryPlanRepository.saveAll(saveList);
-            resultMap.put("flag",true);
+            resultMap.put("code",200);
             resultMap.put("message","加入计划成功");
             if(resultList.size()>0)
                 resultMap.put("message","加入计划成功，产品编号为："+message[0]+"以存在于计划表中，并对需求数进行累加");
         }catch (Exception e){
-            resultMap.put("flag",false);
+            resultMap.put("code",500);
             resultMap.put("message","加入计划失败");
             return  resultMap;
         }
@@ -413,10 +413,16 @@ public class PlanService {
         }
 
     }
+
+    /**
+     * 修改巡视
+     * @param id
+     * @param demands
+     * @return
+     */
     @Transactional
     public boolean modifyPurchasePlanForSeveral(String id, VPlanDemandRequest demands){
         try{
-
             purchasePlanProductSupplierRepository.updateDemandById(demands.getDemand(),PurchasePlanProductSupplierId.builder()
                     .productId(demands.getProductId())
                     .dcCompId(id)
@@ -430,6 +436,13 @@ public class PlanService {
             return  false;
         }
     }
+
+    /**
+     * 修改需求数量
+     * @param id
+     * @param demands
+     * @return
+     */
     @Transactional
     public boolean modifyPurchasePlanDemand(String id, VPlanDemandRequest demands){
         try{
@@ -505,6 +518,7 @@ public class PlanService {
             return false;
         }
     }
+
     /**
      * 删除产品
      * @param id
@@ -531,6 +545,7 @@ public class PlanService {
             return false;
         }
     }
+
     /**
      * 撤销采购计划
      * @param id
