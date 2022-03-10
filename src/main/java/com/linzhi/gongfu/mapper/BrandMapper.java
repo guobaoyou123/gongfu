@@ -1,12 +1,10 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TBrand;
-import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
-import com.linzhi.gongfu.entity.CompTrad;
-import com.linzhi.gongfu.entity.DcBrand;
 import com.linzhi.gongfu.entity.Brand;
+import com.linzhi.gongfu.entity.DcBrand;
 import com.linzhi.gongfu.entity.ViewBrand;
-import com.linzhi.gongfu.vo.VBrandResponse;
+import com.linzhi.gongfu.vo.VBrandPageResponse;
 import com.linzhi.gongfu.vo.VDcBrandResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -65,7 +63,7 @@ public interface BrandMapper {
     @Mapping(target = "haveOwned", source = "haveOwned")
     @Mapping(target = "owned", source = "owned")
     @Mapping(target = "vending", source = "vending")
-    VBrandResponse.VBrand toBrandPreload(TBrand brand);
+    VBrandPageResponse.VBrand toBrandPreload(TBrand brand);
 
     /**
      * 将获取到的品牌信息，转换成可供使用的品牌信息

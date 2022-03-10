@@ -1,11 +1,13 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.mapper.MainProductClassMapper;
+import com.linzhi.gongfu.mapper.ProductMapper;
 import com.linzhi.gongfu.mapper.SysCompareDetailMapper;
 import com.linzhi.gongfu.service.ProductService;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +28,7 @@ public class ProductController {
     private final ProductService productService;
     private final MainProductClassMapper mainProductClassMapper;
     private final SysCompareDetailMapper sysCompareDetailMapper;
+    private final ProductMapper productMapper;
 
     /**
      * 查询所有产品分类
@@ -99,7 +102,7 @@ public class ProductController {
      * @return 返回产品列表
      */
     @GetMapping("/products")
-    public VProductResponse products(
+    public VProductPageResponse products(
         @RequestParam("brand")Optional<List<String>> brands,
         @RequestParam("class")Optional<String> classes,
         @RequestParam("material")Optional<String> material,
@@ -119,5 +122,47 @@ public class ProductController {
             pageSize,
             pageNum
         );
+    }
+    /**
+     * 根据产品编码查询产品
+     * @return 返回产品列表
+     */
+    @GetMapping("/product/{productCode}")
+    public VProductListResponse productsByCode(
+        @PathVariable Optional<String> productCode){
+        var productList = productService.productsByCode(productCode.orElse(""));
+        if(productList.size()==0)
+            return VProductListResponse.builder()
+                .code(404)
+                .message("未找到")
+                .products(new ArrayList<>())
+                .build();
+        return VProductListResponse.builder()
+            .code(200)
+            .message("查询成功")
+            .products(productList.stream().map(productMapper::tProductList).collect(Collectors.toList()))
+            .build();
+    }
+    /**
+     * 根据产品id查找产品详情
+     * @param productId
+     * @return 返回产品详情
+     */
+   @GetMapping("/product/detail")
+    public  VProductDetailResponse     productDetail(@RequestParam("productId")Optional<String> productId){
+        var productDetail = productId
+            .flatMap(productService::findProduct)
+            .map(productMapper::tProductDetail);
+        if(productDetail.isEmpty())
+            return  VProductDetailResponse.builder()
+                .code(404)
+                .message("请求的产品信息没有找到")
+                .product(new VProductDetailResponse.VProduct())
+                .build();
+        return VProductDetailResponse.builder()
+            .code(200)
+            .message("成功找到请求的产品信息")
+            .product(productDetail.get())
+            .build();
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VProductResponse extends VBaseResponse{
+public class VProductPageResponse extends VBaseResponse{
     private int current;
     private int total;
     List<VProduct> products;

@@ -10,6 +10,7 @@ import java.util.List;
 @Jacksonized
 @NoArgsConstructor
 public class VPurchasePlanRequest {
-    List<String> products;
-    List<String> suppliers;
+    private String planCode;
+    private List<String> products;
+    private List<String> suppliers;
 }
