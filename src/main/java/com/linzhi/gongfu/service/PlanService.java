@@ -414,16 +414,16 @@ public class PlanService {
 
     }
     @Transactional
-    public boolean modifyPurchasePlanForSeveral(String id, List<VPlanDemandRequest> demands){
+    public boolean modifyPurchasePlanForSeveral(String id, VPlanDemandRequest demands){
         try{
-            demands.forEach(v -> {
-                purchasePlanProductSupplierRepository.updateDemandById(v.getDemand(),PurchasePlanProductSupplierId.builder()
-                    .productId(v.getProductId())
+
+            purchasePlanProductSupplierRepository.updateDemandById(demands.getDemand(),PurchasePlanProductSupplierId.builder()
+                    .productId(demands.getProductId())
                     .dcCompId(id)
-                    .salerCode(v.getSupplierCode())
-                    .planCode(v.getPlanCode())
+                    .salerCode(demands.getSupplierCode())
+                    .planCode(demands.getPlanCode())
                     .build());
-            });
+
             return true;
         }catch (Exception e){
             e.printStackTrace();

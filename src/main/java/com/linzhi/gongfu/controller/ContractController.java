@@ -204,7 +204,7 @@ public class ContractController {
      */
     @PutMapping("/contract/purchase/plan/forseveral")
     public VBaseResponse modifyPurchasePlanForseveral(
-        @RequestBody Optional<List<VPlanDemandRequest>> forSeveral
+        @RequestBody Optional<VPlanDemandRequest> forSeveral
     ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
