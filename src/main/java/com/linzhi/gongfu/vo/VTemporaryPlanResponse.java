@@ -45,5 +45,9 @@ public class VTemporaryPlanResponse extends VBaseResponse{
          * 需求
          */
         private BigDecimal demand;
+        /**
+         * 创建时间
+         */
+        private Long createdAt;
     }
 }

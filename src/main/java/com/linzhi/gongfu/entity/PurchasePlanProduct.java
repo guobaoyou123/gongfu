@@ -7,6 +7,8 @@ import org.hibernate.annotations.NotFoundAction;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
@@ -85,7 +87,12 @@ public class PurchasePlanProduct implements Serializable {
         @JoinColumn(name = "dc_comp_id",referencedColumnName = "dc_comp_id", insertable = true, updatable = true),
     @JoinColumn(name = "product_id",referencedColumnName = "product_id", insertable = true, updatable = true)})
     @NotFound(action= NotFoundAction.IGNORE)
+    @OrderBy("serial ASC")
     private List<PurchasePlanProductSupplier> salers;
 
-
+    /**
+     * 创建时间
+     */
+    @Column(name = "created_at", columnDefinition = "DATE")
+    private LocalDateTime createdAt;
 }

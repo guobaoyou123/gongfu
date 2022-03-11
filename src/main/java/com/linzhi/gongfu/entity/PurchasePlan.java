@@ -44,5 +44,6 @@ public class PurchasePlan implements Serializable {
     @JoinColumns({@JoinColumn(name = "plan_code",referencedColumnName = "plan_code", insertable = true, updatable = true),
     @JoinColumn(name = "dc_comp_id",referencedColumnName = "dc_comp_id", insertable = true, updatable = true)})
     @NotFound(action= NotFoundAction.IGNORE)
+    @OrderBy("createdAt ASC")
     private List<PurchasePlanProduct> product;
 }

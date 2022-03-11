@@ -11,7 +11,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring",uses = { PurchasePlanProductSupplierMapper.class })
 public interface PurchasePlanProductMapper {
-
     List<TPurchasePlanProduct> toDTOs(List<PurchasePlanProduct> product);
     @Mapping(target = "id",source = "purchasePlanProductId.productId")
     @Mapping(target = "code",source = "productCode")
@@ -27,6 +26,7 @@ public interface PurchasePlanProductMapper {
     @Mapping(target = "chargeUnit",source = "chargeUnit")
     @Mapping(target = "facePrice",source = "facePrice")
     @Mapping(target = "suppliers",source = "salers")
+    @Mapping(target = "createdAt",expression = "java(com.linzhi.gongfu.util.DateConverter.getDateTime(purchasePlan.getCreatedAt()))")
     TPurchasePlanProduct toDTO(PurchasePlanProduct purchasePlan);
 
     List<VPurchasePlanResponse.VProduct> toProducts(List<TPurchasePlanProduct> tPurchasePlanProduct);

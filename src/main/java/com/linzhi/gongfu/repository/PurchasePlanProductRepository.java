@@ -8,6 +8,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public interface PurchasePlanProductRepository extends CrudRepository<PurchasePlanProduct, PurchasePlanProductId>, QuerydslPredicateExecutor<PurchasePlanProduct> {
     @Modifying
@@ -16,4 +17,5 @@ public interface PurchasePlanProductRepository extends CrudRepository<PurchasePl
     @Modifying
     @Query("delete from PurchasePlanProduct as c  where c.purchasePlanProductId.dcCompId=?1 and  c.purchasePlanProductId.planCode=?2 ")
     void  deleteProduct(String dcCompId , String planCode);
+
 }

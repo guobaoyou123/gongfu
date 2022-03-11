@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Builder
 @Data
@@ -37,4 +38,8 @@ public class TTemporaryPlan implements Serializable {
      * 需求
      */
     private BigDecimal demand;
+    /**
+     * 创建时间
+     */
+    private Long createdAt;
 }

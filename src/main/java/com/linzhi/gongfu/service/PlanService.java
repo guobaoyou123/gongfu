@@ -52,7 +52,7 @@ public class PlanService {
      * @return 临时采购计划列表信息
      */
     public List<TTemporaryPlan>  findTemporaryPlanByOperator(TemporaryPlanId temporaryPlanId){
-        return  temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedBy(temporaryPlanId.getDcCompId(),temporaryPlanId.getCreatedBy()).stream()
+        return  temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByOrderByCreatedAt(temporaryPlanId.getDcCompId(),temporaryPlanId.getCreatedBy()).stream()
             .map(temporaryPlanMapper::toTemporaryPlan)
             .collect(Collectors.toList());
     }
@@ -79,7 +79,7 @@ public class PlanService {
                 productMap.put(product1.getId(),product1)
             );
             //判断是否有已存在于计划列表中的产品
-            var list =temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedBy(id,operatorCode).stream()
+            var list =temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByOrderByCreatedAt(id,operatorCode).stream()
                 .filter(temporaryPlan -> proCodeList.contains(temporaryPlan.getTemporaryPlanId().getProductId()))
                 .collect(Collectors.toList());
             Map<String,TemporaryPlan> temporaryPlanMap = new HashMap<>();
@@ -170,10 +170,9 @@ public class PlanService {
            Map result = new HashMap();
         try{
             //查出所选计划
-            List<TemporaryPlan> temporaryPlans = temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByAndTemporaryPlanId_ProductIdIn(id,operatorCode,products);
+            List<TemporaryPlan> temporaryPlans = temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByAndTemporaryPlanId_ProductIdInOrderByCreatedAt(id,operatorCode,products);
             if(temporaryPlans.size()==0) {
                 result.put("code", 404);
-                result.put("flag", false);
                 result.put("message", "数据不存在");
                 return result;
             }
@@ -197,8 +196,10 @@ public class PlanService {
             temporaryPlans.forEach(temporaryPlan -> {
                 List<PurchasePlanProductSupplier> purchasePlanProductSalers = new ArrayList<>();
                 List<Company> companies = brandsSuppliers.get(temporaryPlan.getBrandCode());
+                AtomicInteger i = new AtomicInteger();
                 if(companies!=null){
                     companies.forEach(company -> {
+                        i.getAndIncrement();
                         PurchasePlanProductSupplier productSaler = PurchasePlanProductSupplier.builder()
                             .purchasePlanProductSupplierId(PurchasePlanProductSupplierId.builder()
                                 .productId(temporaryPlan.getTemporaryPlanId().getProductId())
@@ -206,10 +207,11 @@ public class PlanService {
                                 .dcCompId(id)
                                 .salerCode(company.getCode())
                                 .build())
+                            .serial(i.get())
                             .salerName(company.getShortNameInCN())
                             .demand(BigDecimal.ZERO)
-                            .deliverNum(BigDecimal.ZERO)
-                            .tranNum(BigDecimal.ZERO)
+                            .deliverNum(BigDecimal.valueOf(5))
+                            .tranNum(BigDecimal.valueOf(5))
                             .build();
                         purchasePlanProductSalers.add(productSaler);
                     });
@@ -227,11 +229,12 @@ public class PlanService {
                     .facePrice(temporaryPlan.getProduct().getFacePrice())
                     .demand(temporaryPlan.getDemand())
                     .salers(purchasePlanProductSalers)
-                    .deliverNum(BigDecimal.ZERO)
-                    .beforeSalesPrice(BigDecimal.ZERO)
+                    .deliverNum(BigDecimal.valueOf(5))
+                    .beforeSalesPrice(BigDecimal.valueOf(5))
                     .inquiryNum(BigDecimal.ZERO)
-                    .safetyStock(BigDecimal.ZERO)
-                    .tranNum(BigDecimal.ZERO)
+                    .safetyStock(BigDecimal.valueOf(5))
+                    .tranNum(BigDecimal.valueOf(5))
+                    .createdAt(LocalDateTime.now())
                     .build();
                 purchasePlanProducts.add(product);
             });
@@ -247,13 +250,12 @@ public class PlanService {
                 .build();
             purchasePlanRepository.save(purchasePlan);
             temporaryPlanRepository.deleteAll(temporaryPlans);
-            result.put("flag",true);
-            result.put("planCode",planCode);
+            result.put("code", 200);;
+            result.put("message","开始计划成功！");
             return result;
         }catch (Exception e){
             e.printStackTrace();
             result.put("code", 500);
-            result.put("flag",false);
             result.put("message",e.getMessage());
             return result;
         }
@@ -315,7 +317,7 @@ public class PlanService {
      * @return 返回采购计划信息
      */
     public Optional<VBaseResponse> verification(String id, String operateorCode){
-        var purchasePlan = purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndAndCreatedBy(id, operateorCode);
+        var purchasePlan = purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndCreatedBy(id, operateorCode);
         if(!purchasePlan.isEmpty())
             return Optional.of(
                 VBaseResponse.builder()
@@ -337,7 +339,7 @@ public class PlanService {
      * @return 返回采购计划信息
      */
     public Optional<VPurchasePlanResponse> findPurchasePlanByCode(String id, String operateorCode){
-        return  purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndAndCreatedBy(id, operateorCode)
+        return  purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndCreatedBy(id, operateorCode)
              .map(purchasePlanMapper::toDTO)
              .map(purchasePlanMapper::toPruchasePlan);
     }
@@ -353,6 +355,7 @@ public class PlanService {
     @Transactional
     public Map  modifyPlanSupplier(String id,String planCode,String productId,String oldSupplier,String newSupplier){
           Map map= new HashMap();
+          int serial = 0;
         try{
             Optional<Company> supplier =companyRepository.findById(newSupplier);
             if(supplier.isEmpty()) {
@@ -375,6 +378,7 @@ public class PlanService {
                     map.put("message", "更换失败，被更换的供应商不存在");
                     return map;
                 }
+                serial=supplier1.get().getSerial();
                 purchasePlanProductSupplierRepository.deleteById(
                     PurchasePlanProductSupplierId.builder()
                         .productId(productId)
@@ -383,6 +387,8 @@ public class PlanService {
                         .salerCode(oldSupplier)
                         .build()
                 );
+            }else{
+                serial =   purchasePlanProductSupplierRepository.findMaxSerial(productId,planCode,id);
             }
             purchasePlanProductSupplierRepository.save(
                 PurchasePlanProductSupplier.builder()
@@ -394,10 +400,11 @@ public class PlanService {
                     .salerCode(newSupplier)
                     .build()
                 )
+                .serial(serial)
                 .salerName(supplier.get().getShortNameInCN())
                 .demand(BigDecimal.ZERO)
-                .tranNum(BigDecimal.ZERO)
-                .deliverNum(BigDecimal.ZERO)
+                .tranNum(BigDecimal.valueOf(5))
+                .deliverNum(BigDecimal.valueOf(5))
                 .build()
             );
             map.put("flag",true);
@@ -475,7 +482,9 @@ public class PlanService {
             brands.add(product.get().getBrandCode());
            List<Company> suppliers =  findSuppliersByBrandsAndCompBuyer(brands,id,new ArrayList<>()).get(product.get().getBrandCode());
            List<PurchasePlanProductSupplier> purchasePlanProductSuppliers = new ArrayList<>();
+           AtomicInteger i = new AtomicInteger();
            suppliers.forEach(company -> {
+                   i.getAndIncrement();
                    PurchasePlanProductSupplier productSaler = PurchasePlanProductSupplier.builder()
                        .purchasePlanProductSupplierId(PurchasePlanProductSupplierId.builder()
                            .productId(productId)
@@ -483,10 +492,11 @@ public class PlanService {
                            .dcCompId(id)
                            .salerCode(company.getCode())
                            .build())
+                       .serial(i.get())
                        .salerName(company.getShortNameInCN())
                        .demand(BigDecimal.ZERO)
-                       .deliverNum(BigDecimal.ZERO)
-                       .tranNum(BigDecimal.ZERO)
+                       .deliverNum(BigDecimal.valueOf(5))
+                       .tranNum(BigDecimal.valueOf(5))
                        .build();
                purchasePlanProductSuppliers.add(productSaler);
            });
@@ -505,11 +515,12 @@ public class PlanService {
                 .facePrice(product.get().getFacePrice())
                 .demand(demand)
                 .salers(purchasePlanProductSuppliers)
-                .deliverNum(BigDecimal.ZERO)
+                .deliverNum(BigDecimal.valueOf(5))
                 .beforeSalesPrice(BigDecimal.ZERO)
                 .inquiryNum(BigDecimal.ZERO)
-                .safetyStock(BigDecimal.ZERO)
-                .tranNum(BigDecimal.ZERO)
+                .safetyStock(BigDecimal.valueOf(5))
+                .tranNum(BigDecimal.valueOf(5))
+                .createdAt(LocalDateTime.now())
                 .build();
             purchasePlanProductRepository.save(purchasePlanProduct);
             return true;

@@ -78,6 +78,10 @@ public class VPurchasePlanResponse extends VBaseResponse{
          * 面价
          */
         private BigDecimal facePrice;
+        /**
+         * 创建时间
+         */
+        private long createdAt;
 
         private List<VSupplier> suppliers;
 
@@ -85,6 +89,13 @@ public class VPurchasePlanResponse extends VBaseResponse{
 
     @Data
     public  static  class VSupplier{
+        /**
+         * 排序
+         */
+        private int serial;
+        /**
+         * 供应商公司编码
+         */
         private String code;
         /**
          * 供应商公司名称

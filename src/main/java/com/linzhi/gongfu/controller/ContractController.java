@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.controller;
 
+import com.linzhi.gongfu.entity.PurchasePlanProductId;
 import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
@@ -125,14 +126,9 @@ public class ContractController {
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
         );
-        if(!(boolean)map.get("flag"))
-            return VBaseResponse.builder()
-                .message(map.get("message").toString())
-                .code((Integer) map.get("code"))
-                .build();
         return VBaseResponse.builder()
-            .message("开始计划成功！")
-            .code(200)
+            .message(map.get("message").toString())
+            .code((Integer) map.get("code"))
             .build();
     }
 
@@ -240,7 +236,6 @@ public class ContractController {
             .message("修改失败！")
             .build();
     }
-
 
     /**
      * 采购计划添加产品

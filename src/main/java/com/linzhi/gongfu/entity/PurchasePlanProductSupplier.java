@@ -17,6 +17,11 @@ public class PurchasePlanProductSupplier implements Serializable {
     @EmbeddedId
     private PurchasePlanProductSupplierId purchasePlanProductSupplierId;
     /**
+     * 序号
+     */
+    @Column(name = "serial")
+    private int serial;
+    /**
      * 供应商公司名称
      */
     @Column(name = "saler_name",length = 20)

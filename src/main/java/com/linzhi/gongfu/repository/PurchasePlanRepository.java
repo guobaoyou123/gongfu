@@ -29,6 +29,6 @@ public interface PurchasePlanRepository extends CrudRepository<PurchasePlan, Pur
     @Query("delete from PurchasePlan as c  where c.purchasePlanId=?1 ")
     void  deletePurchasePlan(PurchasePlanId purchasePlanId);
 
-    Optional<PurchasePlan> findPurchasePlanByPurchasePlanId_DcCompIdAndAndCreatedBy(String dcCompId, String createdBy);
+    Optional<PurchasePlan> findPurchasePlanByPurchasePlanId_DcCompIdAndCreatedBy(String dcCompId, String createdBy);
 
 }

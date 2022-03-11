@@ -71,5 +71,9 @@ public class TPurchasePlanProduct implements Serializable {
      * 面价
      */
     private BigDecimal facePrice;
+    /**
+     * 创建时间
+     */
+    private long createdAt;
     private List<TPurchasePlanProductSupplier> suppliers;
 }

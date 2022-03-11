@@ -21,6 +21,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TPurchasePlanProductSupplier implements Serializable {
+    /**
+     * 排序
+     */
+    private int serial;
+    /**
+     * 供应商公司编码
+     */
     private String code;
     /**
      * 供应商公司名称
