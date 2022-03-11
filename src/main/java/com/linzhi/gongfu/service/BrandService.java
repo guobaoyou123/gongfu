@@ -14,7 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +34,6 @@ public class BrandService {
     private final CompAllowedBrandRepository compAllowedBrandRepository;
     private final BrandRepository brandRepository;
     private final CompBrandAuthRepository compBrandAuthRepository;
-    private final CompBrandOwnerRepository compBrandOwnerRepository;
     private final BrandMapper brandMapper;
     private final DcBrandRepository dcBrandRepository;
     private  final ViewBrandRepository viewBrandRepository;
@@ -59,7 +58,7 @@ public class BrandService {
 
     /**
      * 根据单位id查找品牌列表（是否自营，是否授权，是否经营）
-     * @param id
+     * @param id 单位id
      * @return 品牌列表
      */
     @Cacheable(value = "brands_ID;1800" ,key = "#id", unless = "#result == null")
@@ -70,27 +69,22 @@ public class BrandService {
         List<CompAllowedBrand> compAllowedBrandSet= compAllowedBrandRepository.findBrandsByCompAllowedBrandIdCompCode(id);
        //查询授权品牌
         List<CompBrandAuth> compBrandAuthSet=compBrandAuthRepository.findCompBrandAuthByCompBrandAuthId_BeAuthComp(id);
-       //查询拥有品牌
-        List<CompBrandOwner> compBrandOwnerSet=compBrandOwnerRepository.findCompBrandOwnerByCompBrandOwnerId_OwnerCode(id);
-        List<TBrand> tBrandSet =  StreamSupport.stream(brandsIterable.spliterator(), false)
-           .map(brandMapper::toBrand)
-           .collect(Collectors.toList());
-       tBrandSet.forEach(brands -> {
-           brands.getCompBrandOwner().forEach(compBrandOwner -> {
-               brands.setHaveOwned(true);
-               if(compBrandOwner.getCompBrandOwnerId().getOwnerCode().equals(id)){
-                   brands.setOwned(true);
-               }else{
-                   compBrandAuthSet.forEach(compBrandAuth -> {
-                       if(compBrandAuth.getCompBrandAuthId().getBrandCode().equals(compBrandOwner.getCompBrandOwnerId().getBrandCode())){
-                           brands.setVending(true);
-                       }
-                   });
-               }
-           });
-       });
+        List<TBrand> tBrandSet = StreamSupport.stream(brandsIterable.spliterator(), false)
+            .map(brandMapper::toBrand).toList();
+       tBrandSet.forEach(brands -> brands.getCompBrandOwner().forEach(compBrandOwner -> {
+           brands.setHaveOwned(true);
+           if(compBrandOwner.getCompBrandOwnerId().getOwnerCode().equals(id)){
+               brands.setOwned(true);
+           }else{
+               compBrandAuthSet.forEach(compBrandAuth -> {
+                   if(compBrandAuth.getCompBrandAuthId().getBrandCode().equals(compBrandOwner.getCompBrandOwnerId().getBrandCode())){
+                       brands.setVending(true);
+                   }
+               });
+           }
+       }));
        //筛选经营品牌
-       List<TBrand> allowedBrand = StreamSupport.stream(tBrandSet.spliterator(), false)
+       List<TBrand> allowedBrand = tBrandSet.stream()
            .filter(brands -> {
                AtomicReference<Boolean> flag = new AtomicReference<>(false);
                compAllowedBrandSet.forEach(compAllowedBrand -> {
@@ -101,40 +95,34 @@ public class BrandService {
            })
            .collect(Collectors.toList());
        //过滤除经营品牌以外的其他品牌
-       List<TBrand> otherdBrand = StreamSupport.stream(tBrandSet.spliterator(), false)
+       List<TBrand> otherdBrand = tBrandSet.stream()
            .filter(brands -> {
-               AtomicReference<Boolean> flag = new AtomicReference<>(false);
+               AtomicReference<Boolean> flag = new AtomicReference<>(true);
                compAllowedBrandSet.forEach(compAllowedBrand -> {
-                   if(!compAllowedBrand.getCompAllowedBrandId().getBrandCode().equals(brands.getCode()))
-                       flag.set(true);
+                   if (compAllowedBrand.getCompAllowedBrandId().getBrandCode().equals(brands.getCode()))
+                       flag.set(false);
                });
                return flag.get();
-           })
-           .collect(Collectors.toList());
-       if(!Optional.of(allowedBrand).isPresent())
-           allowedBrand = new ArrayList<>();
-       allowedBrand.addAll(otherdBrand);
-       List<TBrand> list =StreamSupport.stream(tBrandSet.spliterator(), false).collect(Collectors.toList());
-        return list;
+           }).toList();
+        allowedBrand.addAll(otherdBrand);
+        return allowedBrand;
    }
 
     /**
      * 获取品牌信息
-     * @param
      * @return 供应商信息列表
      */
     @Cacheable(value = "brands;1800", unless = "#result == null")
     public Set<TBrand> brandList() {
-       Set<TBrand> tBrandSet =  StreamSupport.stream(dcBrandRepository.findAll().spliterator(), false)
-            .sorted((a, b) -> a.getSort() - b.getSort())
-            .map(brandMapper::toBrand)
-            .collect(Collectors.toSet());
-       return tBrandSet;
+        return StreamSupport.stream(dcBrandRepository.findAll().spliterator(), false)
+             .sorted(Comparator.comparingInt(DcBrand::getSort))
+             .map(brandMapper::toBrand)
+             .collect(Collectors.toSet());
     }
 
     /**
      * 根据产品二级分类获取品牌列表
-     * @param
+     * @param classes  二级分类编码
      * @return 品牌列表
      */
     @Cacheable(value = "brands_class;1800",key="#classes", unless = "#result == null")
@@ -147,7 +135,7 @@ public class BrandService {
 
     /**
      * 根据供应商获取品牌列表
-     * @param
+     * @param company 供应商编码列表， id 单位id
      * @return 品牌列表
      */
     @Cacheable(value = "brands_company;1800", unless = "#result == null")

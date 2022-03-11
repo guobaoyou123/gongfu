@@ -48,7 +48,7 @@ public class BrandController {
         return VBrandPageResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
-            .total(Integer.valueOf(String.valueOf(brandPage.getTotalElements())))
+            .total(Integer.parseInt(String.valueOf(brandPage.getTotalElements())))
             .current(brandPage.getNumber()+1)
             .brands(brandPage.getContent().stream()
                 .map(brandMapper::toBrandPreload)

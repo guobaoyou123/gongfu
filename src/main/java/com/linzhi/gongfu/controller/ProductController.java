@@ -146,7 +146,7 @@ public class ProductController {
     }
     /**
      * 根据产品id查找产品详情
-     * @param productId
+     * @param productId 产品id
      * @return 返回产品详情
      */
    @GetMapping("/product/detail")

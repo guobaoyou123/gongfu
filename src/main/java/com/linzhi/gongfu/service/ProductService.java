@@ -46,19 +46,18 @@ public class ProductService {
     private final ProductRepository productRepository;
     /**
      * 获取产品一级二级分类信息
-     * @param type
+     * @param type 编号
      * @return 产品一级二级分类信息列表
      */
     @Cacheable(value = "product_class;1800", unless = "#result == null")
     public List<TProductClass> productClassList(String type) {
-        List<TProductClass>  tProductClasses=   mainProductClassRepository.findMainProductClassByBaseProductClassId_Type(type).stream()
+        return mainProductClassRepository.findMainProductClassByBaseProductClassId_Type(type).stream()
              .map(mainProductClassMapper::toDTO)
             .collect(Collectors.toList());
-        return tProductClasses;
     }
     /**
      * 获取产品对照表信息
-     * @param name
+     * @param name 名称
      * @return 产品对照表信息列表
      */
     @Cacheable(value = "product_compare;1800", unless = "#result == null")
@@ -111,7 +110,7 @@ public class ProductService {
         return  VProductPageResponse.builder()
             .code(200)
             .message("获取产品列表成功。")
-            .total(Integer.valueOf(String.valueOf(productPage.getTotalElements())))
+            .total(Integer.parseInt(String.valueOf(productPage.getTotalElements())))
             .current(productPage.getNumber()+1)
             .otherproducts(new ArrayList<>())
             .products(productPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
@@ -120,12 +119,12 @@ public class ProductService {
 
     /**
      *  获取产品信息列表
-     * @param brands
-     * @param classes
-     * @param material
-     * @param drive
-     * @param connection1
-     * @param connection2
+     * @param brands 品牌编码列表
+     * @param classes 二级分裂编码
+     * @param material 主材质编码
+     * @param drive 驱动名称
+     * @param connection1 连接方式名称
+     * @param connection2 连接方式名称
      * @return 产品列表
      */
     @Cacheable(value = "products;1800", unless = "#result == null")
@@ -153,7 +152,7 @@ public class ProductService {
 
     /**
      * 获取产品信息
-     * @param
+     * @param productId 产品id
      * @return 产品详细信息
      */
     @Cacheable(value = "productDetail;1800", unless = "#result == null")
@@ -165,7 +164,7 @@ public class ProductService {
 
     /**
      * 根据产品编码获取产品列表
-     * @param productCode
+     * @param productCode 产品编码
      * @return 产品列表信息
      */
     @Cacheable(value = "productsByCode;1800",key = "T(String).valueOf(#productCode)", unless = "#result == null")

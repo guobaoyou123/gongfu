@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +42,7 @@ public class CompanyController {
         return VSuppliersIncludeBrandsResponse.builder()
                .code(200)
                .message("获取我的供应以及品牌列表成功。")
-               .total(Integer.valueOf(String.valueOf(supplier.getTotalElements())))
+               .total(Integer.parseInt(String.valueOf(supplier.getTotalElements())))
                .current(supplier.getNumber()+1)
                 .suppliers(supplier.getContent())
                 .build();
@@ -51,7 +50,7 @@ public class CompanyController {
 
     /**
      * 查询本公司所有供应商
-     * @param brands
+     * @param brands 品牌编码列表
      * @return 对应的本公司id查询所有供应商
      */
     @GetMapping("/suppliers/by/brand")

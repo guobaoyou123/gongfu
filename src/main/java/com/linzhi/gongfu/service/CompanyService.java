@@ -7,12 +7,10 @@ import com.linzhi.gongfu.entity.CompTrad;
 import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.QCompTradBrand;
 import com.linzhi.gongfu.entity.QCompany;
-import com.linzhi.gongfu.enumeration.Trade;
 import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.repository.CompTradeRepository;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
-import com.linzhi.gongfu.repository.PurchasePlanProductSupplierRepository;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -26,7 +24,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +40,6 @@ public class CompanyService {
     private final CompTradeRepository compTradeRepository;
     private final CompTradeMapper compTradeMapper;
     private final JPAQueryFactory queryFactory;
-    private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -73,17 +69,13 @@ public class CompanyService {
         tCompanyIncludeBrands.forEach(compTrad ->  {
             //将供应商中的经营品牌与授权品牌和自营品牌对比进行去重
             List<TBrand>   selfSupportBrands =  compTrad.getSelfSupportBrands().stream().filter(tBrand -> compTrad.getManageBrands().contains(tBrand)).collect(Collectors.toList());
-            List<TBrand>      authBrands     =  compTrad.getAuthBrands().stream().filter(tBrand -> compTrad.getManageBrands().contains(tBrand)).collect(Collectors.toList());
+            List<TBrand>      authBrands     = compTrad.getAuthBrands().stream().filter(tBrand -> compTrad.getManageBrands().contains(tBrand)).toList();
             List<TBrand>    managerBrands    =  compTrad.getManageBrands().stream().filter(tBrand -> !selfSupportBrands.contains(tBrand))
                                                     .collect(Collectors.toList());
                              managerBrands   =  managerBrands.stream().filter(tBrand -> !authBrands.contains(tBrand))
                                                    .collect(Collectors.toList());
-            selfSupportBrands.forEach(dcBrand -> {
-                dcBrand.setOwned(true);
-            });
-            authBrands.forEach(dcBrand -> {
-                dcBrand.setVending(true);
-            });
+            selfSupportBrands.forEach(dcBrand -> dcBrand.setOwned(true));
+            authBrands.forEach(dcBrand -> dcBrand.setVending(true));
              //将供应商中的经营品牌、授权品牌、自营品牌合并在一个集合中
             if(selfSupportBrands.isEmpty())
                 compTrad.setSelfSupportBrands(new ArrayList<>());
@@ -101,8 +93,8 @@ public class CompanyService {
 
     /**
      * 根据品牌查询本单位的供应商
-     * @param brands
-     * @param id
+     * @param brands 品牌编码列表
+     * @param id 单位id
      * @return 返回供应商列表
      */
     @Cacheable(value = "suppliers_brands;1800", unless = "#result == null")
@@ -112,7 +104,7 @@ public class CompanyService {
 
         JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompTradBrand).leftJoin(qCompany)
             .on(qCompany.code.eq(qCompTradBrand.compTradBrandId.compSaler));
-        if(!brands.isEmpty()){
+        if(brands.isPresent()){
             query.where(qCompTradBrand.compTradBrandId.brandCode.in(brands.get()));
         }
         if(!id.isEmpty()){
