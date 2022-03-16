@@ -44,6 +44,7 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final JPAQueryFactory queryFactory;
     private final ProductRepository productRepository;
+
     /**
      * 获取产品一级二级分类信息
      * @param type 编号
@@ -55,6 +56,7 @@ public class ProductService {
              .map(mainProductClassMapper::toDTO)
             .collect(Collectors.toList());
     }
+
     /**
      * 获取产品对照表信息
      * @param name 名称
@@ -65,7 +67,6 @@ public class ProductService {
         return sysCompareTableRepository.findSysCompareTableByName(name).getList().stream()
             .map(sysCompareDetailMapper::toCompareDetail)
             .collect(Collectors.toList());
-
     }
 
     /**

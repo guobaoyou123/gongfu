@@ -144,6 +144,7 @@ public class ProductController {
             .products(productList.stream().map(productMapper::tProductList).collect(Collectors.toList()))
             .build();
     }
+
     /**
      * 根据产品id查找产品详情
      * @param productId 产品id

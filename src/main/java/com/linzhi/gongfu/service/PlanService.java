@@ -13,6 +13,8 @@ import com.linzhi.gongfu.vo.VPurchasePlanResponse;
 import com.linzhi.gongfu.vo.VTemporaryPlanRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +38,6 @@ public class PlanService {
     private final TemporaryPlanRepository temporaryPlanRepository;
     private final TemporaryPlanMapper temporaryPlanMapper;
     private final ProductRepository productRepository;
-    private final PurchasePlanMapper purchasePlanMapper;
     private final CompTradBrandRepository compTradBrandRepository;
     private final PurchasePlanRepository purchasePlanRepository;
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
@@ -174,7 +175,7 @@ public class PlanService {
      * @return 返回采购计划号
      */
     @Transactional
-    public Map<String, Object> savaPurchasePlan(List<String> products, List<String> suppliers, String id, String operatorCode){
+    public Map<String, Object> savePurchasePlan(List<String> products, List<String> suppliers, String id, String operatorCode){
            Map<String, Object> result = new HashMap<>();
         try{
             //查出所选计划
@@ -270,6 +271,44 @@ public class PlanService {
     }
 
     /**
+     * 保存空的采购计划
+     * @param id 单位id
+     * @param operatorCode 操作员编号
+     * @return 返回
+     */
+    @Transactional
+    public Map<String, Object> savaEmptyPurchasePlan(String id, String operatorCode){
+        Map<String, Object> result = new HashMap<>();
+        try{
+            //计划编码
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+            LocalDate data=LocalDate.now();
+            String planCode = "JH-"+operatorCode+"-"+dtf.format(data)+"-"+"01";
+            List<PurchasePlanProduct> purchasePlanProducts = new ArrayList<>();
+            //保存
+            PurchasePlan purchasePlan = PurchasePlan.builder()
+                .purchasePlanId(PurchasePlanId.builder()
+                    .planCode(planCode)
+                    .dcCompId(id)
+                    .build())
+                .createdBy(operatorCode)
+                .createdAt(LocalDate.now())
+                .source(DemandSource.NEW_DEMAND)
+                .product(purchasePlanProducts)
+                .build();
+            purchasePlanRepository.save(purchasePlan);
+            result.put("code", 200);
+            result.put("message","创建计划成功！");
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+            result.put("code", 500);
+            result.put("message",e.getMessage());
+            return result;
+        }
+    }
+
+    /**
      * 根据品牌列表，本单位id，供应商列表查询 每个品牌有哪些供应商
      * @param brands 品牌编码列表
      * @param compBuyer 买方编码
@@ -324,7 +363,7 @@ public class PlanService {
      * @return 返回采购计划信息
      */
     public Optional<VBaseResponse> verification(String id, String operateorCode){
-        var purchasePlan = purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndCreatedBy(id, operateorCode);
+        var purchasePlan = findPurchasePlanByCode(id, operateorCode);
         if(purchasePlan.isEmpty())
             return Optional.of(
                 VBaseResponse.builder()
@@ -341,14 +380,12 @@ public class PlanService {
     }
 
     /**
-     * 根据计划号查询采购计划
+     * 查询采购计划
      * @param operateorCode 操作员编号 id 单位id
      * @return 返回采购计划信息
      */
-    public Optional<VPurchasePlanResponse> findPurchasePlanByCode(String id, String operateorCode){
-        return  purchasePlanRepository.findPurchasePlanByPurchasePlanId_DcCompIdAndCreatedBy(id, operateorCode)
-             .map(purchasePlanMapper::toDTO)
-             .map(purchasePlanMapper::toPruchasePlan);
+    public Optional<PurchasePlan> findPurchasePlanByCode(String id, String operateorCode){
+        return  purchasePlanRepository.findFirstByPurchasePlanId_DcCompIdAndCreatedBy(id, operateorCode);
     }
 
     /**
@@ -612,9 +649,10 @@ public class PlanService {
      */
     @CachePut(value="inquiry_List;1800", key="T(String).valueOf(#id).concat(#operatorCode)")
     @Transactional
-    public VBaseResponse savePurchaseInquiry(String planCode, String id,String compName, String operatorCode){
+    public List<Inquiry> savePurchaseInquiry(String planCode, String id,String compName, String operatorCode){
         try{
-            Map<String,List<InquiryRecord>> supplierInquerRecordMap = new HashMap<>();
+
+            Map<String,List<InquiryRecord>> supplierInquiryRecordMap = new HashMap<>();
             List<String> suppliers = new ArrayList<>();
             List<Inquiry> inquiries = new ArrayList<>();
             //查找采购计划
@@ -625,15 +663,12 @@ public class PlanService {
                     .build()
             );
             if(purchasePlan.isEmpty())
-                return VBaseResponse.builder()
-                    .code(404)
-                    .message("数据不存在")
-                    .build();
+                return null;
             //查出货物税率
            Optional<VatRates> goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001");
             //查出服务税率
             Optional<VatRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
-            //查出向每个供应商询价商品且询价数量>o的有哪些
+            //查出向每个供应商询价商品且询价数量>0的有哪些
             purchasePlan.get().getProduct().forEach(purchasePlanProduct -> purchasePlanProduct.getSalers().forEach(supplier -> {
                 if(supplier.getDemand().intValue()>0) {
                     InquiryRecord record = InquiryRecord.builder()
@@ -649,13 +684,13 @@ public class PlanService {
                         .type(VatRateType.GOODS)
                         .vatRate(goods.isPresent()?goods.get().getRate():BigDecimal.ZERO)
                         .build();
-                    List<InquiryRecord> list = supplierInquerRecordMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode());
+                    List<InquiryRecord> list = supplierInquiryRecordMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode());
                     if (list==null) {
                         list = new ArrayList<>();
                         suppliers.add(supplier.getPurchasePlanProductSupplierId().getSalerCode());
                     }
                     list.add(record);
-                    supplierInquerRecordMap.put(supplier.getPurchasePlanProductSupplierId().getSalerCode(),list);
+                    supplierInquiryRecordMap.put(supplier.getPurchasePlanProductSupplierId().getSalerCode(),list);
                 }
             }));
             //查询每个供应商税模式对本单位设置的税模式
@@ -675,7 +710,7 @@ public class PlanService {
                     LocalDate data=LocalDate.now();
                     String inquiryId = "XJ-"+id+"-"+operatorCode+"-"+company.getCode()+"-"+dtf.format(data)+"-"+mCode;
                     String inquiryCode ="XJ-"+operatorCode+"-"+company.getCode()+"-"+dtf.format(data)+"-"+mCode;
-                    List<InquiryRecord> records = supplierInquerRecordMap.get(company.getCode());
+                    List<InquiryRecord> records = supplierInquiryRecordMap.get(company.getCode());
                     AtomicInteger code = new AtomicInteger();
                     records.forEach(inquiryRecord -> {
                         code.getAndIncrement();
@@ -711,16 +746,10 @@ public class PlanService {
                 .dcCompId(id)
                 .planCode(planCode)
                 .build());
-            return VBaseResponse.builder()
-                .code(200)
-                .message("生成询价单成功")
-                .build();
+            return inquiries;
         }catch (Exception e){
             e.printStackTrace();
-            return VBaseResponse.builder()
-                .code(500)
-                .message("生成询价单失败")
-                .build();
+            return null;
         }
     }
 }

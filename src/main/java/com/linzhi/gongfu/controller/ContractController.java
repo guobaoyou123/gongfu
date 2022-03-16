@@ -2,6 +2,7 @@ package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.mapper.CompanyMapper;
+import com.linzhi.gongfu.mapper.PurchasePlanMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.PlanService;
@@ -26,6 +27,7 @@ public class ContractController {
     private final PlanService planService;
     private final TemporaryPlanMapper temporaryPlanMapper;
     private final CompanyMapper companyMapper;
+    private final PurchasePlanMapper purchasePlanMapper;
 
     /**
      * 根据操作员编码、单位id查询该操作员的临时计划表
@@ -117,7 +119,7 @@ public class ContractController {
     public VBaseResponse savePlan(@RequestBody VPurchasePlanRequest products){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var map =planService.savaPurchasePlan(
+        var map =planService.savePurchasePlan(
             products.getProducts(),
             products.getSuppliers(),
             session.getSession().getCompanyCode(),
@@ -137,13 +139,10 @@ public class ContractController {
     public VBaseResponse verification(){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        return  planService.verification(session.getSession().getCompanyCode(),session.getSession().getOperatorCode())
-            .orElse(VPurchasePlanResponse.builder()
-                .code(404)
-                .message("采购计划")
-                .planCode("UNKNOWN")
-                .products(new ArrayList<>())
-                .build());
+        return  planService.verification(
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        ).get();
     }
 
     /**
@@ -155,7 +154,9 @@ public class ContractController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         return  planService.findPurchasePlanByCode(session.getSession().getCompanyCode(),session.getSession().getOperatorCode())
-             .orElse(VPurchasePlanResponse.builder()
+                .map(purchasePlanMapper::toDTO)
+                .map(purchasePlanMapper::toPruchasePlan)
+                .orElse(VPurchasePlanResponse.builder()
                  .code(404)
                  .message("采购计划不存在")
                  .planCode("UNKNOWN")
@@ -343,11 +344,39 @@ public class ContractController {
     public VBaseResponse savePurchaseInquiry(@RequestBody VPurchasePlanRequest request){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        return planService.savePurchaseInquiry(
+       var list = planService.savePurchaseInquiry(
             request.getPlanCode(),
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
             session.getSession().getOperatorCode()
         );
+       if(list==null)
+           return VBaseResponse.builder()
+               .code(500)
+               .message("创建询价单失败，请稍后再试")
+               .build();
+        return VBaseResponse.builder()
+            .code(200)
+            .message("创建询价单成功")
+            .build();
+    }
+
+
+    /**
+     * 开始计划，生成采购计划
+     * @return  返回成功信息
+     */
+    @PostMapping("/contract/purchase/plan/empty")
+    public VBaseResponse saveEmptyPlan(){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var map =planService.savaEmptyPurchasePlan(
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+        return VBaseResponse.builder()
+            .message(map.get("message").toString())
+            .code((Integer) map.get("code"))
+            .build();
     }
 }
