@@ -34,14 +34,5 @@ public class DisabledAreaId implements Serializable {
     @Setter
     private String dcCompId;
 
-    /**
-     * 国家编码
-     */
-    @Column(length = 50,nullable = false)
-    @NonNull
-    @NotNull
-    @NotBlank
-    @Getter
-    @Setter
-    private String country;
+
 }

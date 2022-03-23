@@ -9,6 +9,7 @@ import javax.persistence.*;
  * @author zgh
  * @create_time 2022-02-07
  */
+@Builder
 @Setter
 @Getter
 @ToString

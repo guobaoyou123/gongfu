@@ -10,6 +10,7 @@ import java.time.LocalDate;
  * @author zgh
  * @create_time 2022-02-07
  */
+@Builder
 @Setter
 @Getter
 @ToString

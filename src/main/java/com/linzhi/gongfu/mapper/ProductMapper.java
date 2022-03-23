@@ -14,7 +14,7 @@ public interface ProductMapper {
 
     TProduct toProduct(Product product);
     @Mapping(target = "brandName",source = "brand")
-    VProductPageResponse.VProduct toProldeProduct(TProduct product);
+    VProductPageResponse.VProduct toPreloadProduct(TProduct product);
 
     /**
      * 获取产品详情

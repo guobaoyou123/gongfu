@@ -103,7 +103,7 @@ public class ProductService {
                     .total(otherproductPage.getTotalPages())
                     .current(otherproductPage.getNumber()+1)
                     .products(new ArrayList<>())
-                    .otherproducts(otherproductPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
+                    .otherproducts(otherproductPage.getContent().stream().map(productMapper::toPreloadProduct).collect(Collectors.toList()))
                     .build();
         }
         //进行分页
@@ -114,7 +114,7 @@ public class ProductService {
             .total(Integer.parseInt(String.valueOf(productPage.getTotalElements())))
             .current(productPage.getNumber()+1)
             .otherproducts(new ArrayList<>())
-            .products(productPage.getContent().stream().map(productMapper::toProldeProduct).collect(Collectors.toList()))
+            .products(productPage.getContent().stream().map(productMapper::toPreloadProduct).collect(Collectors.toList()))
             .build();
     }
 

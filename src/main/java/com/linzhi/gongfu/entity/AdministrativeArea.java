@@ -14,6 +14,7 @@ import java.io.Serializable;
  * @author zgh
  * @create_at 2022-03-22
  */
+@Builder
 @Setter
 @Getter
 @ToString

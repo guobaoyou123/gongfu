@@ -16,6 +16,7 @@ import java.io.Serializable;
  * @author zgh
  * @create_at 2022-03-22
  */
+@Builder
 @Setter
 @Getter
 @ToString
@@ -50,16 +51,6 @@ public class Address implements Serializable {
      */
     @Column(length = 150)
     private String address;
-    /**
-     *父级id
-     */
-    @Column(name="parent_code",length = 12)
-    private String parentCode;
-    /**
-     *父级编号
-     */
-    @Column(name="idparent_code",length = 8)
-    private String idparentCode;
     /**
      *是否为本部地址（本部标志（1-代表是公司地址 0-不是公司地址））
      */

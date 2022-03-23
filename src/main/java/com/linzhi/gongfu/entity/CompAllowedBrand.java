@@ -11,6 +11,7 @@ import java.util.Set;
  * @author zgh
  * @create_time 2022-01-28
  */
+@Builder
 @Setter
 @Getter
 @ToString
