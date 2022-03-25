@@ -43,5 +43,5 @@ public class TCompanyIncludeBrand implements Serializable {
     private List<TBrand> selfSupportBrands;
 
 
-
+   private String state;
 }

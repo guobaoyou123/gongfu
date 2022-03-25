@@ -3,6 +3,7 @@ package com.linzhi.gongfu.entity;
 import com.linzhi.gongfu.enumeration.TaxModel;
 import com.linzhi.gongfu.enumeration.Trade;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -77,9 +78,9 @@ public class CompTrad implements Serializable {
     @Singular
     @ManyToMany
     @JoinTable(name="comp_brand_owner",joinColumns = {
-        @JoinColumn(name="owner_code",referencedColumnName = "comp_saler", insertable = true, updatable = true)
+        @JoinColumn(name="owner_code",referencedColumnName = "comp_saler", insertable = false, updatable = false)
     },inverseJoinColumns = {
-        @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = true, updatable = true)
+        @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
     })
     private Set<DcBrand> selfSupportBrands;
 

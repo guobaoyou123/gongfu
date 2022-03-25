@@ -1,8 +1,8 @@
 package com.linzhi.gongfu.controller;
 
-import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.mapper.AddressMapper;
 import com.linzhi.gongfu.mapper.AdministrativeAreaMapper;
+import com.linzhi.gongfu.mapper.CompContactsMapper;
 import com.linzhi.gongfu.mapper.DisabledAreaMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.AddressService;
@@ -27,6 +27,7 @@ public class AddressController {
     private final AdministrativeAreaMapper administrativeAreaMapper;
     private final DisabledAreaMapper disabledAreaMapper;
     private final AddressMapper addressMapper;
+    private final CompContactsMapper compContactsMapper;
 
     /**
      * 三级行政区划列表
@@ -57,7 +58,7 @@ public class AddressController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var list = addressService.findDisabledAreaByCompId(session.getSession().getCompanyCode());
+        var list = addressService.findDisabledAreaByCompanyCode(session.getSession().getCompanyCode());
         return  VDisableAreaResponse.builder()
             .code(200)
             .areas(list.stream()
@@ -152,6 +153,17 @@ public class AddressController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
+        var flag= addressService.addressVerification(
+            address.orElseGet(VAddressRequest::new).getAreaCode(),
+            address.orElseGet(VAddressRequest::new).getAddress(),
+            null,
+            session.getSession().getCompanyCode());
+        if(!flag){
+            return VBaseResponse.builder()
+                .code(201)
+                .message("数据已经存在，请重新填写")
+                .build();
+        }
         var map = addressService.saveAddress(
             address.orElseGet(VAddressRequest::new),
             session.getSession().getCompanyCode()
@@ -173,6 +185,17 @@ public class AddressController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
+        var flag= addressService.addressVerification(
+            address.orElseGet(VAddressRequest::new).getAreaCode(),
+            address.orElseGet(VAddressRequest::new).getAddress(),
+            code,
+            session.getSession().getCompanyCode());
+        if(!flag){
+            return VBaseResponse.builder()
+                .code(201)
+                .message("数据已经存在，请重新填写")
+                .build();
+        }
         var map = addressService.modifyAddress(
             code,
             address.orElseGet(VAddressRequest::new),
@@ -226,5 +249,127 @@ public class AddressController {
             .build();
     }
 
+    @GetMapping("/contact")
+    public VCompContactsResponse contacts(@RequestParam("code") String code,@RequestParam("state") String state){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var list = addressService.findContactByAddrCode(
+            session.getSession().getOperatorCode(),
+            session.getSession().getCompanyCode(),
+            code,state
+        );
+        return  VCompContactsResponse.builder()
+            .code(200)
+            .message("获取联系人列表成功")
+            .contacts(list.stream()
+                .map(compContactsMapper::toVContacts)
+                .toList()
+            )
+            .build();
+    }
+
+
+    /**
+     * 添加联系人
+     * @param contacts 联系人信息
+     * @return 返回成功或者失败信息
+     */
+    @PostMapping("/contact")
+    public VBaseResponse saveContacts(@RequestBody Optional<VCompContactsRequest> contacts){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag=addressService.contactsVerification(
+            contacts.orElseGet(VCompContactsRequest::new).getAddressCode(),
+            session.getSession().getOperatorCode(),
+            session.getSession().getCompanyCode(),
+            null,
+            contacts.orElseGet(VCompContactsRequest::new).getName(),
+            contacts.orElseGet(VCompContactsRequest::new).getPhone()
+        );
+        if(!flag){
+            return  VBaseResponse.builder()
+                .code(201)
+                .message("联系人已存在")
+                .build();
+        }
+        var contacts1 = addressService.saveCompContacts( contacts.orElseGet(VCompContactsRequest::new),
+            session.getSession().getOperatorCode(),
+            session.getSession().getCompanyCode());
+        if(contacts1==null)
+            return  VBaseResponse.builder()
+                .code(500)
+                .message("添加联系人失败")
+                .build();
+        return  VBaseResponse.builder()
+            .code(200)
+            .message("添加联系人成功")
+            .build();
+    }
+
+
+    @PutMapping("/contact/{code}")
+    public VBaseResponse modifyContacts(@PathVariable String code ,@RequestBody  Optional<VCompContactsRequest> contacts){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag=addressService.contactsVerification(
+            contacts.orElseGet(VCompContactsRequest::new).getAddressCode(),
+            session.getSession().getOperatorCode(),
+            session.getSession().getCompanyCode(),
+            code,
+            contacts.orElseGet(VCompContactsRequest::new).getName(),
+            contacts.orElseGet(VCompContactsRequest::new).getPhone()
+        );
+        if(!flag){
+            return  VBaseResponse.builder()
+                .code(201)
+                .message("联系人已存在")
+                .build();
+        }
+        var contacts1 = addressService.modifyCompContacts( contacts.orElseGet(VCompContactsRequest::new),
+            code,
+            session.getSession().getOperatorCode(),
+            session.getSession().getCompanyCode());
+        if(contacts1==null)
+            return  VBaseResponse.builder()
+                .code(500)
+                .message("修改联系人失败")
+                .build();
+        return  VBaseResponse.builder()
+            .code(200)
+            .message("修改联系人成功")
+            .build();
+    }
+
+    /**
+     * 停用启用联系人
+     * @param addressCode 地址编码
+     * @param contacts 联系人信息
+     * @return 返回失败或者成功信息
+     */
+    @PutMapping("/contact/{addressCode}")
+    public VBaseResponse modifyContactState(@PathVariable String addressCode ,@RequestBody  Optional<VCompContactsRequest> contacts){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        contacts.get().setAddressCode(addressCode);
+        var flag = addressService.modifyCompContactState(contacts.get().getCode(),
+
+            session.getSession().getOperatorCode(),
+            session.getSession().getCompanyCode(),
+            contacts.get().getState(),
+            addressCode);
+        if(!flag)
+            return  VBaseResponse.builder()
+                .code(500)
+                .message("设置失败")
+                .build();
+        return  VBaseResponse.builder()
+            .code(200)
+            .message("设置成功")
+            .build();
+    }
 
 }

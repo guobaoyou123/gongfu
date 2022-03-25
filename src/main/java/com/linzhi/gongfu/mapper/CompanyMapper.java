@@ -1,12 +1,12 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
-import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
-import com.linzhi.gongfu.entity.CompTrad;
 import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.EnrolledCompany;
+import com.linzhi.gongfu.vo.VOutsideSuppliersResponse;
 import com.linzhi.gongfu.vo.VPreloadCompanyInfoResponse;
 
+import com.linzhi.gongfu.vo.VSupplierDetailResponse;
 import com.linzhi.gongfu.vo.VSuppliersResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -55,6 +55,7 @@ public interface CompanyMapper {
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "nameInCN")
     @Mapping(target = "shortName", source = "shortNameInCN")
+    @Mapping(target = "state",expression = "java(String.valueOf(company.getState().getState()))")
     TCompanyBaseInformation toBaseInformation(Company company);
 
     /**
@@ -67,4 +68,27 @@ public interface CompanyMapper {
     @Mapping(target = "name", source = "shortName")
     @Mapping(target = "sort",constant = "1")
     VSuppliersResponse.VSupplier toPreloadSupliers(TCompanyBaseInformation info);
+
+    /**
+     * 将获取到的外供应商公司信息，转换成可供使用的公司基础信息
+     *
+     * @param company 外供应商的公司全部信息
+     * @return 外供应商公司简要基础信息
+     */
+    @Mapping(target = "companyName", source = "name")
+    @Mapping(target = "companyShortName", source = "shortName")
+    @Mapping(target = "usci", source = "USCI")
+    VOutsideSuppliersResponse.VOutsideSupplier toOutsideSupplier(TCompanyBaseInformation company);
+
+    /**
+     * 将获取到的外供应商公司信息，转换成可供使用的公司基础信息
+     *
+     * @param company 外供应商的公司全部信息
+     * @return 外供应商公司简要基础信息
+     */
+    @Mapping(target = "companyName", source = "name")
+    @Mapping(target = "companyShortName", source = "shortName")
+    @Mapping(target = "usci", source = "USCI")
+    VSupplierDetailResponse.VSupplier toSupplierDetail(TCompanyBaseInformation company);
+
 }

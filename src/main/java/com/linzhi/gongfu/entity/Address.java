@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 /**
- * 三级行政区划信息实体
+ * 地址信息实体
  *
  * @author zgh
  * @create_at 2022-03-22
@@ -31,11 +31,6 @@ public class Address implements Serializable {
     @EmbeddedId
     private AddressId addressId;
 
-    /**
-     *国家编码
-     */
-    @Column(length = 50)
-    private String country;
     /**
      *区域编码
      */

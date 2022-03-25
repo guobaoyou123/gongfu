@@ -49,5 +49,5 @@ public class TAddress {
      */
     private  boolean disabled;
 
-    private String country;
+
 }

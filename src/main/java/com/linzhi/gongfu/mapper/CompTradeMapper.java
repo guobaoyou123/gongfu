@@ -39,6 +39,7 @@ public interface CompTradeMapper {
     @Mapping(target = "selfSupportBrands", source = "selfSupportBrands")
     @Mapping(target = "authBrands", source = "authBrands")
     @Mapping(target = "manageBrands", source = "manageBrands")
+    @Mapping(target = "state",expression = "java(String.valueOf(compTrad.getCompanys().getState().getState()))")
     TCompanyIncludeBrand toSuppliersIncludeBrand(CompTrad compTrad);
 
 }

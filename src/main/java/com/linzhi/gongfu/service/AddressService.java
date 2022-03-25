@@ -2,21 +2,25 @@ package com.linzhi.gongfu.service;
 
 import com.linzhi.gongfu.dto.TAddress;
 import com.linzhi.gongfu.dto.TArea;
+import com.linzhi.gongfu.dto.TCompContacts;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.AddressMapper;
 import com.linzhi.gongfu.mapper.AdministrativeAreaMapper;
+import com.linzhi.gongfu.mapper.CompContactsMapper;
 import com.linzhi.gongfu.repository.AddressRepository;
 import com.linzhi.gongfu.repository.AdministrativeAreaRepository;
+import com.linzhi.gongfu.repository.CompContactsRepository;
 import com.linzhi.gongfu.repository.DisabledAreaRepository;
 import com.linzhi.gongfu.vo.VAddressRequest;
+import com.linzhi.gongfu.vo.VCompContactsRequest;
 import com.linzhi.gongfu.vo.VDisableAreaRequest;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,17 +48,19 @@ public class AddressService {
     private final JPAQueryFactory queryFactory;
     private  final AddressMapper addressMapper;
     private final AddressRepository addressRepository;
+    private final CompContactsRepository compContactsRepository;
+    private final CompContactsMapper compContactsMapper;
 
     /**
      * 三级行政区划查找（包括禁用区域状态）
-     * @param dcCompId 单位id
+     * @param companyCode 单位id
      * @return 三级行政区划查找（包括禁用区域状态）列表
      */
-    public List<TArea> areas(String dcCompId){
+    public List<TArea> areas(String companyCode){
         var list = findAllArea().stream()
             .map(administrativeAreaMapper::toDo)
             .toList();
-        List<DisabledArea> disabledAreaList = findDisabledAreaByCompId(dcCompId);
+        List<DisabledArea> disabledAreaList = findDisabledAreaByCompanyCode(companyCode);
         Map<String,DisabledArea> disabledAreaMap = new HashMap<>();
         disabledAreaList.forEach(disabledArea ->
             disabledAreaMap.put(
@@ -83,24 +89,24 @@ public class AddressService {
 
     /**
      * 根据单位id查询所有禁用区域列表
-     * @param  compId 单位id
+     * @param  companyCode 单位id
      * @return 返回禁用区域列表
      */
-    @Cacheable(value = "DisabledArea_compId;1800", key="#compId",unless = "#result == null")
-    public  List<DisabledArea> findDisabledAreaByCompId(String compId){
+    @Cacheable(value = "DisabledArea_compId;1800", key="#companyCode",unless = "#result == null")
+    public  List<DisabledArea> findDisabledAreaByCompanyCode(String companyCode){
         return  disabledAreaRepository
-            .findAllByDisabledAreaId_DcCompId(compId);
+            .findAllByDisabledAreaId_DcCompId(companyCode);
     }
 
     /**
      * 保存
      * @param disableArea 系统区域编码
-     * @param dcCompCode 单位id
+     * @param companyCode 单位id
      * @return 成功或者错误信息
      */
-    @CachePut(value = "DisabledArea_compId;1800", key="#dcCompCode")
+    @CacheEvict(value = "DisabledArea_compId;1800", key="#companyCode")
     @Transactional
-    public DisabledArea saveDisableArea(VDisableAreaRequest disableArea, String dcCompCode){
+    public DisabledArea saveDisableArea(VDisableAreaRequest disableArea, String companyCode){
         try{
            AdministrativeArea area= administrativeAreaRepository.findById(disableArea.getCode()).get();
            String name = findByCode("",disableArea.getCode());
@@ -108,7 +114,7 @@ public class AddressService {
                 .disabledAreaId(
                     DisabledAreaId.builder()
                         .code(area.getCode())
-                        .dcCompId(dcCompCode)
+                        .dcCompId(companyCode)
                         .build()
                 )
                 .country(area.getCountry())
@@ -128,18 +134,18 @@ public class AddressService {
 
     /**
      * 删除禁用区域
-     * @param compId 单位id
+     * @param companyCode 单位id
      * @param code 系统区域编码列表
      * @return 成功或失败信息
      */
-    @CacheEvict(value = "DisabledArea_compId;1800",key = "#compId",beforeInvocation=true)
+    @CacheEvict(value = "DisabledArea_compId;1800",key = "#companyCode",beforeInvocation=true)
     @Transactional
-    public Map<String,Object> deleteDisablesAreaByCode(String compId,List<String> code){
+    public Map<String,Object> deleteDisablesAreaByCode(String companyCode,List<String> code){
         Map<String,Object> map = new HashMap<>();
         try {
             List<DisabledAreaId> ids = new ArrayList<>();
             code.forEach(s -> ids.add(DisabledAreaId.builder()
-                    .dcCompId(compId)
+                    .dcCompId(companyCode)
                     .code(s)
                     .build()
                 )
@@ -158,25 +164,25 @@ public class AddressService {
 
     /**
      * 根据查询条件查询地址信息（包含禁用区域）
-     * @param compId  单位id
+     * @param companyCode  单位id
      * @param areaCode 区域编码
      * @param addresses 地址信息
      * @param state 状态
      * @return 返回地址信息（包括禁用区域）
      */
-    public List<TAddress> findAddressesByCompId(String compId,String areaCode,String addresses,String state){
+    public List<TAddress> findAddressesByCompId(String companyCode,String areaCode,String addresses,String state){
         //根据条件查询地址信息
-        List<TAddress> tAddresses =findAddresses(compId, areaCode, addresses, state).stream()
+        List<TAddress> tAddresses =findAddresses(companyCode, areaCode, addresses, state).stream()
             .map(addressMapper::toAddress)
             .toList();
 
-        List<DisabledArea> list = findDisabledAreaByCompId(compId);
+        List<DisabledArea> list = findDisabledAreaByCompanyCode(companyCode);
         Map<String,DisabledArea> map  = new HashMap<>();
         list.forEach(disabledArea -> map.put(disabledArea.getDisabledAreaId().getCode(),disabledArea));
         tAddresses.forEach(tAddress -> {
-            DisabledArea d=  map.get(tAddress.getCountry()+tAddress.getAreaCode());
-            DisabledArea d1=  map.get(tAddress.getCountry()+tAddress.getAreaCode().substring(0,2)+"0000");
-            DisabledArea d2=  map.get(tAddress.getCountry()+tAddress.getAreaCode().substring(0,4)+"00");
+            DisabledArea d=  map.get(tAddress.getAreaCode());
+            DisabledArea d1=  map.get(tAddress.getAreaCode().substring(0,6)+"0000");
+            DisabledArea d2=  map.get(tAddress.getAreaCode().substring(0,8)+"00");
             if(d!=null)
                 tAddress.setDisabled(true);
             if(d1!=null)
@@ -189,21 +195,20 @@ public class AddressService {
 
     /**
      * 根据条件查询地址信息
-     * @param compId 单位id
+     * @param companyCode 单位id
      * @param areaCode 区域编码
      * @param addresses 地址信息
      * @param state 状态
      * @return 返回地址信息
      */
     @Cacheable(value = "Addresses_compId;1800", unless = "#result == null")
-    public List<Address> findAddresses(String compId,String areaCode,String addresses,String state){
+    public List<Address> findAddresses(String companyCode,String areaCode,String addresses,String state){
         //根据条件查询产品信息
         QAddress qAddress = QAddress.address1;
         JPAQuery<Address> query = queryFactory.select(qAddress).from(qAddress);
-        query.where(qAddress.addressId.dcCompId.eq(compId));
+        query.where(qAddress.addressId.dcCompId.eq(companyCode));
         if(!areaCode.isEmpty()) {
             AdministrativeArea area = administrativeAreaRepository.findById(areaCode).get();
-            query.where(qAddress.country.eq(area.getNumber()));
             if(area.getLev().equals("1")||area.getLev().equals("2")){
                 query.where(qAddress.areaName.like("%"+area.getName()+"%"));
             }else{
@@ -221,35 +226,34 @@ public class AddressService {
     /**
      * 保存地址信息
      * @param vAddress 地址信息
-     * @param compId 单位id
+     * @param companyCode 单位id
      * @return 返回成功或者失败信息
      */
     @CacheEvict(value = "Addresses_compId;1800",allEntries=true)
     @Transactional
-    public Map<String,Object> saveAddress(VAddressRequest vAddress,String compId){
+    public Map<String,Object> saveAddress(VAddressRequest vAddress,String companyCode){
         Map<String,Object> map = new HashMap<>();
         try{
-            String code = addressRepository.findMaxCode(compId);
+            String code = addressRepository.findMaxCode(companyCode);
             if(code==null)
                 code="001";
-            AdministrativeArea area = administrativeAreaRepository.findById(vAddress.getAreaCode()).get();
+
             String name = findByCode("",vAddress.getAreaCode());
             Address address = Address.builder()
                 .addressId(
                     AddressId.builder()
-                        .dcCompId(compId)
+                        .dcCompId(companyCode)
                         .code(code)
                         .build()
                 )
                 .address(vAddress.getAddress())
-                .country(area.getNumber())
-                .areaCode(area.getIdcode())
+                .areaCode(vAddress.getAreaCode())
                 .areaName(name)
                 .flag(vAddress.getFlag()? Whether.YES:Whether.NO)
                 .state(Availability.ENABLED)
                 .build();
             if(vAddress.getFlag()) {
-                addressRepository.updateAddressById("0",compId);
+                addressRepository.updateAddressById("0",companyCode);
             }
 
             addressRepository.save(address);
@@ -268,29 +272,28 @@ public class AddressService {
      * 修改地址信息
      * @param code 地址编码
      * @param vAddress 地址信息
-     * @param compId 单位id
+     * @param companyCode 单位id
      * @return 返回成功或者失败信息
      */
     @CacheEvict(value = "Addresses_compId;1800",allEntries=true)
     @Transactional
-    public Map<String,Object> modifyAddress(String code,VAddressRequest vAddress,String compId){
+    public Map<String,Object> modifyAddress(String code,VAddressRequest vAddress,String companyCode){
         Map<String,Object> map = new HashMap<>();
         try{
             Address address = addressRepository.findById(AddressId.builder()
                     .code(code)
-                    .dcCompId(compId)
+                    .dcCompId(companyCode)
                 .build()).get();
-            AdministrativeArea area = administrativeAreaRepository.findById(vAddress.getCountry()+vAddress.getAreaCode()).get();
-            String name = findByCode("",vAddress.getCountry()+vAddress.getAreaCode());
+
+            String name = findByCode("",vAddress.getAreaCode());
 
             if(vAddress.getFlag()&&!(address.getFlag().getState()=='0')) {
-                addressRepository.updateAddressById("0",compId);
+                addressRepository.updateAddressById("0",companyCode);
             }
             address.setAddress(vAddress.getAddress());
-            address.setCountry(area.getNumber());
             address.setAreaName(name);
             address.setFlag(vAddress.getFlag()? Whether.YES:Whether.NO);
-            address.setAreaCode(area.getIdcode());
+            address.setAreaCode(vAddress.getAreaCode());
 
             addressRepository.save(address);
             map.put("code",200);
@@ -305,18 +308,39 @@ public class AddressService {
     }
 
     /**
+     * 验证地址信息是否已经存在
+     * @param areaCode 区域编码
+     * @param address 地址信息
+     * @param code 地址编码
+     * @param companyCode 公司id
+     * @return 返回 是或者否
+     */
+   public Boolean addressVerification(String areaCode,String address,String code,String companyCode){
+       //判断是否存在
+       var list = addressRepository.findAddressByAreaCodeAndAddressLikeAndAddressId_DcCompId(areaCode,address,companyCode);
+       if(code != null)
+           list=list.stream()
+                     .filter(address1 -> !address1.getAddressId().getCode().equals(code))
+                     .toList();
+       if(list.size()>0)
+           return false;
+
+       return true;
+   }
+
+    /**
      * 修改地址状态
      * @param code 地址编码
      * @param state 状态
-     * @param compId 公司id
+     * @param companyCode 公司id
      * @return 返回成功或失败信息
      */
     @CacheEvict(value = "Addresses_compId;1800",allEntries=true)
     @Transactional
-    public Map<String,Object> modifyAddressState(List<String> code,String state ,String compId){
+    public Map<String,Object> modifyAddressState(List<String> code,String state ,String companyCode){
         Map<String,Object> map = new HashMap<>();
         try{
-            addressRepository.updateAddressStateById(state,compId,code);
+            addressRepository.updateAddressStateById(state,companyCode,code);
             map.put("code",200);
             map.put("message","设置成功");
             return map;
@@ -342,5 +366,150 @@ public class AddressService {
             return  name;
         }
        return findByCode(name, area.getParentCode());
+    }
+
+    /**
+     * 获取联系人列表
+     * @param operator 操作员编码
+     * @param addressCode 地址状态
+     * @param companyCode 公司id
+     * @return 返回联系人列表
+     */
+  public List<TCompContacts> findContactByAddrCode(String operator,String companyCode,String addressCode,String state){
+      //根据条件查询产品信息
+      QCompContacts qCompContacts = QCompContacts.compContacts;
+      JPAQuery<CompContacts> query = queryFactory.select(qCompContacts).from(qCompContacts);
+      query.where(qCompContacts.compContactsId.addrCode.eq(addressCode));
+      query.where(qCompContacts.compContactsId.dcCompId.eq(companyCode));
+      query.where(qCompContacts.compContactsId.operatorCode.eq(operator));
+      if (StringUtils.isNotBlank(state))
+          query.where(qCompContacts.state.eq(Availability.valueOf(state)));
+      query.orderBy(qCompContacts.contName.asc());
+      return  query.fetch()
+          .stream()
+          .map(compContactsMapper::toTCompContacts)
+          .toList();
+    }
+
+    /**
+     * 保存联系人
+     * @param compContacts  联系人信息
+     * @param operator 操作员编码
+     * @param companyCode 公司编码
+     * @return 返回联系人信息
+     */
+    @Transactional
+    public CompContacts saveCompContacts(VCompContactsRequest compContacts,String operator,String companyCode){
+         try{
+             String maxCode = compContactsRepository.findMaxCode(companyCode,compContacts.getAddressCode(),operator);
+             if(maxCode==null){
+                 maxCode="001";
+             }
+             CompContacts compContacts1 = CompContacts.builder()
+                 .compContactsId(CompContactsId.builder()
+                     .addrCode(compContacts.getAddressCode())
+                     .code(maxCode)
+                     .dcCompId(companyCode)
+                     .operatorCode(operator)
+                     .build())
+                 .state(Availability.ENABLED)
+                 .contCompName(compContacts.getCompanyName())
+                 .contName(compContacts.getName())
+                 .contPhone(compContacts.getPhone())
+                 .build();
+             compContactsRepository.save(compContacts1);
+             return  compContacts1;
+         }catch (Exception e){
+             e.printStackTrace();
+             return null;
+        }
+
+    }
+
+    /**
+     * 修改联系人
+     * @param compContacts  联系人信息
+     * @param code 联系人编码
+     * @param operator 操作员编码
+     * @param companyCode 公司编码
+     * @return 返回联系人信息
+     */
+    @Transactional
+    public CompContacts modifyCompContacts(VCompContactsRequest compContacts,String code,String operator,String companyCode){
+        try{
+            CompContacts contacts = compContactsRepository.findById(CompContactsId.builder()
+                    .operatorCode(operator)
+                    .dcCompId(companyCode)
+                    .code(code)
+                    .addrCode(compContacts.getAddressCode())
+                .build()).get();
+            if(StringUtils.isNotBlank(compContacts.getCompanyName())){
+                contacts.setContCompName(compContacts.getCompanyName());
+            }
+            if(StringUtils.isNotBlank(compContacts.getName())){
+                contacts.setContName(compContacts.getName());
+            }
+            if(StringUtils.isNotBlank(compContacts.getPhone())){
+                contacts.setContPhone(compContacts.getPhone());
+            }
+            if(StringUtils.isNotBlank(compContacts.getState())){
+                contacts.setState(compContacts.getState().equals("0")?Availability.DISABLED:Availability.ENABLED);
+            }
+            compContactsRepository.save(contacts);
+            return  contacts;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    /**
+     * 修改联系人启用 禁用状态
+     * @param code  联系人编码
+     * @param operator 操作员编码
+     * @param companyCode 公司编码
+     * @param state 停用启用状态
+     * @param addressCode 地址编码
+     * @return
+     */
+    @Transactional
+    public Boolean modifyCompContactState(List<String> code,String operator,String companyCode,String state,String addressCode){
+        try{
+            compContactsRepository.updateCompContactsStateById(state,companyCode,code,addressCode,operator);
+            return  true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
+    /**
+     * 验证联系人是否存在
+     * @param addressCode 地址编码
+     * @param operator 操作员
+     * @param companyCode 公司编码
+     * @param contactsCode 联系人编码
+     * @param contactName 联系人姓名
+     * @param contactPhone 联系人电话
+     * @return 返回是或否
+     */
+    public  Boolean contactsVerification(String addressCode,String operator,String companyCode,String contactsCode,String contactName,String contactPhone){
+
+        List<CompContacts> list =  compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_OperatorCodeOrderByContCompName(
+            addressCode,companyCode,operator);
+        if(contactsCode!=null){
+            list =list.stream().filter(
+                compContacts -> !compContacts.getCompContactsId().getCode().equals(contactsCode)
+            ).toList();
+        }
+        list =list.stream().filter(
+            compContacts -> compContacts.getContName().equals(contactName)&&compContacts.getContPhone().equals(contactPhone)
+        ).toList();
+
+        if(list.size()>0)
+            return false;
+        return true;
     }
 }

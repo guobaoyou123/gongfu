@@ -2,15 +2,11 @@ package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.Address;
 import com.linzhi.gongfu.entity.AddressId;
-import com.linzhi.gongfu.entity.PurchasePlanProductId;
-import com.linzhi.gongfu.enumeration.Availability;
-import com.linzhi.gongfu.enumeration.Whether;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface AddressRepository extends CrudRepository<Address, AddressId>, QuerydslPredicateExecutor<Address> {
@@ -27,4 +23,6 @@ public interface AddressRepository extends CrudRepository<Address, AddressId>, Q
     @Modifying
     @Query(value="update comp_address set state=?1 where dc_comp_id=?2 and code in ?3",nativeQuery = true)
     void updateAddressStateById(String state, String dcCompId,List<String> code);
+
+    List<Address> findAddressByAreaCodeAndAddressLikeAndAddressId_DcCompId(String area,String address,String dcCompId);
 }

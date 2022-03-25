@@ -22,7 +22,6 @@ public class VAddressRequest {
 
     private Boolean flag;
 
-    private String  country;
 
     private String state;
 

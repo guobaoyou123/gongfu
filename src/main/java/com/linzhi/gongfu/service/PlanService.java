@@ -12,6 +12,7 @@ import com.linzhi.gongfu.vo.VPlanDemandRequest;
 import com.linzhi.gongfu.vo.VPurchasePlanResponse;
 import com.linzhi.gongfu.vo.VTemporaryPlanRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -647,7 +648,7 @@ public class PlanService {
      * @param operatorCode 操作员编码
      * @return 返回成功信息
      */
-    @CachePut(value="inquiry_List;1800", key="T(String).valueOf(#id).concat(#operatorCode)")
+    @CacheEvict(value="inquiry_List;1800", key="T(String).valueOf(#id).concat(#operatorCode)")
     @Transactional
     public List<Inquiry> savePurchaseInquiry(String planCode, String id,String compName, String operatorCode){
         try{
