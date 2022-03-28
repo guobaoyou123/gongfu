@@ -134,7 +134,7 @@ public class CompanyController {
      * @param supplier 供应商信息
      * @return  成功或者失败信息
      */
-    @PostMapping("/supplier/{code}")
+    @PutMapping("/supplier/{code}")
     public VBaseResponse modifyOutsideSupplier(@PathVariable("code")String code,@RequestBody VOutsideSupplierRequest supplier){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
@@ -153,9 +153,6 @@ public class CompanyController {
      */
     @PutMapping("/supplier/disable")
     public VBaseResponse OutsideSupplierDisable(@RequestBody VOutsideSupplierRequest supplier){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext()
-            .getAuthentication();
         var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.DISABLED);
         if(flag)
             return VBaseResponse.builder()
@@ -175,9 +172,6 @@ public class CompanyController {
      */
     @PutMapping("/supplier/enable")
     public VBaseResponse OutsideSupplierEnable(@RequestBody VOutsideSupplierRequest supplier){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext()
-            .getAuthentication();
         var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.ENABLED);
         if(flag)
             return VBaseResponse.builder()

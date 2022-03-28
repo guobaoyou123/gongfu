@@ -29,6 +29,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,13 +72,13 @@ public class CompanyService {
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 供应商信息列表
      */
-    @Cacheable(value = "SupplierAndBrand;1800", unless = "#result == null")
+
     public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandbyId(String id, Optional<String> pageNum,Optional<String> pageSize) {
 
-        List<CompTrad> compTradList=compTradeRepository.findSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
+        List<CompTrad> compTradList=findSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
         List<TCompanyIncludeBrand>  tCompanyIncludeBrandList=compTradList.stream()
             .map(compTradeMapper::toSuppliersIncludeBrand)
-            .filter(t -> t.getState().equals(Availability.ENABLED.getState()))
+            .filter(t -> t.getState().equals("1"))
             .collect(Collectors.toList());
         Page<TCompanyIncludeBrand> tCompanyIncludeBrands =PageTools.listConvertToPage(
             tCompanyIncludeBrandList,
@@ -111,7 +112,10 @@ public class CompanyService {
         });
         return   tCompanyIncludeBrands .map(compTradeMapper::toPreloadSuppliersIncludeBrandDTOs);
     }
-
+    @Cacheable(value = "SupplierAndBrand;1800", unless = "#result == null",key = "#compBuyer")
+    public  List<CompTrad> findSuppliersByCompTradIdCompBuyerAndState(String compBuyer, Trade state){
+        return  compTradeRepository.findSuppliersByCompTradIdCompBuyerAndState(compBuyer,state);
+    }
     /**
      * 根据品牌查询本单位的供应商
      * @param brands 品牌编码列表
@@ -193,7 +197,7 @@ public class CompanyService {
      */
    @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",allEntries = true),
        @CacheEvict(value = "brands_company;1800",allEntries = true),
-       @CacheEvict(value = "SupplierAndBrand;1800",allEntries = true),
+       @CacheEvict(value = "SupplierAndBrand;1800",key = "#companyCode"),
        @CacheEvict(value = "supplierDetail;1800",key = "#companyCode+'-'+#code" ,condition = "#code != null"),
    })
    @Transactional
@@ -238,16 +242,9 @@ public class CompanyService {
                    .phone(outsideSupplier.getPhone())
                    .address(outsideSupplier.getAddress())
                    .build();
-               compTradeRepository.findById(CompTradId.builder()
-                       .compSaler(code)
-                       .compBuyer(companyCode)
-                   .build());
-               compTradBrandRepository.deleteCompTradBrandByCompTradBrandId_CompBuyerAndAndCompTradBrandId_CompSaler(companyCode,code);
-           }
-
-         companyRepository.save(company);
-
-         //保存价税模式
+          }
+           companyRepository.save(company);
+           //保存价税模式
            compTradeRepository.save(
                CompTrad.builder()
                    .compTradId(

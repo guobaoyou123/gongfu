@@ -218,7 +218,7 @@ public class AddressService {
         if(!addresses.isEmpty())
             query.where(qAddress.address.like("%"+addresses+"%"));
         if ( !state.isEmpty())
-            query.where(qAddress.state.eq(Availability.valueOf(state)));
+            query.where(qAddress.state.eq(state.equals("0")?Availability.DISABLED:Availability.ENABLED));
         query.orderBy(qAddress.address.asc());
         return  query.fetch();
     }
@@ -383,7 +383,7 @@ public class AddressService {
       query.where(qCompContacts.compContactsId.dcCompId.eq(companyCode));
       query.where(qCompContacts.compContactsId.operatorCode.eq(operator));
       if (StringUtils.isNotBlank(state))
-          query.where(qCompContacts.state.eq(Availability.valueOf(state)));
+          query.where(qCompContacts.state.eq(state.equals("1")?Availability.ENABLED:Availability.DISABLED));
       query.orderBy(qCompContacts.contName.asc());
       return  query.fetch()
           .stream()

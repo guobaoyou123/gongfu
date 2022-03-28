@@ -7,7 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于接前端添加、修改地址联系人信息的请求
+ * 用于接前端添加、修改地址联系人、启用停用联系人信息的请求
  */
 @Data
 @Jacksonized

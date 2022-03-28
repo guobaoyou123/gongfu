@@ -345,22 +345,19 @@ public class AddressController {
 
     /**
      * 停用启用联系人
-     * @param addressCode 地址编码
      * @param contacts 联系人信息
      * @return 返回失败或者成功信息
      */
-    @PutMapping("/contact/{addressCode}")
-    public VBaseResponse modifyContactState(@PathVariable String addressCode ,@RequestBody  Optional<VCompContactsRequest> contacts){
+    @PutMapping("/contact")
+    public VBaseResponse modifyContactState(@RequestBody  Optional<VStateRequest> contacts){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        contacts.get().setAddressCode(addressCode);
         var flag = addressService.modifyCompContactState(contacts.get().getCode(),
-
             session.getSession().getOperatorCode(),
             session.getSession().getCompanyCode(),
             contacts.get().getState(),
-            addressCode);
+            contacts.get().getAddressCode());
         if(!flag)
             return  VBaseResponse.builder()
                 .code(500)
