@@ -349,7 +349,7 @@ public class AddressController {
      * @return 返回失败或者成功信息
      */
     @PutMapping("/contact")
-    public VBaseResponse modifyContactState(@RequestBody  Optional<VStateRequest> contacts){
+    public VBaseResponse modifyContactState(@RequestBody  Optional<VCompContactsRequest> contacts){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
