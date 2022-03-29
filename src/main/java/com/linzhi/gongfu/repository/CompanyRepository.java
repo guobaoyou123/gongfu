@@ -28,4 +28,6 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
     @Modifying
     @Query("update Company as a set a.state=?1 where a.code in ?2")
     void  updateCompanyState(Availability availability, List<String> code);
+
+    List<Company> findCompanyByUSCI(String ucsi);
 }

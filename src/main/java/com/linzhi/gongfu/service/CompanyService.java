@@ -19,17 +19,14 @@ import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VOutsideSupplierRequest;
 import com.linzhi.gongfu.vo.VSupplierDetailResponse;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
-import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -165,8 +162,8 @@ public class CompanyService {
 
     /**
      * 查找外供应商详情
-     * @param code
-     * @param companyCode
+     * @param code 供应商编码
+     * @param companyCode 单位编码
      * @return 返回详细信息
      */
     @Cacheable(value = "supplierDetail;1800", unless = "#result == null ",key = "#companyCode+'-'+#code")
@@ -202,7 +199,9 @@ public class CompanyService {
    })
    @Transactional
    public Map<String,Object> saveOutsideSupplier(VOutsideSupplierRequest outsideSupplier,String companyCode,String code){
-       Map<String,Object> map = new HashMap<>();String maxCode =""; Company company =null;
+       Map<String,Object> map = new HashMap<>();
+       String maxCode;
+       Company company;
        try{
            if(code==null){
                maxCode =   companyRepository.findMaxCode(CompanyRole.EXTERIOR_SUPPLIER.getSign(),companyCode);
@@ -285,7 +284,7 @@ public class CompanyService {
     @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",allEntries = true),
         @CacheEvict(value = "brands_company;1800",allEntries = true),
         @CacheEvict(value = "SupplierAndBrand;1800",allEntries = true),
-        @CacheEvict(value = "supplierDetail;1800",key = "#companyCode+'-'+#code" ,condition = "#code != null"),
+        @CacheEvict(value = "supplierDetail;1800",condition = "#code != null"),
     })
     @Transactional
    public Boolean modifySupplierState(List<String> code,Availability state){
@@ -299,4 +298,38 @@ public class CompanyService {
 
    }
 
+   public  Map<String,Object> supplierVerification(String ucsi,String companyCode){
+       Map<String,Object> map = new HashMap<>();
+      List<Company>  list =   companyRepository.findCompanyByUSCI(ucsi);
+      if (list.size()>0){
+          //判断用户是否为外供
+         List<String> outSuppliers =list.stream()
+             .filter(company -> company.getRole().equals(CompanyRole.EXTERIOR_SUPPLIER.getSign()))
+             .map(Company::getCode)
+             .toList();
+         if(outSuppliers.size()>0){
+             List<CompTrad> compTradList=compTradeRepository.findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(companyCode,outSuppliers);
+             if(compTradList.size()>0){
+                 map.put("code",201);
+                 map.put("company",new VSupplierDetailResponse.VSupplier());
+                 map.put("message","该供应商已存在于外供应商列表，不可重新添加");
+                 return map;
+             }
+         }
+          map.put("code",200);
+          map.put("company",list.stream()
+              .map(companyMapper::toBaseInformation)
+              .map(companyMapper::toSupplierDetail)
+              .toList()
+              .get(0)
+          );
+          map.put("message","该社会统一信用代码正确");
+      }else {
+          //调取第三方验证接口
+          map.put("code",404);
+          map.put("company",new VSupplierDetailResponse.VSupplier());
+          map.put("message","该社会统一信用代码不正确");
+      }
+       return map;
+   }
 }

@@ -12,5 +12,5 @@ import java.util.List;
 public interface DisabledAreaRepository extends CrudRepository<DisabledArea, DisabledAreaId>, QuerydslPredicateExecutor<DisabledArea> {
     List<DisabledArea> findAllByDisabledAreaId_DcCompId(String dcCompId);
 
-
+    List<DisabledArea> findAllByNameLike(String name);
 }

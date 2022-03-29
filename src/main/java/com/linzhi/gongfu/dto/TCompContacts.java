@@ -20,6 +20,10 @@ import javax.validation.constraints.NotNull;
 public class TCompContacts {
     private String dcCompId;
     /**
+     * 操作员编码
+     */
+    private String operatorCode;
+    /**
      * 地址编码
      */
     private String addrCode;
@@ -27,6 +31,7 @@ public class TCompContacts {
      * 联系人编码
      */
     private String code;
+
 
     /**
      * 联系人公司名称
@@ -47,4 +52,8 @@ public class TCompContacts {
      *状态(0,停用;1,启用)
      */
     private String state;
+    /**
+     *是否可编辑(0,停用;1,启用)
+     */
+    private Boolean  readOnly;
 }

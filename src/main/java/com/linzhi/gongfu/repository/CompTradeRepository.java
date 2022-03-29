@@ -29,6 +29,7 @@ public interface CompTradeRepository
     List<CompTrad> findSuppliersByCompTradIdCompBuyerAndState(@Param("compBuyer") String compBuyer,@Param("state") Trade state);
 
 
+    List<CompTrad> findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(String compBuyer,List<String> compSalers);
 
 
 }

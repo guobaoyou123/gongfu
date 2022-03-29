@@ -29,6 +29,10 @@ public class VCompContactsResponse extends VBaseResponse{
          private String phone ;
          private String addressCode ;
          private String state;
+         /**
+          *是否可编辑(0,停用;1,启用)
+          */
+         private Boolean  readOnly;
      }
 
 }

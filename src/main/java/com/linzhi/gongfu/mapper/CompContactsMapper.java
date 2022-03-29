@@ -12,7 +12,9 @@ public interface CompContactsMapper {
     @Mapping(target = "code",source = "compContactsId.code")
     @Mapping(target = "dcCompId",source = "compContactsId.dcCompId")
     @Mapping(target = "addrCode",source = "compContactsId.addrCode")
+    @Mapping(target = "operatorCode",source = "compContactsId.operatorCode")
     @Mapping(target = "state",expression = "java(String.valueOf(compContacts.getState().getState()))")
+    @Mapping(target = "readOnly",constant = "true")
     TCompContacts toTCompContacts(CompContacts compContacts);
     @Mapping(target = "companyName",source = "contCompName")
     @Mapping(target = "name",source = "contName")

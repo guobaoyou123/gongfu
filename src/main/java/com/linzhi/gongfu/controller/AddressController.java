@@ -353,11 +353,13 @@ public class AddressController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var flag = addressService.modifyCompContactState(contacts.get().getCode(),
+        var flag = addressService.modifyCompContactState(
+            contacts.get().getCode(),
             session.getSession().getOperatorCode(),
             session.getSession().getCompanyCode(),
             contacts.get().getState(),
-            contacts.get().getAddressCode());
+            contacts.get().getAddressCode()
+        );
         if(!flag)
             return  VBaseResponse.builder()
                 .code(500)
@@ -368,5 +370,4 @@ public class AddressController {
             .message("设置成功")
             .build();
     }
-
 }

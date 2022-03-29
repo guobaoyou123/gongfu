@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -181,6 +182,23 @@ public class CompanyController {
         return VBaseResponse.builder()
              .code(500)
              .message("操作失败")
+            .build();
+    }
+
+
+    @GetMapping("/supplier/verification")
+    public VSupplierDetailResponse supplierVerification(@RequestParam("ucsi") String ucsi){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        Map<String,Object> map =companyService.supplierVerification(
+            ucsi,
+            session.getSession().getCompanyCode()
+        );
+        return VSupplierDetailResponse.builder()
+            .code((int)map.get("code"))
+            .message((String)map.get("message"))
+            .supplier((VSupplierDetailResponse.VSupplier) map.get("company"))
             .build();
     }
 }

@@ -22,4 +22,8 @@ public interface CompContactsRepository extends CrudRepository<CompContacts, Com
     @Query(value="update comp_contact_person set state=?1 where dc_comp_id=?2 and code in ?3 and addr_code=?4 and operator_code=?5",nativeQuery = true)
     void updateCompContactsStateById(String state, String dcCompId,List<String> code ,String addressCode,String operator);
 
+    List<CompContacts> findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndStateOrderByContCompName(String addressCode,String compId,Availability state);
+
+    List<CompContacts> findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_OperatorCodeAndStateOrderByContCompName(String addressCode,String compId,String operator,Availability state);
+
 }

@@ -9,10 +9,7 @@ import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.AddressMapper;
 import com.linzhi.gongfu.mapper.AdministrativeAreaMapper;
 import com.linzhi.gongfu.mapper.CompContactsMapper;
-import com.linzhi.gongfu.repository.AddressRepository;
-import com.linzhi.gongfu.repository.AdministrativeAreaRepository;
-import com.linzhi.gongfu.repository.CompContactsRepository;
-import com.linzhi.gongfu.repository.DisabledAreaRepository;
+import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.vo.VAddressRequest;
 import com.linzhi.gongfu.vo.VCompContactsRequest;
 import com.linzhi.gongfu.vo.VDisableAreaRequest;
@@ -50,7 +47,7 @@ public class AddressService {
     private final AddressRepository addressRepository;
     private final CompContactsRepository compContactsRepository;
     private final CompContactsMapper compContactsMapper;
-
+    private final OperatorRepository operatorRepository;
     /**
      * 三级行政区划查找（包括禁用区域状态）
      * @param companyCode 单位id
@@ -212,7 +209,7 @@ public class AddressService {
             if(area.getLev().equals("1")||area.getLev().equals("2")){
                 query.where(qAddress.areaName.like("%"+area.getName()+"%"));
             }else{
-                query.where(qAddress.areaCode.eq(area.getIdcode()));
+                query.where(qAddress.areaCode.eq(areaCode));
             }
         }
         if(!addresses.isEmpty())
@@ -237,7 +234,6 @@ public class AddressService {
             String code = addressRepository.findMaxCode(companyCode);
             if(code==null)
                 code="001";
-
             String name = findByCode("",vAddress.getAreaCode());
             Address address = Address.builder()
                 .addressId(
@@ -255,7 +251,6 @@ public class AddressService {
             if(vAddress.getFlag()) {
                 addressRepository.updateAddressById("0",companyCode);
             }
-
             addressRepository.save(address);
             map.put("code",200);
             map.put("message","保存地址成功");
@@ -376,19 +371,24 @@ public class AddressService {
      * @return 返回联系人列表
      */
   public List<TCompContacts> findContactByAddrCode(String operator,String companyCode,String addressCode,String state){
-      //根据条件查询产品信息
-      QCompContacts qCompContacts = QCompContacts.compContacts;
-      JPAQuery<CompContacts> query = queryFactory.select(qCompContacts).from(qCompContacts);
-      query.where(qCompContacts.compContactsId.addrCode.eq(addressCode));
-      query.where(qCompContacts.compContactsId.dcCompId.eq(companyCode));
-      query.where(qCompContacts.compContactsId.operatorCode.eq(operator));
-      if (StringUtils.isNotBlank(state))
-          query.where(qCompContacts.state.eq(state.equals("1")?Availability.ENABLED:Availability.DISABLED));
-      query.orderBy(qCompContacts.contName.asc());
-      return  query.fetch()
-          .stream()
+      List<CompContacts> list;
+      Operator operator1= operatorRepository.findById(OperatorId.builder()
+              .operatorCode(operator)
+              .companyCode(companyCode)
+          .build()).get();
+     if(operator1.getAdmin().equals(Whether.YES)) {
+          list = compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndStateOrderByContCompName(addressCode, companyCode, state.equals("1") ? Availability.ENABLED : Availability.DISABLED);
+     }else{
+         list = compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_OperatorCodeAndStateOrderByContCompName(addressCode,companyCode,operator,state.equals("1")?Availability.ENABLED:Availability.DISABLED);
+     }
+      List<TCompContacts> tCompContacts= list.stream()
           .map(compContactsMapper::toTCompContacts)
           .toList();
+      tCompContacts.forEach(tCompContacts1 -> {
+          if(tCompContacts1.getOperatorCode().equals(operator))
+              tCompContacts1.setReadOnly(false);
+      });
+      return  tCompContacts;
     }
 
     /**
