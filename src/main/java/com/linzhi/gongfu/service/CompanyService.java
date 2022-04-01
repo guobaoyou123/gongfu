@@ -226,21 +226,15 @@ public class CompanyService {
                    .build();
            }else{
                Company company1 =   companyRepository.findById(code).orElseGet(Company::new);
-                company = Company.builder()
-                   .code(code)
-                   .encode(company1.getEncode())
-                   .USCI(company1.getUSCI())
-                   .role(CompanyRole.EXTERIOR_SUPPLIER.getSign())
-                   .nameInCN(company1.getNameInCN())
-                   .shortNameInCN(foreignSupplier.getCompanyShortName())
-                   .areaCode(foreignSupplier.getAreaCode())
-                   .areaName(addressService.findByCode("",foreignSupplier.getAreaCode()))
-                   .contactName(foreignSupplier.getContactName())
-                   .contactPhone(foreignSupplier.getContactPhone())
-                   .email(foreignSupplier.getEmail())
-                   .phone(foreignSupplier.getPhone())
-                   .address(foreignSupplier.getAddress())
-                   .build();
+               company1.setAreaCode(foreignSupplier.getAreaCode());
+               company1.setAreaName(addressService.findByCode("",foreignSupplier.getAreaCode()));
+               company1.setAddress(foreignSupplier.getAddress());
+               company1.setShortNameInCN(foreignSupplier.getCompanyShortName());
+               company1.setContactName(foreignSupplier.getContactName());
+               company1.setContactPhone(foreignSupplier.getContactPhone());
+               company1.setEmail(foreignSupplier.getEmail());
+               company1.setPhone(foreignSupplier.getPhone());
+                company = company1;
           }
            companyRepository.save(company);
            //保存价税模式
