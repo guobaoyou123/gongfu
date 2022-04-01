@@ -249,6 +249,12 @@ public class AddressController {
             .build();
     }
 
+    /**
+     * 联系人列表
+     * @param code 地址编码
+     * @param state 状态
+     * @return 联系人列表
+     */
     @GetMapping("/contact")
     public VCompContactsResponse contacts(@RequestParam("code") String code,@RequestParam("state") String state){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
@@ -308,7 +314,12 @@ public class AddressController {
             .build();
     }
 
-
+    /**
+     * 修改联系人
+     * @param code 联系人编码
+     * @param contacts 联系人信息
+     * @return 返回成功或者失败信息
+     */
     @PutMapping("/contact/{code}")
     public VBaseResponse modifyContacts(@PathVariable String code ,@RequestBody  Optional<VCompContactsRequest> contacts){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
@@ -328,10 +339,12 @@ public class AddressController {
                 .message("联系人已存在")
                 .build();
         }
-        var contacts1 = addressService.modifyCompContacts( contacts.orElseGet(VCompContactsRequest::new),
+        var contacts1 = addressService.modifyCompContacts(
+            contacts.orElseGet(VCompContactsRequest::new),
             code,
             session.getSession().getOperatorCode(),
-            session.getSession().getCompanyCode());
+            session.getSession().getCompanyCode()
+        );
         if(contacts1==null)
             return  VBaseResponse.builder()
                 .code(500)

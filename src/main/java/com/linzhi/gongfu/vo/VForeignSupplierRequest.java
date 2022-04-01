@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @Jacksonized
 @NoArgsConstructor
-public class VOutsideSupplierRequest {
+public class VForeignSupplierRequest {
     private String code;
 
     private String encode;

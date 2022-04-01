@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
-import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -18,12 +17,12 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VOutsideSuppliersResponse extends VBaseResponse{
+public class VForeignSuppliersResponse extends VBaseResponse{
 
-    List<VOutsideSupplier> suppliers;
+    List<VForeignSupplier> suppliers;
 
     @Data
-    public static class VOutsideSupplier{
+    public static class VForeignSupplier{
 
         private String code;
 

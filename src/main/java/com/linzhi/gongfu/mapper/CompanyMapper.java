@@ -3,15 +3,13 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.EnrolledCompany;
-import com.linzhi.gongfu.vo.VOutsideSuppliersResponse;
+import com.linzhi.gongfu.vo.VForeignSuppliersResponse;
 import com.linzhi.gongfu.vo.VPreloadCompanyInfoResponse;
 
 import com.linzhi.gongfu.vo.VSupplierDetailResponse;
 import com.linzhi.gongfu.vo.VSuppliersResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.util.Set;
 
 /**
  * 用于转换公司相关信息
@@ -78,7 +76,7 @@ public interface CompanyMapper {
     @Mapping(target = "companyName", source = "name")
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "usci", source = "USCI")
-    VOutsideSuppliersResponse.VOutsideSupplier toOutsideSupplier(TCompanyBaseInformation company);
+    VForeignSuppliersResponse.VForeignSupplier toforeignSupplier(TCompanyBaseInformation company);
 
     /**
      * 将获取到的外供应商公司信息，转换成可供使用的公司基础信息

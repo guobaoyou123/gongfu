@@ -16,7 +16,7 @@ import com.linzhi.gongfu.repository.CompTradeRepository;
 import com.linzhi.gongfu.repository.CompanyRepository;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
 import com.linzhi.gongfu.util.PageTools;
-import com.linzhi.gongfu.vo.VOutsideSupplierRequest;
+import com.linzhi.gongfu.vo.VForeignSupplierRequest;
 import com.linzhi.gongfu.vo.VSupplierDetailResponse;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -142,16 +142,16 @@ public class CompanyService {
 
     /**
      * 查找外供应商列表
-     * @param compayCode 单位id
+     * @param companyCode 单位id
      * @return 返回外供应商列表
      */
-   public List<TCompanyBaseInformation> findOutsideSuppliers(String compayCode){
+   public List<TCompanyBaseInformation> findForeignSuppliers(String companyCode){
        QCompany qCompany = QCompany.company;
        QCompTrad qCompTrad = QCompTrad.compTrad;
        JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompany).leftJoin(qCompTrad)
            .on(qCompany.code.eq(qCompTrad.compTradId.compSaler));
            query.where
-               (qCompTrad.compTradId.compBuyer.eq(compayCode)
+               (qCompTrad.compTradId.compBuyer.eq(companyCode)
                    .and(qCompany.role.eq(CompanyRole.EXTERIOR_SUPPLIER.getSign())));
        List<Company> companies =query.orderBy(qCompany.code.desc())
            .fetch();
@@ -167,7 +167,7 @@ public class CompanyService {
      * @return 返回详细信息
      */
     @Cacheable(value = "supplierDetail;1800", unless = "#result == null ",key = "#companyCode+'-'+#code")
-   public VSupplierDetailResponse.VSupplier findOutsideSupplierDetail(String code,String companyCode){
+   public VSupplierDetailResponse.VSupplier findForeignSupplierDetail(String code,String companyCode){
 
        var trade =compTradeRepository.findById(CompTradId.builder()
               .compSaler(code)
@@ -188,7 +188,7 @@ public class CompanyService {
 
     /**
      * 保存外供应商
-     * @param outsideSupplier 供应商信息
+     * @param foreignSupplier 供应商信息
      * @param companyCode 单位id
      * @return 返回成功或者是吧消息
      */
@@ -198,7 +198,7 @@ public class CompanyService {
        @CacheEvict(value = "supplierDetail;1800",key = "#companyCode+'-'+#code" ,condition = "#code != null"),
    })
    @Transactional
-   public Map<String,Object> saveOutsideSupplier(VOutsideSupplierRequest outsideSupplier,String companyCode,String code){
+   public Map<String,Object> saveForeignSupplier(VForeignSupplierRequest foreignSupplier, String companyCode, String code){
        Map<String,Object> map = new HashMap<>();
        String maxCode;
        Company company;
@@ -211,35 +211,35 @@ public class CompanyService {
                 company = Company.builder()
                    .code(code)
                    .encode(maxCode)
-                   .USCI(outsideSupplier.getUsci())
+                   .USCI(foreignSupplier.getUsci())
                    .role(CompanyRole.EXTERIOR_SUPPLIER.getSign())
-                   .nameInCN(outsideSupplier.getCompanyName())
-                   .shortNameInCN(outsideSupplier.getCompanyShortName())
-                   .areaCode(outsideSupplier.getAreaCode())
-                   .areaName(addressService.findByCode("",outsideSupplier.getAreaCode()))
-                   .contactName(outsideSupplier.getContactName())
-                   .contactPhone(outsideSupplier.getContactPhone())
-                   .email(outsideSupplier.getEmail())
-                   .phone(outsideSupplier.getPhone())
-                   .address(outsideSupplier.getAddress())
+                   .nameInCN(foreignSupplier.getCompanyName())
+                   .shortNameInCN(foreignSupplier.getCompanyShortName())
+                   .areaCode(foreignSupplier.getAreaCode())
+                   .areaName(addressService.findByCode("",foreignSupplier.getAreaCode()))
+                   .contactName(foreignSupplier.getContactName())
+                   .contactPhone(foreignSupplier.getContactPhone())
+                   .email(foreignSupplier.getEmail())
+                   .phone(foreignSupplier.getPhone())
+                   .address(foreignSupplier.getAddress())
                     .state(Availability.ENABLED)
                    .build();
            }else{
-               Company company1 =   companyRepository.findById(code).get();
+               Company company1 =   companyRepository.findById(code).orElseGet(Company::new);
                 company = Company.builder()
                    .code(code)
                    .encode(company1.getEncode())
                    .USCI(company1.getUSCI())
                    .role(CompanyRole.EXTERIOR_SUPPLIER.getSign())
                    .nameInCN(company1.getNameInCN())
-                   .shortNameInCN(outsideSupplier.getCompanyShortName())
-                   .areaCode(outsideSupplier.getAreaCode())
-                   .areaName(addressService.findByCode("",outsideSupplier.getAreaCode()))
-                   .contactName(outsideSupplier.getContactName())
-                   .contactPhone(outsideSupplier.getContactPhone())
-                   .email(outsideSupplier.getEmail())
-                   .phone(outsideSupplier.getPhone())
-                   .address(outsideSupplier.getAddress())
+                   .shortNameInCN(foreignSupplier.getCompanyShortName())
+                   .areaCode(foreignSupplier.getAreaCode())
+                   .areaName(addressService.findByCode("",foreignSupplier.getAreaCode()))
+                   .contactName(foreignSupplier.getContactName())
+                   .contactPhone(foreignSupplier.getContactPhone())
+                   .email(foreignSupplier.getEmail())
+                   .phone(foreignSupplier.getPhone())
+                   .address(foreignSupplier.getAddress())
                    .build();
           }
            companyRepository.save(company);
@@ -252,19 +252,21 @@ public class CompanyService {
                            .compSaler(code)
                            .build()
                    )
-                   .taxModel(outsideSupplier.getTaxMode().equals("0")? TaxModel.UNTAXED:TaxModel.INCLUDED)
+                   .taxModel(foreignSupplier.getTaxMode().equals("0")? TaxModel.UNTAXED:TaxModel.INCLUDED)
                    .state(Trade.TRANSACTION)
                    .build()
            );
            List<CompTradBrand> compTradBrands = new ArrayList<>();
            String finalCode = code;
-           outsideSupplier.getBrands().forEach(s -> compTradBrands.add(
+           foreignSupplier.getBrands().forEach(s -> compTradBrands.add(
                CompTradBrand.builder()
-                   .compTradBrandId(CompTradBrandId.builder()
+                   .compTradBrandId(
+                       CompTradBrandId.builder()
                        .brandCode(s)
                        .compBuyer(companyCode)
                        .compSaler(finalCode)
-                       .build())
+                       .build()
+                   )
                    .sort(0)
                    .build()
                )
@@ -298,6 +300,12 @@ public class CompanyService {
 
    }
 
+    /**
+     * 验证社会统一信息代码
+     * @param ucsi  社会统一信用代码
+     * @param companyCode 公司编码
+     * @return 返回公司信息
+     */
    public  Map<String,Object> supplierVerification(String ucsi,String companyCode){
        Map<String,Object> map = new HashMap<>();
       List<Company>  list =   companyRepository.findCompanyByUSCI(ucsi);
@@ -311,23 +319,22 @@ public class CompanyService {
              List<CompTrad> compTradList=compTradeRepository.findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(companyCode,outSuppliers);
              if(compTradList.size()>0){
                  map.put("code",201);
-                 map.put("company",new VSupplierDetailResponse.VSupplier());
+                 map.put("companyName","UNKNOWN");
                  map.put("message","该供应商已存在于外供应商列表，不可重新添加");
                  return map;
              }
          }
           map.put("code",200);
-          map.put("company",list.stream()
+          map.put("companyName",list.stream()
               .map(companyMapper::toBaseInformation)
-              .map(companyMapper::toSupplierDetail)
               .toList()
-              .get(0)
+              .get(0).getName()
           );
           map.put("message","该社会统一信用代码正确");
       }else {
           //调取第三方验证接口
           map.put("code",404);
-          map.put("company",new VSupplierDetailResponse.VSupplier());
+          map.put("companyName","UNKNOWN");
           map.put("message","该社会统一信用代码不正确");
       }
        return map;

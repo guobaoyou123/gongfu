@@ -648,7 +648,7 @@ public class PlanService {
      * @param operatorCode 操作员编码
      * @return 返回成功信息
      */
-    @CacheEvict(value="inquiry_List;1800", key="T(String).valueOf(#id).concat(#operatorCode)")
+    @CacheEvict(value="inquiry_List;1800", key="#id+'_'+#operatorCode")
     @Transactional
     public List<Inquiry> savePurchaseInquiry(String planCode, String id,String compName, String operatorCode){
         try{

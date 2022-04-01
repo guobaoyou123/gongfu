@@ -76,21 +76,21 @@ public class CompanyController {
      * 本单位的外供应商
      * @return 外供应商列表
      */
-    @GetMapping("/suppliers/outer")
-    public VOutsideSuppliersResponse  outsideSuppliers(){
+    @GetMapping("/suppliers")
+    public VForeignSuppliersResponse foreignSuppliers(){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var list = companyService.findOutsideSuppliers(
+        var list = companyService.findForeignSuppliers(
             session.getSession().getCompanyCode()
         );
 
-        return VOutsideSuppliersResponse.builder()
+        return VForeignSuppliersResponse.builder()
             .code(200)
             .message("获取供应商列表成功")
             .suppliers(
                 list.stream()
-                    .map(companyMapper::toOutsideSupplier)
+                    .map(companyMapper::toforeignSupplier)
                     .toList()
             )
             .build();
@@ -101,11 +101,11 @@ public class CompanyController {
      * @return 外供应商列表
      */
     @GetMapping("/supplier/{code}")
-    public VSupplierDetailResponse outsideSupplierDetail(@PathVariable String code){
+    public VSupplierDetailResponse foreignSupplierDetail(@PathVariable String code){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-       var supplier = companyService.findOutsideSupplierDetail(code,session.getSession().getCompanyCode());
+       var supplier = companyService.findForeignSupplierDetail(code,session.getSession().getCompanyCode());
         return VSupplierDetailResponse.builder()
             .code(200)
             .message("获取供应商详情成功")
@@ -119,16 +119,16 @@ public class CompanyController {
      * @return  成功或者失败信息
      */
     @PostMapping("/supplier")
-   public VBaseResponse saveOutsideSupplier(@RequestBody VOutsideSupplierRequest supplier){
+    public VBaseResponse saveForeignSupplier(@RequestBody VForeignSupplierRequest supplier){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var map = companyService.saveOutsideSupplier(supplier,session.getSession().getCompanyCode(),null);
+        var map = companyService.saveForeignSupplier(supplier,session.getSession().getCompanyCode(),null);
         return VBaseResponse.builder()
             .code((int)map.get("code"))
             .message((String)map.get("message"))
             .build();
-   }
+    }
 
     /**
      * 修改外供应商
@@ -136,11 +136,11 @@ public class CompanyController {
      * @return  成功或者失败信息
      */
     @PutMapping("/supplier/{code}")
-    public VBaseResponse modifyOutsideSupplier(@PathVariable("code")String code,@RequestBody VOutsideSupplierRequest supplier){
+    public VBaseResponse modifyForeignSupplier(@PathVariable("code")String code,@RequestBody VForeignSupplierRequest supplier){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var map = companyService.saveOutsideSupplier(supplier,session.getSession().getCompanyCode(),code);
+        var map = companyService.saveForeignSupplier(supplier,session.getSession().getCompanyCode(),code);
         return VBaseResponse.builder()
             .code((int)map.get("code"))
             .message((String)map.get("message"))
@@ -153,7 +153,7 @@ public class CompanyController {
      * @return  成功或者失败信息
      */
     @PutMapping("/supplier/disable")
-    public VBaseResponse OutsideSupplierDisable(@RequestBody VOutsideSupplierRequest supplier){
+    public VBaseResponse foreignSupplierDisable(@RequestBody VForeignSupplierRequest supplier){
         var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.DISABLED);
         if(flag)
             return VBaseResponse.builder()
@@ -172,7 +172,7 @@ public class CompanyController {
      * @return  成功或者失败信息
      */
     @PutMapping("/supplier/enable")
-    public VBaseResponse OutsideSupplierEnable(@RequestBody VOutsideSupplierRequest supplier){
+    public VBaseResponse foreignSupplierEnable(@RequestBody VForeignSupplierRequest supplier){
         var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.ENABLED);
         if(flag)
             return VBaseResponse.builder()
@@ -185,9 +185,8 @@ public class CompanyController {
             .build();
     }
 
-
     @GetMapping("/supplier/verification")
-    public VSupplierDetailResponse supplierVerification(@RequestParam("ucsi") String ucsi){
+    public VUCSIVerificationResponse supplierVerification(@RequestParam("ucsi") String ucsi){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -195,10 +194,10 @@ public class CompanyController {
             ucsi,
             session.getSession().getCompanyCode()
         );
-        return VSupplierDetailResponse.builder()
+        return VUCSIVerificationResponse.builder()
             .code((int)map.get("code"))
             .message((String)map.get("message"))
-            .supplier((VSupplierDetailResponse.VSupplier) map.get("company"))
+            .companyname((String) map.get("companyName"))
             .build();
     }
 }

@@ -105,7 +105,8 @@ public class AddressService {
     @Transactional
     public DisabledArea saveDisableArea(VDisableAreaRequest disableArea, String companyCode){
         try{
-           AdministrativeArea area= administrativeAreaRepository.findById(disableArea.getCode()).get();
+           AdministrativeArea area= administrativeAreaRepository.findById(disableArea.getCode())
+               .orElseGet(AdministrativeArea::new);
            String name = findByCode("",disableArea.getCode());
             DisabledArea disabledArea = DisabledArea.builder()
                 .disabledAreaId(
@@ -205,7 +206,8 @@ public class AddressService {
         JPAQuery<Address> query = queryFactory.select(qAddress).from(qAddress);
         query.where(qAddress.addressId.dcCompId.eq(companyCode));
         if(!areaCode.isEmpty()) {
-            AdministrativeArea area = administrativeAreaRepository.findById(areaCode).get();
+            AdministrativeArea area = administrativeAreaRepository.findById(areaCode)
+                .orElseGet(AdministrativeArea::new);
             if(area.getLev().equals("1")||area.getLev().equals("2")){
                 query.where(qAddress.areaName.like("%"+area.getName()+"%"));
             }else{
@@ -278,7 +280,7 @@ public class AddressService {
             Address address = addressRepository.findById(AddressId.builder()
                     .code(code)
                     .dcCompId(companyCode)
-                .build()).get();
+                .build()).orElseGet(Address::new);
 
             String name = findByCode("",vAddress.getAreaCode());
 
@@ -317,10 +319,7 @@ public class AddressService {
            list=list.stream()
                      .filter(address1 -> !address1.getAddressId().getCode().equals(code))
                      .toList();
-       if(list.size()>0)
-           return false;
-
-       return true;
+       return list.size() <= 0;
    }
 
     /**
@@ -354,7 +353,8 @@ public class AddressService {
      * @return 父级名称+该区域的名称
      */
     public  String  findByCode(String name ,String code){
-        AdministrativeArea area= administrativeAreaRepository.findById(code).get();
+        AdministrativeArea area= administrativeAreaRepository.findById(code)
+            .orElseGet(AdministrativeArea::new);
         if(!name.contains(area.getName()))
             name= area.getName()+name;
         if(area.getLev().equals("1")){
@@ -371,19 +371,30 @@ public class AddressService {
      * @return 返回联系人列表
      */
   public List<TCompContacts> findContactByAddrCode(String operator,String companyCode,String addressCode,String state){
-      List<CompContacts> list;
-      Operator operator1= operatorRepository.findById(OperatorId.builder()
+       List<CompContacts> list;
+       Operator operator1= operatorRepository.findById(OperatorId.builder()
               .operatorCode(operator)
               .companyCode(companyCode)
-          .build()).get();
-     if(operator1.getAdmin().equals(Whether.YES)) {
-          list = compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndStateOrderByContCompName(addressCode, companyCode, state.equals("1") ? Availability.ENABLED : Availability.DISABLED);
-     }else{
-         list = compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_OperatorCodeAndStateOrderByContCompName(addressCode,companyCode,operator,state.equals("1")?Availability.ENABLED:Availability.DISABLED);
-     }
+          .build()).orElseGet(Operator::new);
+       if(operator1.getAdmin().equals(Whether.YES)) {
+          list = compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndStateOrderByContCompName(
+              addressCode,
+              companyCode,
+              state.equals("1") ? Availability.ENABLED : Availability.DISABLED
+          );
+       }else{
+         list = compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_OperatorCodeAndStateOrderByContCompName(
+             addressCode,
+             companyCode,
+             operator,
+             state.equals("1")?Availability.ENABLED:Availability.DISABLED
+         );
+       }
+
       List<TCompContacts> tCompContacts= list.stream()
           .map(compContactsMapper::toTCompContacts)
           .toList();
+
       tCompContacts.forEach(tCompContacts1 -> {
           if(tCompContacts1.getOperatorCode().equals(operator))
               tCompContacts1.setReadOnly(false);
@@ -423,7 +434,6 @@ public class AddressService {
              e.printStackTrace();
              return null;
         }
-
     }
 
     /**
@@ -442,7 +452,7 @@ public class AddressService {
                     .dcCompId(companyCode)
                     .code(code)
                     .addrCode(compContacts.getAddressCode())
-                .build()).get();
+                .build()).orElseGet(CompContacts::new);
             if(StringUtils.isNotBlank(compContacts.getCompanyName())){
                 contacts.setContCompName(compContacts.getCompanyName());
             }
@@ -471,7 +481,7 @@ public class AddressService {
      * @param companyCode 公司编码
      * @param state 停用启用状态
      * @param addressCode 地址编码
-     * @return
+     * @return 修改成功或者失败
      */
     @Transactional
     public Boolean modifyCompContactState(List<String> code,String operator,String companyCode,String state,String addressCode){
@@ -508,8 +518,6 @@ public class AddressService {
             compContacts -> compContacts.getContName().equals(contactName)&&compContacts.getContPhone().equals(contactPhone)
         ).toList();
 
-        if(list.size()>0)
-            return false;
-        return true;
+        return list.size() <= 0;
     }
 }

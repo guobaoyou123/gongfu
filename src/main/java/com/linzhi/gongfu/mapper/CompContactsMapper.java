@@ -16,6 +16,7 @@ public interface CompContactsMapper {
     @Mapping(target = "state",expression = "java(String.valueOf(compContacts.getState().getState()))")
     @Mapping(target = "readOnly",constant = "true")
     TCompContacts toTCompContacts(CompContacts compContacts);
+
     @Mapping(target = "companyName",source = "contCompName")
     @Mapping(target = "name",source = "contName")
     @Mapping(target = "phone",source = "contPhone")
