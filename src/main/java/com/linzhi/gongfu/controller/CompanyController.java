@@ -185,13 +185,18 @@ public class CompanyController {
             .build();
     }
 
+    /**
+     * 验证社会统一信用代码
+     * @param usci  社会统一信用代码
+     * @return 返回公司名称
+     */
     @GetMapping("/supplier/verification")
-    public VUCSIVerificationResponse supplierVerification(@RequestParam("ucsi") String ucsi){
+    public VUCSIVerificationResponse supplierVerification(@RequestParam("usci") String usci){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
         Map<String,Object> map =companyService.supplierVerification(
-            ucsi,
+            usci,
             session.getSession().getCompanyCode()
         );
         return VUCSIVerificationResponse.builder()

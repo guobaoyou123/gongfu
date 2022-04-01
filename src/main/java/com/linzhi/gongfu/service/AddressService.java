@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 /**
@@ -48,6 +45,7 @@ public class AddressService {
     private final CompContactsRepository compContactsRepository;
     private final CompContactsMapper compContactsMapper;
     private final OperatorRepository operatorRepository;
+
     /**
      * 三级行政区划查找（包括禁用区域状态）
      * @param companyCode 单位id
@@ -277,22 +275,25 @@ public class AddressService {
     public Map<String,Object> modifyAddress(String code,VAddressRequest vAddress,String companyCode){
         Map<String,Object> map = new HashMap<>();
         try{
-            Address address = addressRepository.findById(AddressId.builder()
+            Address address = addressRepository.findById(
+                AddressId.builder()
                     .code(code)
                     .dcCompId(companyCode)
-                .build()).orElseGet(Address::new);
+                .build()
+            ).orElseGet(Address::new);
 
             String name = findByCode("",vAddress.getAreaCode());
 
             if(vAddress.getFlag()&&!(address.getFlag().getState()=='0')) {
                 addressRepository.updateAddressById("0",companyCode);
             }
+
             address.setAddress(vAddress.getAddress());
             address.setAreaName(name);
             address.setFlag(vAddress.getFlag()? Whether.YES:Whether.NO);
             address.setAreaCode(vAddress.getAreaCode());
-
             addressRepository.save(address);
+
             map.put("code",200);
             map.put("message","修改地址成功");
             return map;
@@ -353,14 +354,16 @@ public class AddressService {
      * @return 父级名称+该区域的名称
      */
     public  String  findByCode(String name ,String code){
-        AdministrativeArea area= administrativeAreaRepository.findById(code)
-            .orElseGet(AdministrativeArea::new);
-        if(!name.contains(area.getName()))
-            name= area.getName()+name;
-        if(area.getLev().equals("1")){
-            return  name;
+        Optional<AdministrativeArea> area= administrativeAreaRepository.findById(code);
+        if(!area.isEmpty()) {
+            if (!name.contains(area.get().getName()))
+                name = area.get().getName() + name;
+            if (area.get().getLev().equals("1")) {
+                return name;
+            }
+            return findByCode(name, area.get().getParentCode());
         }
-       return findByCode(name, area.getParentCode());
+        return "";
     }
 
     /**

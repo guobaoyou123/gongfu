@@ -204,6 +204,20 @@ public class CompanyService {
        Company company;
        try{
            if(code==null){
+               //判重
+               QCompany qCompany = QCompany.company;
+               QCompTrad qCompTrad = QCompTrad.compTrad;
+               JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompany).leftJoin(qCompTrad)
+                   .on(qCompany.code.eq(qCompTrad.compTradId.compSaler).and(qCompTrad.compTradId.compBuyer.eq(companyCode)));
+               query.where(qCompany.USCI.eq(foreignSupplier.getUsci()));
+               query.where(qCompany.role.eq(CompanyRole.EXTERIOR_SUPPLIER.getSign()));
+               List<Company> list=query.fetch();
+               if(list.size()>0){
+                   map.put("code",201);
+                   map.put("message","供应商已存在于列表中");
+                   return map;
+               }
+               supplierVerification(foreignSupplier.getUsci(), companyCode);
                maxCode =   companyRepository.findMaxCode(CompanyRole.EXTERIOR_SUPPLIER.getSign(),companyCode);
                if(maxCode==null)
                    maxCode="101";
@@ -235,6 +249,7 @@ public class CompanyService {
                company1.setEmail(foreignSupplier.getEmail());
                company1.setPhone(foreignSupplier.getPhone());
                 company = company1;
+               compTradBrandRepository.deleteCompTradBrand(companyCode,code)  ;
           }
            companyRepository.save(company);
            //保存价税模式
@@ -296,13 +311,13 @@ public class CompanyService {
 
     /**
      * 验证社会统一信息代码
-     * @param ucsi  社会统一信用代码
+     * @param usci  社会统一信用代码
      * @param companyCode 公司编码
      * @return 返回公司信息
      */
-   public  Map<String,Object> supplierVerification(String ucsi,String companyCode){
+   public  Map<String,Object> supplierVerification(String usci,String companyCode){
        Map<String,Object> map = new HashMap<>();
-      List<Company>  list =   companyRepository.findCompanyByUSCI(ucsi);
+      List<Company>  list =   companyRepository.findCompanyByUSCI(usci);
       if (list.size()>0){
           //判断用户是否为外供
          List<String> outSuppliers =list.stream()
