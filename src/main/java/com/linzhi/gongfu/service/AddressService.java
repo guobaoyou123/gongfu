@@ -419,7 +419,7 @@ public class AddressService {
              CompContacts compContacts1 = CompContacts.builder()
                  .compContactsId(CompContactsId.builder()
                      .addrCode(compContacts.getAddressCode())
-                     .code(maxCode)
+                     .code(operator+maxCode)
                      .dcCompId(companyCode)
                      .operatorCode(operator)
                      .build())
