@@ -1,9 +1,8 @@
 package com.linzhi.gongfu.entity;
 
-import com.linzhi.gongfu.enumeration.TaxModel;
+import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.enumeration.Trade;
 import lombok.*;
-import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -33,7 +32,7 @@ public class CompTrad implements Serializable {
      * 税模式（0：不含税，1：含税）
      */
     @Column(name = "tax_model")
-    private TaxModel taxModel;
+    private TaxMode taxModel;
     /**
      * 状态（0不可交易，2申请交易，1可交易）
      */

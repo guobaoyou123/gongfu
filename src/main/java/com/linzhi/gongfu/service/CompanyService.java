@@ -6,7 +6,7 @@ import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.CompanyRole;
-import com.linzhi.gongfu.enumeration.TaxModel;
+import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.enumeration.Trade;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.mapper.CompTradeMapper;
@@ -182,7 +182,7 @@ public class CompanyService {
            .map(companyMapper::toBaseInformation)
            .map(companyMapper::toSupplierDetail).get();
        vSupplier.setBrands(brands);
-       vSupplier.setTaxMode(String.valueOf(trade.get().getTaxModel().getSign()));
+       vSupplier.setTaxMode(String.valueOf(trade.get().getTaxModel().getTaxMode()));
       return  vSupplier;
    }
 
@@ -261,7 +261,7 @@ public class CompanyService {
                            .compSaler(code)
                            .build()
                    )
-                   .taxModel(foreignSupplier.getTaxMode().equals("0")? TaxModel.UNTAXED:TaxModel.INCLUDED)
+                   .taxModel(foreignSupplier.getTaxMode().equals("0")? TaxMode.UNTAXED: TaxMode.INCLUDED)
                    .state(Trade.TRANSACTION)
                    .build()
            );

@@ -5,16 +5,16 @@ package com.linzhi.gongfu.enumeration;
  * @author xutao
  * @create_at 2021-12-23
  */
-public enum TaxModel {
+public enum TaxMode {
     INCLUDED('1'), UNTAXED('0');
 
-    private final char sign;
+    private final char taxMode;
 
-    TaxModel(char sign) {
-        this.sign = sign;
+    TaxMode(char taxMode) {
+        this.taxMode = taxMode;
     }
 
-    public char getSign() {
-        return sign;
+    public char getTaxMode() {
+        return taxMode;
     }
 }

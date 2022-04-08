@@ -4,18 +4,13 @@ import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TTemporaryPlan;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
-import com.linzhi.gongfu.mapper.PurchasePlanMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.vo.VBaseResponse;
 import com.linzhi.gongfu.vo.VPlanDemandRequest;
-import com.linzhi.gongfu.vo.VPurchasePlanResponse;
 import com.linzhi.gongfu.vo.VTemporaryPlanRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -650,7 +645,8 @@ public class PlanService {
      */
     @CacheEvict(value="inquiry_List;1800", key="#id+'_'+#operatorCode")
     @Transactional
-    public List<Inquiry> savePurchaseInquiry(String planCode, String id,String compName, String operatorCode){
+    public Map<String,Object> savePurchaseInquiry(String planCode, String id,String compName, String operatorCode,String operatorName){
+        Map<String,Object> resultMap = new HashMap<>();
         try{
 
             Map<String,List<InquiryRecord>> supplierInquiryRecordMap = new HashMap<>();
@@ -663,8 +659,11 @@ public class PlanService {
                     .planCode(planCode)
                     .build()
             );
-            if(purchasePlan.isEmpty())
-                return null;
+            if(purchasePlan.isEmpty()) {
+                resultMap.put("code", 404);
+                resultMap.put("message", "找不到该数据");
+               return resultMap;
+            }
             //查出货物税率
            Optional<VatRates> goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001");
             //查出服务税率
@@ -676,8 +675,6 @@ public class PlanService {
                         .productId(purchasePlanProduct.getPurchasePlanProductId().getProductId())
                         .productCode(purchasePlanProduct.getProductCode())
                         .productDescription(purchasePlanProduct.getDescribe())
-                        .compBuyer(id)
-                        .compSaler(supplier.getPurchasePlanProductSupplierId().getSalerCode())
                         .brandCode(purchasePlanProduct.getBrandCode())
                         .brand(purchasePlanProduct.getBrand())
                         .amount(supplier.getDemand())
@@ -706,10 +703,12 @@ public class PlanService {
             //对每个供应商生成询价单
             companyRepository.findAllById(suppliers).forEach(company -> {
                 if(!company.getCode().equals("1001")){
-                    String mCode = ("0000"+max.get()).substring(("0000"+max.get()).length()-2);
+                    String mCode = ("0000"+max.get()).substring(("0000"+max.get()).length()-3);
                     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
                     LocalDate data=LocalDate.now();
-                    String inquiryId = "XJ-"+id+"-"+operatorCode+"-"+company.getCode()+"-"+dtf.format(data)+"-"+mCode;
+                    //uuid
+                    UUID uuid = UUID.randomUUID();
+                    String inquiryId = "XJ-"+id+"-0"+operatorCode+"-"+uuid.toString().substring(0,8);
                     String inquiryCode ="XJ-"+operatorCode+"-"+company.getCode()+"-"+dtf.format(data)+"-"+mCode;
                     List<InquiryRecord> records = supplierInquiryRecordMap.get(company.getCode());
                     AtomicInteger code = new AtomicInteger();
@@ -722,17 +721,18 @@ public class PlanService {
                         .records(records)
                         .id(inquiryId)
                         .code(inquiryCode)
-                        .buyerCreatedBy(operatorCode)
-                        .compBuyer(id)
-                        .compBuyerName(compName)
-                        .compSaler(company.getCode())
-                        .compSalerName(company.getNameInCN())
+                        .createdByComp(id)
+                        .type(InquiryType.INQUIRY_LIST)
+                        .createdBy(operatorCode)
+                        .buyerComp(id)
+                        .buyerCompName(compName)
+                        .buyerContactName(operatorName)
+                        .salerComp(company.getCode())
+                        .salerCompName(company.getNameInCN())
                         .createdAt(LocalDateTime.now())
                         .salesOrderCode(purchasePlan.get().getSalesCode())
-                        .state(Whether.NO)
-                        .taxModel(compTradMap.get(company.getCode())==null? TaxModel.UNTAXED :compTradMap.get(company.getCode()).getTaxModel())
-                        .vatProductRate(goods.isPresent()?goods.get().getRate():BigDecimal.ZERO)
-                        .vatServiceRate(service.isPresent()?service.get().getRate():BigDecimal.ZERO)
+                        .state(InquiryState.UN_FINISHED)
+                        .offerMode(compTradMap.get(company.getCode())==null? TaxMode.UNTAXED :compTradMap.get(company.getCode()).getTaxModel())
                         .createdAt(LocalDateTime.now())
                         .build());
                     max.getAndIncrement();
@@ -747,10 +747,14 @@ public class PlanService {
                 .dcCompId(id)
                 .planCode(planCode)
                 .build());
-            return inquiries;
+            resultMap.put("code",200);
+            resultMap.put("message","生成询价单成功");
+            return resultMap;
         }catch (Exception e){
             e.printStackTrace();
-            return null;
+            resultMap.put("code",500);
+            resultMap.put("message","生成询价单失败");
+            return resultMap;
         }
     }
 }

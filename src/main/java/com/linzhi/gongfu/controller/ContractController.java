@@ -2,9 +2,11 @@ package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.mapper.CompanyMapper;
+import com.linzhi.gongfu.mapper.InquiryMapper;
 import com.linzhi.gongfu.mapper.PurchasePlanMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
+import com.linzhi.gongfu.service.InquiryService;
 import com.linzhi.gongfu.service.PlanService;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,8 @@ public class ContractController {
     private final TemporaryPlanMapper temporaryPlanMapper;
     private final CompanyMapper companyMapper;
     private final PurchasePlanMapper purchasePlanMapper;
-
+    private final InquiryService inquiryService;
+    private final InquiryMapper inquiryMapper;
     /**
      * 根据操作员编码、单位id查询该操作员的临时计划表
      * @return 临时计划列表信息
@@ -343,26 +346,21 @@ public class ContractController {
     public VBaseResponse savePurchaseInquiry(@RequestBody VPurchasePlanRequest request){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-       var list = planService.savePurchaseInquiry(
+       var map = planService.savePurchaseInquiry(
             request.getPlanCode(),
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
-            session.getSession().getOperatorCode()
+            session.getSession().getOperatorCode(),session.getSession().getOperatorName()
         );
-       if(list==null)
-           return VBaseResponse.builder()
-               .code(500)
-               .message("创建询价单失败，请稍后再试")
-               .build();
-        return VBaseResponse.builder()
-            .code(200)
-            .message("创建询价单成功")
+       return VBaseResponse.builder()
+            .code((Integer) map.get("code"))
+            .message((String) map.get("message"))
             .build();
     }
 
 
     /**
-     * 开始计划，生成采购计划
+     * 生成空的采购计划
      * @return  返回成功信息
      */
     @PostMapping("/contract/purchase/plan/empty")
@@ -379,4 +377,102 @@ public class ContractController {
             .build();
     }
 
+    /**
+     * 询价单列表
+     * @return 询价单列表
+     */
+    @GetMapping("/contract/purchase/inquiry")
+    public VInquiryListResponse inquiryList(){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var list = inquiryService.inquiryList(
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+        return VInquiryListResponse.builder()
+            .code(200)
+            .message("获取询价单列表成功")
+            .inquiries(list.stream()
+                .map(inquiryMapper::toVInquiryList)
+                .toList()
+            )
+            .build();
+    }
+
+    /**
+     * 查询询价单详情
+     * @param id 询价单主键
+     * @return 返回询价单详细信息
+     */
+    @GetMapping("/contract/purchase/inquiry/{id}")
+    public VInquiryDetailResponse inquiryDetail(@PathVariable("id") Optional<String> id){
+        var inquiry =id.flatMap(inquiryService::inquiryDetail);
+        if(inquiry.isPresent())
+            return VInquiryDetailResponse.builder()
+                .code(200)
+                .message("获取询价单详情成功")
+                 .inquiry(inquiry.get())
+                 .build();
+        return VInquiryDetailResponse.builder()
+            .code(404)
+            .message("没有找到要查询的数据")
+            .inquiry(new VInquiryDetailResponse.VInquiry())
+            .build();
+    }
+
+    /**
+     * 新建空的询价单
+     * vEmptyInquiryRequest 供应商编码
+     * @return 询价单编码
+     */
+    @PostMapping("/contract/purchase/inquiry/empty")
+    public VEmptyInquiryResponse emptyInquiry(@RequestBody VEmptyInquiryRequest vEmptyInquiryRequest){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var code = inquiryService.emptyInquiry(
+            session.getSession().getCompanyCode(),
+            session.getSession().getCompanyName(),
+            session.getSession().getOperatorCode(),
+            session.getSession().getOperatorName(),
+            vEmptyInquiryRequest.getSupplierCode()
+        );
+        if(code==null)
+            return VEmptyInquiryResponse.builder()
+                .code(500)
+                .message("新建空的询价单失败")
+                .inquiryId("UNKNOWN")
+                .build();
+        return  VEmptyInquiryResponse.builder()
+            .code(200)
+            .message("新建询价单成功")
+            .inquiryId(code)
+            .build();
+    }
+
+    /**
+     * 添加产品
+     * @param id 询价单主键
+     * @param vInquiryProductResquest 产品信息
+     * @return 返回成功或者失败信息
+     */
+    @PostMapping("/contract/purchase/inquiry/{id}/product")
+    public  VBaseResponse saveInquiryProduct(
+        @PathVariable("id") String id,
+        @RequestBody VInquiryProductResquest vInquiryProductResquest){
+        var flag = inquiryService.saveInquiryProduct(
+            id,
+            vInquiryProductResquest.getProductId(),
+            vInquiryProductResquest.getPrice(),
+            vInquiryProductResquest.getAmount()
+        );
+        if(flag)
+            return  VBaseResponse.builder()
+                .code(200)
+                .message("添加产品成功")
+                .build();
+        return  VBaseResponse.builder()
+            .code(500)
+            .message("添加产品失败")
+            .build();
+    }
 }

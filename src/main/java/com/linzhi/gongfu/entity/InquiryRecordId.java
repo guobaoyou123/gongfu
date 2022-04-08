@@ -1,9 +1,6 @@
 package com.linzhi.gongfu.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -24,7 +21,8 @@ public class InquiryRecordId implements Serializable {
     @Column(name = "inquiry_id",length = 50,nullable = false)
     @NotNull
     @NotBlank
-    @NonNull
+    @Getter
+    @Setter
     private String inquiryId ;
     /**
      * 序号
@@ -33,5 +31,7 @@ public class InquiryRecordId implements Serializable {
     @Column(name = "code",nullable = false)
     @NotNull
     @NotBlank
+    @Getter
+    @Setter
     private Integer code ;
 }
