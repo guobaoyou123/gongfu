@@ -28,7 +28,7 @@ public class VInquiryDetailResponse extends VBaseResponse{
         /**
          * 合同编码
          */
-        private String contactNo;
+        private String contractNo;
         /**
          * 供应商合同编码
          */
@@ -148,7 +148,7 @@ public class VInquiryDetailResponse extends VBaseResponse{
          * 描述
          */
         private String describe;
-
+        private String chargeUnit;
         /**
          * 类型（1-货物 2-服务）
          */

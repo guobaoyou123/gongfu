@@ -20,10 +20,10 @@ import java.util.List;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="inquiry_base")
-public class Inquiry {
+@Table(name="contract_base")
+public class Contract {
     /**
-     * 询价单唯一id
+     * 合同唯一id
      */
     @Id
     @Column(length = 50,nullable = false)
@@ -32,7 +32,7 @@ public class Inquiry {
     @NonNull
     private String id ;
     /**
-     * 询价单编号
+     * 合同编号
      */
     @Column(length = 40,nullable = false)
     @NotNull
@@ -49,7 +49,7 @@ public class Inquiry {
     @Column(name = "saler_order_code",length = 40)
     private String salerOrderCode;
     /**
-     * 类型（0-询价单 1-报价当）
+     * 类型（0-采购合同 1-销售合同）
      */
     @Column(name = "type",length = 1)
     private InquiryType type;
@@ -197,7 +197,7 @@ public class Inquiry {
     private String consigneePhone;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "inquiry_id",referencedColumnName = "id", insertable = true, updatable = true)
+    @JoinColumn(name = "contract_id",referencedColumnName = "id", insertable = true, updatable = true)
     @NotFound(action= NotFoundAction.IGNORE)
-    private List<InquiryRecord> records;
+    private List<ContractRecord> records;
 }

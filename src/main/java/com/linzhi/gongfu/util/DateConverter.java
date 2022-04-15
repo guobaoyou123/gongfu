@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-@Data
-public class DateConverter {
+
+public abstract class DateConverter {
 
 
     public static Long getDateTime(LocalDateTime date){

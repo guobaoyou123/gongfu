@@ -87,7 +87,7 @@ public class TInquiry {
      */
     private String salerContactPhone;
     /**
-     * 货物税率
+     * 产品税率
      */
     private BigDecimal vatProductRate;
     /**

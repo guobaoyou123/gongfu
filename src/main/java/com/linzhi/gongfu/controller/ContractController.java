@@ -6,13 +6,19 @@ import com.linzhi.gongfu.mapper.InquiryMapper;
 import com.linzhi.gongfu.mapper.PurchasePlanMapper;
 import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
+import com.linzhi.gongfu.service.ContractService;
 import com.linzhi.gongfu.service.InquiryService;
 import com.linzhi.gongfu.service.PlanService;
+import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,6 +37,7 @@ public class ContractController {
     private final PurchasePlanMapper purchasePlanMapper;
     private final InquiryService inquiryService;
     private final InquiryMapper inquiryMapper;
+    private final ContractService contractService;
     /**
      * 根据操作员编码、单位id查询该操作员的临时计划表
      * @return 临时计划列表信息
@@ -465,14 +472,201 @@ public class ContractController {
             vInquiryProductResquest.getPrice(),
             vInquiryProductResquest.getAmount()
         );
-        if(flag)
-            return  VBaseResponse.builder()
-                .code(200)
-                .message("添加产品成功")
-                .build();
+        if(flag) {
+                return VBaseResponse.builder()
+                    .code(200)
+                    .message("添加产品成功")
+                    .build();
+        }
         return  VBaseResponse.builder()
             .code(500)
             .message("添加产品失败")
+            .build();
+    }
+
+    /**
+     * 导入产品
+     * @param file 导入文件
+     * @param id 询价单id
+     * @return 导入产品列表
+     */
+    @PostMapping("/contract/purchase/inquiry/{id}/products")
+     public VImportProductTempResponse importProduct(@RequestParam("products") MultipartFile file,@PathVariable String id){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var map = inquiryService.importProduct(
+            file,
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+        if((int) map.get("code")!=200)
+             return VImportProductTempResponse.builder()
+                 .code((int) map.get("code"))
+                 .message((String) map.get("message"))
+                 .build();
+        var list = inquiryService.findImportProductDetail(session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            id);
+        return VImportProductTempResponse.builder()
+            .code(200)
+            .message("产品导入临时表成功")
+            .passed(list.stream().filter(vProduct -> vProduct.getErrors().size() > 0).toList().size()>0)
+            .products(list)
+            .build();
+    }
+
+    /**
+     * 查询导入的产品
+     * @param id 询价单id
+     * @return 返回导入产品列表
+     */
+    @GetMapping("/contract/purchase/inquiry/{id}/products")
+    public VImportProductTempResponse findImportProduct(@PathVariable String id){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var list = inquiryService.findImportProductDetail(
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            id);
+        return VImportProductTempResponse.builder()
+            .code(200)
+            .message("产品导入临时表成功")
+            .passed(list.stream().filter(vProduct -> vProduct.getErrors().size() > 0).toList().size()>0)
+            .products(list)
+            .build();
+    }
+
+    /**
+     * 保存导入的产品
+     * @param id 询价单id
+     * @return 成功或者失败的信息
+     */
+    @PostMapping("/contract/purchase/inquiry/{id}/import/products")
+    public VBaseResponse saveImportProduct(@PathVariable String id){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var map = inquiryService.saveImportProducts(
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+        return VBaseResponse.builder()
+            .code((int)map.get("code"))
+            .message((String)map.get("message"))
+            .build();
+    }
+
+    /**
+     * 导出产品
+     * @param id 询价单id
+     * @param response
+     */
+    @GetMapping("/contract/purchase/inquiry/{id}/products/export")
+    public  void  exportProduct(@PathVariable String id, HttpServletResponse response ){
+        List<LinkedHashMap<String,Object>> database=inquiryService.exportProduct(id);
+        ExcelUtil.exportToExcel(response,"询价单明细表",database);
+    }
+    /**
+     * 删除询价单产品
+     * @param codes 产品编码列表
+     * @param id 询价单编码
+     * @return 返回成功或者失败信息
+     */
+    @DeleteMapping("/contract/purchase/inquiry/{id}/product")
+    public VBaseResponse deleteInquiryProduct(@RequestParam("codes")List<Integer> codes,@PathVariable("id")String id){
+       var flag =  inquiryService.deleteInquiryProduct(id,codes);
+       if(flag) {
+              return VBaseResponse.builder()
+                 .code(200)
+                 .message("删除产品成功")
+                 .build();
+       }
+       return  VBaseResponse.builder()
+            .code(500)
+            .message("删除产品失败")
+            .build();
+    }
+
+    /**
+     * 修改询价单
+     * @param modifyInquiryRequest 修改内容
+     * @param id 询价单id
+     * @return 返回成功或者失败信息
+     */
+    @PutMapping("/contract/purchase/inquiry/{id}")
+    public VBaseResponse modifyInquiry(
+        @RequestBody VModifyInquiryRequest modifyInquiryRequest,
+        @PathVariable String id){
+        var flag = inquiryService.modifyInquiry(
+            modifyInquiryRequest,
+            id);
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("修改成功")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("修改失败")
+            .build();
+    }
+
+    /**
+     * 撤销询价单
+     * @param id 询价单id
+     * @return 返回成功或者失败信息
+     */
+    @DeleteMapping("/contract/purchase/inquiry/{id}")
+    public  VBaseResponse deleteInquiry(@PathVariable("id")String id ){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = inquiryService.deleteInquiry(
+            id,
+            session.getSession().getCompanyCode()
+        );
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("撤销成功")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("撤销失败")
+            .build();
+    }
+
+    /**
+     * 生成采购合同
+     * @param generateContractRequest 生成采购合同需要的参数实体
+     * @return 返回成功或者失败
+     */
+    @PostMapping("/contract/purchase")
+    public VBaseResponse saveContract(@RequestBody VGenerateContractRequest generateContractRequest){
+       var flag =  contractService.saveContract(generateContractRequest);
+       if(flag)
+           return VBaseResponse.builder()
+               .code(200)
+               .message("成功采购合同")
+               .build();
+       return  VBaseResponse.builder()
+            .code(500)
+            .message("生成采购合同失败")
+            .build();
+    }
+
+    /**
+     * 税率列表
+     * @param type 类型 1-产品 2-服务
+     * @return 返回税率列表信息
+     */
+    @GetMapping("/contract/taxRate")
+    public VTaxRateResponse findTaxRate(@RequestParam("type")String type){
+        var list = contractService.findTaxRates(type);
+        return VTaxRateResponse.builder()
+            .code(200)
+            .message("获取税率列表成功")
+            .taxRates(list)
             .build();
     }
 }

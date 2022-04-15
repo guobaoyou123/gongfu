@@ -64,7 +64,7 @@ public class InquiryRecord {
      *计价单位
      */
     @Column(name = "charge_unit")
-    private String charge_unit;
+    private String chargeUnit;
     /**
      * 价格
      */

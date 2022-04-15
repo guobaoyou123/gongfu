@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,8 +20,7 @@ public interface InquiryRepository extends CrudRepository<Inquiry,String>, Query
         nativeQuery = true)
     String findMaxCode(String dcCompId, String createdBy);
 
-    @Modifying
-    @Query("update Inquiry as a set a.totalPrice=?1 ,a.totalPriceVat=?2,a.vat=?3 where a.id = ?4")
-    void  updateInquiry(BigDecimal totalPrice, BigDecimal totalPriceVat,BigDecimal vat,String id);
+
+
 
 }

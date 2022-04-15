@@ -14,8 +14,12 @@ public interface InquiryRecordMapper {
     @Mapping(target = "inquiryId",source = "inquiryRecordId.inquiryId")
     @Mapping(target = "code",source = "inquiryRecordId.code")
     @Mapping(target = "type",expression = "java(String.valueOf(inquiryRecord.getType().getType()))")
-
     @Mapping(target = "createdAt",expression = "java(com.linzhi.gongfu.util.DateConverter.dateFormat(inquiryRecord.getCreatedAt()))")
+    @Mapping(target = "amount",expression = "java(inquiryRecord.getAmount()!=null?inquiryRecord.getAmount().setScale(2):null)")
+    @Mapping(target = "totalPrice",expression = "java(inquiryRecord.getTotalPrice()!=null?inquiryRecord.getTotalPrice().setScale(2):null)")
+    @Mapping(target = "totalPriceVat",expression = "java(inquiryRecord.getTotalPriceVat()!=null?inquiryRecord.getTotalPriceVat().setScale(2):null)")
+    @Mapping(target = "totalDiscountedPrice",expression = "java(inquiryRecord.getTotalDiscountedPrice()!=null?inquiryRecord.getTotalDiscountedPrice().setScale(2):null)")
+    @Mapping(target = "totalDiscountedPriceVat",expression = "java(inquiryRecord.getTotalDiscountedPriceVat()!=null?inquiryRecord.getTotalDiscountedPriceVat().setScale(2):null)")
     TInquiryRecord toTInquiryRecordDo(InquiryRecord inquiryRecord);
 
     List<VInquiryDetailResponse.VProduct> toVProductDos(List<TInquiryRecord> records);

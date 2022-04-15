@@ -22,6 +22,9 @@ public class VInquiryListResponse extends VBaseResponse{
         private String ownerName;
         private String supplierName;
         private String salesContractCode;
+        private String purchaseContractId;
+        private String purchaseContractCode;
+        private String purchaseContractNo;
         private String createdAt;
         private String state;
     }

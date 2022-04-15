@@ -41,7 +41,7 @@ public class PlanService {
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final InquiryRepository inquiryRepository;
     private final CompTradeRepository compTradeRepository;
-    private final VatRatesRepository vatRatesRepository;
+    private final TaxRatesRepository vatRatesRepository;
 
     /**
      * 根据单位id、操作员编码查询该操作员的临时采购计划列表
@@ -665,9 +665,9 @@ public class PlanService {
                return resultMap;
             }
             //查出货物税率
-           Optional<VatRates> goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001");
+           Optional<TaxRates> goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001");
             //查出服务税率
-            Optional<VatRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
+            Optional<TaxRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
             //查出向每个供应商询价商品且询价数量>0的有哪些
             purchasePlan.get().getProduct().forEach(purchasePlanProduct -> purchasePlanProduct.getSalers().forEach(supplier -> {
                 if(supplier.getDemand().intValue()>0) {
@@ -678,9 +678,10 @@ public class PlanService {
                         .brandCode(purchasePlanProduct.getBrandCode())
                         .brand(purchasePlanProduct.getBrand())
                         .amount(supplier.getDemand())
-                        .charge_unit(purchasePlanProduct.getChargeUnit())
+                        .chargeUnit(purchasePlanProduct.getChargeUnit())
                         .type(VatRateType.GOODS)
                         .vatRate(goods.isPresent()?goods.get().getRate():BigDecimal.ZERO)
+                        .stockTime(0)
                         .build();
                     List<InquiryRecord> list = supplierInquiryRecordMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode());
                     if (list==null) {

@@ -8,6 +8,8 @@ import com.linzhi.gongfu.vo.VInquiryListResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.math.BigDecimal;
+
 @Mapper(componentModel = "spring",uses = { InquiryRecordMapper.class })
 public interface InquiryMapper {
     /**
@@ -40,13 +42,17 @@ public interface InquiryMapper {
     @Mapping(target = "confirmedAt",expression = "java(inquiry.getConfirmedAt()!=null?com.linzhi.gongfu.util.DateConverter.dateFormat(inquiry.getConfirmedAt()):null)")
     @Mapping(target = "state",expression = "java(String.valueOf(inquiry.getState().getState()))")
     @Mapping(target = "offerMode",expression = "java(String.valueOf(inquiry.getOfferMode().getTaxMode()))")
+    @Mapping(target = "vat",expression = "java(inquiry.getVat()!=null?inquiry.getVat().setScale(2):null)")
+    @Mapping(target = "totalPrice",expression = "java(inquiry.getTotalPrice()!=null?inquiry.getTotalPrice().setScale(2):null)")
+    @Mapping(target = "totalPriceVat",expression = "java(inquiry.getTotalPriceVat()!=null?inquiry.getTotalPriceVat().setScale(2):null)")
     TInquiry toInquiryDetail(Inquiry inquiry);
+
     /**
      * 转换询价单详情
      * @param tInquiry 询价单基本信息
      * @return 询价单详情基本信息
      */
-    @Mapping(target = "contactNo",source = "orderCode")
+    @Mapping(target = "contractNo",source = "orderCode")
     @Mapping(target = "supplierNo",source = "salerOrderCode")
     @Mapping(target = "salesContractCode",source = "salesOrderCode")
     @Mapping(target = "supplierCode",source = "salerComp")
