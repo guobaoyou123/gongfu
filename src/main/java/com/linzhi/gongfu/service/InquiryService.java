@@ -161,6 +161,7 @@ public class InquiryService {
             Product product = productRepository.findById(productId).get();
             //货物税率
             TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001").get();
+
             //保存产品
             InquiryRecord record = InquiryRecord.builder()
                 .inquiryRecordId(
@@ -214,13 +215,6 @@ public class InquiryService {
     public Boolean deleteInquiryProduct(String id,List<Integer> codes){
         try {
             Inquiry inquiry = inquiryRepository.findById(id).get();
-       /* List<InquiryRecordId> inquiryRecordIds =new ArrayList<>();
-            codes.forEach(s -> inquiryRecordIds.add(
-                InquiryRecordId.builder()
-                    .code(s)
-                    .inquiryId(id)
-                    .build()
-            ));*/
             inquiryRecordRepository.deleteProducts(id,codes);
             countSum(
                 inquiry.getRecords().stream()
@@ -234,41 +228,6 @@ public class InquiryService {
         }catch (Exception e){
             e.printStackTrace();
             return false;
-
-        }
-
-    }
-
-    /**
-     * 计算总价
-     * @param id 询价单
-     * @return 返回成功或者失败
-     */
-    @Transactional
-    public Boolean calculatePrice(String id){
-        try{
-            Inquiry inquiry = inquiryRepository.findById(id).get();
-            //判断是否需要重新计算价格
-            List<InquiryRecord> list = inquiry.getRecords()
-                .stream()
-                .filter(inquiryRecord -> inquiryRecord.getPrice()==null)
-                .toList();
-            //是 重新计算价格
-            BigDecimal totalPrice=new BigDecimal(0);
-            BigDecimal  totalPriceVat=new BigDecimal(0);
-            if(list.size()==0){
-                for (InquiryRecord inquiryRecord:inquiry.getRecords()){
-                    totalPrice=totalPrice.add(inquiryRecord.getTotalPrice());
-                    totalPriceVat=totalPriceVat.add(inquiryRecord.getTotalPriceVat());
-                }
-            }
-            BigDecimal vat = totalPriceVat.subtract(totalPrice);
-            if(totalPriceVat.intValue()>0)
-                inquiryListRepository.updateInquiry(totalPrice,totalPriceVat,vat,id);
-            return  true;
-        }catch (Exception e){
-            e.printStackTrace();
-            return  false;
         }
     }
 
@@ -278,7 +237,6 @@ public class InquiryService {
      * @param id 询价单主键
      * @return 返回成功或者失败
      */
-
     @CacheEvict(value="inquiry_Detail;1800", key="#id")
     @Transactional
     public  Boolean  modifyInquiry(VModifyInquiryRequest vModifyInquiryRequest,String id){
@@ -333,8 +291,6 @@ public class InquiryService {
         }
 
     }
-
-
 
     /**
      * 撤销询价单
@@ -440,6 +396,13 @@ public class InquiryService {
         }
     }
 
+    /**
+     * 查询导入产品列表
+     * @param companyCode 单位id
+     * @param operator 操作员编码
+     * @param id 询价单id
+     * @return 返回导入产品列表信息
+     */
     public List<VImportProductTempResponse.VProduct> findImportProductDetail(String companyCode, String operator, String id){
          List<ImportProductTemp> list=importProductTempRepository.
              findImportProductTempsByImportProductTempId_DcCompIdAndImportProductTempId_OperatorAndImportProductTempId_InquiryId(companyCode,operator,id);
@@ -498,6 +461,50 @@ public class InquiryService {
             .map(importProductTempMapper::toVProduct)
             .toList();
     }
+
+    /**
+     * 保存导入产品为询价单明细
+     * @param id 询价单id
+     * @param companyCode 单位id
+     * @param operator 操作员编码
+     * @return 返回成功或者失败信息
+     */
+    @Transactional
+    public Map<String,Object> modifyImportProduct(String id,String companyCode,String operator,String brandCode,int itemNo){
+           Map<String,Object>   resultMap=new HashMap<>();
+        try {
+            ImportProductTemp temp = importProductTempRepository.findById(
+                ImportProductTempId.builder()
+                    .inquiryId(id)
+                    .itemNo(itemNo)
+                    .dcCompId(companyCode)
+                    .operator(operator)
+                    .build()
+            ).get();
+            Product product = productRepository.findProductByCodeAndBrandCode(temp.getCode(),brandCode).get();
+            temp.setProductId(product.getId());
+            temp.setBrandCode(product.getBrandCode());
+            temp.setBrandName(product.getBrand());
+            importProductTempRepository.save(temp);
+            resultMap.put("code",200);
+            resultMap.put("message","修改成功");
+            return resultMap;
+        }catch (Exception e){
+            e.printStackTrace();
+            resultMap.put("code",500);
+            resultMap.put("message","保存失败");
+            return resultMap;
+        }
+    }
+
+    /**
+     * 保存导入产品为询价单明细
+     * @param id 询价单id
+     * @param companyCode 单位id
+     * @param operator 操作员编码
+     * @return 返回成功或者失败信息
+     */
+    @Cacheable(value="inquiry_Detail;1800", key="#id")
     @Transactional
     public Map<String,Object> saveImportProducts(String id,String companyCode,String operator){
         Map<String,Object> resultMap = new HashMap<>();
@@ -568,6 +575,12 @@ public class InquiryService {
             return resultMap;
         }
     }
+
+    /**
+     * 判断 字符串是否为数字
+     * @param str 字符串
+     * @return 返回是或者否
+     */
     public static boolean isNumeric(String str){
         Pattern pattern = Pattern.compile("[0-9]*");
         if(str.indexOf(".")>0){//判断是否有小数点
@@ -630,7 +643,12 @@ public class InquiryService {
         return inquiry;
     }
 
-
+    /**
+     * 更新询价单总价
+     * @param inquiryRecords
+     * @param id
+     * @return
+     */
     public  boolean countSum(List<InquiryRecord> inquiryRecords,String id){
         try{
             //判断是否需要重新计算价格

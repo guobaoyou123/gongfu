@@ -538,6 +538,28 @@ public class ContractController {
     }
 
     /**
+     * 修改导入产品
+     * @param id 询价单id
+     * @return 成功或者失败的信息
+     */
+    @PutMapping("/contract/purchase/inquiry/{id}/import/products")
+    public VBaseResponse modifyImportProduct(@PathVariable String id,@RequestBody VImportProductTempRequest vImportProductTempRequest){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var map = inquiryService.modifyImportProduct(
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            vImportProductTempRequest.getBrandCode(),
+            vImportProductTempRequest.getItemNo()
+        );
+        return VBaseResponse.builder()
+            .code((int)map.get("code"))
+            .message((String)map.get("message"))
+            .build();
+    }
+
+    /**
      * 保存导入的产品
      * @param id 询价单id
      * @return 成功或者失败的信息
@@ -567,6 +589,7 @@ public class ContractController {
         List<LinkedHashMap<String,Object>> database=inquiryService.exportProduct(id);
         ExcelUtil.exportToExcel(response,"询价单明细表",database);
     }
+
     /**
      * 删除询价单产品
      * @param codes 产品编码列表

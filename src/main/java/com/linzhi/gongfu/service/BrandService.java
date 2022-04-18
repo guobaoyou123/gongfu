@@ -153,4 +153,19 @@ public class BrandService {
             .collect(Collectors.toList());
 
     }
+
+    public List<TBrand> brandListByProduct(String  product){
+        QDcBrand qDcBrand = QDcBrand.dcBrand;
+        QProduct qProduct = QProduct.product;
+        List<DcBrand> dcBrands= queryFactory.selectDistinct(qDcBrand).from(qProduct)
+                .leftJoin(qDcBrand).on(qDcBrand.code.eq(qProduct.brandCode))
+                .where(qProduct.code.eq(product))
+            .orderBy(qDcBrand.sort.desc())
+            .fetch();
+
+        return   dcBrands.stream()
+            .map(brandMapper::toBrand)
+            .collect(Collectors.toList());
+
+    }
 }
