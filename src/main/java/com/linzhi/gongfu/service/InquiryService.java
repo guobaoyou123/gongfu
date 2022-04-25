@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.service;
 
+import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TImportProductTemp;
 import com.linzhi.gongfu.dto.TInquiry;
 import com.linzhi.gongfu.entity.*;
@@ -9,7 +10,6 @@ import com.linzhi.gongfu.mapper.InquiryMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.VImportProductTempResponse;
-import com.linzhi.gongfu.vo.VInquiryDetailResponse;
 import com.linzhi.gongfu.vo.VModifyInquiryRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -20,11 +20,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
@@ -48,6 +51,7 @@ public class InquiryService {
     private final TaxRatesRepository vatRatesRepository;
     private final ImportProductTempRepository importProductTempRepository;
     private final ImportProductTempMapper importProductTempMapper;
+
     /**
      * 查询未完成的询价单列表
      * @param companyCode 公司编码
@@ -56,19 +60,25 @@ public class InquiryService {
      */
     @Cacheable(value="inquiry_List;1800", key="#companyCode+'_'+#operator")
     public List<TInquiry> inquiryList(String companyCode, String operator){
-        Operator operator1= operatorRepository.findById(OperatorId.builder()
-            .operatorCode(operator)
-            .companyCode(companyCode)
-            .build()).orElseGet(Operator::new);
-        if(operator1.getAdmin().equals(Whether.YES))
-            return inquiryListRepository.findInquiryListByCreatedByCompAndTypeAndStateOrderByCreatedAtDesc(companyCode, InquiryType.INQUIRY_LIST, InquiryState.UN_FINISHED)
+        try{
+            Operator operator1= operatorRepository.findById(OperatorId.builder()
+                    .operatorCode(operator)
+                    .companyCode(companyCode)
+                    .build())
+                .orElseThrow(()-> new IOException("请求的操作员找不到"));
+            if(operator1.getAdmin().equals(Whether.YES))
+                return inquiryListRepository.findInquiryListByCreatedByCompAndTypeAndStateOrderByCreatedAtDesc(companyCode, InquiryType.INQUIRY_LIST, InquiryState.UN_FINISHED)
+                    .stream()
+                    .map(inquiryMapper::toInquiryList)
+                    .toList();
+            return inquiryListRepository.findInquiriesByCreatedByCompAndCreatedByAndTypeAndStateOrderByCreatedAtDesc(companyCode,operator, InquiryType.INQUIRY_LIST, InquiryState.UN_FINISHED)
                 .stream()
                 .map(inquiryMapper::toInquiryList)
                 .toList();
-        return inquiryListRepository.findInquiriesByCreatedByCompAndCreatedByAndTypeAndStateOrderByCreatedAtDesc(companyCode,operator, InquiryType.INQUIRY_LIST, InquiryState.UN_FINISHED)
-            .stream()
-            .map(inquiryMapper::toInquiryList)
-            .toList();
+        }catch (Exception e){
+            e.printStackTrace();
+            return  null;
+        }
     }
 
     /**
@@ -77,10 +87,8 @@ public class InquiryService {
      * @return 返回询价单详情
      */
     @Cacheable(value="inquiry_Detail;1800", key="#id")
-    public Optional<VInquiryDetailResponse.VInquiry> inquiryDetail(String id){
-        return inquiryRepository.findById(id)
-            .map(inquiryMapper::toInquiryDetail)
-            .map(inquiryMapper::toVInquiryDetail);
+    public Optional<Inquiry> inquiryDetail(String id){
+        return inquiryRepository.findById(id);
     }
 
     /**
@@ -107,13 +115,19 @@ public class InquiryService {
             String inquiryId = "XJ-"+companyCode+"-0"+operator+"-"+uuid.toString().substring(0,8);
             String inquiryCode ="XJ-"+operator+"-"+companyCode+"-"+dtf.format(data)+"-"+mCode;
             //查询供应商信息
-            Company supplier = companyRepository.findById(supplierCode).get();
+            Optional<Company> supplier = companyRepository.findById(supplierCode);
+            String supplierName = null;
+            if(supplier.isPresent())
+                supplierName=supplier.get().getNameInCN();
             //税模式
-            CompTrad compTrad = compTradeRepository.findById(
+            Optional<CompTrad> compTrad = compTradeRepository.findById(
                 CompTradId.builder()
                     .compBuyer(companyCode)
                     .compSaler(supplierCode)
-                    .build()).get();
+                    .build());
+            TaxMode taxMode = null;
+            if(compTrad.isPresent())
+                taxMode= compTrad.get().getTaxModel();
             inquiryRepository.save(
                 Inquiry.builder()
                     .id(inquiryId)
@@ -126,9 +140,9 @@ public class InquiryService {
                     .buyerCompName(companyName)
                     .buyerContactName(operatorName)
                     .salerComp(supplierCode)
-                    .salerCompName(supplier.getNameInCN())
+                    .salerCompName(supplierName)
                     .state(InquiryState.UN_FINISHED)
-                    .offerMode(compTrad.getTaxModel())
+                    .offerMode(taxMode)
                     .build()
             );
             return  inquiryId;
@@ -145,29 +159,30 @@ public class InquiryService {
      * @param productId 产品编码
      * @param price 价格
      * @param amount 数量
-     * @return
+     * @return 返回成功或者失败信息
      */
     @CacheEvict(value="inquiry_Detail;1800", key="#id")
     @Transactional
     public Boolean saveInquiryProduct(String id, String productId, BigDecimal price,BigDecimal amount){
         try{
             //查询询价单
-            Inquiry inquiry = inquiryRepository.findById(id).get();
+            Inquiry inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             //查询明细最大顺序号
             String maxCode = inquiryRecordRepository.findMaxCode(id);
             if(maxCode==null)
                 maxCode="0";
             //查询产品
-            Product product = productRepository.findById(productId).get();
+            Product product = productRepository.findById(productId).orElseThrow(() -> new IOException("请求的产品不存在"));
             //货物税率
-            TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001").get();
+            TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
+                .orElseThrow(() -> new IOException("请求的货物税率不存在"));
 
             //保存产品
             InquiryRecord record = InquiryRecord.builder()
                 .inquiryRecordId(
                     InquiryRecordId.builder()
                         .inquiryId(id)
-                        .code(Integer.valueOf(maxCode)+1)
+                        .code(Integer.parseInt(maxCode)+1)
                         .build()
                 )
                 .createdAt(LocalDateTime.now())
@@ -187,16 +202,16 @@ public class InquiryService {
             if(price!=null){
                 if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)){
                     record.setPrice(price);
-               }else{
+                }else{
                     record.setPriceVat(price);
-               }
+                }
             }
             List<InquiryRecord> records = new ArrayList<>();
             records.add(record);
             inquiry.getRecords().add(countRecord(records,inquiry.getOfferMode()).get(0));
             inquiryRepository.save(countSum(inquiry));
             //保存明细
-           // inquiryRecordRepository.save(countRecord(records,inquiry.getOfferMode()).get(0));
+            // inquiryRecordRepository.save(countRecord(records,inquiry.getOfferMode()).get(0));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -214,9 +229,9 @@ public class InquiryService {
     @Transactional
     public Boolean deleteInquiryProduct(String id,List<Integer> codes){
         try {
-            Inquiry inquiry = inquiryRepository.findById(id).get();
+            Inquiry inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             inquiryRecordRepository.deleteProducts(id,codes);
-            countSum(
+            var flag = countSum(
                 inquiry.getRecords().stream()
                     .filter(
                         record ->
@@ -224,7 +239,7 @@ public class InquiryService {
                     ).toList(),
                 id
             );
-            return  true;
+            return  flag;
         }catch (Exception e){
             e.printStackTrace();
             return false;
@@ -241,9 +256,9 @@ public class InquiryService {
     @Transactional
     public  Boolean  modifyInquiry(VModifyInquiryRequest vModifyInquiryRequest,String id){
         try{
-            Inquiry inquiry = inquiryRepository.findById(id).get();
+            Inquiry inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             if(StringUtils.isNotBlank(vModifyInquiryRequest.getTaxModel()))
-                 inquiry.setOfferMode(vModifyInquiryRequest.getTaxModel().equals("0")?TaxMode.UNTAXED:TaxMode.INCLUDED);
+                inquiry.setOfferMode(vModifyInquiryRequest.getTaxModel().equals("0")?TaxMode.UNTAXED:TaxMode.INCLUDED);
             if(vModifyInquiryRequest.getServiceVat()!=null) {
                 inquiry.setVatServiceRate(vModifyInquiryRequest.getServiceVat());
                 inquiry.getRecords().forEach(
@@ -264,23 +279,21 @@ public class InquiryService {
             }
 
             if(vModifyInquiryRequest.getProducts()!=null){
-                vModifyInquiryRequest.getProducts().forEach(vProduct -> {
-                    inquiry.getRecords().forEach(record -> {
-                        if(record.getInquiryRecordId().getCode()==vProduct.getCode()){
-                            if(vProduct.getAmount()!=null)
-                                record.setAmount(vProduct.getAmount());
-                            if(vProduct.getVatRate()!=null)
-                                record.setVatRate(vProduct.getVatRate());
-                            if(vProduct.getPrice()!=null) {
-                                if (inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
-                                    record.setPrice(vProduct.getPrice());
-                                }else {
-                                    record.setPriceVat(vProduct.getPrice());
-                                }
-                           }
+                vModifyInquiryRequest.getProducts().forEach(vProduct -> inquiry.getRecords().forEach(record -> {
+                    if(record.getInquiryRecordId().getCode()==vProduct.getCode()){
+                        if(vProduct.getAmount()!=null)
+                            record.setAmount(vProduct.getAmount());
+                        if(vProduct.getVatRate()!=null)
+                            record.setVatRate(vProduct.getVatRate());
+                        if(vProduct.getPrice()!=null) {
+                            if (inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
+                                record.setPrice(vProduct.getPrice());
+                            }else {
+                                record.setPriceVat(vProduct.getPrice());
+                            }
                         }
-                    });
-                });
+                    }
+                }));
             }
             inquiry.setRecords(countRecord(inquiry.getRecords(),inquiry.getOfferMode()));
             inquiryRepository.save(countSum(inquiry));
@@ -303,10 +316,10 @@ public class InquiryService {
     @Transactional
     public  Boolean deleteInquiry(String id,String companyCode){
         try {
-           Inquiry inquiry =  inquiryRepository.findById(id).get();
-           inquiry.setState(InquiryState.CANCELLATION);
-           inquiry.setDeletedAt(LocalDateTime.now());
-           inquiryRepository.save(inquiry);
+            Inquiry inquiry =  inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            inquiry.setState(InquiryState.CANCELLATION);
+            inquiry.setDeletedAt(LocalDateTime.now());
+            inquiryRepository.save(inquiry);
             return  true;
         }catch (Exception e){
             e.printStackTrace();
@@ -320,38 +333,48 @@ public class InquiryService {
      * @return 产品列表
      */
     public List<LinkedHashMap<String,Object>> exportProduct(String id){
-
         List<LinkedHashMap<String,Object>> list = new ArrayList<>();
-        Inquiry inquiry = inquiryRepository.findById(id).get();
-        inquiry.getRecords().forEach(record -> {
-            LinkedHashMap<String,Object> m = new LinkedHashMap<String,Object>();
-            m.put("产品编码",record.getProductCode());
-            if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
-                m.put("未税单价", record.getPrice());
-            }else{
-                m.put("含税单价", record.getPriceVat());
-            }
-            m.put("数量", record.getAmount());
-            list.add(m);
-        });
-
+        try{
+            Inquiry inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            inquiry.getRecords().forEach(record -> {
+                LinkedHashMap<String,Object> m = new LinkedHashMap<>();
+                m.put("产品编码",record.getProductCode());
+                if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
+                    m.put("未税单价", record.getPrice());
+                }else{
+                    m.put("含税单价", record.getPriceVat());
+                }
+                m.put("数量", record.getAmount());
+                list.add(m);
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         return list;
     }
 
+    /**
+     * 导入产品
+     * @param file 导入文件
+     * @param id 询价单id
+     * @param companyCode 公司编码
+     * @param operator 操作员编码
+     * @return 返回成功或者失败信息
+     */
     @Transactional
-    public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operateor){
+    public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operator){
         Map<String,Object> resultMap = new HashMap<>();
         try {
-            Inquiry inquiry = inquiryRepository.findById(id).get();
+            Inquiry inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<Map<String, Object>> list =  ExcelUtil.excelToList(file);
             List<ImportProductTemp> importProductTemps = new ArrayList<>();
             for (int i =0;i<list.size();i++){
-                Map map = list.get(i);
+                Map<String, Object> map = list.get(i);
                 ImportProductTemp importProductTemp = ImportProductTemp.builder().build();
                 importProductTemp.setImportProductTempId(
                     ImportProductTempId.builder()
                         .dcCompId(companyCode)
-                        .operator(operateor)
+                        .operator(operator)
                         .inquiryId(id)
                         .itemNo(i+2)
                         .build()
@@ -383,8 +406,10 @@ public class InquiryService {
                         importProductTemp.setPrice(price);
                     }
                 }
-                 importProductTemps.add(importProductTemp);
+                importProductTemps.add(importProductTemp);
             }
+            //删除之前导入的产品
+            importProductTempRepository.deleteProduct(id,companyCode,operator);
             importProductTempRepository.saveAll(importProductTemps);
             resultMap.put("code",200);
             resultMap.put("message","导入产品成功！");
@@ -404,62 +429,74 @@ public class InquiryService {
      * @return 返回导入产品列表信息
      */
     public List<VImportProductTempResponse.VProduct> findImportProductDetail(String companyCode, String operator, String id){
-         List<ImportProductTemp> list=importProductTempRepository.
-             findImportProductTempsByImportProductTempId_DcCompIdAndImportProductTempId_OperatorAndImportProductTempId_InquiryId(companyCode,operator,id);
-         List<TImportProductTemp> importProductTemps=list.stream()
-             .map(importProductTempMapper::toTImportProductTemp)
-             .toList();
-         importProductTemps.forEach(tImportProductTemp -> {
-             //错误数据
-             List<Map<String,Object>> errorList = new ArrayList<>();
-             if(tImportProductTemp.getCode()==null){
-                 Map<String,Object> map1=new HashMap<>();
-                 map1.put("行",tImportProductTemp.getItemNo());
-                 map1.put("错误信息","产品编码不能为空");
-                 errorList.add(map1);
-             }else{
-                 //验证产品编码是否正确
-                 List<Product> products = productRepository.findProductByCode(tImportProductTemp.getCode());
-                 if(products.size()==0){
-                     Map<String,Object> map1=new HashMap<>();
-                     map1.put("行",tImportProductTemp.getItemNo());
-                     map1.put("错误信息","产品编码错误或不存在于系统中");
-                     errorList.add(map1);
-                 }else if(products.size()>0 && tImportProductTemp.getProductId()==null){
-                         Map<String,Object> map1=new HashMap<>();
-                         map1.put("行",tImportProductTemp.getItemNo());
-                         map1.put("错误信息","该产品编码在系统中存在多个，请选择品牌");
-                         errorList.add(map1);
-                 }
-             }
-             if(tImportProductTemp.getAmount()==null){
-                 Map<String,Object> map1=new HashMap<>();
-                 map1.put("行",tImportProductTemp.getItemNo());
-                 map1.put("错误信息","产品数量不能为空");
-                 errorList.add(map1);
-             }else{
-                 //验证 数量是否为数字
-                 if(!isNumeric(tImportProductTemp.getAmount())) {
-                     Map<String, Object> map1 = new HashMap<>();
-                     map1.put("行", tImportProductTemp.getItemNo());
-                     map1.put("错误信息", "数量应为数字");
-                     errorList.add(map1);
-                 }
-             }
-             if(tImportProductTemp.getPrice()!=null){
-                     //验证 数量是否为数字
-                if(!isNumeric(tImportProductTemp.getPrice())) {
-                         Map<String, Object> map1 = new HashMap<>();
-                         map1.put("行", tImportProductTemp.getItemNo());
-                         map1.put("错误信息", "单价应为数字");
-                         errorList.add(map1);
+        List<ImportProductTemp> list=importProductTempRepository.
+            findImportProductTempsByImportProductTempId_DcCompIdAndImportProductTempId_OperatorAndImportProductTempId_InquiryId(companyCode,operator,id);
+        List<TImportProductTemp> importProductTemps=list.stream()
+            .map(importProductTempMapper::toTImportProductTemp)
+            .toList();
+        importProductTemps.forEach(tImportProductTemp -> {
+            //错误数据
+            List<String> errorList = new ArrayList<>();
+            List<TBrand> tBrands = new ArrayList<>();
+            if(tImportProductTemp.getCode()==null){
+                errorList.add("产品编码不能为空");
+            }else{
+                //验证产品编码是否正确
+                List<Product> products = productRepository.findProductByCode(tImportProductTemp.getCode());
+                if(products.size()==0){
+                    errorList.add("产品编码错误或不存在于系统中");
+                }else if(products.size()==1){
+                    tBrands.add(TBrand.builder()
+                        .code(products.get(0).getBrandCode())
+                        .name(products.get(0).getBrand())
+                        .sort(1)
+                        .build());
+                    tImportProductTemp.setConfirmedBrand(products.get(0).getBrandCode());
+                }else if(products.size()>1 && tImportProductTemp.getProductId()==null){
+                    errorList.add("该产品编码在系统中存在多个，请选择品牌");
+                    AtomicInteger i= new AtomicInteger();
+                    products.forEach(product -> {
+                        i.getAndIncrement();
+                        tBrands.add(TBrand.builder()
+                            .code(product.getBrandCode())
+                            .name(product.getBrand())
+                            .sort(i.get())
+                            .build());
+                    });
                 }
-             }
-             tImportProductTemp.setErrors(errorList);
-         });
+            }
+            tImportProductTemp.setBrand(tBrands);
+            if(tImportProductTemp.getAmount()==null){
+                errorList.add("数量不能为空");
+            }else{
+                //验证 数量是否为数字
+                if(isNumeric(tImportProductTemp.getAmount())) {
+                    errorList.add("数量应为数字");
+                }
+            }
+            if(tImportProductTemp.getPrice()!=null){
+                //验证 数量是否为数字
+                if(isNumeric(tImportProductTemp.getPrice())) {
+
+                    errorList.add("单价应为数字");
+                }
+            }
+            tImportProductTemp.setMessages(errorList);
+        });
         return  importProductTemps.stream()
             .map(importProductTempMapper::toVProduct)
             .toList();
+    }
+
+    @Transactional
+    public Boolean deleteImportProducts(String id,String companyCode,String operator){
+        try{
+            importProductTempRepository.deleteProduct(id,companyCode,operator);
+            return  true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return  false;
+        }
     }
 
     /**
@@ -471,7 +508,7 @@ public class InquiryService {
      */
     @Transactional
     public Map<String,Object> modifyImportProduct(String id,String companyCode,String operator,String brandCode,int itemNo){
-           Map<String,Object>   resultMap=new HashMap<>();
+        Map<String,Object>   resultMap=new HashMap<>();
         try {
             ImportProductTemp temp = importProductTempRepository.findById(
                 ImportProductTempId.builder()
@@ -480,15 +517,19 @@ public class InquiryService {
                     .dcCompId(companyCode)
                     .operator(operator)
                     .build()
-            ).get();
-            Product product = productRepository.findProductByCodeAndBrandCode(temp.getCode(),brandCode).get();
+            ).orElseThrow(()-> new IOException("数据库中找不到该暂存产品"));
+
+            Product product = productRepository.findProductByCodeAndBrandCode(temp.getCode(),brandCode)
+                .orElseThrow(() -> new IOException("数据库中找不到该产品"));
             temp.setProductId(product.getId());
             temp.setBrandCode(product.getBrandCode());
             temp.setBrandName(product.getBrand());
             importProductTempRepository.save(temp);
             resultMap.put("code",200);
             resultMap.put("message","修改成功");
+
             return resultMap;
+
         }catch (Exception e){
             e.printStackTrace();
             resultMap.put("code",500);
@@ -504,7 +545,7 @@ public class InquiryService {
      * @param operator 操作员编码
      * @return 返回成功或者失败信息
      */
-    @Cacheable(value="inquiry_Detail;1800", key="#id")
+    @CacheEvict(value="inquiry_Detail;1800", key="#id")
     @Transactional
     public Map<String,Object> saveImportProducts(String id,String companyCode,String operator){
         Map<String,Object> resultMap = new HashMap<>();
@@ -514,45 +555,47 @@ public class InquiryService {
 
             List<InquiryRecord> inquiryRecords = new ArrayList<>();
             //货物税率
-            TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001").get();
+            TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
+                .orElseThrow(() -> new IOException("请求的货物税率不存在"));
             //查询询价单
-            Inquiry inquiry = inquiryRepository.findById(id).get();
+            Inquiry inquiry = inquiryDetail(id)
+                .orElseThrow(() -> new IOException("请求的询价单不存在"));
             int maxCode =1;
-            for (int i =0;i<list.size();i++){
-                ImportProductTemp importProductTemp = list.get(i);
+            for (ImportProductTemp importProductTemp : list) {
                 InquiryRecord record = InquiryRecord.builder().build();
                 //验证产品编码是否正确
                 Product product = productRepository.
-                        findProductByCodeAndBrandCode(
-                            importProductTemp.getCode(),
-                            importProductTemp.getBrandCode()
-                        ).get();
+                    findProductByCodeAndBrandCode(
+                        importProductTemp.getCode(),
+                        importProductTemp.getBrandCode()
+                    )
+                    .orElseThrow(() -> new IOException("请求的产品不存在"));
                 record.setProductId(product.getId());
                 record.setProductCode(product.getCode());
                 record.setProductDescription(product.getDescribe());
                 record.setChargeUnit(product.getChargeUnit());
                 record.setBrand(product.getBrand());
                 record.setBrandCode(product.getBrandCode());
-                record.setVatRate(inquiry.getVatProductRate()!=null?inquiry.getVatProductRate():goods.getRate());
+                record.setVatRate(inquiry.getVatProductRate() != null ? inquiry.getVatProductRate() : goods.getRate());
                 record.setStockTime(0);
                 record.setType(VatRateType.GOODS);
                 record.setAmount(new BigDecimal(importProductTemp.getAmount()));
-                if(importProductTemp.getPrice()!=null){
-                    if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)){
+                if (importProductTemp.getPrice() != null) {
+                    if (inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
                         record.setPrice(new BigDecimal(importProductTemp.getPrice()));
-                    }else {
+                    } else {
                         record.setPriceVat(new BigDecimal(importProductTemp.getPrice()));
                     }
                 }
                 record.setCreatedAt(LocalDateTime.now());
                 record.setInquiryRecordId(
-                      InquiryRecordId.builder()
-                            .inquiryId(id)
-                            .code(maxCode)
-                            .build()
+                    InquiryRecordId.builder()
+                        .inquiryId(id)
+                        .code(maxCode)
+                        .build()
                 );
                 record.setVatRate(goods.getRate());
-                if(inquiry.getVatProductRate()!=null)
+                if (inquiry.getVatProductRate() != null)
                     record.setVatRate(inquiry.getVatProductRate());
                 inquiryRecords.add(record);
                 maxCode++;
@@ -561,13 +604,15 @@ public class InquiryService {
 
             //删除原有的产品明细
             inquiryRecords=countRecord(inquiryRecords,inquiry.getOfferMode());
-            inquiryRecordRepository.saveAll(inquiryRecords);
-            importProductTempRepository.deleteProduct(id,companyCode,operator);
 
-             countSum(inquiryRecords,id);
-            resultMap.put("code",200);
+            importProductTempRepository.deleteProduct(id,companyCode,operator);
+            inquiryRecordRepository.deleteProducts(id);
+            inquiryRecordRepository.saveAll(inquiryRecords);
+            if(countSum(inquiryRecords,id))
+                resultMap.put("code",200);
             resultMap.put("message","保存成功");
             return resultMap;
+
         }catch (Exception e){
             e.printStackTrace();
             resultMap.put("code",500);
@@ -585,12 +630,12 @@ public class InquiryService {
         Pattern pattern = Pattern.compile("[0-9]*");
         if(str.indexOf(".")>0){//判断是否有小数点
             if(str.indexOf(".")==str.lastIndexOf(".") && str.split("\\.").length==2){ //判断是否只有一个小数点
-                return pattern.matcher(str.replace(".","")).matches();
+                return !pattern.matcher(str.replace(".", "")).matches();
             }else {
-                return false;
+                return true;
             }
         }else {
-            return pattern.matcher(str).matches();
+            return !pattern.matcher(str).matches();
         }
     }
     /**
@@ -602,14 +647,14 @@ public class InquiryService {
     public List<InquiryRecord> countRecord(List<InquiryRecord> records ,TaxMode taxMode){
         records.forEach(record -> {
             if(taxMode.equals(TaxMode.UNTAXED)&&record.getPrice()!=null){
-                record.setPriceVat(record.getPrice().multiply(new BigDecimal(1).add(record.getVatRate())).setScale(4,BigDecimal.ROUND_HALF_UP));
+                record.setPriceVat(record.getPrice().multiply(new BigDecimal(1).add(record.getVatRate())).setScale(4, RoundingMode.HALF_UP));
             }else if(taxMode.equals(TaxMode.INCLUDED)&&record.getPriceVat()!=null){
-                record.setPrice(record.getPriceVat().divide(new BigDecimal(1).add(record.getVatRate()),4,BigDecimal.ROUND_HALF_UP));
+                record.setPrice(record.getPriceVat().divide(new BigDecimal(1).add(record.getVatRate()),4, RoundingMode.HALF_UP));
             }
 
             if(record.getPrice()!=null){
-                record.setTotalPrice(record.getPrice().multiply(record.getAmount()).setScale(2,BigDecimal.ROUND_HALF_UP));
-                record.setTotalPriceVat(record.getPriceVat().multiply(record.getAmount()).setScale(2,BigDecimal.ROUND_HALF_UP));
+                record.setTotalPrice(record.getPrice().multiply(record.getAmount()).setScale(2, RoundingMode.HALF_UP));
+                record.setTotalPriceVat(record.getPriceVat().multiply(record.getAmount()).setScale(2, RoundingMode.HALF_UP));
             }
         });
         return records;
@@ -645,9 +690,9 @@ public class InquiryService {
 
     /**
      * 更新询价单总价
-     * @param inquiryRecords
-     * @param id
-     * @return
+     * @param inquiryRecords 询价单明细列表
+     * @param id 询价单主键
+     * @return 返回成功或者失败信息
      */
     public  boolean countSum(List<InquiryRecord> inquiryRecords,String id){
         try{
@@ -665,15 +710,14 @@ public class InquiryService {
                     totalPriceVat=totalPriceVat.add(inquiryRecord.getTotalPriceVat());
                 }
             }
-            BigDecimal vat = totalPriceVat.setScale(2,BigDecimal.ROUND_HALF_UP).subtract(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
+            BigDecimal vat = totalPriceVat.setScale(2, RoundingMode.HALF_UP).subtract(totalPrice.setScale(2, RoundingMode.HALF_UP));
             if(totalPriceVat.intValue()>0)
-                inquiryListRepository.updateInquiry(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP),totalPriceVat.setScale(2,BigDecimal.ROUND_HALF_UP),vat,id);
+                inquiryListRepository.updateInquiry(totalPrice.setScale(2, RoundingMode.HALF_UP),totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,id);
             return true;
         }catch (Exception e){
             e.printStackTrace();
             return false;
 
         }
-
     }
 }
