@@ -408,8 +408,6 @@ public class InquiryService {
                 }
                  importProductTemps.add(importProductTemp);
             }
-            //删除之前导入的产品
-            importProductTempRepository.deleteProduct(id,companyCode,operator);
             importProductTempRepository.saveAll(importProductTemps);
             resultMap.put("code",200);
             resultMap.put("message","导入产品成功！");
