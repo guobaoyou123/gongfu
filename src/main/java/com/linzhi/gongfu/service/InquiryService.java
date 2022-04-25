@@ -231,7 +231,7 @@ public class InquiryService {
         try {
             Inquiry inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             inquiryRecordRepository.deleteProducts(id,codes);
-            var flag = countSum(
+            return countSum(
                 inquiry.getRecords().stream()
                     .filter(
                         record ->
@@ -239,7 +239,6 @@ public class InquiryService {
                     ).toList(),
                 id
             );
-            return  flag;
         }catch (Exception e){
             e.printStackTrace();
             return false;
