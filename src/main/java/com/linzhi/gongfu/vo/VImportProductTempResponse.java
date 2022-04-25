@@ -19,7 +19,7 @@ import java.util.Map;
 @Jacksonized
 @SuperBuilder(toBuilder = true)
 public class VImportProductTempResponse extends VBaseResponse{
-    private boolean passed;
+    private boolean confirmable;
     private List<VProduct> products;
 
     @Data
@@ -37,13 +37,9 @@ public class VImportProductTempResponse extends VBaseResponse{
          */
         private String code;
         /**
-         * 品牌编码
+         * 品牌列表
          */
-        private String brandCode;
-        /**
-         * 品牌名称
-         */
-        private String brandName;
+        private List<VBrand> brand;
         /**
          * 价格
          */
@@ -53,8 +49,30 @@ public class VImportProductTempResponse extends VBaseResponse{
          */
         private String amount;
         /**
-         * 错误信息
+         * 错误信息messages
          */
-        private List<Map<String,Object>> errors;
+        private List<String> messages;
+        /**
+         * 已被确认的品牌编码
+         */
+        private String confirmedBrand;
+    }
+
+    @Data
+    public  static  class VBrand{
+        /**
+         * 品牌编号
+         */
+        private String code;
+
+        /**
+         * 品牌简称
+         */
+        private String name;
+
+        /**
+         * 排序
+         */
+        private int sort;
     }
 }

@@ -418,7 +418,9 @@ public class ContractController {
             return VInquiryDetailResponse.builder()
                 .code(200)
                 .message("获取询价单详情成功")
-                 .inquiry(inquiry.get())
+                 .inquiry(inquiry
+                     .map(inquiryMapper::toInquiryDetail)
+                     .map(inquiryMapper::toVInquiryDetail).get())
                  .build();
         return VInquiryDetailResponse.builder()
             .code(404)
@@ -511,7 +513,7 @@ public class ContractController {
         return VImportProductTempResponse.builder()
             .code(200)
             .message("产品导入临时表成功")
-            .passed(list.stream().filter(vProduct -> vProduct.getErrors().size() > 0).toList().size()>0)
+            .confirmable(list.stream().filter(vProduct -> vProduct.getMessages().size() > 0 || vProduct.getConfirmedBrand()==null).toList().size()==0)
             .products(list)
             .build();
     }
@@ -532,7 +534,7 @@ public class ContractController {
         return VImportProductTempResponse.builder()
             .code(200)
             .message("产品导入临时表成功")
-            .passed(list.stream().filter(vProduct -> vProduct.getErrors().size() > 0).toList().size()>0)
+            .confirmable(list.stream().filter(vProduct -> vProduct.getMessages().size() > 0 || vProduct.getConfirmedBrand()==null).toList().size()==0)
             .products(list)
             .build();
     }
@@ -564,7 +566,7 @@ public class ContractController {
      * @param id 询价单id
      * @return 成功或者失败的信息
      */
-    @PostMapping("/contract/purchase/inquiry/{id}/import/products")
+    @PostMapping("/contract/purchase/inquiry/{id}/imports")
     public VBaseResponse saveImportProduct(@PathVariable String id){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
@@ -576,6 +578,31 @@ public class ContractController {
         return VBaseResponse.builder()
             .code((int)map.get("code"))
             .message((String)map.get("message"))
+            .build();
+    }
+
+    /**
+     * 清空暂存的导入产品数据
+     * @param id 询价单id
+     * @return 返回成功或者失败信息
+     */
+    @DeleteMapping("/contract/purchase/inquiry/{id}/products")
+    public VBaseResponse deleteImportProducts(@PathVariable("id")String id){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = inquiryService.deleteImportProducts(
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+        if(flag)
+            return  VBaseResponse.builder()
+            .code(200)
+            .message("删除产品成功")
+            .build();
+        return  VBaseResponse.builder()
+            .code(500)
+            .message("删除产品失败")
             .build();
     }
 

@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.dto;
 
+import com.linzhi.gongfu.vo.VImportProductTempResponse;
 import lombok.*;
 
 import java.util.List;
@@ -37,13 +38,9 @@ public class TImportProductTemp {
      */
     private String code;
     /**
-     * 品牌编码
+     * 品牌列表
      */
-    private String brandCode;
-    /**
-     * 品牌名称
-     */
-    private String brandName;
+    private List<TBrand> brand;
     /**
      * 价格
      */
@@ -53,7 +50,11 @@ public class TImportProductTemp {
      */
     private String amount;
     /**
+     * 已被确认的品牌编码
+     */
+    private String confirmedBrand;
+    /**
      * 错误信息
      */
-    private List<Map<String,Object>> errors;
+    private List<String> messages;
 }
