@@ -708,8 +708,8 @@ public class InquiryService {
                 }
             }
             BigDecimal vat = totalPriceVat.setScale(2, RoundingMode.HALF_UP).subtract(totalPrice.setScale(2, RoundingMode.HALF_UP));
-            if(totalPriceVat.intValue()>0)
-                inquiryListRepository.updateInquiry(totalPrice.setScale(2, RoundingMode.HALF_UP),totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,id);
+
+            inquiryListRepository.updateInquiry(totalPrice.setScale(2, RoundingMode.HALF_UP),totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,id);
             return true;
         }catch (Exception e){
             e.printStackTrace();
