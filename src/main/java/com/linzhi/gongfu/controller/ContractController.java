@@ -444,6 +444,7 @@ public class ContractController {
             session.getSession().getOperatorCode(),
             session.getSession().getOperatorName(),
             vEmptyInquiryRequest.getSupplierCode()
+            
         );
         if(code==null)
             return VEmptyInquiryResponse.builder()
