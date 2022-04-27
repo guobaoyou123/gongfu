@@ -555,7 +555,7 @@ public class InquiryService {
         try {
             List<ImportProductTemp> list=importProductTempRepository.
                 findImportProductTempsByImportProductTempId_DcCompIdAndImportProductTempId_OperatorAndImportProductTempId_InquiryId(companyCode,operator,id);
-
+            inquiryRecordRepository.deleteProducts(id);
             List<InquiryRecord> inquiryRecords = new ArrayList<>();
             //货物税率
             TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
@@ -606,7 +606,6 @@ public class InquiryService {
             }
 
             //删除原有的产品明细
-            inquiryRecordRepository.deleteProducts(id);
             importProductTempRepository.deleteProduct(id,companyCode,operator);
             inquiryRecords=countRecord(inquiryRecords,inquiry.getOfferMode());
             inquiryRecordRepository.saveAll(inquiryRecords);
