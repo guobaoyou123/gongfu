@@ -1,8 +1,10 @@
 package com.linzhi.gongfu.dto;
 
+import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.vo.VImportProductTempResponse;
 import lombok.*;
 
+import javax.persistence.Column;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +56,16 @@ public class TImportProductTemp {
      */
     private String confirmedBrand;
     /**
+     * 已被确认的品牌名称
+     */
+    private String confirmedBrandName;
+    /**
      * 错误信息
      */
     private List<String> messages;
+    /*
+     *判断导入的是未税单价还是含税单价（0-未税单价 1-含税单价）
+     */
+    @Column(length = 1)
+    private TaxMode flag;
 }

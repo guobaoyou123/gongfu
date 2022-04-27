@@ -9,6 +9,7 @@ import com.linzhi.gongfu.mapper.ImportProductTempMapper;
 import com.linzhi.gongfu.mapper.InquiryMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.ExcelUtil;
+import com.linzhi.gongfu.vo.VImportProductTempRequest;
 import com.linzhi.gongfu.vo.VModifyInquiryRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -381,6 +382,7 @@ public class InquiryService {
                         .itemNo(i+2)
                         .build()
                 );
+
                 if(map.get("产品编码")!=null){
                     String code = map.get("产品编码").toString();
                     importProductTemp.setCode(code);
@@ -396,18 +398,19 @@ public class InquiryService {
                     String amount = map.get("数量").toString();
                     importProductTemp.setAmount(amount);
                 }
-                if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)){
-                    if(map.get("未税单价")!=null){
+
+                if(map.get("未税单价")!=null){
                         String price = map.get("未税单价").toString();
                         importProductTemp.setPrice(price);
-                    }
+                        importProductTemp.setFlag(TaxMode.UNTAXED);
+                }
 
-                }else{
-                    if(map.get("含税单价")!=null){
+                if(map.get("含税单价")!=null){
                         String price = map.get("含税单价").toString();
                         importProductTemp.setPrice(price);
-                    }
+                    importProductTemp.setFlag(TaxMode.INCLUDED);
                 }
+
                 importProductTemps.add(importProductTemp);
             }
             importProductTempRepository.saveAll(importProductTemps);
@@ -441,21 +444,14 @@ public class InquiryService {
             //错误数据
             List<String> errorList = new ArrayList<>();
             List<TBrand> tBrands = new ArrayList<>();
-            if(tImportProductTemp.getCode()==null){
+            if(tImportProductTemp.getProductId()==null&&tImportProductTemp.getCode()==null){
                 errorList.add("产品编码不能为空");
-            }else{
+            }else if(tImportProductTemp.getProductId()==null&&tImportProductTemp.getCode()!=null){
                 //验证产品编码是否正确
                 List<Product> products = productRepository.findProductByCode(tImportProductTemp.getCode());
                 if(products.size()==0){
                     errorList.add("产品编码错误或不存在于系统中");
-                }else if(products.size()==1){
-                    tBrands.add(TBrand.builder()
-                        .code(products.get(0).getBrandCode())
-                        .name(products.get(0).getBrand())
-                        .sort(1)
-                        .build());
-                    tImportProductTemp.setConfirmedBrand(products.get(0).getBrandCode());
-                }else if(products.size()>1 && tImportProductTemp.getProductId()==null){
+                }else{
                     errorList.add("该产品编码在系统中存在多个，请选择品牌");
                     AtomicInteger i= new AtomicInteger();
                     products.forEach(product -> {
@@ -467,6 +463,12 @@ public class InquiryService {
                             .build());
                     });
                 }
+            }else{
+                tBrands.add(TBrand.builder()
+                    .code(tImportProductTemp.getConfirmedBrand())
+                    .name(tImportProductTemp.getConfirmedBrandName())
+                    .sort(1)
+                    .build());
             }
             tImportProductTemp.setBrand(tBrands);
             if(tImportProductTemp.getAmount()==null){
@@ -477,12 +479,16 @@ public class InquiryService {
                     errorList.add("数量应为数字");
                 }
             }
+            if(!inquiry.getOfferMode().equals(tImportProductTemp.getFlag())){
+                String offerMode=inquiry.getOfferMode().equals(TaxMode.UNTAXED)?"未税单价":"含税单价";
+                errorList.add("单价应为"+offerMode);
+            }
             if(tImportProductTemp.getPrice()!=null){
                 //验证 数量是否为数字
                 if(isNumeric(tImportProductTemp.getPrice())) {
-
                     errorList.add("单价应为数字");
                 }
+
             }
             tImportProductTemp.setMessages(errorList);
         });
@@ -511,24 +517,27 @@ public class InquiryService {
      * @return 返回成功或者失败信息
      */
     @Transactional
-    public Map<String,Object> modifyImportProduct(String id,String companyCode,String operator,String brandCode,int itemNo){
+    public Map<String,Object> modifyImportProduct(String id, String companyCode, String operator, List<VImportProductTempRequest> vImportProductTempRequests){
         Map<String,Object>   resultMap=new HashMap<>();
+        List<ImportProductTemp> list = new ArrayList<>();
         try {
-            ImportProductTemp temp = importProductTempRepository.findById(
-                ImportProductTempId.builder()
-                    .inquiryId(id)
-                    .itemNo(itemNo)
-                    .dcCompId(companyCode)
-                    .operator(operator)
-                    .build()
-            ).orElseThrow(()-> new IOException("数据库中找不到该暂存产品"));
-
-            Product product = productRepository.findProductByCodeAndBrandCode(temp.getCode(),brandCode)
-                .orElseThrow(() -> new IOException("数据库中找不到该产品"));
-            temp.setProductId(product.getId());
-            temp.setBrandCode(product.getBrandCode());
-            temp.setBrandName(product.getBrand());
-            importProductTempRepository.save(temp);
+            for (VImportProductTempRequest vImport : vImportProductTempRequests) {
+                ImportProductTemp temp =importProductTempRepository.findById(
+                    ImportProductTempId.builder()
+                        .inquiryId(id)
+                        .itemNo(vImport.getItemNo())
+                        .dcCompId(companyCode)
+                        .operator(operator)
+                        .build()
+                ).orElseThrow(() -> new IOException("数据库中找不到该暂存产品"));
+                Product product = productRepository.findProductByCodeAndBrandCode(temp.getCode(), vImport.getBrandCode())
+                    .orElseThrow(() -> new IOException("数据库中找不到该产品"));
+                temp.setProductId(product.getId());
+                temp.setBrandCode(product.getBrandCode());
+                temp.setBrandName(product.getBrand());
+                list.add(temp);
+            }
+            importProductTempRepository.saveAll(list);
             resultMap.put("code",200);
             resultMap.put("message","修改成功");
 
@@ -583,7 +592,7 @@ public class InquiryService {
                 record.setStockTime(0);
                 record.setType(VatRateType.GOODS);
                 record.setAmount(new BigDecimal(importProductTemp.getAmount()));
-                if (importProductTemp.getPrice() != null) {
+                if (StringUtils.isNotBlank(importProductTemp.getPrice())) {
                     if (inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
                         record.setPrice(new BigDecimal(importProductTemp.getPrice()));
                     } else {

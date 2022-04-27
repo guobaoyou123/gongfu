@@ -543,15 +543,14 @@ public class ContractController {
      * @return 成功或者失败的信息
      */
     @PutMapping("/contract/purchase/inquiry/{id}/import/products")
-    public VBaseResponse modifyImportProduct(@PathVariable String id,@RequestBody VImportProductTempRequest vImportProductTempRequest){
+    public VBaseResponse modifyImportProduct(@PathVariable String id,@RequestBody List<VImportProductTempRequest> vImportProductTempRequest){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var map = inquiryService.modifyImportProduct(
             id,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
-            vImportProductTempRequest.getBrandCode(),
-            vImportProductTempRequest.getItemNo()
+            vImportProductTempRequest
         );
         return VBaseResponse.builder()
             .code((int)map.get("code"))

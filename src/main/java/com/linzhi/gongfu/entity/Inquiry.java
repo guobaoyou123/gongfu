@@ -2,6 +2,7 @@ package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.InquiryState;
 import com.linzhi.gongfu.enumeration.InquiryType;
+import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
 
 import javax.persistence.*;
@@ -104,6 +105,10 @@ public class Inquiry {
      */
     @Column
     private InquiryState state;
-
+    /**
+     * 税模式（0-未税 1-含税）
+     */
+    @Column(name = "offer_mode",length = 1)
+    private TaxMode offerMode;
 
 }
