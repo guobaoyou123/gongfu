@@ -2,6 +2,7 @@ package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.VatRateType;
 import lombok.*;
+import org.hibernate.annotations.Proxy;
 
 import javax.persistence.*;
 import java.math.BigDecimal;

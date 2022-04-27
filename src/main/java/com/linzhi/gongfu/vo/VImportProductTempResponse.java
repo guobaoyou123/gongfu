@@ -20,6 +20,10 @@ import java.util.Map;
 @SuperBuilder(toBuilder = true)
 public class VImportProductTempResponse extends VBaseResponse{
     private boolean confirmable;
+    /**
+     * 询价单编码
+     */
+    private String inquiryCode;
     private List<VProduct> products;
 
     @Data
@@ -56,6 +60,7 @@ public class VImportProductTempResponse extends VBaseResponse{
          * 已被确认的品牌编码
          */
         private String confirmedBrand;
+
     }
 
     @Data

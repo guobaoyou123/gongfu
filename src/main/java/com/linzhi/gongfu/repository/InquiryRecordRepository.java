@@ -1,6 +1,5 @@
 package com.linzhi.gongfu.repository;
 
-import com.linzhi.gongfu.entity.InquiryList;
 import com.linzhi.gongfu.entity.InquiryRecord;
 import com.linzhi.gongfu.entity.InquiryRecordId;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,4 +27,6 @@ public interface InquiryRecordRepository
     @Modifying
     @Query("delete from InquiryRecord as c  where c.inquiryRecordId.inquiryId=?1")
     void  deleteProducts(String inquiryId);
+
+    List<InquiryRecord> findInquiryRecordByInquiryRecordId_InquiryId(String inquiryId);
 }

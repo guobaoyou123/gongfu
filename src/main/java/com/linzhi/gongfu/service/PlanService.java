@@ -39,7 +39,7 @@ public class PlanService {
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
     private final CompanyRepository companyRepository;
     private final PurchasePlanProductRepository purchasePlanProductRepository;
-    private final InquiryRepository inquiryRepository;
+    private final InquiryDetailRepository inquiryRepository;
     private final CompTradeRepository compTradeRepository;
     private final TaxRatesRepository vatRatesRepository;
 
@@ -358,21 +358,21 @@ public class PlanService {
      * @param id 单位编号 operateorCode 操作员编号
      * @return 返回采购计划信息
      */
-    public Optional<VBaseResponse> verification(String id, String operateorCode){
+    public VBaseResponse verification(String id, String operateorCode){
         var purchasePlan = findPurchasePlanByCode(id, operateorCode);
         if(purchasePlan.isEmpty())
-            return Optional.of(
+            return
                 VBaseResponse.builder()
                     .code(404)
                     .message("不存在未完成的采购计划")
                     .build()
-            );
-        return Optional.of(
+            ;
+        return
             VBaseResponse.builder()
                 .code(200)
                 .message("存在未完成的计划，请前往采购计划详情完成计划，在开始新的计划！")
                 .build()
-        );
+        ;
     }
 
     /**
@@ -651,7 +651,7 @@ public class PlanService {
 
             Map<String,List<InquiryRecord>> supplierInquiryRecordMap = new HashMap<>();
             List<String> suppliers = new ArrayList<>();
-            List<Inquiry> inquiries = new ArrayList<>();
+            List<InquiryDetail> inquiries = new ArrayList<>();
             //查找采购计划
             Optional<PurchasePlan> purchasePlan = purchasePlanRepository.findById(
                 PurchasePlanId.builder()
@@ -718,7 +718,7 @@ public class PlanService {
                         inquiryRecord.setInquiryRecordId(InquiryRecordId.builder().code(code.get()).inquiryId(inquiryId).build());
                         inquiryRecord.setCreatedAt(LocalDateTime.now());
                     });
-                    inquiries.add(Inquiry.builder()
+                    inquiries.add(InquiryDetail.builder()
                         .records(records)
                         .id(inquiryId)
                         .code(inquiryCode)

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -151,7 +152,7 @@ public class ContractController {
         return  planService.verification(
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
-        ).get();
+        );
     }
 
     /**
@@ -413,14 +414,14 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/inquiry/{id}")
     public VInquiryDetailResponse inquiryDetail(@PathVariable("id") Optional<String> id){
-        var inquiry =id.flatMap(inquiryService::inquiryDetail);
+        var inquiry =id.flatMap(inquiryService::inquiryDetail)
+            .map(inquiryMapper::toInquiryDetail)
+            .map(inquiryMapper::toVInquiryDetail);
         if(inquiry.isPresent())
             return VInquiryDetailResponse.builder()
                 .code(200)
                 .message("获取询价单详情成功")
-                .inquiry(inquiry
-                    .map(inquiryMapper::toInquiryDetail)
-                    .map(inquiryMapper::toVInquiryDetail).get())
+                .inquiry(inquiry.get())
                 .build();
         return VInquiryDetailResponse.builder()
             .code(404)
@@ -444,7 +445,6 @@ public class ContractController {
             session.getSession().getOperatorCode(),
             session.getSession().getOperatorName(),
             vEmptyInquiryRequest.getSupplierCode()
-            
         );
         if(code==null)
             return VEmptyInquiryResponse.builder()
@@ -494,7 +494,7 @@ public class ContractController {
      * @return 导入产品列表
      */
     @PostMapping("/contract/purchase/inquiry/{id}/products")
-    public VImportProductTempResponse importProduct(@RequestParam("products") MultipartFile file,@PathVariable String id){
+    public VImportProductTempResponse importProduct(@RequestParam("products") MultipartFile file,@PathVariable String id) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var map = inquiryService.importProduct(
@@ -508,14 +508,20 @@ public class ContractController {
                 .code((int) map.get("code"))
                 .message((String) map.get("message"))
                 .build();
-        var list = inquiryService.findImportProductDetail(session.getSession().getCompanyCode(),
+        return getvImportProductTempResponse(id, session);
+    }
+
+    private VImportProductTempResponse getvImportProductTempResponse(String id, OperatorSessionToken session) throws IOException {
+        var map = inquiryService.findImportProductDetail(session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
             id);
+        var list =(List<VImportProductTempResponse.VProduct>) map.get("products");
         return VImportProductTempResponse.builder()
             .code(200)
             .message("产品导入临时表成功")
             .confirmable(list.stream().filter(vProduct -> vProduct.getMessages().size() > 0 || vProduct.getConfirmedBrand()==null).toList().size()==0)
             .products(list)
+            .inquiryCode((String)map.get("inquiryCode"))
             .build();
     }
 
@@ -525,19 +531,10 @@ public class ContractController {
      * @return 返回导入产品列表
      */
     @GetMapping("/contract/purchase/inquiry/{id}/products")
-    public VImportProductTempResponse findImportProduct(@PathVariable String id){
+    public VImportProductTempResponse findImportProduct(@PathVariable String id) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var list = inquiryService.findImportProductDetail(
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),
-            id);
-        return VImportProductTempResponse.builder()
-            .code(200)
-            .message("产品导入临时表成功")
-            .confirmable(list.stream().filter(vProduct -> vProduct.getMessages().size() > 0 || vProduct.getConfirmedBrand()==null).toList().size()==0)
-            .products(list)
-            .build();
+        return getvImportProductTempResponse(id, session);
     }
 
     /**
@@ -610,7 +607,7 @@ public class ContractController {
     /**
      * 导出产品
      * @param id 询价单id
-     * @param response
+     * @param response  HttpServletResponse
      */
     @GetMapping("/contract/purchase/inquiry/{id}/products/export")
     public  void  exportProduct(@PathVariable String id, HttpServletResponse response ){
@@ -669,7 +666,7 @@ public class ContractController {
      * @return 返回成功或者失败信息
      */
     @DeleteMapping("/contract/purchase/inquiry/{id}")
-    public  VBaseResponse deleteInquiry(@PathVariable("id")String id ){
+    public  VBaseResponse deleteInquiry(@PathVariable String id ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = inquiryService.deleteInquiry(

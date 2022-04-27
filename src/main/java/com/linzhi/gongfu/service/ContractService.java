@@ -1,6 +1,5 @@
 package com.linzhi.gongfu.service;
 
-import com.linzhi.gongfu.dto.TTaxRates;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.InquiryState;
@@ -31,7 +30,7 @@ import java.util.List;
 public class ContractService {
 
     private final ContractRepository contractRepository;
-    private final InquiryRepository inquiryRepository;
+    private final InquiryDetailRepository inquiryRepository;
     private final AddressRepository addressRepository;
     private final CompContactsRepository compContactsRepository;
     private final TaxRatesRepository taxRatesRepository;
@@ -46,7 +45,7 @@ public class ContractService {
     public Boolean saveContract(VGenerateContractRequest generateContractRequest){
         try{
             //查询询价单详情
-            Inquiry inquiry = inquiryRepository.findById(generateContractRequest.getInquiryId()).get();
+            InquiryDetail inquiry = inquiryRepository.findById(generateContractRequest.getInquiryId()).get();
             if(inquiry.getState().equals(InquiryState.FINISHED))
                 return false;
             //合同编号
