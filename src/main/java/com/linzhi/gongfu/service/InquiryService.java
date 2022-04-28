@@ -50,6 +50,128 @@ public class InquiryService {
     private final TaxRatesRepository vatRatesRepository;
     private final ImportProductTempRepository importProductTempRepository;
     private final ImportProductTempMapper importProductTempMapper;
+    private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
+
+    private final PurchasePlanProductRepository purchasePlanProductRepository;
+    private final PurchasePlanRepository purchasePlanRepository;
+
+    /**
+     * 保存询价单
+     * @param planCode 采购计划
+     * @param companyCode 单位id
+     * @param compName 单位名称
+     * @param operatorCode 操作员编码
+     * @return 返回成功信息
+     */
+    @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
+    @Transactional
+    public Map<String,Object> savePurchaseInquiry(String planCode, String companyCode,String compName, String operatorCode,String operatorName){
+        Map<String,Object> resultMap = new HashMap<>();
+        try{
+
+            Map<String,List<InquiryRecord>> supplierInquiryRecordMap = new HashMap<>();
+            List<String> suppliers = new ArrayList<>();
+            List<InquiryDetail> inquiries = new ArrayList<>();
+            //查找采购计划
+            Optional<PurchasePlan> purchasePlan = purchasePlanRepository.findById(
+                PurchasePlanId.builder()
+                    .dcCompId(companyCode)
+                    .planCode(planCode)
+                    .build()
+            );
+            if(purchasePlan.isEmpty()) {
+                resultMap.put("code", 404);
+                resultMap.put("message", "找不到该数据");
+                return resultMap;
+            }
+            //查出货物税率
+            Optional<TaxRates> goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001");
+            //查出服务税率
+            Optional<TaxRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
+            //查出向每个供应商询价商品且询价数量>0的有哪些
+            purchasePlan.get().getProduct().forEach(purchasePlanProduct -> purchasePlanProduct.getSalers().forEach(supplier -> {
+                if(supplier.getDemand().intValue()>0) {
+                    InquiryRecord record = InquiryRecord.builder()
+                        .productId(purchasePlanProduct.getPurchasePlanProductId().getProductId())
+                        .productCode(purchasePlanProduct.getProductCode())
+                        .productDescription(purchasePlanProduct.getDescribe())
+                        .brandCode(purchasePlanProduct.getBrandCode())
+                        .brand(purchasePlanProduct.getBrand())
+                        .amount(supplier.getDemand())
+                        .chargeUnit(purchasePlanProduct.getChargeUnit())
+                        .type(VatRateType.GOODS)
+                        .vatRate(goods.isPresent()?goods.get().getRate():BigDecimal.ZERO)
+                        .stockTime(0)
+                        .build();
+                    List<InquiryRecord> list = supplierInquiryRecordMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode());
+                    if (list==null) {
+                        list = new ArrayList<>();
+                        suppliers.add(supplier.getPurchasePlanProductSupplierId().getSalerCode());
+                    }
+                    list.add(record);
+                    supplierInquiryRecordMap.put(supplier.getPurchasePlanProductSupplierId().getSalerCode(),list);
+                }
+            }));
+            //查询每个供应商税模式对本单位设置的税模式
+            List<CompTrad>compTades=compTradeRepository.findSuppliersByCompTradIdCompBuyerAndState(companyCode, Trade.TRANSACTION);
+            Map<String,CompTrad> compTradMap = new HashMap<>();
+            compTades.forEach(compTrad -> compTradMap.put(compTrad.getCompTradId().getCompSaler(),compTrad));
+            //查询询价单最大编号
+            String maxCode = inquiryDetailRepository.findMaxCode(companyCode, operatorCode);
+            if(maxCode ==null)
+                maxCode ="01";
+            AtomicInteger max = new AtomicInteger(Integer.parseInt(maxCode));
+            //对每个供应商生成询价单
+            companyRepository.findAllById(suppliers).forEach(company -> {
+
+                    List<String> inquiryCodes = getInquiryCode(max.get()+"",operatorCode,companyCode,company.getRole().equals(CompanyRole.EXTERIOR_SUPPLIER.getSign())?company.getEncode():company.getCode());
+                    List<InquiryRecord> records = supplierInquiryRecordMap.get(company.getCode());
+                    AtomicInteger code = new AtomicInteger();
+                    records.forEach(inquiryRecord -> {
+                        code.getAndIncrement();
+                        inquiryRecord.setInquiryRecordId(InquiryRecordId.builder().code(code.get()).inquiryId(inquiryCodes.get(0)).build());
+                        inquiryRecord.setCreatedAt(LocalDateTime.now());
+                    });
+                    inquiries.add(InquiryDetail.builder()
+                        .records(records)
+                        .id(inquiryCodes.get(0))
+                        .code(inquiryCodes.get(1))
+                        .createdByComp(companyCode)
+                        .type(InquiryType.INQUIRY_LIST)
+                        .createdBy(operatorCode)
+                        .buyerComp(companyCode)
+                        .buyerCompName(compName)
+                        .buyerContactName(operatorName)
+                        .salerComp(company.getCode())
+                        .salerCompName(company.getNameInCN())
+                        .createdAt(LocalDateTime.now())
+                        .salesOrderCode(purchasePlan.get().getSalesCode())
+                        .state(InquiryState.UN_FINISHED)
+                        .offerMode(compTradMap.get(company.getCode())==null? TaxMode.UNTAXED :compTradMap.get(company.getCode()).getTaxModel())
+                        .createdAt(LocalDateTime.now())
+                        .build());
+                    max.getAndIncrement();
+
+            });
+            //保存询价单
+            inquiryDetailRepository.saveAll(inquiries);
+            //删除计划
+            purchasePlanProductSupplierRepository.deleteSupplier(companyCode,planCode);
+            purchasePlanProductRepository.deleteProduct(companyCode, planCode);
+            purchasePlanRepository.deletePurchasePlan(PurchasePlanId.builder()
+                .dcCompId(companyCode)
+                .planCode(planCode)
+                .build());
+            resultMap.put("code",200);
+            resultMap.put("message","生成询价单成功");
+            return resultMap;
+        }catch (Exception e){
+            e.printStackTrace();
+            resultMap.put("code",500);
+            resultMap.put("message","生成询价单失败");
+            return resultMap;
+        }
+    }
 
     /**
      * 查询未完成的询价单列表
@@ -66,11 +188,11 @@ public class InquiryService {
                     .build())
                 .orElseThrow(()-> new IOException("请求的操作员找不到"));
             if(operator1.getAdmin().equals(Whether.YES))
-                return inquiryRepository.findInquiryListByCreatedByCompAndTypeAndStateOrderByCreatedAtDesc(companyCode, InquiryType.INQUIRY_LIST, InquiryState.UN_FINISHED)
+                return inquiryRepository.findInquiryList(companyCode, InquiryType.INQUIRY_LIST.getType()+"", InquiryState.UN_FINISHED.getState()+"")
                     .stream()
                     .map(inquiryMapper::toInquiryList)
                     .toList();
-            return inquiryRepository.findInquiriesByCreatedByCompAndCreatedByAndTypeAndStateOrderByCreatedAtDesc(companyCode,operator, InquiryType.INQUIRY_LIST, InquiryState.UN_FINISHED)
+            return inquiryRepository.findInquiryList(companyCode,operator, InquiryType.INQUIRY_LIST.getType()+"", InquiryState.UN_FINISHED.getState()+"")
                 .stream()
                 .map(inquiryMapper::toInquiryList)
                 .toList();
@@ -105,18 +227,10 @@ public class InquiryService {
             String maxCode = inquiryDetailRepository.findMaxCode(companyCode, operator);
             if(maxCode ==null)
                 maxCode ="01";
-            String mCode = ("0000"+maxCode).substring(("0000"+maxCode).length()-3);
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
-            LocalDate data=LocalDate.now();
-            //uuid
-            UUID uuid = UUID.randomUUID();
-            String inquiryId = "XJ-"+companyCode+"-0"+operator+"-"+uuid.toString().substring(0,8);
-            String inquiryCode ="XJ-"+operator+"-"+companyCode+"-"+dtf.format(data)+"-"+mCode;
             //查询供应商信息
-            Optional<Company> supplier = companyRepository.findById(supplierCode);
-            String supplierName = null;
-            if(supplier.isPresent())
-                supplierName=supplier.get().getNameInCN();
+            Company supplier = companyRepository.findById(supplierCode).orElseThrow(()->new IOException("数据库中未查询到该供应商"));
+            String supplierName = supplier.getNameInCN();
+            List<String> inquiryCodes = getInquiryCode(maxCode,operator,companyCode,supplier.getRole().equals(CompanyRole.EXTERIOR_SUPPLIER.getSign())?supplier.getEncode():supplierCode);
             //税模式
             Optional<CompTrad> compTrad = compTradeRepository.findById(
                 CompTradId.builder()
@@ -128,8 +242,8 @@ public class InquiryService {
                 taxMode= compTrad.get().getTaxModel();
             inquiryDetailRepository.save(
                 InquiryDetail.builder()
-                    .id(inquiryId)
-                    .code(inquiryCode)
+                    .id(inquiryCodes.get(0))
+                    .code(inquiryCodes.get(1))
                     .type(InquiryType.INQUIRY_LIST)
                     .createdByComp(companyCode)
                     .createdBy(operator)
@@ -143,7 +257,7 @@ public class InquiryService {
                     .offerMode(taxMode)
                     .build()
             );
-            return  inquiryId;
+            return  inquiryCodes.get(0);
         }catch (Exception e){
             e.printStackTrace();
             return null;
@@ -279,7 +393,13 @@ public class InquiryService {
                             record.setAmount(vProduct.getAmount());
                         if(vProduct.getVatRate()!=null)
                             record.setVatRate(vProduct.getVatRate());
-                        if(vProduct.getPrice()!=null) {
+
+                        if(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()<0) {
+                                record.setPrice(null);
+                                record.setPriceVat(null);
+                                record.setTotalPrice(null);
+                                record.setTotalPriceVat(null);
+                        }else if(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0) {
                             if (inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
                                 record.setPrice(vProduct.getPrice());
                             }else {
@@ -737,5 +857,20 @@ public class InquiryService {
         if(records==null || records.size()>0)
             return  null;
         return  price.setScale(2);
+    }
+
+
+    public List<String> getInquiryCode(String max,String operatorCode,String id,String supplierCode){
+        List<String> list = new ArrayList<>();
+        String mCode = ("0000"+max).substring(("0000"+max).length()-3);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyMMdd");
+        LocalDate data=LocalDate.now();
+        //uuid
+        UUID uuid = UUID.randomUUID();
+        String inquiryId = "XJ-"+id+"-0"+operatorCode+"-"+uuid.toString().substring(0,8);
+        String inquiryCode ="XJ-"+operatorCode+"-"+supplierCode+"-"+dtf.format(data)+"-"+mCode;
+        list.add(inquiryId);
+        list.add(inquiryCode);
+        return  list;
     }
 }

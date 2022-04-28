@@ -197,7 +197,7 @@ public class InquiryDetail {
     @Column(name = "consignee_phone",length = 20)
     private String consigneePhone;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "inquiry_id",referencedColumnName = "id", insertable = true, updatable = true)
     @NotFound(action= NotFoundAction.IGNORE)
 

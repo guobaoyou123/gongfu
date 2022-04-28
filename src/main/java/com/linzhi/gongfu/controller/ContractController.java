@@ -354,7 +354,7 @@ public class ContractController {
     public VBaseResponse savePurchaseInquiry(@RequestBody VPurchasePlanRequest request){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var map = planService.savePurchaseInquiry(
+        var map = inquiryService.savePurchaseInquiry(
             request.getPlanCode(),
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),

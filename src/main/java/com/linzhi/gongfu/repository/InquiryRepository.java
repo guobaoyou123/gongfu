@@ -14,9 +14,12 @@ import java.util.List;
 
 public interface InquiryRepository
     extends CrudRepository<Inquiry, String>, QuerydslPredicateExecutor<Inquiry> {
-    List<Inquiry> findInquiriesByCreatedByCompAndCreatedByAndTypeAndStateOrderByCreatedAtDesc(String compId, String operator, InquiryType type, InquiryState state);
-
-    List<Inquiry> findInquiryListByCreatedByCompAndTypeAndStateOrderByCreatedAtDesc(String compId, InquiryType type, InquiryState state);
+    @Query(value="select * from   inquiry_base  where  created_by_comp=?1 and created_by=?2 and type=?3 and state=?4 order by created_at desc,cast(RIGHT(code,3) as int )  desc ",
+        nativeQuery = true)
+    List<Inquiry> findInquiryList(String compId, String operator, String  type, String  state);
+    @Query(value="select * from   inquiry_base  where  created_by_comp=?1 and type=?2 and state=?3 order by created_at desc,cast(RIGHT(code,3) as int )  desc ",
+        nativeQuery = true)
+    List<Inquiry> findInquiryList(String compId, String type, String  state);
     @Modifying
     @Query(value="update   inquiry_base  set total_price=?1 ,total_price_vat=?2,vat=?3 where  id=?4 ",
         nativeQuery = true)
