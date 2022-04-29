@@ -39,6 +39,7 @@ public class ContractController {
     private final InquiryService inquiryService;
     private final InquiryMapper inquiryMapper;
     private final ContractService contractService;
+
     /**
      * 根据操作员编码、单位id查询该操作员的临时计划表
      * @return 临时计划列表信息
@@ -51,7 +52,8 @@ public class ContractController {
             (TemporaryPlanId.builder()
                 .createdBy(session.getSession().getOperatorCode())
                 .dcCompId(session.getSession().getCompanyCode())
-                .build());
+                .build()
+            );
         return VTemporaryPlanResponse.builder()
             .message("获取采购临时计划表成功")
             .code(200)
@@ -163,7 +165,10 @@ public class ContractController {
     public VPurchasePlanResponse purchasePlan(){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        return  planService.findPurchasePlanByCode(session.getSession().getCompanyCode(),session.getSession().getOperatorCode())
+        return  planService.findPurchasePlanByCode(
+            session.getSession().getCompanyCode(),
+                session.getSession().getOperatorCode()
+            )
             .map(purchasePlanMapper::toDTO)
             .map(purchasePlanMapper::toPruchasePlan)
             .orElse(VPurchasePlanResponse.builder()
@@ -511,6 +516,13 @@ public class ContractController {
         return getvImportProductTempResponse(id, session);
     }
 
+    /**
+     * 查询暂存产品详情
+     * @param id 询价单id
+     * @param session session
+     * @return 返回暂存产品列表信息
+     * @throws IOException 异常
+     */
     private VImportProductTempResponse getvImportProductTempResponse(String id, OperatorSessionToken session) throws IOException {
         var map = inquiryService.findImportProductDetail(session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),

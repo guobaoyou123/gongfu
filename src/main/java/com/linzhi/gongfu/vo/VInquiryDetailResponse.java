@@ -148,6 +148,9 @@ public class VInquiryDetailResponse extends VBaseResponse{
          * 描述
          */
         private String describe;
+        /**
+         * 计价单位
+         */
         private String chargeUnit;
         /**
          * 类型（1-货物 2-服务）
@@ -162,10 +165,13 @@ public class VInquiryDetailResponse extends VBaseResponse{
          */
         private String brandName;
         /**
+         * 面价
+         */
+        private BigDecimal facePrice;
+        /**
          * 税率
          */
         private BigDecimal vatRate;
-
         /**
          * 价格
          */

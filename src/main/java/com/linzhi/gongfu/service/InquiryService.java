@@ -87,7 +87,7 @@ public class InquiryService {
             //查出货物税率
             Optional<TaxRates> goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001");
             //查出服务税率
-            Optional<TaxRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
+            // Optional<TaxRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
             //查出向每个供应商询价商品且询价数量>0的有哪些
             purchasePlan.get().getProduct().forEach(purchasePlanProduct -> purchasePlanProduct.getSalers().forEach(supplier -> {
                 if(supplier.getDemand().intValue()>0) {
@@ -100,6 +100,7 @@ public class InquiryService {
                         .amount(supplier.getDemand())
                         .chargeUnit(purchasePlanProduct.getChargeUnit())
                         .type(VatRateType.GOODS)
+                        .facePrice(purchasePlanProduct.getFacePrice())
                         .vatRate(goods.isPresent()?goods.get().getRate():BigDecimal.ZERO)
                         .stockTime(0)
                         .build();
@@ -132,24 +133,19 @@ public class InquiryService {
                         inquiryRecord.setInquiryRecordId(InquiryRecordId.builder().code(code.get()).inquiryId(inquiryCodes.get(0)).build());
                         inquiryRecord.setCreatedAt(LocalDateTime.now());
                     });
-                    inquiries.add(InquiryDetail.builder()
-                        .records(records)
-                        .id(inquiryCodes.get(0))
-                        .code(inquiryCodes.get(1))
-                        .createdByComp(companyCode)
-                        .type(InquiryType.INQUIRY_LIST)
-                        .createdBy(operatorCode)
-                        .buyerComp(companyCode)
-                        .buyerCompName(compName)
-                        .buyerContactName(operatorName)
-                        .salerComp(company.getCode())
-                        .salerCompName(company.getNameInCN())
-                        .createdAt(LocalDateTime.now())
-                        .salesOrderCode(purchasePlan.get().getSalesCode())
-                        .state(InquiryState.UN_FINISHED)
-                        .offerMode(compTradMap.get(company.getCode())==null? TaxMode.UNTAXED :compTradMap.get(company.getCode()).getTaxModel())
-                        .createdAt(LocalDateTime.now())
-                        .build());
+                    inquiries.add(
+                        createInquiryDetail(inquiryCodes,
+                            companyCode,
+                            operatorCode,
+                            compName,
+                            operatorName,
+                            company.getCode(),
+                            company.getNameInCN(),
+                            compTradMap.get(company.getCode())==null? TaxMode.UNTAXED :compTradMap.get(company.getCode()).getTaxModel(),
+                            purchasePlan.get().getSalesCode(),
+                            records
+                        )
+                        );
                     max.getAndIncrement();
 
             });
@@ -241,21 +237,15 @@ public class InquiryService {
             if(compTrad.isPresent())
                 taxMode= compTrad.get().getTaxModel();
             inquiryDetailRepository.save(
-                InquiryDetail.builder()
-                    .id(inquiryCodes.get(0))
-                    .code(inquiryCodes.get(1))
-                    .type(InquiryType.INQUIRY_LIST)
-                    .createdByComp(companyCode)
-                    .createdBy(operator)
-                    .createdAt(LocalDateTime.now())
-                    .buyerComp(companyCode)
-                    .buyerCompName(companyName)
-                    .buyerContactName(operatorName)
-                    .salerComp(supplierCode)
-                    .salerCompName(supplierName)
-                    .state(InquiryState.UN_FINISHED)
-                    .offerMode(taxMode)
-                    .build()
+                createInquiryDetail(inquiryCodes,
+                    companyCode,
+                    operator,
+                    companyName,
+                    operatorName,
+                    supplierCode,
+                    supplierName,
+                    taxMode,null,null
+                )
             );
             return  inquiryCodes.get(0);
         }catch (Exception e){
@@ -265,6 +255,42 @@ public class InquiryService {
 
     }
 
+    /**
+     * 创建询价单实体
+     * @param inquiryCodes 主键+编码列表
+     * @param companyCode 单位id
+     * @param operator 操作员id
+     * @param companyName 单位名称
+     * @param operatorName 操作员名称
+     * @param supplierCode 供应商code
+     * @param supplierName 供应商名称
+     * @param taxMode 税模式
+     * @param salesOrderCode 销售合同记录号
+     * @param records 询价单明细列表
+     * @return 询价单实体
+     */
+    public InquiryDetail createInquiryDetail(List<String> inquiryCodes,String companyCode,
+                                             String operator ,String companyName,String operatorName,
+                                             String supplierCode,String supplierName ,TaxMode taxMode,
+                                             String salesOrderCode,List<InquiryRecord> records){
+        return  InquiryDetail.builder()
+            .id(inquiryCodes.get(0))
+            .code(inquiryCodes.get(1))
+            .type(InquiryType.INQUIRY_LIST)
+            .createdByComp(companyCode)
+            .createdBy(operator)
+            .createdAt(LocalDateTime.now())
+            .buyerComp(companyCode)
+            .buyerCompName(companyName)
+            .buyerContactName(operatorName)
+            .salerComp(supplierCode)
+            .salerCompName(supplierName)
+            .salesOrderCode(salesOrderCode)
+            .state(InquiryState.UN_FINISHED)
+            .offerMode(taxMode)
+            .records(records)
+            .build();
+    }
     /**
      * 保存产品
      * @param id 询价单编码
@@ -288,25 +314,7 @@ public class InquiryService {
             TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
                 .orElseThrow(() -> new IOException("请求的货物税率不存在"));
             //保存产品
-            InquiryRecord record = InquiryRecord.builder()
-                .inquiryRecordId(
-                    InquiryRecordId.builder()
-                        .inquiryId(id)
-                        .code(Integer.parseInt(maxCode)+1)
-                        .build()
-                )
-                .createdAt(LocalDateTime.now())
-                .amount(amount)
-                .productId(productId)
-                .type(VatRateType.GOODS)
-                .productCode(product.getCode())
-                .brandCode(product.getBrandCode())
-                .brand(product.getBrand())
-                .productDescription(product.getDescribe())
-                .chargeUnit(product.getChargeUnit())
-                .stockTime(0)
-                .vatRate(goods.getRate())
-                .build();
+            InquiryRecord record = getInquiryRecord(product,id,maxCode,amount,goods);
             if(inquiry.getVatProductRate()!=null && inquiry.getVatProductRate().intValue()>0)
                 record.setVatRate(inquiry.getVatProductRate());
             if(price!=null){
@@ -330,6 +338,37 @@ public class InquiryService {
         }
     }
 
+    /**
+     * 创建询价单明细实体
+     * @param product 产品信息
+     * @param id 询价单主键
+     * @param maxCode 最大code
+     * @param amount 数量
+     * @param taxRates 税率
+     * @return 询价单明细实体
+     */
+    public  InquiryRecord getInquiryRecord(Product product,String id,String maxCode,BigDecimal amount,TaxRates taxRates){
+        return InquiryRecord.builder()
+            .inquiryRecordId(
+                InquiryRecordId.builder()
+                    .inquiryId(id)
+                    .code(Integer.parseInt(maxCode)+1)
+                    .build()
+            )
+            .createdAt(LocalDateTime.now())
+            .amount(amount)
+            .productId(product.getId())
+            .type(VatRateType.GOODS)
+            .productCode(product.getCode())
+            .brandCode(product.getBrandCode())
+            .brand(product.getBrand())
+            .productDescription(product.getDescribe())
+            .facePrice(product.getFacePrice())
+            .chargeUnit(product.getChargeUnit())
+            .stockTime(0)
+            .vatRate(taxRates.getRate())
+            .build();
+    }
     /**
      * 删除询价产品
      * @param id 询价单编码
@@ -488,7 +527,7 @@ public class InquiryService {
     public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operator){
         Map<String,Object> resultMap = new HashMap<>();
         try {
-            InquiryDetail inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+           // InquiryDetail inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<Map<String, Object>> list =  ExcelUtil.excelToList(file);
             List<ImportProductTemp> importProductTemps = new ArrayList<>();
             for (int i =0;i<list.size();i++){
@@ -551,7 +590,7 @@ public class InquiryService {
      * @param id 询价单id
      * @return 返回导入产品列表信息
      */
-    public Map findImportProductDetail(String companyCode, String operator, String id) throws IOException {
+    public Map<String,Object> findImportProductDetail(String companyCode, String operator, String id) throws IOException {
        Map<String,Object> map = new HashMap<>();
        Inquiry inquiry =  inquiryRepository.findById(id).orElseThrow(()->new IOException("从数据库中查询不到该询价单信息"));
         map.put("inquiryCode",inquiry.getCode());
@@ -692,9 +731,8 @@ public class InquiryService {
             //查询询价单
             InquiryDetail inquiry = inquiryDetail(id)
                 .orElseThrow(() -> new IOException("请求的询价单不存在"));
-            int maxCode =1;
+            int maxCode =0;
             for (ImportProductTemp importProductTemp : list) {
-                InquiryRecord record = InquiryRecord.builder().build();
                 //验证产品编码是否正确
                 Product product = productRepository.
                     findProductByCodeAndBrandCode(
@@ -702,16 +740,14 @@ public class InquiryService {
                         importProductTemp.getBrandCode()
                     )
                     .orElseThrow(() -> new IOException("请求的产品不存在"));
-                record.setProductId(product.getId());
-                record.setProductCode(product.getCode());
-                record.setProductDescription(product.getDescribe());
-                record.setChargeUnit(product.getChargeUnit());
-                record.setBrand(product.getBrand());
-                record.setBrandCode(product.getBrandCode());
+                InquiryRecord record = getInquiryRecord(
+                    product,
+                    id,
+                    maxCode+"" ,
+                    new BigDecimal(importProductTemp.getAmount()),
+                    goods
+                );
                 record.setVatRate(inquiry.getVatProductRate() != null ? inquiry.getVatProductRate() : goods.getRate());
-                record.setStockTime(0);
-                record.setType(VatRateType.GOODS);
-                record.setAmount(new BigDecimal(importProductTemp.getAmount()));
                 if (StringUtils.isNotBlank(importProductTemp.getPrice())) {
                     if (inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
                         record.setPrice(new BigDecimal(importProductTemp.getPrice()));
@@ -719,16 +755,6 @@ public class InquiryService {
                         record.setPriceVat(new BigDecimal(importProductTemp.getPrice()));
                     }
                 }
-                record.setCreatedAt(LocalDateTime.now());
-                record.setInquiryRecordId(
-                    InquiryRecordId.builder()
-                        .inquiryId(id)
-                        .code(maxCode)
-                        .build()
-                );
-                record.setVatRate(goods.getRate());
-                if (inquiry.getVatProductRate() != null)
-                    record.setVatRate(inquiry.getVatProductRate());
                 inquiryRecords.add(record);
                 maxCode++;
 

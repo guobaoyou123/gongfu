@@ -67,6 +67,11 @@ public class InquiryRecord {
     @Column(name = "charge_unit")
     private String chargeUnit;
     /**
+     * 面价
+     */
+    @Column(name = "face_price")
+    private BigDecimal facePrice;
+    /**
      * 价格
      */
     @Column(name = "price")

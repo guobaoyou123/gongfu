@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import java.math.BigDecimal;
 
 /**
@@ -62,6 +63,10 @@ public class TInquiryRecord {
      *计价单位
      */
     private String chargeUnit;
+    /**
+     * 面价
+     */
+    private BigDecimal facePrice;
     /**
      * 价格
      */
