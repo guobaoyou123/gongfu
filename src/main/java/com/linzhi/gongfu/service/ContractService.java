@@ -30,7 +30,8 @@ import java.util.List;
 public class ContractService {
 
     private final ContractRepository contractRepository;
-    private final InquiryDetailRepository inquiryRepository;
+    private final InquiryDetailRepository inquiryDetailRepository;
+    private final InquiryRepository inquiryRepository;
     private final AddressRepository addressRepository;
     private final CompContactsRepository compContactsRepository;
     private final TaxRatesRepository taxRatesRepository;
@@ -45,7 +46,7 @@ public class ContractService {
     public Boolean saveContract(VGenerateContractRequest generateContractRequest){
         try{
             //查询询价单详情
-            InquiryDetail inquiry = inquiryRepository.findById(generateContractRequest.getInquiryId()).get();
+            InquiryDetail inquiry = inquiryDetailRepository.findById(generateContractRequest.getInquiryId()).get();
             if(inquiry.getState().equals(InquiryState.FINISHED))
                 return false;
             //合同编号
@@ -197,7 +198,7 @@ public class ContractService {
             //保存询价单
            inquiry.setConfirmedAt(LocalDateTime.now());
            inquiry.setState(InquiryState.FINISHED);
-           inquiryRepository.save(inquiry);
+           inquiryDetailRepository.save(inquiry);
             //保存合同
            contractRepository.save(contract);
 
@@ -209,7 +210,7 @@ public class ContractService {
     }
 
     /**
-     * 说率列表
+     * 税率列表
      * @param type 类型
      * @return 返回税率列表信息
      */
@@ -223,4 +224,19 @@ public class ContractService {
             .map(taxRatesMapper::toVTaxRates)
             .toList();
     }
+
+    /**
+     * 判断合同号是否重复
+     * @param contractNo 本单位采购合同号
+     * @param companyCode 单位id
+     * @return 返回是或否
+     */
+    @Transactional
+    public Boolean changeContractNoRepeated(String contractNo,String companyCode){
+            int num =  contractRepository.findByOrderCode(companyCode,contractNo);
+            if(num>0)
+                return false;
+            return  true;
+    }
+
 }

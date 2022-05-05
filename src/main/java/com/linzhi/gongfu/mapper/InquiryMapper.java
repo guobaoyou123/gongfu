@@ -40,9 +40,9 @@ public interface InquiryMapper {
     @Mapping(target = "confirmedAt",expression = "java(inquiry.getConfirmedAt()!=null?com.linzhi.gongfu.util.DateConverter.dateFormat(inquiry.getConfirmedAt()):null)")
     @Mapping(target = "state",expression = "java(String.valueOf(inquiry.getState().getState()))")
     @Mapping(target = "offerMode",expression = "java(String.valueOf(inquiry.getOfferMode().getTaxMode()))")
-    @Mapping(target = "vat",expression = "java(com.linzhi.gongfu.service.InquiryService.sumPriceProlde(inquiry.getVat(),inquiry.getRecords()))")
-    @Mapping(target = "totalPrice",expression = "java(com.linzhi.gongfu.service.InquiryService.sumPriceProlde(inquiry.getTotalPrice(),inquiry.getRecords()))")
-    @Mapping(target = "totalPriceVat",expression = "java(com.linzhi.gongfu.service.InquiryService.sumPriceProlde(inquiry.getTotalPriceVat(),inquiry.getRecords()))")
+    @Mapping(target = "vat",expression = "java(com.linzhi.gongfu.service.InquiryService.judgeInquiryMoney(inquiry.getVat(),inquiry.getRecords()))")
+    @Mapping(target = "totalPrice",expression = "java(com.linzhi.gongfu.service.InquiryService.judgeInquiryMoney(inquiry.getTotalPrice(),inquiry.getRecords()))")
+    @Mapping(target = "totalPriceVat",expression = "java(com.linzhi.gongfu.service.InquiryService.judgeInquiryMoney(inquiry.getTotalPriceVat(),inquiry.getRecords()))")
     TInquiry toInquiryDetail(InquiryDetail inquiry);
 
 

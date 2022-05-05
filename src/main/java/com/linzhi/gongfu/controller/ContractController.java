@@ -728,4 +728,19 @@ public class ContractController {
             .taxRates(list)
             .build();
     }
+
+    /**
+     * 判断采购合同号是否重复
+     * @param contractNo 本单位采购合同号
+     * @return 是否重复信息
+     */
+    @GetMapping("/contract/purchase/contractNo")
+    public VBaseResponse changeContractNoRepeated(@RequestParam("contractNo") String contractNo ){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = contractService.changeContractNoRepeated(contractNo,session.getSession().getCompanyCode());
+        if(flag)
+            return VBaseResponse.builder().code(200).message("数据不重复").build();
+        return VBaseResponse.builder().code(201).message("数据重复").build();
+    }
 }
