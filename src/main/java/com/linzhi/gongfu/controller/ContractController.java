@@ -10,8 +10,11 @@ import com.linzhi.gongfu.service.ContractService;
 import com.linzhi.gongfu.service.InquiryService;
 import com.linzhi.gongfu.service.PlanService;
 import com.linzhi.gongfu.util.ExcelUtil;
+import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -412,7 +415,45 @@ public class ContractController {
             .build();
     }
 
-    
+    /**
+     * 查看询价单历史列表
+     * @param supplierCode 供应商编码
+     * @param startTime  开始时间
+     * @param endTime 结束时间
+     * @param state 状态
+     * @param pageNum 页码
+     * @param pageSize 每页展示几条
+     * @return 询价单历史列表
+     */
+    @GetMapping( "/contract/purchase/inquiry/history")
+    public VInquiryPageResponse inquiryHistory(@RequestParam("supplierCode") Optional<String> supplierCode,
+                                               @RequestParam("startTime") Optional<String> startTime,
+                                               @RequestParam("endTime") Optional<String> endTime,
+                                               @RequestParam("state") Optional<String> state,
+                                               @RequestParam("pageNum") Optional<String> pageNum,
+                                               @RequestParam("pageSize") Optional<String> pageSize
+                                               ) throws IOException {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        //分页
+        Pageable pageable = PageRequest.of(
+            pageNum.map(PageTools::verificationPageNum).orElse(0),
+            pageSize.map(PageTools::verificationPageSize).orElse(10)
+        );
+        var page = inquiryService.inquiryHistoryPage(session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),supplierCode.orElse(""),startTime.orElse(""),endTime.orElse(""),
+            state.orElse("1"),pageable);
+        return  VInquiryPageResponse.builder()
+            .code(200)
+            .message("查询成功")
+            .current(page.getNumber()+1)
+            .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
+            .inquiries(page.stream().map(inquiryMapper::toVInquiryPage).toList())
+            .build()
+            ;
+
+    }
+
     /**
      * 查询询价单详情
      * @param id 询价单主键

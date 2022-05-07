@@ -10,6 +10,7 @@ import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.vo.VGenerateContractRequest;
 import com.linzhi.gongfu.vo.VTaxRateResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +21,6 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 合同信息处理及业务服务
@@ -34,7 +33,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ContractService {
 
     private final ContractRepository contractRepository;
+    private final  InquiryRepository inquiryRepository;
     private final InquiryDetailRepository inquiryDetailRepository;
+    private final  InquiryRecordRepository inquiryRecordRepository;
     private final AddressRepository addressRepository;
     private final CompContactsRepository compContactsRepository;
     private final TaxRatesRepository taxRatesRepository;
@@ -46,45 +47,17 @@ public class ContractService {
      * @return 返回 true 或者 false
      */
     public Boolean  findContractProductRepeat(String inquiryId) throws IOException {
-            InquiryDetail inquiry = inquiryDetailRepository.findById(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
-            //产品种类
-            int kinds = inquiry.getRecords().size();
-            //总产品数量
-            BigDecimal total = new BigDecimal(0);
-            for (InquiryRecord record:inquiry.getRecords()){
-                total.add(record.getAmount());
-            }
-            List<String> recordsCode = inquiry.getRecords().stream().map(InquiryRecord::getProductId).toList();
+            Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
+            List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecord(inquiryId);
+            String str = createSequenceCode(
+                records.stream().map(inquiryRecord-> inquiryRecord.getProductId() + "-" + inquiryRecord.getAmount()).toList(),
+                inquiry.getSalerComp(),
+                inquiry.getBuyerComp()
+            );
             //产品种类和数量相同的合同号
-            List<String> contractId = contractRepository.findContractId(inquiry.getCreatedByComp(),inquiry.getCreatedBy(),kinds,total);
-            //查询出相同的采购合同
-            List<Contract> contracts =contractRepository.findContractByIdIn(contractId);
-            //再判断合同产品是否一致
-            contracts = contracts.stream().filter(contract -> {
-                    List<ContractRecord> list =  contract.getRecords().stream().filter(
-                        contractRecord ->
-                            !recordsCode.contains(contractRecord.getProductId())
-                    ).toList();
-                    return  list.size()==contract.getRecords().size();
-                }
-            ).toList();
-            //再判断合同产品数量是否一致
-        contracts =  contracts.stream().filter(contract -> {
-                List<ContractRecord> records =contract.getRecords().stream().filter(
-                    contractRecord -> {
-                        AtomicBoolean flag = new AtomicBoolean(false);
-                        inquiry.getRecords().forEach(record -> {
-                            if(record.getProductId().equals(contractRecord.getProductId())){
-                                if(Objects.equals(record.getAmount(), contractRecord.getAmount()))
-                                    flag.set(true);
-                            }
-                        });
-                        return  flag.get();
-                    }
-                ).toList();
-                return  records.size()==contract.getRecords().size();
-            }).toList();
-        return contracts.size() <= 0;
+            List<String> contractId = contractRepository.findContractId(inquiry.getCreatedByComp(),inquiry.getCreatedBy(),str);
+
+           return contractId.size() <= 0;
     }
 
     /**
@@ -245,13 +218,29 @@ public class ContractService {
                 );
             }
            contract.setRecords(records);
+            records.sort((o1, o2) -> {
+                if (o1.getProductId().compareTo(o2.getProductId()) == 0) {
+                    if (o1.getAmount().doubleValue() < o2.getAmount().doubleValue()) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                }
+                return o1.getProductId().compareTo(o2.getProductId());
+            });
+            String str = createSequenceCode(
+                records.stream().map(contractRecord -> contractRecord.getProductId()+"-"+contractRecord.getAmount()).toList(),
+                inquiry.getSalerComp(),
+                inquiry.getBuyerComp()
+            );
             //保存询价单
            inquiry.setConfirmedAt(LocalDateTime.now());
            inquiry.setState(InquiryState.FINISHED);
+           inquiry.setContractId(id);
            inquiryDetailRepository.save(inquiry);
+           contract.setSequenceCode(str);
             //保存合同
            contractRepository.save(contract);
-
         }catch (Exception e){
             e.printStackTrace();
             return  false;
@@ -287,4 +276,18 @@ public class ContractService {
         return num <= 0;
     }
 
+    /**
+     * 根据明细生成序列码
+     * @param records 明细
+     * @param supplierCode 供应商编码
+     * @param buyerCode 客户编码
+     * @return MD5编码
+     */
+    private String createSequenceCode(List<String> records,String supplierCode ,String buyerCode){
+        StringBuilder str = new StringBuilder(supplierCode + "-" + buyerCode);
+        for (String record:records){
+            str.append("-").append(record);
+        }
+        return  DigestUtils.md5Hex(str.toString());
+    }
 }

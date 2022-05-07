@@ -40,6 +40,11 @@ public class InquiryDetail {
     @NotBlank
     private String code;
     /**
+     * 合同id
+     */
+    @Column(name = "contract_id",length = 50)
+    private String contractId;
+    /**
      * 合同编码
      */
     @Column(name = "order_code",length = 40)

@@ -195,6 +195,12 @@ public class Contract {
      */
     @Column(name = "consignee_phone",length = 20)
     private String consigneePhone;
+    /**
+     *序列码（由 供应商编码+客户编码+产品+数量 组成）
+     */
+    @Column(name = "sequence_code",length = 255)
+    private String sequenceCode;
+
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "contract_id",referencedColumnName = "id", insertable = true, updatable = true)

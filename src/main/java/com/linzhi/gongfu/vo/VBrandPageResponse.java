@@ -20,7 +20,7 @@ import java.util.List;
 public class VBrandPageResponse extends  VBaseResponse{
     private int current;
     private int total;
-    List<VBrandPageResponse.VBrand> brands;
+    List<VBrand> brands;
     /**
      * 用于表示一个首页展示供应商品牌
      */

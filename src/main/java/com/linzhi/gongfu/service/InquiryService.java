@@ -9,12 +9,18 @@ import com.linzhi.gongfu.mapper.ImportProductTempMapper;
 import com.linzhi.gongfu.mapper.InquiryMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.ExcelUtil;
+import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
 import com.linzhi.gongfu.vo.VModifyInquiryRequest;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +60,7 @@ public class InquiryService {
 
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final PurchasePlanRepository purchasePlanRepository;
+    private final JPAQueryFactory queryFactory;
 
     /**
      * 保存询价单
@@ -179,10 +186,12 @@ public class InquiryService {
     @Cacheable(value="inquiry_List;1800", key="#companyCode+'_'+#operator")
     public List<TInquiry> inquiryList(String companyCode, String operator){
         try{
-            Operator operator1= operatorRepository.findById(OperatorId.builder()
+            Operator operator1= operatorRepository.findById(
+                OperatorId.builder()
                     .operatorCode(operator)
                     .companyCode(companyCode)
-                    .build())
+                    .build()
+                )
                 .orElseThrow(()-> new IOException("请求的操作员找不到"));
             if(operator1.getAdmin().equals(Whether.YES))
                 return inquiryRepository.findInquiryList(companyCode, InquiryType.INQUIRY_LIST.getType()+"", InquiryState.UN_FINISHED.getState()+"")
@@ -199,6 +208,47 @@ public class InquiryService {
         }
     }
 
+    /**
+     * 查询历史询价单列表
+     * @param companyCode 单位id
+     * @param operator 操作员编码
+     * @param supplierCode 供应商编码
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param state 状态
+     * @param pageable 页码
+     * @return 返回询价单信息列表
+     * @throws IOException 异常
+     */
+    @Cacheable(value="inquiry_history_page;1800")
+    public Page<TInquiry> inquiryHistoryPage(String companyCode, String operator,String supplierCode,
+                                             String startTime,String endTime,String state,Pageable pageable) throws IOException {
+        Operator operator1= operatorRepository.findById(
+                OperatorId.builder()
+                    .operatorCode(operator)
+                    .companyCode(companyCode)
+                    .build()
+            )
+            .orElseThrow(()-> new IOException("请求的操作员找不到"));
+        QInquiry qInquiry = QInquiry.inquiry;
+
+        JPAQuery jpaQuery = queryFactory.select(qInquiry).from(qInquiry);
+        if(operator1.getAdmin().equals(Whether.NO))
+            jpaQuery.where(qInquiry.createdBy.eq(operator));
+        jpaQuery.where(qInquiry.createdByComp.eq(companyCode));
+        jpaQuery.where(qInquiry.state.eq(state.equals("1")?InquiryState.FINISHED:InquiryState.CANCELLATION));
+        if(StringUtils.isNotBlank(supplierCode))
+           jpaQuery.where(qInquiry.salerComp.eq(supplierCode));
+        if(StringUtils.isNotBlank(startTime))
+            jpaQuery.where(qInquiry.createdAt.after(LocalDateTime.parse(startTime)));
+        if(StringUtils.isNotBlank(endTime))
+            jpaQuery.where(qInquiry.createdAt.before(LocalDateTime.parse(endTime)));
+        List<Inquiry> inquiries = jpaQuery.fetch();
+        List<TInquiry> tInquiries = inquiries.stream()
+            .map(inquiryMapper::toInquiryList)
+            .toList();
+        return PageTools.listConvertToPage(tInquiries,pageable);
+    }
     /**
      * 询价单详情
      * @param id 询价单主键
@@ -217,7 +267,10 @@ public class InquiryService {
      * @param supplierCode 供应商名称
      * @return 询价单编码
      */
-    @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
+    @Caching(evict = {
+        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true),
+        @CacheEvict(value="inquiry_history_page;1800", key="#companyCode+'_'",allEntries=true)
+    })
     public String  emptyInquiry(String companyCode,String companyName,String operator,String operatorName,String supplierCode){
         try {
             //查询询价单最大编号

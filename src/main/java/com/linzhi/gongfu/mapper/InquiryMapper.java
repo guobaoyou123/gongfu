@@ -5,6 +5,7 @@ import com.linzhi.gongfu.entity.InquiryDetail;
 import com.linzhi.gongfu.entity.Inquiry;
 import com.linzhi.gongfu.vo.VInquiryDetailResponse;
 import com.linzhi.gongfu.vo.VInquiryListResponse;
+import com.linzhi.gongfu.vo.VInquiryPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -30,6 +31,16 @@ public interface InquiryMapper {
     @Mapping(target = "ownerName",source = "buyerContactName")
     VInquiryListResponse.VInquiry toVInquiryList(TInquiry tInquiry);
 
+    /**
+     * 转换询价单列表
+     * @param tInquiry 询价单基本信息
+     * @return 询价单基本信息
+     */
+    @Mapping(target = "salesContractCode",source = "salesOrderCode")
+    @Mapping(target = "supplierName",source = "salerCompName")
+    @Mapping(target = "ownerCode",source = "createdBy")
+    @Mapping(target = "ownerName",source = "buyerContactName")
+    VInquiryPageResponse.VInquiry toVInquiryPage(TInquiry tInquiry);
     /**
      * 转换询价单详情
      * @param inquiry 询价单基本信息
