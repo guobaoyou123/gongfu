@@ -412,6 +412,7 @@ public class ContractController {
             .build();
     }
 
+    
     /**
      * 查询询价单详情
      * @param id 询价单主键
@@ -701,8 +702,16 @@ public class ContractController {
      * @return 返回成功或者失败
      */
     @PostMapping("/contract/purchase")
-    public VBaseResponse saveContract(@RequestBody VGenerateContractRequest generateContractRequest){
-        var flag =  contractService.saveContract(generateContractRequest);
+    public VBaseResponse saveContract(@RequestBody VGenerateContractRequest generateContractRequest) throws Exception {
+        var flag = true;
+        if(!generateContractRequest.isEnforce())
+            flag =contractService.findContractProductRepeat(generateContractRequest.getInquiryId());
+        if(!flag)
+            return  VBaseResponse.builder()
+                .code(201)
+                .message("有相同的采购合同")
+                .build();
+        flag =  contractService.saveContract(generateContractRequest);
         if(flag)
             return VBaseResponse.builder()
                 .code(200)

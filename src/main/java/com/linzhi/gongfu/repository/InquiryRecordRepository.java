@@ -28,5 +28,6 @@ public interface InquiryRecordRepository
     @Query("delete from InquiryRecord as c  where c.inquiryRecordId.inquiryId=?1")
     void  deleteProducts(String inquiryId);
 
-    List<InquiryRecord> findInquiryRecordByInquiryRecordId_InquiryId(String inquiryId);
+
+    int countAllByInquiryRecordId_InquiryId(String inquiryId);
 }

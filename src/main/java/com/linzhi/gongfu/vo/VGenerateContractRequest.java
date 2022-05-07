@@ -44,5 +44,10 @@ public class VGenerateContractRequest {
      */
     private String supplierContactPhone;
 
+    /**
+     * 是否强制执行
+     */
+    private boolean enforce;
+
 
 }
