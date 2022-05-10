@@ -123,12 +123,10 @@ public class ContractService {
             //联系人
             if(StringUtils.isNotBlank(generateContractRequest.getAddressCode())){
                 //联系人
-                CompContacts compContacts =compContactsRepository.findById(
-                    CompContactsId.builder()
-                        .addrCode(generateContractRequest.getAddressCode())
-                        .dcCompId(inquiry.getCreatedByComp())
-                        .code(generateContractRequest.getContactCode())
-                        .build()
+                CompContacts compContacts =compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_Code(
+                    generateContractRequest.getAddressCode(),
+                    inquiry.getCreatedByComp(),
+                    generateContractRequest.getContactCode()
                 ).orElseThrow(()-> new IOException("数据库中找不到该联系人"));
                 inquiry.setConsigneeName(compContacts.getContName());
                 inquiry.setConsigneePhone(compContacts.getContPhone());

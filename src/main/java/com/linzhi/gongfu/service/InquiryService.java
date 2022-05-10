@@ -350,12 +350,40 @@ public class InquiryService {
             List<InquiryRecord> records = new ArrayList<>();
             records.add(record);
             inquiry.getRecords().add(countRecord(records,inquiry.getOfferMode()).get(0));
-            inquiryRecordRepository.save(record);
-            return  countSum(inquiry.getRecords(),id);
+            inquiryDetailRepository.save(countSum(inquiry));
+            return true;
         }catch (Exception e){
             e.printStackTrace();
             return  false;
         }
+    }
+
+    /**
+     * 计算总价
+     * @param inquiry 询价单
+     * @return 询价单
+     */
+    public InquiryDetail countSum(InquiryDetail inquiry ){
+
+        //判断是否需要重新计算价格
+        List<InquiryRecord> list = inquiry.getRecords()
+            .stream()
+            .filter(inquiryRecord -> inquiryRecord.getPrice()==null)
+            .toList();
+        //是 重新计算价格
+        BigDecimal totalPrice=new BigDecimal(0);
+        BigDecimal  totalPriceVat=new BigDecimal(0);
+        if(list.size()==0){
+            for (InquiryRecord inquiryRecord:inquiry.getRecords()){
+                totalPrice=totalPrice.add(inquiryRecord.getTotalPrice());
+                totalPriceVat=totalPriceVat.add(inquiryRecord.getTotalPriceVat());
+            }
+        }
+        BigDecimal vat = totalPriceVat.subtract(totalPrice);
+        inquiry.setVat(vat);
+        inquiry.setTotalPrice(totalPrice);
+        inquiry.setTotalPriceVat(totalPriceVat);
+        return inquiry;
     }
 
     /**

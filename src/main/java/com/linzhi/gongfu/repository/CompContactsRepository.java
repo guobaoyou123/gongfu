@@ -9,6 +9,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CompContactsRepository extends CrudRepository<CompContacts, CompContactsId>, QuerydslPredicateExecutor<CompContacts> {
 
@@ -26,4 +27,5 @@ public interface CompContactsRepository extends CrudRepository<CompContacts, Com
 
     List<CompContacts> findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_OperatorCodeAndStateOrderByContCompName(String addressCode,String compId,String operator,Availability state);
 
+    Optional<CompContacts> findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_Code(String addCode,String compId,String codle);
 }
