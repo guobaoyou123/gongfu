@@ -750,10 +750,10 @@ public class ContractController {
         String  contractCodes = null;
         if(!generateContractRequest.isEnforce())
             contractCodes =contractService.findContractProductRepeat(generateContractRequest.getInquiryId());
-        if(contractCodes!=null)
+        if(contractCodes!=null && !contractCodes.equals(""))
             return  VBaseResponse.builder()
                 .code(201)
-                .message("系统中已经存在内容完全一致的采购合同，合同编码分别为："+contractCodes+"，请确定当前要创建的合同与已经存在的合同无关。选择“确定”将创建新合同。")
+                .message("可能重复的合同有："+contractCodes)
                 .build();
         flag =  contractService.saveContract(generateContractRequest,session.getSession().getCompanyCode());
         if(flag)

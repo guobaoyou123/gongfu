@@ -220,9 +220,28 @@ public class InquiryService {
      * @return 返回询价单信息列表
      * @throws IOException 异常
      */
-    @Cacheable(value="inquiry_history_page;1800")
     public Page<TInquiry> inquiryHistoryPage(String companyCode, String operator,String supplierCode,
                                              String startTime,String endTime,String state,Pageable pageable) throws IOException {
+
+        List<TInquiry> tInquiries = inquiryHistory( companyCode,  operator, supplierCode,
+             startTime, endTime, state);
+        return PageTools.listConvertToPage(tInquiries,pageable);
+    }
+
+    /**
+     * 历史询价单列表
+     * @param companyCode 单位id
+     * @param operator 操作员编码
+     * @param supplierCode 供应商编码
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param state 状态
+     * @return 返回询价单信息列表
+     * @throws IOException
+     */
+    @Cacheable(value="inquiry_history_list;1800")
+    public List<TInquiry> inquiryHistory(String companyCode, String operator,String supplierCode,
+                                        String startTime,String endTime,String state) throws IOException {
         Operator operator1= operatorRepository.findById(
                 OperatorId.builder()
                     .operatorCode(operator)
@@ -231,24 +250,27 @@ public class InquiryService {
             )
             .orElseThrow(()-> new IOException("请求的操作员找不到"));
         QInquiry qInquiry = QInquiry.inquiry;
-
         JPAQuery jpaQuery = queryFactory.select(qInquiry).from(qInquiry);
         if(operator1.getAdmin().equals(Whether.NO))
             jpaQuery.where(qInquiry.createdBy.eq(operator));
         jpaQuery.where(qInquiry.createdByComp.eq(companyCode));
         jpaQuery.where(qInquiry.state.eq(state.equals("1")?InquiryState.FINISHED:InquiryState.CANCELLATION));
         if(StringUtils.isNotBlank(supplierCode))
-           jpaQuery.where(qInquiry.salerComp.eq(supplierCode));
-        if(StringUtils.isNotBlank(startTime))
-            jpaQuery.where(qInquiry.createdAt.after(LocalDateTime.parse(startTime)));
-        if(StringUtils.isNotBlank(endTime))
-            jpaQuery.where(qInquiry.createdAt.before(LocalDateTime.parse(endTime)));
+            jpaQuery.where(qInquiry.salerComp.eq(supplierCode));
+        if(StringUtils.isNotBlank(startTime)&&StringUtils.isNotBlank(endTime)){
+            DateTimeFormatter dateTimeFormatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            DateTimeFormatter dateTimeFormatters = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime startTimes = LocalDate.parse(startTime, dateTimeFormatterDay).atStartOfDay();
+            LocalDateTime endTimes = LocalDateTime.parse(endTime+" 23:59:59", dateTimeFormatters);
+            jpaQuery.where(qInquiry.createdAt.between(startTimes,endTimes));
+        }
+
         List<Inquiry> inquiries = jpaQuery.fetch();
-        List<TInquiry> tInquiries = inquiries.stream()
+        return inquiries.stream()
             .map(inquiryMapper::toInquiryList)
             .toList();
-        return PageTools.listConvertToPage(tInquiries,pageable);
     }
+
     /**
      * 询价单详情
      * @param id 询价单主键
@@ -333,9 +355,9 @@ public class InquiryService {
                     Whether.YES,
                     "001"
                 ).orElseThrow(() -> new IOException("请求的货物税率不存在"));
-            //保存产品
+            //保存产品inquiry = {InquiryDetail@17473}
             InquiryRecord record = getInquiryRecord(product,id,maxCode,amount,goods);
-            if(inquiry.getVatProductRate()!=null && inquiry.getVatProductRate().intValue()>0)
+            if(inquiry.getVatProductRate()!=null)
                 record.setVatRate(inquiry.getVatProductRate());
             if(price!=null){
                 if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)){
@@ -584,7 +606,7 @@ public class InquiryService {
     public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operator){
         Map<String,Object> resultMap = new HashMap<>();
         try {
-           // InquiryDetail inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            Inquiry inquiry = inquiryRepository.findById(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<Map<String, Object>> list =  ExcelUtil.excelToList(file);
             List<ImportProductTemp> importProductTemps = new ArrayList<>();
             for (int i =0;i<list.size();i++){
@@ -619,12 +641,12 @@ public class InquiryService {
                         String price = map.get("未税单价").toString();
                         importProductTemp.setPrice(price);
                         importProductTemp.setFlag(TaxMode.UNTAXED);
-                }
-
-                if(map.get("含税单价")!=null){
+                }else if(map.get("含税单价")!=null){
                         String price = map.get("含税单价").toString();
                         importProductTemp.setPrice(price);
                     importProductTemp.setFlag(TaxMode.INCLUDED);
+                }else{
+                    importProductTemp.setFlag(inquiry.getOfferMode());
                 }
 
                 importProductTemps.add(importProductTemp);
@@ -818,7 +840,6 @@ public class InquiryService {
                 maxCode++;
 
             }
-
             //删除原有的产品明细
             importProductTempRepository.deleteProduct(id,companyCode,operator);
             inquiryRecords=countRecord(inquiryRecords,inquiry.getOfferMode());
@@ -880,7 +901,6 @@ public class InquiryService {
      * @return 询价单
      */
     public InquiryDetail countSum(InquiryDetail inquiry ){
-
         //判断是否需要重新计算价格
         List<InquiryRecord> list = inquiry.getRecords()
             .stream()
