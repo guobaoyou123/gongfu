@@ -747,12 +747,13 @@ public class ContractController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = true;
+        String  contractCodes = null;
         if(!generateContractRequest.isEnforce())
-            flag =contractService.findContractProductRepeat(generateContractRequest.getInquiryId());
-        if(!flag)
+            contractCodes =contractService.findContractProductRepeat(generateContractRequest.getInquiryId());
+        if(contractCodes!=null)
             return  VBaseResponse.builder()
                 .code(201)
-                .message("有相同的采购合同")
+                .message("系统中已经存在内容完全一致的采购合同，合同编码分别为："+contractCodes+"，请确定当前要创建的合同与已经存在的合同无关。选择“确定”将创建新合同。")
                 .build();
         flag =  contractService.saveContract(generateContractRequest,session.getSession().getCompanyCode());
         if(flag)

@@ -20,6 +20,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 合同信息处理及业务服务
@@ -45,7 +46,7 @@ public class ContractService {
      * @param inquiryId 询价单id
      * @return 返回 true 或者 false
      */
-    public Boolean  findContractProductRepeat(String inquiryId) throws IOException {
+    public String  findContractProductRepeat(String inquiryId) throws IOException {
             Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
             List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecord(inquiryId);
             String str = createSequenceCode(
@@ -56,7 +57,7 @@ public class ContractService {
             //产品种类和数量相同的合同号
             List<String> contractId = contractRepository.findContractId(inquiry.getCreatedByComp(),inquiry.getCreatedBy(),str);
 
-           return contractId.size() <= 0;
+           return contractId.stream().collect(Collectors.joining(","));
     }
 
     /**
@@ -282,7 +283,7 @@ public class ContractService {
             .salerCompName(salerCompName)
             .createdAt(LocalDateTime.now())
             .salesOrderCode(salesOrderCode)
-            .state(InquiryState.UN_FINISHED)
+            .state(InquiryState.FINISHED)
             .offerMode(offerMode)
             .createdAt(LocalDateTime.now())
             .build();
