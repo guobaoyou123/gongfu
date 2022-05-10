@@ -26,7 +26,7 @@ public interface CompTradeRepository
     extends CrudRepository<CompTrad, CompTradId>, QuerydslPredicateExecutor<CompTrad> {
     Page<CompTrad> findSuppliersByCompTradIdCompBuyerAndState(@Param("compBuyer") String compBuyer, Pageable pageable,@Param("state") Trade state);
 
-    List<CompTrad> findSuppliersByCompTradIdCompBuyerAndState(@Param("compBuyer") String compBuyer,@Param("state") Trade state);
+    List<CompTrad> findSuppliersByCompTradId_CompBuyerAndState(@Param("compBuyer") String compBuyer,@Param("state") Trade state);
 
 
     List<CompTrad> findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(String compBuyer,List<String> compSalers);

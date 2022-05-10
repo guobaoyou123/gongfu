@@ -109,9 +109,16 @@ public class CompanyService {
         });
         return   tCompanyIncludeBrands .map(compTradeMapper::toPreloadSuppliersIncludeBrandDTOs);
     }
+
+    /**
+     * 查询供应的税模式列表
+     * @param compBuyer 买方编码
+     * @param state 可用状态
+     * @return 供应商税模式列表
+     */
     @Cacheable(value = "SupplierAndBrand;1800", unless = "#result == null",key = "#compBuyer")
     public  List<CompTrad> findSuppliersByCompTradIdCompBuyerAndState(String compBuyer, Trade state){
-        return  compTradeRepository.findSuppliersByCompTradIdCompBuyerAndState(compBuyer,state);
+        return  compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(compBuyer,state);
     }
     /**
      * 根据品牌查询本单位的供应商
@@ -292,6 +299,13 @@ public class CompanyService {
            return map;
        }
    }
+
+    /**
+     * 修改供应商状态
+     * @param code 供应商编码
+     * @param state 转态
+     * @return 返回成功或则失败
+     */
     @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",allEntries = true),
         @CacheEvict(value = "brands_company;1800",allEntries = true),
         @CacheEvict(value = "SupplierAndBrand;1800",allEntries = true),

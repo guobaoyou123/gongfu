@@ -119,7 +119,7 @@ public class InquiryService {
                 }
             }));
             //查询每个供应商税模式对本单位设置的税模式
-            List<CompTrad>compTades=compTradeRepository.findSuppliersByCompTradIdCompBuyerAndState(companyCode, Trade.TRANSACTION);
+            List<CompTrad>compTades=compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(companyCode, Trade.TRANSACTION);
             Map<String,CompTrad> compTradMap = new HashMap<>();
             compTades.forEach(compTrad -> compTradMap.put(compTrad.getCompTradId().getCompSaler(),compTrad));
             //查询询价单最大编号
@@ -310,7 +310,6 @@ public class InquiryService {
         }
 
     }
-
 
     /**
      * 保存产品

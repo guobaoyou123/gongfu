@@ -7,7 +7,9 @@ import org.apache.poi.ss.usermodel.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -15,8 +17,7 @@ public abstract class ExcelUtil {
     /**
      * 将Excel内容转换list
      * @param file 文件
-     * @return
-     * @throws Exception
+     * @return 返回list
      */
     public static List<Map<String, Object>> excelToList(MultipartFile file) throws Exception {
         Workbook workbook = WorkbookFactory.create(file.getInputStream());
@@ -41,10 +42,16 @@ public abstract class ExcelUtil {
             if (row1 != null) {
                 for (int j = 0; j < col; j++) {
                     Cell cell = row1.getCell(j);
-
                     if (cell != null) {
-                        cell.setCellType(CellType.STRING);
-                        map.put(colName[j], cell.getStringCellValue());
+                        CellType cellType = cell.getCellType();
+                        if(cellType == CellType.NUMERIC){
+                            double numericCellValue = cell.getNumericCellValue();//获取数字类型的单元格中的数据NUMERIC
+                            //stripTrailingZeros()：去除末尾多余的0，toPlainString()：输出时不用科学计数法
+                            String s = new BigDecimal(String.valueOf(numericCellValue)).stripTrailingZeros().toPlainString();
+                            map.put(colName[j], s);
+                        }else if(cellType == CellType.STRING){
+                            map.put(colName[j], cell.getStringCellValue());
+                        }
                     }
                 }
             }
@@ -55,7 +62,6 @@ public abstract class ExcelUtil {
 
     /**
      * 导出集合到excel
-     * @param response
      * @param name 文件名称
      * @param list 数据列表
      */
@@ -79,7 +85,7 @@ public abstract class ExcelUtil {
                 for (int i = 0; i < list.size(); i++) {
                     //新建一行
                     HSSFRow row = hssfSheet.createRow(rowNum++);
-                    Map map = list.get(i);
+                    Map<String, Object> map = list.get(i);
                     j = 0;
                     for (Object obj : map.values()) {
                         if (obj != null) {
@@ -93,7 +99,7 @@ public abstract class ExcelUtil {
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
             hssfWorkbook.write(response.getOutputStream());
 
         } catch (Exception e) {
@@ -103,8 +109,8 @@ public abstract class ExcelUtil {
 
     /***
      * 解析Excel日期格式
-     * @param strDate
-     * @return
+     * @param strDate 日期
+     * @return 字符串
      */
     public static String ExcelDoubleToDate(String strDate) {
         if (strDate.length() == 5) {
@@ -122,8 +128,8 @@ public abstract class ExcelUtil {
 
     /**
      * 解析Excel日期格式
-     * @param dVal
-     * @return
+     * @param dVal 日期
+     * @return 日期
      */
     public static Date DoubleToDate(Double dVal) {
         Date tDate = new Date();
