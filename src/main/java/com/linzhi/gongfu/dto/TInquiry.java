@@ -99,6 +99,10 @@ public class TInquiry {
      */
     private BigDecimal discount;
     /**
+     * 最终未税总价
+     */
+    private BigDecimal discountedTotalPrice;
+    /**
      * 税额
      */
     private BigDecimal vat;

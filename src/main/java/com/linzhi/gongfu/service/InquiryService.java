@@ -919,6 +919,7 @@ public class InquiryService {
         inquiry.setVat(vat);
         inquiry.setTotalPrice(totalPrice);
         inquiry.setTotalPriceVat(totalPriceVat);
+        inquiry.setDiscountedTotalPrice(totalPrice);
         return inquiry;
     }
 
@@ -946,7 +947,7 @@ public class InquiryService {
             }
             BigDecimal vat = totalPriceVat.setScale(2, RoundingMode.HALF_UP).subtract(totalPrice.setScale(2, RoundingMode.HALF_UP));
 
-            inquiryRepository.updateInquiry(totalPrice.setScale(2, RoundingMode.HALF_UP),totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,id);
+            inquiryRepository.updateInquiry(totalPrice.setScale(2, RoundingMode.HALF_UP),totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,totalPrice.setScale(2, RoundingMode.HALF_UP),id);
             return true;
         }catch (Exception e){
             e.printStackTrace();

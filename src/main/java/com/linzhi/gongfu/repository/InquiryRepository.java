@@ -21,7 +21,7 @@ public interface InquiryRepository
         nativeQuery = true)
     List<Inquiry> findInquiryList(String compId, String type, String  state);
     @Modifying
-    @Query(value="update   inquiry_base  set total_price=?1 ,total_price_vat=?2,vat=?3 where  id=?4 ",
+    @Query(value="update   inquiry_base  set total_price=?1 ,total_price_vat=?2,vat=?3 ,discount_total_price=?4 where  id=?5 ",
         nativeQuery = true)
-    void  updateInquiry(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, String id);
+    void  updateInquiry(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat,BigDecimal discountTotalPrice, String id);
 }

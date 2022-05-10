@@ -123,6 +123,14 @@ public class VInquiryDetailResponse extends VBaseResponse{
          *收货人电话
          */
         private String consigneePhone;
+        /**
+         *折扣
+         */
+        private BigDecimal discount;
+        /**
+         * 最终未税总价
+         */
+        private BigDecimal discountedTotalPrice;
 
         List<VProduct> products;
 

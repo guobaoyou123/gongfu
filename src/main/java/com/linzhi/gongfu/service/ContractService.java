@@ -167,12 +167,14 @@ public class ContractService {
                     }
                     discountSum=discountSum.add(record.getTotalDiscountedPrice());
                 }
+                inquiry.setDiscountedTotalPrice(discountSum);
                 inquiry.setVat(inquiry.getConfirmTotalPriceVat().subtract(discountSum));
                 inquiry.setDiscount(discount);
                 contract.setDiscount(discount);
                 contract.setVat(inquiry.getConfirmTotalPriceVat().subtract(discountSum));
                 contract.setTotalPrice(inquiry.getTotalPrice());
                 contract.setTotalPriceVat(inquiry.getTotalPriceVat());
+                contract.setDiscountedTotalPrice(discountSum);
             }
             //合同明细
             List<ContractRecord> records = new ArrayList<>();

@@ -147,6 +147,11 @@ public class InquiryDetail {
     @Column(name = "total_price_vat")
     private BigDecimal totalPriceVat;
     /**
+     * 最终未税总价
+     */
+    @Column(name = "discount_total_price")
+    private BigDecimal discountedTotalPrice;
+    /**
      * 确认价税合计
      */
     @Column(name = "confirm_total_price_vat")
