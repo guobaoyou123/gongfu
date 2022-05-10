@@ -9,6 +9,8 @@ import com.linzhi.gongfu.vo.VTaxRateResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,8 +64,12 @@ public class ContractService {
      * @param generateContractRequest 参数
      * @return 返回成功或者失败
      */
+    @Caching(evict = {
+        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true),
+        @CacheEvict(value="inquiry_history_page;1800", key="#companyCode+'_'",allEntries=true)
+    })
     @Transactional
-    public Boolean saveContract(VGenerateContractRequest generateContractRequest){
+    public Boolean saveContract(VGenerateContractRequest generateContractRequest,String companyCode){
         try{
             //查询询价单详情
             InquiryDetail inquiry = inquiryDetailRepository.findById(generateContractRequest.getInquiryId()).orElseThrow(()-> new IOException("数据库中找不到该询价单"));

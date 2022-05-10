@@ -744,6 +744,8 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase")
     public VBaseResponse saveContract(@RequestBody VGenerateContractRequest generateContractRequest) throws Exception {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
         var flag = true;
         if(!generateContractRequest.isEnforce())
             flag =contractService.findContractProductRepeat(generateContractRequest.getInquiryId());
@@ -752,7 +754,7 @@ public class ContractController {
                 .code(201)
                 .message("有相同的采购合同")
                 .build();
-        flag =  contractService.saveContract(generateContractRequest);
+        flag =  contractService.saveContract(generateContractRequest,session.getSession().getCompanyCode());
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
