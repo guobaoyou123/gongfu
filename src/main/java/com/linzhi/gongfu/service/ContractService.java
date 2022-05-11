@@ -55,7 +55,7 @@ public class ContractService {
                 inquiry.getBuyerComp()
             );
             //产品种类和数量相同的合同号
-            List<String> contractId = contractRepository.findContractId(inquiry.getCreatedByComp(),inquiry.getCreatedBy(),str);
+            List<String> contractId = contractRepository.findContractId(inquiry.getCreatedByComp(),str);
 
            return String.join(",", contractId);
     }
