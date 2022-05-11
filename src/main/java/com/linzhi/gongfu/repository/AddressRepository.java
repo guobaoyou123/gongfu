@@ -25,4 +25,5 @@ public interface AddressRepository extends CrudRepository<Address, AddressId>, Q
     void updateAddressStateById(String state, String dcCompId,List<String> code);
 
     List<Address> findAddressByAreaCodeAndAddressLikeAndAddressId_DcCompId(String area,String address,String dcCompId);
+
 }

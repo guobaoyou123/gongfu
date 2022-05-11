@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -177,6 +178,7 @@ public class AddressService {
         List<DisabledArea> list = findDisabledAreaByCompanyCode(companyCode);
         Map<String,DisabledArea> map  = new HashMap<>();
         list.forEach(disabledArea -> map.put(disabledArea.getDisabledAreaId().getCode(),disabledArea));
+        AtomicInteger i= new AtomicInteger(1);
         tAddresses.forEach(tAddress -> {
             DisabledArea d=  map.get(tAddress.getAreaCode());
             DisabledArea d1=  map.get(tAddress.getAreaCode().substring(0,6)+"0000");
@@ -187,6 +189,7 @@ public class AddressService {
                 tAddress.setDisabled(true);
             if(d2!=null)
                 tAddress.setDisabled(true);
+            tAddress.setSort(i.getAndIncrement());
         });
         return  tAddresses;
     }
@@ -218,7 +221,8 @@ public class AddressService {
             query.where(qAddress.address.like("%"+addresses+"%"));
         if ( !state.isEmpty())
             query.where(qAddress.state.eq(state.equals("0")?Availability.DISABLED:Availability.ENABLED));
-        query.orderBy(qAddress.address.asc());
+
+        query.orderBy(qAddress.flag.desc(),qAddress.address.asc());
         return  query.fetch();
     }
 
@@ -294,6 +298,9 @@ public class AddressService {
             address.setAreaName(name);
             address.setFlag(vAddress.getFlag()? Whether.YES:Whether.NO);
             address.setAreaCode(vAddress.getAreaCode());
+
+            if(vAddress.getFlag())
+                addressRepository.updateAddressById("0",companyCode);
             addressRepository.save(address);
 
             map.put("code",200);

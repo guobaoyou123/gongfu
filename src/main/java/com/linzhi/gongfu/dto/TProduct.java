@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 用于转移产品基本信息
@@ -80,4 +81,8 @@ public class TProduct implements Serializable {
      * 计价单位
      */
     private  String chargeUnit;
+    /**
+     * 面价
+     */
+    private BigDecimal facePrice;
 }

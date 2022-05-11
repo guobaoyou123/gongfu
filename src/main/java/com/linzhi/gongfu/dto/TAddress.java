@@ -48,6 +48,8 @@ public class TAddress {
      * 区域是否禁用
      */
     private  boolean disabled;
-
-
+    /**
+     * 排序
+     */
+    private int sort;
 }
