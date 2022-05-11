@@ -286,7 +286,7 @@ public class InquiryService {
         tInquiry.setRecords(trecords);
         tInquiry.setVat(judgeInquiryMoney(tInquiry.getVat(),records));
         tInquiry.setTotalPrice(judgeInquiryMoney(tInquiry.getTotalPrice(),records));
-        tInquiry.setTotalPrice(judgeInquiryMoney(tInquiry.getTotalPriceVat(),records));
+        tInquiry.setTotalPriceVat(judgeInquiryMoney(tInquiry.getTotalPriceVat(),records));
         return  tInquiry;
     }
     @Cacheable(value="inquiry_detail;1800",key = "#id")
@@ -550,9 +550,9 @@ public class InquiryService {
                     }
                 }));
             }
-          //  inquiry.setRecords();
-            inquiryRecordRepository.saveAll(countRecord(records,inquiry.getOfferMode()));
-            return  countSum(records,id);
+            List<InquiryRecord> inquiryRecordList =countRecord(records,inquiry.getOfferMode());
+            inquiryRecordRepository.saveAll(inquiryRecordList);
+            return  countSum(inquiryRecordList,id);
         }catch (Exception e){
             e.printStackTrace();
             return false;
@@ -844,8 +844,6 @@ public class InquiryService {
             TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
                 .orElseThrow(() -> new IOException("请求的货物税率不存在"));
             //查询询价单
-// inquiry = inquiryDetail(id)
-        //        .orElseThrow(() -> new IOException("请求的询价单不存在"));
             Inquiry inquiry =findInquiry(id)  .orElseThrow(() -> new IOException("请求的询价单不存在"));
             int maxCode =0;
             for (ImportProductTemp importProductTemp : list) {
@@ -882,7 +880,6 @@ public class InquiryService {
             if(countSum(inquiryRecords,id))
                 resultMap.put("code",200);
                 resultMap.put("message","保存成功");
-
         }catch (Exception e){
             e.printStackTrace();
             return resultMap;
