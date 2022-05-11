@@ -130,7 +130,7 @@ public class ContractService {
                 contract.setAddress(address.getAddress());
             }
             //联系人
-            if(StringUtils.isNotBlank(generateContractRequest.getAddressCode())){
+            if(StringUtils.isNotBlank(generateContractRequest.getContactCode())){
                 //联系人
                 CompContacts compContacts =compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_Code(
                     generateContractRequest.getAddressCode(),

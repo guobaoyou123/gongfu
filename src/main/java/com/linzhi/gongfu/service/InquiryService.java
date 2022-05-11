@@ -280,19 +280,32 @@ public class InquiryService {
      * @return 返回询价单详情
      */
     public TInquiry inquiryDetail(String id) {
-      TInquiry tInquiry= inquiryDetailRepository.findById(id).map(inquiryMapper::toInquiryDetail).get();
+      TInquiry tInquiry= findInquiry(id).map(inquiryMapper::toInquiryDetail).get();
         List<InquiryRecord>  records  = findInquiryRecords(id);
-        List<TInquiryRecord>  trecords = findInquiryRecords(id).stream().map(inquiryRecordMapper::toTInquiryRecordDo).toList();
-        tInquiry.setRecords(trecords);
+        List<TInquiryRecord>  tRecords = findInquiryRecords(id).stream().map(inquiryRecordMapper::toTInquiryRecordDo).toList();
+        tInquiry.setRecords(tRecords);
         tInquiry.setVat(judgeInquiryMoney(tInquiry.getVat(),records));
         tInquiry.setTotalPrice(judgeInquiryMoney(tInquiry.getTotalPrice(),records));
         tInquiry.setTotalPriceVat(judgeInquiryMoney(tInquiry.getTotalPriceVat(),records));
         return  tInquiry;
     }
+
+    /**
+     * 查询询价单
+     * @param id 询价单编码
+     * @return 询价单信息
+     */
     @Cacheable(value="inquiry_detail;1800",key = "#id")
     public Optional<Inquiry> findInquiry(String id ){return  inquiryRepository.findById(id);}
+
+    /**
+     * 查询询价单明细
+     * @param id 询价单id
+     * @return 询价单明细列表
+     */
     @Cacheable(value="inquiry_record_List;1800",key = "#id")
     public List<InquiryRecord> findInquiryRecords(String id){return  inquiryRecordRepository.findInquiryRecord(id);}
+
     /**
      * 建立新的空询价单
      * @param companyCode 单位id
@@ -473,7 +486,6 @@ public class InquiryService {
     @Transactional
     public Boolean deleteInquiryProduct(String id,List<Integer> codes){
         try {
-            //InquiryDetail inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<InquiryRecord> records = findInquiryRecords(id);
             inquiryRecordRepository.deleteProducts(id,codes);
             return countSum(
@@ -496,14 +508,12 @@ public class InquiryService {
      * @param id 询价单主键
      * @return 返回成功或者失败
      */
-
     @Caching(evict = {@CacheEvict(value="inquiry_detail;1800",key = "#id"),
         @CacheEvict(value="inquiry_record_List;1800", key="#id")
     })
     @Transactional
     public  Boolean  modifyInquiry(VModifyInquiryRequest vModifyInquiryRequest,String id){
         try{
-           // InquiryDetail inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<InquiryRecord> records = findInquiryRecords(id);
             if(StringUtils.isNotBlank(vModifyInquiryRequest.getTaxModel()))
@@ -592,7 +602,6 @@ public class InquiryService {
     public List<LinkedHashMap<String,Object>> exportProduct(String id){
         List<LinkedHashMap<String,Object>> list = new ArrayList<>();
         try{
-            //InquiryDetail inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             Inquiry inquiry =findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<InquiryRecord> records = findInquiryRecords(id);
             records.forEach(record -> {
@@ -871,7 +880,6 @@ public class InquiryService {
                 }
                 inquiryRecords.add(record);
                 maxCode++;
-
             }
             //删除原有的产品明细
             importProductTempRepository.deleteProduct(id,companyCode,operator);
