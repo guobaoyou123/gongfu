@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -40,5 +41,9 @@ public class VProductPageResponse extends VBaseResponse{
          * 计价单位
          */
         private String chargeUnit;
+        /**
+         * 产品面价
+         */
+        private BigDecimal facePrice;
     }
 }

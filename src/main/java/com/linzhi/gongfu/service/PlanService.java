@@ -39,9 +39,6 @@ public class PlanService {
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
     private final CompanyRepository companyRepository;
     private final PurchasePlanProductRepository purchasePlanProductRepository;
-    private final InquiryDetailRepository inquiryRepository;
-    private final CompTradeRepository compTradeRepository;
-    private final TaxRatesRepository vatRatesRepository;
 
     /**
      * 根据单位id、操作员编码查询该操作员的临时采购计划列表
@@ -102,6 +99,7 @@ public class PlanService {
                         .brandCode(p.getBrandCode())
                         .describe(p.getDescribe())
                         .demand(pr.getDemand())
+                        .facePrice(p.getFacePrice())
                         .build();
                 }else{
                     message[0] = message[0] +temporaryPlan.getProductCode()+",";
@@ -231,7 +229,7 @@ public class PlanService {
                     .brand(temporaryPlan.getBrand())
                     .chargeUnit(temporaryPlan.getChargeUnit())
                     .describe(temporaryPlan.getDescribe())
-                    .facePrice(temporaryPlan.getProduct().getFacePrice())
+                    .facePrice(temporaryPlan.getFacePrice())
                     .demand(temporaryPlan.getDemand())
                     .salers(purchasePlanProductSalers)
                     .deliverNum(BigDecimal.valueOf(5))

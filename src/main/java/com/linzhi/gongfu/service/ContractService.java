@@ -57,7 +57,7 @@ public class ContractService {
             //产品种类和数量相同的合同号
             List<String> contractId = contractRepository.findContractId(inquiry.getCreatedByComp(),inquiry.getCreatedBy(),str);
 
-           return contractId.stream().collect(Collectors.joining(","));
+           return String.join(",", contractId);
     }
 
     /**
@@ -67,7 +67,9 @@ public class ContractService {
      */
     @Caching(evict = {
         @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true),
-        @CacheEvict(value="inquiry_history_page;1800", key="#companyCode+'_'",allEntries=true)
+        @CacheEvict(value="inquiry_history_page;1800", key="#companyCode+'_'",allEntries=true),
+        @CacheEvict(value="inquiry_detail;1800",key = "#generateContractRequest.inquiryId"),
+        @CacheEvict(value="inquiry_record_List;1800", key="#generateContractRequest.inquiryId")
     })
     @Transactional
     public Boolean saveContract(VGenerateContractRequest generateContractRequest,String companyCode){

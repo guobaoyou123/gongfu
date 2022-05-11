@@ -46,6 +46,10 @@ public class VTemporaryPlanResponse extends VBaseResponse{
          */
         private BigDecimal demand;
         /**
+         * 面价
+         */
+        private BigDecimal facePrice;
+        /**
          * 创建时间
          */
         private Long createdAt;

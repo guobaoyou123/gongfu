@@ -8,6 +8,7 @@ import lombok.*;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
@@ -25,6 +26,7 @@ public class Inquiry {
     @Column(length = 50,nullable = false)
     @NotNull
     @NotBlank
+    @NonNull
     private String id ;
     /**
      * 询价单编号
@@ -33,6 +35,11 @@ public class Inquiry {
     @NotNull
     @NotBlank
     private String code;
+    /**
+     * 合同id
+     */
+    @Column(name = "contract_id",length = 50)
+    private String contractId;
     /**
      * 合同编码
      */
@@ -95,11 +102,56 @@ public class Inquiry {
     @Column(name = "saler_comp_name",length = 100)
     private String salerCompName;
     /**
-     * 创建时间
+     * 供应商中联系人姓名
      */
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "saler_contact_name",length = 20)
+    private String salerContactName;
+    /**
+     * 供应商中联系人电话
+     */
+    @Column(name = "saler_contact_phone",length = 20)
+    private String salerContactPhone;
 
+    /**
+     * 货物税率
+     */
+    @Column(name = "goods_rate")
+    private BigDecimal vatProductRate;
+    /**
+     * 货物税率
+     */
+    @Column(name = "service_rate")
+    private BigDecimal vatServiceRate;
+    /**
+     *折扣
+     */
+    @Column(name = "discount")
+    private BigDecimal discount;
+    /**
+     * 税额
+     */
+    @Column(name = "vat")
+    private BigDecimal vat;
+    /**
+     * 未税总价
+     */
+    @Column(name = "total_price")
+    private BigDecimal totalPrice;
+    /**
+     * 含税总价
+     */
+    @Column(name = "total_price_vat")
+    private BigDecimal totalPriceVat;
+    /**
+     * 最终未税总价
+     */
+    @Column(name = "discount_total_price")
+    private BigDecimal discountedTotalPrice;
+    /**
+     * 确认价税合计
+     */
+    @Column(name = "confirm_total_price_vat")
+    private BigDecimal confirmTotalPriceVat;
     /**
      * 状态（0-未形成合同 1-以生成合同 2-撤销合同）
      */
@@ -110,5 +162,46 @@ public class Inquiry {
      */
     @Column(name = "offer_mode",length = 1)
     private TaxMode offerMode;
+    /**
+     * 创建时间
+     */
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    /**
+     * 删除时间
+     */
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+    /**
+     * 确认时间
+     */
+    @Column(name = "confirmed_at")
+    private LocalDateTime confirmedAt;
+    /**
+     * 区域编码
+     */
+    @Column(name = "area_code",length = 20)
+    private String areaCode;
+    /**
+     * 区域名称
+     */
+    @Column(name = "area_name",length = 100)
+    private String areaName;
+    /**
+     * 详细地址
+     */
+    @Column(name = "address",length = 100)
+    private String address;
+    /**
+     *收货人
+     */
+    @Column(name = "consignee_name",length = 20)
+    private String consigneeName;
+    /**
+     *收货人电话
+     */
+    @Column(name = "consignee_phone",length = 20)
+    private String consigneePhone;
+
 
 }

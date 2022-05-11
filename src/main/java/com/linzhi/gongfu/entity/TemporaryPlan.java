@@ -55,7 +55,12 @@ public class TemporaryPlan implements Serializable {
      */
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-    @OneToOne
+    /**
+     * 面价
+     */
+    @Column(name = "face_price")
+    private BigDecimal facePrice;
+/*    @OneToOne
     @JoinColumn(name ="product_id",referencedColumnName = "id", insertable = false, updatable = false)
-    private Product product;
+    private Product product;*/
 }

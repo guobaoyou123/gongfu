@@ -54,6 +54,7 @@ public class AddressService {
      * @param companyCode 单位id
      * @return 三级行政区划查找（包括禁用区域状态）列表
      */
+
     public List<TArea> areas(String companyCode){
         var list = findAllArea().stream()
             .map(administrativeAreaMapper::toDo)

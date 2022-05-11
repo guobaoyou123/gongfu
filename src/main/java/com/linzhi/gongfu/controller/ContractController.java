@@ -460,9 +460,8 @@ public class ContractController {
      * @return 返回询价单详细信息
      */
     @GetMapping("/contract/purchase/inquiry/{id}")
-    public VInquiryDetailResponse inquiryDetail(@PathVariable("id") Optional<String> id){
-        var inquiry =id.flatMap(inquiryService::inquiryDetail)
-            .map(inquiryMapper::toInquiryDetail)
+    public VInquiryDetailResponse inquiryDetail(@PathVariable("id") Optional<String> id) throws IOException {
+        var inquiry =id.map(inquiryService::inquiryDetail)
             .map(inquiryMapper::toVInquiryDetail);
         if(inquiry.isPresent())
             return VInquiryDetailResponse.builder()

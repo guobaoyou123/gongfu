@@ -114,25 +114,5 @@ public class BrandController {
             .build();
     }
 
-    /**
-     * 根据产品编码查询品牌
-     * @return 返回品牌列表信息
-     */
-    @GetMapping("/brands/by/product")
-    public VDcBrandResponse brandsByProduct(@RequestParam("productCode") Optional<String> productCode) {
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext().getAuthentication();
-        var brandList = brandService.brandListByProduct(
-            productCode.orElse("")
-        );
-        return VDcBrandResponse.builder()
-            .code(200)
-            .message("获取品牌列表成功。")
-            .brands(
-                brandList.stream()
-                    .map(brandMapper::toProductBrandPreload)
-                    .collect(Collectors.toSet())
-            )
-            .build();
-    }
+
 }

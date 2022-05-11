@@ -55,7 +55,17 @@ public interface InquiryMapper {
     @Mapping(target = "totalPrice",expression = "java(com.linzhi.gongfu.service.InquiryService.judgeInquiryMoney(inquiry.getTotalPrice(),inquiry.getRecords()))")
     @Mapping(target = "totalPriceVat",expression = "java(com.linzhi.gongfu.service.InquiryService.judgeInquiryMoney(inquiry.getTotalPriceVat(),inquiry.getRecords()))")
     TInquiry toInquiryDetail(InquiryDetail inquiry);
-
+    /**
+     * 转换询价单详情
+     * @param inquiry 询价单基本信息
+     * @return 询价单详情基本信息
+     */
+    @Mapping(target = "createdAt",expression = "java(com.linzhi.gongfu.util.DateConverter.dateFormat(inquiry.getCreatedAt()))")
+    @Mapping(target = "deletedAt",expression = "java(inquiry.getDeletedAt()!=null?com.linzhi.gongfu.util.DateConverter.dateFormat(inquiry.getDeletedAt()):null)")
+    @Mapping(target = "confirmedAt",expression = "java(inquiry.getConfirmedAt()!=null?com.linzhi.gongfu.util.DateConverter.dateFormat(inquiry.getConfirmedAt()):null)")
+    @Mapping(target = "state",expression = "java(String.valueOf(inquiry.getState().getState()))")
+    @Mapping(target = "offerMode",expression = "java(String.valueOf(inquiry.getOfferMode().getTaxMode()))")
+    TInquiry toInquiryDetail(Inquiry inquiry);
 
     /**
      * 转换询价单详情

@@ -42,4 +42,8 @@ public class TTemporaryPlan implements Serializable {
      * 创建时间
      */
     private Long createdAt;
+    /**
+     * 面价
+     */
+    private BigDecimal facePrice;
 }
