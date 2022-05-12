@@ -53,11 +53,27 @@ public class Contract {
      */
     @Column(name = "type",length = 1)
     private InquiryType type;
+
     /*
-     * 对应销售合同编码
+     * 对应销售合同记录系统主键
+     */
+    @Column(name = "sales_contract_id",length = 50)
+    private String salesContractId;
+    /*
+     * 对应销售合同记录系统编码
+     */
+    @Column(name = "sales_contract_code",length = 40)
+    private String salesContractCode;
+    /*
+     * 对应销售合同记录中本单位编码
      */
     @Column(name = "sales_order_code",length = 40)
     private String salesOrderCode;
+    /*
+     * 对应销售合同记录中客户合同编码
+     */
+    @Column(name = "sales_buyer_order_code",length = 40)
+    private String salesBuyerOrderCode;
     /**
      * 所属单位编码
      */

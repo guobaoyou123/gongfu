@@ -67,7 +67,7 @@ public class ContractService {
      */
     @Caching(evict = {
         @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true),
-        @CacheEvict(value="inquiry_history_page;1800", key="#companyCode+'_'",allEntries=true),
+        @CacheEvict(value="inquiry_history_list;1800", key="#companyCode+'_'",allEntries=true),
         @CacheEvict(value="inquiry_detail;1800",key = "#generateContractRequest.inquiryId"),
         @CacheEvict(value="inquiry_record_List;1800", key="#generateContractRequest.inquiryId")
     })
@@ -90,6 +90,9 @@ public class ContractService {
                 inquiry.getBuyerContactName(),
                 inquiry.getSalerComp(),
                 inquiry.getSalerCompName(),
+                inquiry.getSalesContractId(),
+                inquiry.getSalesContractCode(),
+                inquiry.getSalesBuyerOrderCode(),
                 inquiry.getSalesOrderCode(),
                 inquiry.getOfferMode(),
                 generateContractRequest.getContactNo(),
@@ -101,6 +104,7 @@ public class ContractService {
                 contract.setVatServiceRate(inquiry.getVatServiceRate());
             //本单位合同编码
             contract.setOrderCode(generateContractRequest.getContactNo());
+            inquiry.setOrderCode(generateContractRequest.getContactNo());
             //供应商合同编码
             if(StringUtils.isNotBlank(generateContractRequest.getSupplierNo()))
                 inquiry.setSalerOrderCode(generateContractRequest.getSupplierNo());
@@ -241,6 +245,7 @@ public class ContractService {
            inquiry.setConfirmedAt(LocalDateTime.now());
            inquiry.setState(InquiryState.FINISHED);
            inquiry.setContractId(id);
+           inquiry.setContractCode(code);
            inquiryDetailRepository.save(inquiry);
            contract.setSequenceCode(str);
             //保存合同
@@ -272,6 +277,7 @@ public class ContractService {
     public Contract createdContract(String id, String code, String createdByComp,
                                     String createdBy, String buyerComp, String buyerCompName,
                                     String buyerContactName, String salerComp, String salerCompName,
+                                    String salesContractId,String salesContractCode,String salesBuyerOrderCode,
                                     String salesOrderCode, TaxMode offerMode,String contractNo,InquiryType inquiryType){
         return  Contract.builder()
             .id(id)

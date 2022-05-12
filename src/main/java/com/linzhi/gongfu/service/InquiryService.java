@@ -60,7 +60,7 @@ public class InquiryService {
     private final ImportProductTempRepository importProductTempRepository;
     private final ImportProductTempMapper importProductTempMapper;
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
-
+    private final ContractRepository contractRepository;
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final PurchasePlanRepository purchasePlanRepository;
     private final JPAQueryFactory queryFactory;
@@ -97,6 +97,12 @@ public class InquiryService {
             TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001").orElseThrow(()-> new IOException("数据库中找不到该税率"));
             //查出服务税率
             // Optional<TaxRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
+            //查出对应的销售合同
+            Contract salesContract = null;
+            if(purchasePlan.get().getSalesId()!=null){
+                 salesContract = contractRepository.findById(purchasePlan.get().getSalesId()).get();
+            }
+
             //查出向每个供应商询价商品且询价数量>0的有哪些
             purchasePlan.get().getProduct().forEach(purchasePlanProduct -> purchasePlanProduct.getSalers().forEach(supplier -> {
                 if(supplier.getDemand().intValue()>0) {
@@ -131,6 +137,7 @@ public class InquiryService {
                 maxCode ="01";
             AtomicInteger max = new AtomicInteger(Integer.parseInt(maxCode));
             //对每个供应商生成询价单
+            Contract finalSalesContract = salesContract;
             companyRepository.findAllById(suppliers).forEach(company -> {
 
                     List<String> inquiryCodes = getInquiryCode(max.get()+"",operatorCode,companyCode,company.getRole().equals(CompanyRole.EXTERIOR_SUPPLIER.getSign())?company.getEncode():company.getCode());
@@ -151,6 +158,8 @@ public class InquiryService {
                             company.getCode(),
                             company.getNameInCN(),
                             compTradMap.get(company.getCode())==null? TaxMode.UNTAXED :compTradMap.get(company.getCode()).getTaxModel(),
+                            finalSalesContract !=null? finalSalesContract.getId():null, finalSalesContract !=null?finalSalesContract.getCode():null,
+                            finalSalesContract!=null?finalSalesContract.getSalerOrderCode():null,
                             purchasePlan.get().getSalesCode(),
                             records
                         )
@@ -242,7 +251,7 @@ public class InquiryService {
      * @return 返回询价单信息列表
      * @throws IOException 异常
      */
-
+    @Cacheable(value="inquiry_history_list;1800")
     public List<TInquiry> inquiryHistory(String companyCode, String operator,String supplierCode,
                                         String startTime,String endTime,String state) throws IOException {
         Operator operator1= operatorRepository.findById(
@@ -267,11 +276,18 @@ public class InquiryService {
             LocalDateTime endTimes = LocalDateTime.parse(endTime+" 23:59:59", dateTimeFormatters);
             jpaQuery.where(qInquiry.createdAt.between(startTimes,endTimes));
         }
-        jpaQuery.orderBy(qInquiry.createdAt.desc(),qInquiry.code.desc());
+     //   jpaQuery.orderBy(qInquiry.createdAt.desc());
         List<Inquiry> inquiries = jpaQuery.fetch();
+        inquiries.sort((o1, o2) -> {
+            if (o1.getCreatedAt().toLocalDate().compareTo(o2.getCreatedAt().toLocalDate()) == 0) {
+               return o2.getCode().substring(o2.getCode().length()-3).compareTo(o1.getCode().substring(o1.getCode().length()-3));
+            }
+            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+        });
         return inquiries.stream()
             .map(inquiryMapper::toInquiryList)
-            .toList();
+            .toList()
+            ;
     }
 
     /**
@@ -345,7 +361,7 @@ public class InquiryService {
                     operatorName,
                     supplierCode,
                     supplierName,
-                    taxMode,null,null
+                    taxMode,null,null,null,null,null
                 )
             );
             return  inquiryCodes.get(0);
@@ -424,6 +440,7 @@ public class InquiryService {
     public InquiryDetail createInquiryDetail(String id,String code,String companyCode,
                                              String operator ,String companyName,String operatorName,
                                              String supplierCode,String supplierName ,TaxMode taxMode,
+                                             String salesContractId,String salesContractCode,String salesBuyerOrderCode,
                                              String salesOrderCode,List<InquiryRecord> records){
         return  InquiryDetail.builder()
             .id(id)
@@ -437,6 +454,9 @@ public class InquiryService {
             .buyerContactName(operatorName)
             .salerComp(supplierCode)
             .salerCompName(supplierName)
+            .salesContractId(salesContractId)
+            .salesContractCode(salesContractCode)
+            .salesBuyerOrderCode(salesBuyerOrderCode)
             .salesOrderCode(salesOrderCode)
             .state(InquiryState.UN_FINISHED)
             .offerMode(taxMode)
@@ -578,7 +598,8 @@ public class InquiryService {
 
     @Caching(evict = {@CacheEvict(value="inquiry_detail;1800",key = "#id"),
         @CacheEvict(value="inquiry_record_List;1800", key="#id"),
-        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
+        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true),
+        @CacheEvict(value="inquiry_history_list;1800", key="#companyCode+'_'",allEntries=true)
     })
     @Transactional
     public  Boolean deleteInquiry(String id,String companyCode){

@@ -25,14 +25,38 @@ public class VInquiryDetailResponse extends VBaseResponse{
          * 询价单编号
          */
         private String code;
+        /*
+         * 对应销售合同记录系统主键
+         */
+        private String salesContractId;
+        /*
+         * 对应销售合同记录系统编码
+         */
+        private String salesContractCode;
+        /*
+         * 对应销售合同记录中本单位编码
+         */
+        private String salesContractNo;
+        /*
+         * 对应销售合同记录中客户合同编码
+         */
+        private String  salesCustomerNo;
+        /**
+         * 合同主键
+         */
+        private String purchaseContractId;
+        /*
+         * 合同系统编号
+         */
+        private String purchaseContractCode;
         /**
          * 合同编码
          */
-        private String contractNo;
+        private String purchaseContractNo;
         /**
          * 供应商合同编码
          */
-        private String supplierNo;
+        private String purchaseSupplierNo;
         /**
          * 所属操作员编码
          */
@@ -45,10 +69,7 @@ public class VInquiryDetailResponse extends VBaseResponse{
          * 创建时间
          */
         private String createdAt;
-        /*
-         * 对应销售合同编码
-         */
-        private String salesContractCode;
+
 
 
         /**

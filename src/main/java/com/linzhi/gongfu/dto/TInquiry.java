@@ -31,6 +31,14 @@ public class TInquiry {
     /**
      * 合同编码
      */
+    private String contractId;
+    /*
+     * 合同系统编号
+     */
+    private String contractCode;
+    /**
+     * 合同编码
+     */
     private String orderCode;
     /**
      * 供应商合同编码
@@ -41,9 +49,21 @@ public class TInquiry {
      */
     private String type;
     /*
-     * 对应销售合同编码
+     * 对应销售合同记录系统主键
+     */
+    private String salesContractId;
+    /*
+     * 对应销售合同记录系统编码
+     */
+    private String salesContractCode;
+    /*
+     * 对应销售合同记录中本单位编码
      */
     private String salesOrderCode;
+    /*
+     * 对应销售合同记录中客户合同编码
+     */
+    private String salesBuyerOrderCode;
     /**
      * 所属单位编码
      */

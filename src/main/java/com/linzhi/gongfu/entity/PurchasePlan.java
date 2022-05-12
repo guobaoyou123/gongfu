@@ -26,6 +26,12 @@ public class PurchasePlan implements Serializable {
     @Column(name = "created_by",length = 20,nullable = false)
     private String createdBy;
     /**
+     * 对应销售合同主键
+     */
+    @Column(name = "sales_id",length = 50)
+    private String salesId;
+
+    /**
      * 对应销售合同号
      */
     @Column(name = "sales_code",length = 50)

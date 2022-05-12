@@ -25,10 +25,17 @@ public interface InquiryMapper {
      * @param tInquiry 询价单基本信息
      * @return 询价单基本信息
      */
-    @Mapping(target = "salesContractCode",source = "salesOrderCode")
     @Mapping(target = "supplierName",source = "salerCompName")
     @Mapping(target = "ownerCode",source = "createdBy")
     @Mapping(target = "ownerName",source = "buyerContactName")
+    @Mapping(target = "salesContractId",source = "salesContractId")
+    @Mapping(target = "salesContractCode",source = "salesContractCode")
+    @Mapping(target = "salesContractNo",source = "salesOrderCode")
+    @Mapping(target = "salesCustomerNo",source = "salesBuyerOrderCode")
+    @Mapping(target = "purchaseContractId",source = "contractId")
+    @Mapping(target = "purchaseContractCode",source = "contractCode")
+    @Mapping(target = "purchaseContractNo",source = "orderCode")
+    @Mapping(target = "purchaseSupplierNo",source = "salerOrderCode")
     VInquiryListResponse.VInquiry toVInquiryList(TInquiry tInquiry);
 
     /**
@@ -36,10 +43,17 @@ public interface InquiryMapper {
      * @param tInquiry 询价单基本信息
      * @return 询价单基本信息
      */
-    @Mapping(target = "salesContractCode",source = "salesOrderCode")
     @Mapping(target = "supplierName",source = "salerCompName")
     @Mapping(target = "ownerCode",source = "createdBy")
     @Mapping(target = "ownerName",source = "buyerContactName")
+    @Mapping(target = "salesContractId",source = "salesContractId")
+    @Mapping(target = "salesContractCode",source = "salesContractCode")
+    @Mapping(target = "salesContractNo",source = "salesOrderCode")
+    @Mapping(target = "salesCustomerNo",source = "salesBuyerOrderCode")
+    @Mapping(target = "purchaseContractId",source = "contractId")
+    @Mapping(target = "purchaseContractCode",source = "contractCode")
+    @Mapping(target = "purchaseContractNo",source = "orderCode")
+    @Mapping(target = "purchaseSupplierNo",source = "salerOrderCode")
     VInquiryPageResponse.VInquiry toVInquiryPage(TInquiry tInquiry);
     /**
      * 转换询价单详情
@@ -72,9 +86,6 @@ public interface InquiryMapper {
      * @param tInquiry 询价单基本信息
      * @return 询价单详情基本信息
      */
-    @Mapping(target = "contractNo",source = "orderCode")
-    @Mapping(target = "supplierNo",source = "salerOrderCode")
-    @Mapping(target = "salesContractCode",source = "salesOrderCode")
     @Mapping(target = "supplierCode",source = "salerComp")
     @Mapping(target = "supplierName",source = "salerCompName")
     @Mapping(target = "supplierContactName",source = "salerContactName")
@@ -88,5 +99,13 @@ public interface InquiryMapper {
     @Mapping(target = "products",source = "records")
     @Mapping(target = "ownerCode",source = "createdBy")
     @Mapping(target = "ownerName",source = "buyerContactName")
+    @Mapping(target = "salesContractId",source = "salesContractId")
+    @Mapping(target = "salesContractCode",source = "salesContractCode")
+    @Mapping(target = "salesContractNo",source = "salesOrderCode")
+    @Mapping(target = "salesCustomerNo",source = "salesBuyerOrderCode")
+    @Mapping(target = "purchaseContractId",source = "contractId")
+    @Mapping(target = "purchaseContractCode",source = "contractCode")
+    @Mapping(target = "purchaseContractNo",source = "orderCode")
+    @Mapping(target = "purchaseSupplierNo",source = "salerOrderCode")
    VInquiryDetailResponse.VInquiry toVInquiryDetail(TInquiry tInquiry);
 }
