@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.linzhi.gongfu.entity.EnrolledCompany;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
@@ -16,4 +17,10 @@ import org.springframework.data.repository.CrudRepository;
 public interface EnrolledCompanyRepository
         extends CrudRepository<EnrolledCompany, String>, QuerydslPredicateExecutor<EnrolledCompany> {
     Optional<EnrolledCompany> findBySubdomainName(String subdomainName);
+    Optional<EnrolledCompany> findByUSCI(String usci);
+
+
+    @Query(value="select  (cast(max(id) as int)+1) from dc_comp " ,
+        nativeQuery = true)
+    String findMaxCode();
 }

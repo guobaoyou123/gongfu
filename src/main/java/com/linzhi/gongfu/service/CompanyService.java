@@ -4,10 +4,7 @@ import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
 import com.linzhi.gongfu.entity.*;
-import com.linzhi.gongfu.enumeration.Availability;
-import com.linzhi.gongfu.enumeration.CompanyRole;
-import com.linzhi.gongfu.enumeration.TaxMode;
-import com.linzhi.gongfu.enumeration.Trade;
+import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
@@ -224,7 +221,26 @@ public class CompanyService {
                    map.put("message","供应商已存在于列表中");
                    return map;
                }
-               supplierVerification(foreignSupplier.getUsci(), companyCode);
+               //查询有没有系统唯一码
+               Optional<EnrolledCompany> enrolledCompany= enrolledCompanyRepository.findByUSCI(foreignSupplier.getUsci());
+               // supplierVerification(foreignSupplier.getUsci(), companyCode);
+               //判断系统单位表是否为空
+               if(enrolledCompany.isEmpty()){
+                   //空的话获取系统单位表的最大编码，生成新的单位
+                   String maxId = enrolledCompanyRepository.findMaxCode();
+                   if(maxId==null)
+                       maxId="1002";
+                   EnrolledCompany enrolledCompany1 = EnrolledCompany.builder()
+                       .id(maxId)
+                       .nameInCN(foreignSupplier.getCompanyName())
+                       .USCI(foreignSupplier.getUsci())
+                       .contactName(foreignSupplier.getContactName())
+                       .contactPhone(foreignSupplier.getContactPhone())
+                       .state(Enrollment.NOT_ENROLLED)
+                       .build();
+                   enrolledCompanyRepository.save(enrolledCompany1);
+                   enrolledCompany=Optional.of(enrolledCompany1);
+               }
                maxCode =   companyRepository.findMaxCode(CompanyRole.EXTERIOR_SUPPLIER.getSign(),companyCode);
                if(maxCode==null)
                    maxCode="101";
@@ -243,6 +259,7 @@ public class CompanyService {
                    .email(foreignSupplier.getEmail())
                    .phone(foreignSupplier.getPhone())
                    .address(foreignSupplier.getAddress())
+                    .identityCode(enrolledCompany.isEmpty()?null:enrolledCompany.get().getId())
                     .state(Availability.ENABLED)
                    .build();
            }else{
