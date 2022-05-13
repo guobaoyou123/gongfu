@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -223,7 +224,6 @@ public class CompanyService {
                }
                //查询有没有系统唯一码
                Optional<EnrolledCompany> enrolledCompany= enrolledCompanyRepository.findByUSCI(foreignSupplier.getUsci());
-               // supplierVerification(foreignSupplier.getUsci(), companyCode);
                //判断系统单位表是否为空
                if(enrolledCompany.isEmpty()){
                    //空的话获取系统单位表的最大编码，生成新的单位
@@ -251,30 +251,21 @@ public class CompanyService {
                    .USCI(foreignSupplier.getUsci())
                    .role(CompanyRole.EXTERIOR_SUPPLIER.getSign())
                    .nameInCN(foreignSupplier.getCompanyName())
-                   .shortNameInCN(foreignSupplier.getCompanyShortName())
-                   .areaCode(foreignSupplier.getAreaCode())
-                   .areaName(addressService.findByCode("",foreignSupplier.getAreaCode()))
-                   .contactName(foreignSupplier.getContactName())
-                   .contactPhone(foreignSupplier.getContactPhone())
-                   .email(foreignSupplier.getEmail())
-                   .phone(foreignSupplier.getPhone())
-                   .address(foreignSupplier.getAddress())
-                    .identityCode(enrolledCompany.isEmpty()?null:enrolledCompany.get().getId())
+                    .identityCode(enrolledCompany.get().getId())
                     .state(Availability.ENABLED)
                    .build();
            }else{
-               Company company1 =   companyRepository.findById(code).orElseGet(Company::new);
-               company1.setAreaCode(foreignSupplier.getAreaCode());
-               company1.setAreaName(addressService.findByCode("",foreignSupplier.getAreaCode()));
-               company1.setAddress(foreignSupplier.getAddress());
-               company1.setShortNameInCN(foreignSupplier.getCompanyShortName());
-               company1.setContactName(foreignSupplier.getContactName());
-               company1.setContactPhone(foreignSupplier.getContactPhone());
-               company1.setEmail(foreignSupplier.getEmail());
-               company1.setPhone(foreignSupplier.getPhone());
-                company = company1;
+               company =   companyRepository.findById(code).orElseThrow(()->new IOException("从数据库搜索不到该供应商"));
                compTradBrandRepository.deleteCompTradBrand(companyCode,code)  ;
           }
+           company.setAreaCode(foreignSupplier.getAreaCode());
+           company.setAreaName(addressService.findByCode("",foreignSupplier.getAreaCode()));
+           company.setAddress(foreignSupplier.getAddress());
+           company.setShortNameInCN(foreignSupplier.getCompanyShortName());
+           company.setContactName(foreignSupplier.getContactName());
+           company.setContactPhone(foreignSupplier.getContactPhone());
+           company.setEmail(foreignSupplier.getEmail());
+           company.setPhone(foreignSupplier.getPhone());
            companyRepository.save(company);
            //保存价税模式
            compTradeRepository.save(
@@ -320,7 +311,7 @@ public class CompanyService {
     /**
      * 修改供应商状态
      * @param code 供应商编码
-     * @param state 转态
+     * @param state 状态
      * @return 返回成功或则失败
      */
     @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",allEntries = true),

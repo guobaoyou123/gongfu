@@ -102,7 +102,6 @@ public class InquiryService {
             if(purchasePlan.get().getSalesId()!=null){
                  salesContract = contractRepository.findById(purchasePlan.get().getSalesId()).get();
             }
-
             //查出向每个供应商询价商品且询价数量>0的有哪些
             purchasePlan.get().getProduct().forEach(purchasePlanProduct -> purchasePlanProduct.getSalers().forEach(supplier -> {
                 if(supplier.getDemand().intValue()>0) {
@@ -564,7 +563,6 @@ public class InquiryService {
                             record.setAmount(vProduct.getAmount());
                         if(vProduct.getVatRate()!=null)
                             record.setVatRate(vProduct.getVatRate());
-
                         if(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()<0) {
                                 record.setPrice(null);
                                 record.setPriceVat(null);
@@ -662,7 +660,6 @@ public class InquiryService {
      * @param operator 操作员编码
      * @return 返回成功或者失败信息
      */
-
     @CacheEvict(value="inquiry_record_List;1800", key="#id")
     @Transactional
     public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operator){
@@ -682,7 +679,6 @@ public class InquiryService {
                         .itemNo(i+2)
                         .build()
                 );
-
                 if(map.get("产品编码")!=null){
                     String code = map.get("产品编码").toString();
                     importProductTemp.setCode(code);
@@ -798,6 +794,13 @@ public class InquiryService {
         return map ;
     }
 
+    /**
+     * 删除暂存产品
+     * @param id 询价单id
+     * @param companyCode 公司编码
+     * @param operator 操作员编码
+     * @return 返回true或者false
+     */
     @Transactional
     public Boolean deleteImportProducts(String id,String companyCode,String operator){
         try{
