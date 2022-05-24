@@ -2,6 +2,7 @@ package com.linzhi.gongfu.service;
 
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
+import com.linzhi.gongfu.mapper.ContractMapper;
 import com.linzhi.gongfu.mapper.TaxRatesMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.vo.VGenerateContractRequest;
@@ -20,6 +21,8 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -40,7 +43,8 @@ public class ContractService {
     private final CompContactsRepository compContactsRepository;
     private final TaxRatesRepository taxRatesRepository;
     private final TaxRatesMapper taxRatesMapper;
-
+    private final ContractRevisionRepository contractRevisionRepository;
+    private final ContractMapper contractMapper;
     /**
      * 查询合同是否重复（产品种类和数量）
      * @param inquiryId 询价单id
@@ -67,12 +71,11 @@ public class ContractService {
      */
     @Caching(evict = {
         @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true),
-        @CacheEvict(value="inquiry_history_list;1800", key="#companyCode+'_'",allEntries=true),
         @CacheEvict(value="inquiry_detail;1800",key = "#generateContractRequest.inquiryId"),
         @CacheEvict(value="inquiry_record_List;1800", key="#generateContractRequest.inquiryId")
     })
     @Transactional
-    public Boolean saveContract(VGenerateContractRequest generateContractRequest,String companyCode){
+    public Boolean saveContract(VGenerateContractRequest generateContractRequest,String companyCode,String operatorName){
         try{
             //查询询价单详情
             InquiryDetail inquiry = inquiryDetailRepository.findById(generateContractRequest.getInquiryId()).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
@@ -87,36 +90,30 @@ public class ContractService {
                 inquiry.getCreatedBy(),
                 inquiry.getBuyerComp(),
                 inquiry.getBuyerCompName(),
-                inquiry.getBuyerContactName(),
                 inquiry.getSalerComp(),
                 inquiry.getSalerCompName(),
                 inquiry.getSalesContractId(),
-                inquiry.getSalesContractCode(),
-                inquiry.getSalesBuyerOrderCode(),
-                inquiry.getSalesOrderCode(),
-                inquiry.getOfferMode(),
-                generateContractRequest.getContactNo(),
                 InquiryType.INQUIRY_LIST
             );
+            ContractRevision contractRevision =  createContractRevision(id,
+                operatorName,
+                generateContractRequest.getSupplierNo(),
+                inquiry.getOfferMode(),
+                generateContractRequest.getContactNo());
             if(inquiry.getVatProductRate()!=null)
-                contract.setVatProductRate(inquiry.getVatProductRate());
+                contractRevision.setVatProductRate(inquiry.getVatProductRate());
             if(inquiry.getVatServiceRate()!=null)
-                contract.setVatServiceRate(inquiry.getVatServiceRate());
+                contractRevision.setVatServiceRate(inquiry.getVatServiceRate());
             //本单位合同编码
-            contract.setOrderCode(generateContractRequest.getContactNo());
-            inquiry.setOrderCode(generateContractRequest.getContactNo());
+           // contractRevision.setOrderCode(generateContractRequest.getContactNo());
+           // inquiry.setOrderCode(generateContractRequest.getContactNo());
             //供应商合同编码
-            if(StringUtils.isNotBlank(generateContractRequest.getSupplierNo()))
-                inquiry.setSalerOrderCode(generateContractRequest.getSupplierNo());
-                contract.setSalerOrderCode(generateContractRequest.getSupplierNo());
+           // inquiry.setSalerOrderCode(generateContractRequest.getSupplierNo());
+                //contract.setSalerOrderCode(generateContractRequest.getSupplierNo());
             //供应商联系人
-            if(StringUtils.isNotBlank(generateContractRequest.getSupplierContactName()))
-                inquiry.setSalerContactName(generateContractRequest.getSupplierContactName());
-                contract.setSalerContactName(generateContractRequest.getSupplierContactName());
+            contractRevision.setSalerContactName(generateContractRequest.getSupplierContactName());
             //供应商联系人电话
-            if(StringUtils.isNotBlank(generateContractRequest.getSupplierContactPhone()))
-                inquiry.setSalerContactPhone(generateContractRequest.getSupplierContactPhone());
-                contract.setSalerContactPhone(generateContractRequest.getSupplierContactPhone());
+            contractRevision.setSalerContactPhone(generateContractRequest.getSupplierContactPhone());
             //地址
             if(StringUtils.isNotBlank(generateContractRequest.getAddressCode())){
                 //查找地址
@@ -126,12 +123,12 @@ public class ContractService {
                         .code(generateContractRequest.getAddressCode())
                         .build()
                 ).orElseThrow(()-> new IOException("数据库中找不到该地址"));
-                inquiry.setAreaCode(address.getAreaCode());
+                /*inquiry.setAreaCode(address.getAreaCode());
                 inquiry.setAreaName(address.getAreaName());
-                inquiry.setAddress(address.getAddress());
-                contract.setAreaCode(address.getAreaCode());
-                contract.setAreaName(address.getAreaName());
-                contract.setAddress(address.getAddress());
+                inquiry.setAddress(address.getAddress());*/
+                contractRevision.setAreaCode(address.getAreaCode());
+                contractRevision.setAreaName(address.getAreaName());
+                contractRevision.setAddress(address.getAddress());
             }
             //联系人
             if(StringUtils.isNotBlank(generateContractRequest.getContactCode())){
@@ -141,13 +138,13 @@ public class ContractService {
                     inquiry.getCreatedByComp(),
                     generateContractRequest.getContactCode()
                 ).orElseThrow(()-> new IOException("数据库中找不到该联系人"));
-                inquiry.setConsigneeName(compContacts.getContName());
-                inquiry.setConsigneePhone(compContacts.getContPhone());
-                contract.setConsigneeName(compContacts.getContName());
-                contract.setConsigneePhone(compContacts.getContPhone());
+                /*inquiry.setConsigneeName(compContacts.getContName());
+                inquiry.setConsigneePhone(compContacts.getContPhone());*/
+                contractRevision.setConsigneeName(compContacts.getContName());
+                contractRevision.setConsigneePhone(compContacts.getContPhone());
             }
             inquiry.setConfirmTotalPriceVat(generateContractRequest.getSum());
-            contract.setConfirmTotalPriceVat(generateContractRequest.getSum());
+            contractRevision.setConfirmTotalPriceVat(generateContractRequest.getSum());
             //判断产品单价是否为空
             List<InquiryRecord> list = inquiry.getRecords()
                 .stream()
@@ -176,11 +173,11 @@ public class ContractService {
                 inquiry.setDiscountedTotalPrice(discountSum);
                 inquiry.setVat(inquiry.getConfirmTotalPriceVat().subtract(discountSum));
                 inquiry.setDiscount(discount);
-                contract.setDiscount(discount);
-                contract.setVat(inquiry.getConfirmTotalPriceVat().subtract(discountSum));
-                contract.setTotalPrice(inquiry.getTotalPrice());
-                contract.setTotalPriceVat(inquiry.getTotalPriceVat());
-                contract.setDiscountedTotalPrice(discountSum);
+                contractRevision.setDiscount(discount);
+                contractRevision.setVat(inquiry.getConfirmTotalPriceVat().subtract(discountSum));
+                contractRevision.setTotalPrice(inquiry.getTotalPrice());
+                contractRevision.setTotalPriceVat(inquiry.getTotalPriceVat());
+                contractRevision.setDiscountedTotalPrice(discountSum);
             }
             //合同明细
             List<ContractRecord> records = new ArrayList<>();
@@ -188,6 +185,7 @@ public class ContractService {
                 ContractRecord contractRecord= ContractRecord.builder()
                     .contractRecordId(
                         ContractRecordId.builder()
+                            .revision(1)
                             .contractId(id)
                             .code(inquiryRecord.getInquiryRecordId().getCode())
                             .build()
@@ -219,7 +217,8 @@ public class ContractService {
                     contractRecord
                 );
             }
-           contract.setRecords(records);
+            contractRevision.setContractRecords(records);
+            //contractRevision.setRecords(records);
             /*
               将明细按照产品id，数量进行重新排序
              */
@@ -247,9 +246,10 @@ public class ContractService {
            inquiry.setContractId(id);
            inquiry.setContractCode(code);
            inquiryDetailRepository.save(inquiry);
-           contract.setSequenceCode(str);
+            contractRevision.setFingerprint(str);
             //保存合同
            contractRepository.save(contract);
+            contractRevisionRepository.save(contractRevision);
         }catch (Exception e){
             e.printStackTrace();
             return  false;
@@ -265,40 +265,52 @@ public class ContractService {
      * @param createdBy 创建者
      * @param buyerComp 买方单位
      * @param buyerCompName 买方名称
-     * @param buyerContactName 买方联系人名称
      * @param salerComp 卖方单位
      * @param salerCompName 卖方单位名称
-     * @param salesOrderCode 销售合同号
-     * @param offerMode 税模式
-     * @param contractNo 单位合同号
      * @param inquiryType 0-采购合同 1-销售合同
      * @return 合同实体
      */
     public Contract createdContract(String id, String code, String createdByComp,
                                     String createdBy, String buyerComp, String buyerCompName,
-                                    String buyerContactName, String salerComp, String salerCompName,
-                                    String salesContractId,String salesContractCode,String salesBuyerOrderCode,
-                                    String salesOrderCode, TaxMode offerMode,String contractNo,InquiryType inquiryType){
+                                   String salerComp, String salerCompName,
+                                    String salesContractId,InquiryType inquiryType){
+
+
+
         return  Contract.builder()
             .id(id)
             .code(code)
             .createdByComp(createdByComp)
+            .salesContractId(salesContractId)
             .type(inquiryType)
-            .orderCode(contractNo)
             .createdBy(createdBy)
             .buyerComp(buyerComp)
             .buyerCompName(buyerCompName)
-            .buyerContactName(buyerContactName)
             .salerComp(salerComp)
             .salerCompName(salerCompName)
             .createdAt(LocalDateTime.now())
-            .salesOrderCode(salesOrderCode)
             .state(InquiryState.FINISHED)
-            .offerMode(offerMode)
             .createdAt(LocalDateTime.now())
             .build();
     }
 
+
+    public ContractRevision createContractRevision(String id,
+                                                   String buyerContactName,
+                                                   String salesOrderCode, TaxMode offerMode,String contractNo){
+        return ContractRevision.builder()
+            .contractRevisionId(ContractRevisionId.builder()
+                .revision(1)
+                .id(id)
+                .build())
+            .orderCode(contractNo)
+            .salerOrderCode(salesOrderCode)
+            .buyerContactName(buyerContactName)
+            .createdAt(LocalDateTime.now())
+            .offerMode(offerMode)
+            .createdAt(LocalDateTime.now())
+            .build();
+    }
     /**
      * 税率列表
      * @param type 类型
@@ -338,4 +350,7 @@ public class ContractService {
         String str = supplierCode + "-" + buyerCode +"-"+ String.join("-", records);
         return  DigestUtils.md5Hex(str);
     }
+
+
+
 }

@@ -73,6 +73,10 @@ public class TInquiry {
      */
     private String createdBy;
     /**
+     * 所属操作员姓名
+     */
+    private String createdByName;
+    /**
      * 客户公司编码
      */
     private String buyerComp;
@@ -80,10 +84,7 @@ public class TInquiry {
      * 客户名称
      */
     private String buyerCompName;
-    /**
-     * 买方联系人姓名
-     */
-    private String buyerContactName;
+
     /**
      * 买方联系人电话
      */

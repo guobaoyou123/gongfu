@@ -366,7 +366,7 @@ public class ContractController {
             request.getPlanCode(),
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
-            session.getSession().getOperatorCode(),session.getSession().getOperatorName()
+            session.getSession().getOperatorCode()
         );
         return VBaseResponse.builder()
             .code((Integer) map.get("code"))
@@ -403,7 +403,7 @@ public class ContractController {
             .getContext().getAuthentication();
         var list = inquiryService.inquiryList(
             session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode()
+            session.getSession().getOperatorCode(),"0"
         );
         return VInquiryListResponse.builder()
             .code(200)
@@ -754,7 +754,7 @@ public class ContractController {
                 .code(201)
                 .message("可能重复的合同有："+contractCodes)
                 .build();
-        flag =  contractService.saveContract(generateContractRequest,session.getSession().getCompanyCode());
+        flag =  contractService.saveContract(generateContractRequest,session.getSession().getCompanyCode(),session.getSession().getOperatorName());
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -795,4 +795,5 @@ public class ContractController {
             return VBaseResponse.builder().code(200).message("数据不重复").build();
         return VBaseResponse.builder().code(201).message("数据重复").build();
     }
+
 }

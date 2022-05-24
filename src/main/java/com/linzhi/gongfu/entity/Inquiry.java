@@ -45,16 +45,9 @@ public class Inquiry {
      */
     @Column(name = "contract_code",length = 40)
     private String contractCode;
-    /**
-     * 合同编码
-     */
-    @Column(name = "order_code",length = 40)
+    @Column(name = "orderCode",updatable = false,insertable = false)
     private String orderCode;
-    /**
-     * 供应商合同编码
-     */
-    @Column(name = "saler_order_code",length = 40)
-    private String salerOrderCode;
+
     /**
      * 类型（0-询价单 1-报价当）
      */
@@ -68,18 +61,14 @@ public class Inquiry {
     /*
      * 对应销售合同记录系统编码
      */
-    @Column(name = "sales_contract_code",length = 40)
+    @Column(name = "salesContractCode",updatable = false,insertable = false)
     private String salesContractCode;
     /*
      * 对应销售合同记录中本单位编码
      */
-    @Column(name = "sales_order_code",length = 40)
+    @Column(name = "salesOrderCode",updatable = false,insertable = false)
     private String salesOrderCode;
-    /*
-     * 对应销售合同记录中客户合同编码
-     */
-    @Column(name = "sales_buyer_order_code",length = 40)
-    private String salesBuyerOrderCode;
+
     /**
      * 所属单位编码
      */
@@ -90,6 +79,8 @@ public class Inquiry {
      */
     @Column(name = "created_by",length = 20)
     private String createdBy;
+    @Column(name = "createdByName",updatable = false,insertable = false)
+    private String createdByName;
     /**
      * 客户公司编码
      */
@@ -100,16 +91,7 @@ public class Inquiry {
      */
     @Column(name = "buyer_comp_name",length = 100)
     private String buyerCompName;
-    /**
-     * 买方联系人姓名
-     */
-    @Column(name = "buyer_contact_name",length = 20)
-    private String buyerContactName;
-    /**
-     * 买方联系人电话
-     */
-    @Column(name = "buyer_contact_phone",length = 20)
-    private String buyerContactPhone;
+
     /**
      * 供应商公司编号
      */
@@ -121,16 +103,7 @@ public class Inquiry {
      */
     @Column(name = "saler_comp_name",length = 100)
     private String salerCompName;
-    /**
-     * 供应商中联系人姓名
-     */
-    @Column(name = "saler_contact_name",length = 20)
-    private String salerContactName;
-    /**
-     * 供应商中联系人电话
-     */
-    @Column(name = "saler_contact_phone",length = 20)
-    private String salerContactPhone;
+
 
     /**
      * 货物税率
@@ -197,31 +170,4 @@ public class Inquiry {
      */
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
-    /**
-     * 区域编码
-     */
-    @Column(name = "area_code",length = 20)
-    private String areaCode;
-    /**
-     * 区域名称
-     */
-    @Column(name = "area_name",length = 100)
-    private String areaName;
-    /**
-     * 详细地址
-     */
-    @Column(name = "address",length = 100)
-    private String address;
-    /**
-     *收货人
-     */
-    @Column(name = "consignee_name",length = 20)
-    private String consigneeName;
-    /**
-     *收货人电话
-     */
-    @Column(name = "consignee_phone",length = 20)
-    private String consigneePhone;
-
-
 }

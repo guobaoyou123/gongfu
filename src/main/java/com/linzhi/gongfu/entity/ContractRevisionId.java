@@ -12,29 +12,20 @@ import java.io.Serializable;
 @Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
-public class ContractRecordId implements Serializable {
+public class ContractRevisionId implements Serializable {
+
     /**
-     * 询价单唯一id
+     * 合同唯一id
      */
 
-    @Column(name = "contract_id",length = 50,nullable = false)
+    @Column(name = "id",length = 50,nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private String contractId ;
+    private String id ;
     /**
-     * 序号
-     */
-
-    @Column(name = "code",nullable = false)
-    @NotNull
-    @NotBlank
-    @Getter
-    @Setter
-    private Integer code ;
-    /**
-     * 版本
+     * 版本号
      */
 
     @Column(name = "revision",nullable = false)

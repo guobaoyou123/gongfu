@@ -6,11 +6,19 @@ import com.linzhi.gongfu.entity.Inquiry;
 import com.linzhi.gongfu.vo.VInquiryDetailResponse;
 import com.linzhi.gongfu.vo.VInquiryListResponse;
 import com.linzhi.gongfu.vo.VInquiryPageResponse;
+import com.querydsl.core.Tuple;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring",uses = { InquiryRecordMapper.class })
 public interface InquiryMapper {
+    /**
+     * 转换询价单列表
+     * @param inquiry 询价单基本信息
+     * @return 询价单基本信息
+     */
+
+    Inquiry toInquiry(Tuple inquiry);
     /**
      * 转换询价单列表
      * @param inquiry 询价单基本信息
@@ -27,7 +35,7 @@ public interface InquiryMapper {
      */
     @Mapping(target = "supplierName",source = "salerCompName")
     @Mapping(target = "ownerCode",source = "createdBy")
-    @Mapping(target = "ownerName",source = "buyerContactName")
+    @Mapping(target = "ownerName",source = "createdByName")
     @Mapping(target = "salesContractId",source = "salesContractId")
     @Mapping(target = "salesContractCode",source = "salesContractCode")
     @Mapping(target = "salesContractNo",source = "salesOrderCode")
@@ -45,7 +53,7 @@ public interface InquiryMapper {
      */
     @Mapping(target = "supplierName",source = "salerCompName")
     @Mapping(target = "ownerCode",source = "createdBy")
-    @Mapping(target = "ownerName",source = "buyerContactName")
+    @Mapping(target = "ownerName",source = "createdByName")
     @Mapping(target = "salesContractId",source = "salesContractId")
     @Mapping(target = "salesContractCode",source = "salesContractCode")
     @Mapping(target = "salesContractNo",source = "salesOrderCode")
@@ -98,7 +106,7 @@ public interface InquiryMapper {
     @Mapping(target = "confirmTaxedTotal",source = "confirmTotalPriceVat")
     @Mapping(target = "products",source = "records")
     @Mapping(target = "ownerCode",source = "createdBy")
-    @Mapping(target = "ownerName",source = "buyerContactName")
+    @Mapping(target = "ownerName",source = "createdByName")
     @Mapping(target = "salesContractId",source = "salesContractId")
     @Mapping(target = "salesContractCode",source = "salesContractCode")
     @Mapping(target = "salesContractNo",source = "salesOrderCode")

@@ -14,8 +14,6 @@ import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
 import com.linzhi.gongfu.vo.VModifyInquiryRequest;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
@@ -63,7 +61,6 @@ public class InquiryService {
     private final ContractRepository contractRepository;
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final PurchasePlanRepository purchasePlanRepository;
-    private final JPAQueryFactory queryFactory;
 
     /**
      * 保存询价单
@@ -75,7 +72,7 @@ public class InquiryService {
      */
     @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
     @Transactional
-    public Map<String,Object> savePurchaseInquiry(String planCode, String companyCode,String compName, String operatorCode,String operatorName){
+    public Map<String,Object> savePurchaseInquiry(String planCode, String companyCode,String compName, String operatorCode){
         Map<String,Object> resultMap = new HashMap<>();
         try{
             Map<String,List<InquiryRecord>> supplierInquiryRecordMap = new HashMap<>();
@@ -153,13 +150,10 @@ public class InquiryService {
                             companyCode,
                             operatorCode,
                             compName,
-                            operatorName,
                             company.getCode(),
                             company.getNameInCN(),
                             compTradMap.get(company.getCode())==null? TaxMode.UNTAXED :compTradMap.get(company.getCode()).getTaxModel(),
-                            finalSalesContract !=null? finalSalesContract.getId():null, finalSalesContract !=null?finalSalesContract.getCode():null,
-                            finalSalesContract!=null?finalSalesContract.getSalerOrderCode():null,
-                            purchasePlan.get().getSalesCode(),
+                            finalSalesContract !=null? finalSalesContract.getId():null,
                             records
                         )
                     );
@@ -189,13 +183,14 @@ public class InquiryService {
     }
 
     /**
-     * 查询未完成的询价单列表
+     * 查询询价单列表
      * @param companyCode 公司编码
      * @param operator 操作员编码
-     * @return 返回未完成询价列表
+     * @param state   状态
+     * @return 返回询价列表
      */
-    @Cacheable(value="inquiry_List;1800", key="#companyCode+'_'+#operator")
-    public List<TInquiry> inquiryList(String companyCode, String operator){
+    @Cacheable(value="inquiry_List;1800", key="#companyCode+'_'+#operator+'_'+#state")
+    public List<TInquiry> inquiryList(String companyCode, String operator,String state){
         try{
             Operator operator1= operatorRepository.findById(
                 OperatorId.builder()
@@ -205,11 +200,11 @@ public class InquiryService {
                 )
                 .orElseThrow(()-> new IOException("请求的操作员找不到"));
             if(operator1.getAdmin().equals(Whether.YES))
-                return inquiryRepository.findInquiryList(companyCode, InquiryType.INQUIRY_LIST.getType()+"", InquiryState.UN_FINISHED.getState()+"")
+                return inquiryRepository.findInquiryList(companyCode, InquiryType.INQUIRY_LIST.getType()+"", state)
                     .stream()
                     .map(inquiryMapper::toInquiryList)
                     .toList();
-            return inquiryRepository.findInquiryList(companyCode,operator, InquiryType.INQUIRY_LIST.getType()+"", InquiryState.UN_FINISHED.getState()+"")
+            return inquiryRepository.findInquiryList(companyCode,operator, InquiryType.INQUIRY_LIST.getType()+"", state)
                 .stream()
                 .map(inquiryMapper::toInquiryList)
                 .toList();
@@ -229,65 +224,28 @@ public class InquiryService {
      * @param state 状态
      * @param pageable 页码
      * @return 返回询价单信息列表
-     * @throws IOException 异常
      */
     public Page<TInquiry> inquiryHistoryPage(String companyCode, String operator,String supplierCode,
-                                             String startTime,String endTime,String state,Pageable pageable) throws IOException {
-
-        List<TInquiry> tInquiries = inquiryHistory( companyCode,  operator, supplierCode,
-             startTime, endTime, state);
-        return PageTools.listConvertToPage(tInquiries,pageable);
-    }
-
-    /**
-     * 历史询价单列表
-     * @param companyCode 单位id
-     * @param operator 操作员编码
-     * @param supplierCode 供应商编码
-     * @param startTime 开始时间
-     * @param endTime 结束时间
-     * @param state 状态
-     * @return 返回询价单信息列表
-     * @throws IOException 异常
-     */
-    @Cacheable(value="inquiry_history_list;1800")
-    public List<TInquiry> inquiryHistory(String companyCode, String operator,String supplierCode,
-                                        String startTime,String endTime,String state) throws IOException {
-        Operator operator1= operatorRepository.findById(
-                OperatorId.builder()
-                    .operatorCode(operator)
-                    .companyCode(companyCode)
-                    .build()
-            )
-            .orElseThrow(()-> new IOException("请求的操作员找不到"));
-        QInquiry qInquiry = QInquiry.inquiry;
-        JPAQuery<Inquiry> jpaQuery = queryFactory.select(qInquiry).from(qInquiry);
-        if(operator1.getAdmin().equals(Whether.NO))
-            jpaQuery.where(qInquiry.createdBy.eq(operator));
-        jpaQuery.where(qInquiry.createdByComp.eq(companyCode));
-        jpaQuery.where(qInquiry.state.eq(state.equals("1")?InquiryState.FINISHED:InquiryState.CANCELLATION));
-        if(StringUtils.isNotBlank(supplierCode))
-            jpaQuery.where(qInquiry.salerComp.eq(supplierCode));
+                                             String startTime,String endTime,String state,Pageable pageable)  {
+        List<TInquiry> tInquiryList = inquiryList(companyCode,operator,state);
+        if(StringUtils.isNotBlank(supplierCode)){
+            tInquiryList = tInquiryList.stream().filter(tInquiry -> tInquiry.getSalerComp().equals(supplierCode)).toList();
+        }
         if(StringUtils.isNotBlank(startTime)&&StringUtils.isNotBlank(endTime)){
             DateTimeFormatter dateTimeFormatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             DateTimeFormatter dateTimeFormatters = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime startTimes = LocalDate.parse(startTime, dateTimeFormatterDay).atStartOfDay();
             LocalDateTime endTimes = LocalDateTime.parse(endTime+" 23:59:59", dateTimeFormatters);
-            jpaQuery.where(qInquiry.createdAt.between(startTimes,endTimes));
-        }
-     //   jpaQuery.orderBy(qInquiry.createdAt.desc());
-        List<Inquiry> inquiries = jpaQuery.fetch();
-        inquiries.sort((o1, o2) -> {
-            if (o1.getCreatedAt().toLocalDate().compareTo(o2.getCreatedAt().toLocalDate()) == 0) {
-               return o2.getCode().substring(o2.getCode().length()-3).compareTo(o1.getCode().substring(o1.getCode().length()-3));
+            tInquiryList = tInquiryList.stream().filter(tInquiry ->
+            {
+                LocalDateTime dateTime = LocalDateTime.parse(tInquiry.getCreatedAt(), dateTimeFormatters);
+                return dateTime.isAfter(startTimes) && dateTime.isBefore(endTimes);
             }
-            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
-        });
-        return inquiries.stream()
-            .map(inquiryMapper::toInquiryList)
-            .toList()
-            ;
+            ).toList();
+        }
+        return PageTools.listConvertToPage(tInquiryList,pageable);
     }
+
 
     /**
      * 询价单详情
@@ -296,6 +254,7 @@ public class InquiryService {
      */
     public TInquiry inquiryDetail(String id) {
       TInquiry tInquiry= findInquiry(id).map(inquiryMapper::toInquiryDetail).get();
+
         List<InquiryRecord>  records  = findInquiryRecords(id);
         List<TInquiryRecord>  tRecords = findInquiryRecords(id).stream().map(inquiryRecordMapper::toTInquiryRecordDo).toList();
         tInquiry.setRecords(tRecords);
@@ -311,7 +270,9 @@ public class InquiryService {
      * @return 询价单信息
      */
     @Cacheable(value="inquiry_detail;1800",key = "#id")
-    public Optional<Inquiry> findInquiry(String id ){return  inquiryRepository.findById(id);}
+    public Optional<Inquiry> findInquiry(String id ){
+        return  inquiryRepository.findInquiryById(id);
+    }
 
     /**
      * 查询询价单明细
@@ -355,12 +316,11 @@ public class InquiryService {
                 createInquiryDetail(inquiryCodes.get(0),
                     inquiryCodes.get(1),
                     companyCode,
-                    operator,
                     companyName,
                     operatorName,
                     supplierCode,
                     supplierName,
-                    taxMode,null,null,null,null,null
+                    taxMode,null,null
                 )
             );
             return  inquiryCodes.get(0);
@@ -428,19 +388,16 @@ public class InquiryService {
      * @param companyCode 单位id
      * @param operator 操作员id
      * @param companyName 单位名称
-     * @param operatorName 操作员名称
      * @param supplierCode 供应商code
      * @param supplierName 供应商名称
      * @param taxMode 税模式
-     * @param salesOrderCode 销售合同记录号
      * @param records 询价单明细列表
      * @return 询价单实体
      */
     public InquiryDetail createInquiryDetail(String id,String code,String companyCode,
-                                             String operator ,String companyName,String operatorName,
+                                             String operator ,String companyName,
                                              String supplierCode,String supplierName ,TaxMode taxMode,
-                                             String salesContractId,String salesContractCode,String salesBuyerOrderCode,
-                                             String salesOrderCode,List<InquiryRecord> records){
+                                             String salesContractId,List<InquiryRecord> records){
         return  InquiryDetail.builder()
             .id(id)
             .code(code)
@@ -450,13 +407,9 @@ public class InquiryService {
             .createdAt(LocalDateTime.now())
             .buyerComp(companyCode)
             .buyerCompName(companyName)
-            .buyerContactName(operatorName)
             .salerComp(supplierCode)
             .salerCompName(supplierName)
             .salesContractId(salesContractId)
-            .salesContractCode(salesContractCode)
-            .salesBuyerOrderCode(salesBuyerOrderCode)
-            .salesOrderCode(salesOrderCode)
             .state(InquiryState.UN_FINISHED)
             .offerMode(taxMode)
             .records(records)
@@ -596,16 +549,12 @@ public class InquiryService {
 
     @Caching(evict = {@CacheEvict(value="inquiry_detail;1800",key = "#id"),
         @CacheEvict(value="inquiry_record_List;1800", key="#id"),
-        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true),
-        @CacheEvict(value="inquiry_history_list;1800", key="#companyCode+'_'",allEntries=true)
+        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
     })
     @Transactional
     public  Boolean deleteInquiry(String id,String companyCode){
         try {
-            Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
-            inquiry.setState(InquiryState.CANCELLATION);
-            inquiry.setDeletedAt(LocalDateTime.now());
-            inquiryRepository.save(inquiry);
+            inquiryRepository.cancleInquiry(LocalDateTime.now(),InquiryState.CANCELLATION,id);
             return  true;
         }catch (Exception e){
             e.printStackTrace();

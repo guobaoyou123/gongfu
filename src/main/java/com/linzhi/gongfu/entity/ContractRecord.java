@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="contract_record")
+@Table(name="contract_record_rev")
 public class ContractRecord {
     /**
      * 合同唯一id
@@ -37,6 +37,16 @@ public class ContractRecord {
      */
     @Column(name = "product_code",length = 20)
     private String productCode;
+    /**
+     * 客户自定义产品代码
+     */
+    @Column(name = "customer_custom_code",length = 50)
+    private String customerCustomCode;
+    /**
+     * 本单位自定义产品代码
+     */
+    @Column(name = "comp_custom_code",length = 50)
+    private String compCustomCode;
     /**
      * 描述
      */
@@ -68,6 +78,18 @@ public class ContractRecord {
      */
     @Column(name = "charge_unit")
     private String chargeUnit;
+
+    /**
+     * 计价单位比例
+     */
+    @Column(name = "ratio")
+    private BigDecimal ratio;
+    /**
+     *我的计价单位
+     */
+    @Column(name = "my_charge_unit")
+    private String myChargeUnit;
+
     /**
      * 价格
      */
@@ -83,6 +105,11 @@ public class ContractRecord {
      */
     @Column(name = "quantity")
     private BigDecimal amount;
+    /**
+     * 按我的计价单位的数量
+     */
+    @Column(name = "my_quantity")
+    private BigDecimal myAmount;
     /**
      * 未税总价
      */
