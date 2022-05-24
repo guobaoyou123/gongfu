@@ -1,17 +1,12 @@
 package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.ContractState;
-import com.linzhi.gongfu.enumeration.InquiryState;
 import com.linzhi.gongfu.enumeration.InquiryType;
-import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="contract_base")
-public class Contract {
+public class ContractDetail {
     /**
      * 合同唯一id
      */
@@ -32,10 +27,6 @@ public class Contract {
     @NotBlank
     @NonNull
     private String id ;
-    @Column(name = "revision", insertable = false,updatable = false)
-    private int revision;
-    @Column(name = "supplierContractNo", insertable = false,updatable = false)
-    private String  supplierContractNo;
     /**
      * 合同编号
      */
@@ -43,9 +34,6 @@ public class Contract {
     @NotNull
     @NotBlank
     private String code;
-
-    @Column(name = "order_code", insertable = false,updatable = false)
-    private String orderCode;
     /**
      * 类型（0-采购合同 1-销售合同）
      */
@@ -57,16 +45,6 @@ public class Contract {
      */
     @Column(name = "sales_contract_id",length = 50)
     private String salesContractId;
-    /*
-     * 对应销售合同记录系统编码
-     */
-    @Column(name = "salesContractCode",updatable = false,insertable = false)
-    private String salesContractCode;
-    /*
-     * 对应销售合同记录中本单位编码
-     */
-    @Column(name = "salesOrderCode",updatable = false,insertable = false)
-    private String salesOrderCode;
     /**
      * 所属单位编码
      */
@@ -77,9 +55,6 @@ public class Contract {
      */
     @Column(name = "created_by",length = 20)
     private String createdBy;
-
-    @Column(name = "createdByName",updatable = false,insertable = false)
-    private String createdByName;
     /**
      * 客户公司编码
      */
@@ -114,6 +89,8 @@ public class Contract {
     private LocalDateTime createdAt;
 
 
-
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "id",referencedColumnName = "id", insertable = true, updatable = true)
+    private List<ContractRevision> contractRevisions;
 
 }

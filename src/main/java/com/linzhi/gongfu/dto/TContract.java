@@ -33,23 +33,38 @@ public class TContract {
     private String code;
 
     private String orderCode;
+    private int revision;
+    private String  supplierContractNo;
     /**
      * 类型（0-采购合同 1-销售合同）
      */
-    private InquiryType type;
+    private String type;
 
     /*
      * 对应销售合同记录系统主键
      */
     private String salesContractId;
+    /*
+     * 对应销售合同记录系统编码
+     */
+    private String salesContractCode;
+    /*
+     * 对应销售合同记录中本单位编码
+     */
+    private String salesOrderCode;
     /**
      * 所属单位编码
      */
     private String createdByComp;
+
     /**
      * 所属操作员编码
      */
     private String createdBy;
+    /**
+     * 所属操作员姓名
+     */
+    private String createdByName;
     /**
      * 客户公司编码
      */
@@ -68,15 +83,15 @@ public class TContract {
      */
     private String salerCompName;
     /**
-     * 状态（0-未形成合同 1-以生成合同 2-撤销合同）
+     * 状态（0-未确认 1-确认 2-撤销）
      */
     @Column
-    private InquiryState state;
+    private String state;
 
     /**
      * 创建时间
      */
-    private LocalDateTime createdAt;
+    private String createdAt;
 
 
 }

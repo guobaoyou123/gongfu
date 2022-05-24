@@ -1,24 +1,33 @@
 package com.linzhi.gongfu.service;
 
+import com.linzhi.gongfu.dto.TContract;
+import com.linzhi.gongfu.dto.TInquiry;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.ContractMapper;
 import com.linzhi.gongfu.mapper.TaxRatesMapper;
 import com.linzhi.gongfu.repository.*;
+import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VGenerateContractRequest;
 import com.linzhi.gongfu.vo.VTaxRateResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,13 +54,16 @@ public class ContractService {
     private final TaxRatesMapper taxRatesMapper;
     private final ContractRevisionRepository contractRevisionRepository;
     private final ContractMapper contractMapper;
+    private final InquiryService inquiryService;
+    private final OperatorRepository operatorRepository;
+    private final  ContractDetailRepository contractDetailRepository;
     /**
      * 查询合同是否重复（产品种类和数量）
      * @param inquiryId 询价单id
      * @return 返回 true 或者 false
      */
     public String  findContractProductRepeat(String inquiryId) throws IOException {
-            Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
+            Inquiry inquiry = inquiryService.findInquiry(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
             List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecord(inquiryId);
             String str = createSequenceCode(
                 records.stream().map(inquiryRecord-> inquiryRecord.getProductId() + "-" + inquiryRecord.getAmount()).toList(),
@@ -84,7 +96,7 @@ public class ContractService {
             //合同编号
             String id = inquiry.getId().replaceAll("XJ","HT");
             String code = inquiry.getCode().replaceAll("XJ","HT");
-            Contract contract = createdContract(id,
+            ContractDetail contract = createdContract(id,
                 code,
                 inquiry.getCreatedByComp(),
                 inquiry.getCreatedBy(),
@@ -247,9 +259,12 @@ public class ContractService {
            inquiry.setContractCode(code);
            inquiryDetailRepository.save(inquiry);
             contractRevision.setFingerprint(str);
+            List<ContractRevision> contractRevisions = new ArrayList<>();
+            contractRevisions.add(contractRevision);
+            contract.setContractRevisions(contractRevisions);
             //保存合同
-           contractRepository.save(contract);
-            contractRevisionRepository.save(contractRevision);
+           contractDetailRepository.save(contract);
+          //  contractRevisionRepository.save(contractRevision);
         }catch (Exception e){
             e.printStackTrace();
             return  false;
@@ -270,14 +285,14 @@ public class ContractService {
      * @param inquiryType 0-采购合同 1-销售合同
      * @return 合同实体
      */
-    public Contract createdContract(String id, String code, String createdByComp,
+    public ContractDetail createdContract(String id, String code, String createdByComp,
                                     String createdBy, String buyerComp, String buyerCompName,
                                    String salerComp, String salerCompName,
                                     String salesContractId,InquiryType inquiryType){
 
 
 
-        return  Contract.builder()
+        return  ContractDetail.builder()
             .id(id)
             .code(code)
             .createdByComp(createdByComp)
@@ -289,7 +304,7 @@ public class ContractService {
             .salerComp(salerComp)
             .salerCompName(salerCompName)
             .createdAt(LocalDateTime.now())
-            .state(InquiryState.FINISHED)
+            .state(ContractState.FINISHED)
             .createdAt(LocalDateTime.now())
             .build();
     }
@@ -339,6 +354,53 @@ public class ContractService {
         return num <= 0;
     }
 
+    public Page<TContract>  findContractPage(String state, String supplierCode,
+                                             String startTime, String endTime,
+                                             String companyCode, String operator, Pageable pageable){
+
+        List<TContract> tContractList = findContractList(companyCode,operator,state);
+        if(StringUtils.isNotBlank(supplierCode)){
+            tContractList = tContractList.stream().filter(tContract -> tContract.getSalerComp().equals(supplierCode)).toList();
+        }
+        if(StringUtils.isNotBlank(startTime)&&StringUtils.isNotBlank(endTime)){
+            DateTimeFormatter dateTimeFormatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            DateTimeFormatter dateTimeFormatters = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime startTimes = LocalDate.parse(startTime, dateTimeFormatterDay).atStartOfDay();
+            LocalDateTime endTimes = LocalDateTime.parse(endTime+" 23:59:59", dateTimeFormatters);
+            tContractList = tContractList.stream().filter(tContract ->
+                {
+                    LocalDateTime dateTime = LocalDateTime.parse(tContract.getCreatedAt(), dateTimeFormatters);
+                    return dateTime.isAfter(startTimes) && dateTime.isBefore(endTimes);
+                }
+            ).toList();
+        }
+        return PageTools.listConvertToPage(tContractList,pageable);
+    }
+
+    @Cacheable(value="purchase_contract_List;1800", key="#companyCode+'_'+#operator+'_'+#state")
+    public List<TContract> findContractList(String companyCode,String operator,String state){
+        try{
+            Operator operator1= operatorRepository.findById(
+                    OperatorId.builder()
+                        .operatorCode(operator)
+                        .companyCode(companyCode)
+                        .build()
+                )
+                .orElseThrow(()-> new IOException("请求的操作员找不到"));
+            if(operator1.getAdmin().equals(Whether.YES))
+                return contractRepository.findContractList(companyCode, InquiryType.INQUIRY_LIST.getType()+"", state)
+                    .stream()
+                    .map(contractMapper::toContractList)
+                    .toList();
+            return contractRepository.findContractList(companyCode,operator, InquiryType.INQUIRY_LIST.getType()+"", state)
+                .stream()
+                .map(contractMapper::toContractList)
+                .toList();
+        }catch (Exception e){
+            e.printStackTrace();
+            return  null;
+        }
+    }
     /**
      * 根据明细生成序列码
      * @param records 明细

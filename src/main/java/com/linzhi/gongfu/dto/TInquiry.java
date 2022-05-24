@@ -140,7 +140,7 @@ public class TInquiry {
      */
     private BigDecimal confirmTotalPriceVat;
     /**
-     * 状态（0-未形成合同 1-以生成合同 2-撤销合同）
+     * 状态（0-未形成合同 1-以生成合同 2-撤销）
      */
     private String state;
     /**

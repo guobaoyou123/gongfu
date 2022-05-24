@@ -1,10 +1,7 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.entity.TemporaryPlanId;
-import com.linzhi.gongfu.mapper.CompanyMapper;
-import com.linzhi.gongfu.mapper.InquiryMapper;
-import com.linzhi.gongfu.mapper.PurchasePlanMapper;
-import com.linzhi.gongfu.mapper.TemporaryPlanMapper;
+import com.linzhi.gongfu.mapper.*;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.ContractService;
 import com.linzhi.gongfu.service.InquiryService;
@@ -42,7 +39,7 @@ public class ContractController {
     private final InquiryService inquiryService;
     private final InquiryMapper inquiryMapper;
     private final ContractService contractService;
-
+    private final ContractMapper contractMapper;
     /**
      * 根据操作员编码、单位id查询该操作员的临时计划表
      * @return 临时计划列表信息
@@ -432,7 +429,7 @@ public class ContractController {
                                                @RequestParam("state") Optional<String> state,
                                                @RequestParam("pageNum") Optional<String> pageNum,
                                                @RequestParam("pageSize") Optional<String> pageSize
-                                               ) throws IOException {
+                                               ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         //分页
@@ -794,6 +791,45 @@ public class ContractController {
         if(flag)
             return VBaseResponse.builder().code(200).message("数据不重复").build();
         return VBaseResponse.builder().code(201).message("数据重复").build();
+    }
+
+    /**
+     * 根据条件查询采购合同列表（分页）
+     * @param state 采购合同状态 0-未完成 1-已确定 2-撤销
+     * @param supplierCode 供应商合同编码
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param pageNum 页码
+     * @param pageSize 每页展示几条
+     * @return 采购合同列表分页
+     */
+    @GetMapping("/contract/purchase")
+    public VContractPageResponse contractPage(@RequestParam("supplierCode") Optional<String> supplierCode,
+                                              @RequestParam("startTime") Optional<String> startTime,
+                                              @RequestParam("endTime") Optional<String> endTime,
+                                              @RequestParam("state") Optional<String> state,
+                                              @RequestParam("pageNum") Optional<String> pageNum,
+                                              @RequestParam("pageSize") Optional<String> pageSize){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        //分页
+        Pageable pageable = PageRequest.of(
+            pageNum.map(PageTools::verificationPageNum).orElse(0),
+            pageSize.map(PageTools::verificationPageSize).orElse(10)
+        );
+        var page = contractService.findContractPage(state.orElse("0"),
+            supplierCode.orElse(""),startTime.orElse(""),endTime.orElse(""),
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            pageable);
+        return  VContractPageResponse.builder()
+            .code(200)
+            .message("查询成功")
+            .current(page.getNumber()+1)
+            .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
+            .contracts(page.stream().map(contractMapper::toContractPage).toList())
+            .build()
+            ;
     }
 
 }
