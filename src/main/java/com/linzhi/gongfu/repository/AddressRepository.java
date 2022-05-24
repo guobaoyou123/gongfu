@@ -17,7 +17,7 @@ public interface AddressRepository extends CrudRepository<Address, AddressId>, Q
     String findMaxCode(String dcCompId);
 
     @Modifying
-    @Query(value="update comp_address set flag=?1 where dc_comp_id=?2 and state='1'",nativeQuery = true)
+    @Query(value="update comp_address set flag=?1 where dc_comp_id=?2 ",nativeQuery = true)
     void updateAddressById(String  flag,String dcCompId);
 
     @Modifying

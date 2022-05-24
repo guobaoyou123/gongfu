@@ -316,8 +316,9 @@ public class InquiryService {
                 createInquiryDetail(inquiryCodes.get(0),
                     inquiryCodes.get(1),
                     companyCode,
+                    operator,
                     companyName,
-                    operatorName,
+
                     supplierCode,
                     supplierName,
                     taxMode,null,null
@@ -614,7 +615,7 @@ public class InquiryService {
     public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operator){
         Map<String,Object> resultMap = new HashMap<>();
         try {
-            Inquiry inquiry = inquiryRepository.findById(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<Map<String, Object>> list =  ExcelUtil.excelToList(file);
             List<ImportProductTemp> importProductTemps = new ArrayList<>();
             for (int i =0;i<list.size();i++){
@@ -678,7 +679,7 @@ public class InquiryService {
      */
     public Map<String,Object> findImportProductDetail(String companyCode, String operator, String id) throws IOException {
        Map<String,Object> map = new HashMap<>();
-       Inquiry inquiry =  inquiryRepository.findById(id).orElseThrow(()->new IOException("从数据库中查询不到该询价单信息"));
+       Inquiry inquiry =  findInquiry(id).orElseThrow(()->new IOException("从数据库中查询不到该询价单信息"));
         map.put("inquiryCode",inquiry.getCode());
         List<ImportProductTemp> list=importProductTempRepository.
             findImportProductTempsByImportProductTempId_DcCompIdAndImportProductTempId_OperatorAndImportProductTempId_InquiryId(companyCode,operator,id);

@@ -291,7 +291,7 @@ public class AddressService {
 
             String name = findByCode("",vAddress.getAreaCode());
 
-            if(vAddress.getFlag()&&!(address.getFlag().getState()=='0')) {
+            if(vAddress.getFlag()) {
                 addressRepository.updateAddressById("0",companyCode);
             }
 
@@ -300,8 +300,8 @@ public class AddressService {
             address.setFlag(vAddress.getFlag()? Whether.YES:Whether.NO);
             address.setAreaCode(vAddress.getAreaCode());
 
-            if(vAddress.getFlag())
-                addressRepository.updateAddressById("0",companyCode);
+           /* if(vAddress.getFlag())
+                addressRepository.updateAddressById("0",companyCode);*/
             addressRepository.save(address);
 
             map.put("code",200);
