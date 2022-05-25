@@ -413,6 +413,25 @@ public class ContractController {
     }
 
     /**
+     * 查询对应该供应商未完成的询价单
+     * @param supplierCode 供应商编码
+     * @return 返回未完成的询价单列表
+     */
+    @GetMapping("/contract/purchase/inquiry/unfinished")
+    public VUnfinishedInquiryListResponse unfinishedInquiries(@RequestParam("supplierCode") String supplierCode){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var list = inquiryService.unfinishedInquiry(session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            supplierCode);
+        return VUnfinishedInquiryListResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .inquiries(list)
+            .build();
+    }
+
+    /**
      * 查看询价单历史列表
      * @param supplierCode 供应商编码
      * @param startTime  开始时间

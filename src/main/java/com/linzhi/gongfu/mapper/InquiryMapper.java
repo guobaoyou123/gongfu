@@ -3,12 +3,16 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TInquiry;
 import com.linzhi.gongfu.entity.InquiryDetail;
 import com.linzhi.gongfu.entity.Inquiry;
+import com.linzhi.gongfu.entity.UnfinishedInquiry;
 import com.linzhi.gongfu.vo.VInquiryDetailResponse;
 import com.linzhi.gongfu.vo.VInquiryListResponse;
 import com.linzhi.gongfu.vo.VInquiryPageResponse;
+import com.linzhi.gongfu.vo.VUnfinishedInquiryListResponse;
 import com.querydsl.core.Tuple;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.Map;
 
 @Mapper(componentModel = "spring",uses = { InquiryRecordMapper.class })
 public interface InquiryMapper {
@@ -116,4 +120,12 @@ public interface InquiryMapper {
     @Mapping(target = "purchaseContractNo",source = "orderCode")
     @Mapping(target = "purchaseSupplierNo",source = "salerOrderCode")
    VInquiryDetailResponse.VInquiry toVInquiryDetail(TInquiry tInquiry);
+
+
+    TInquiry toUnfinishedTinquiry(UnfinishedInquiry unfinishedInquiry);
+    @Mapping(target = "id",source = "id")
+    @Mapping(target = "code",source = "id")
+    @Mapping(target = "taxedTotal",source = "totalPriceVat")
+    @Mapping(target = "category",source = "counts")
+    VUnfinishedInquiryListResponse.VInquiry toUnfinishedInquiry(TInquiry tInquiry);
 }

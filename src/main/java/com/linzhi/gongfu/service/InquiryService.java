@@ -14,6 +14,7 @@ import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
 import com.linzhi.gongfu.vo.VModifyInquiryRequest;
+import com.linzhi.gongfu.vo.VUnfinishedInquiryListResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
@@ -61,6 +62,7 @@ public class InquiryService {
     private final ContractRepository contractRepository;
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final PurchasePlanRepository purchasePlanRepository;
+    private final UnfinishedInquiryRepository unfinishedInquiryRepository;
 
     /**
      * 保存询价单
@@ -212,6 +214,20 @@ public class InquiryService {
             e.printStackTrace();
             return  null;
         }
+    }
+
+    /**
+     * 根据供应商编码查询未完成的询价单列表
+     * @param companyCode
+     * @param operator
+     * @param supplierCode
+     * @return
+     */
+    public List<VUnfinishedInquiryListResponse.VInquiry> unfinishedInquiry(String companyCode,String operator,String supplierCode){
+
+        return  unfinishedInquiryRepository.findUnfinishedInquiry(companyCode,operator,supplierCode).stream()
+            .map(inquiryMapper::toUnfinishedTinquiry)
+            .map(inquiryMapper::toUnfinishedInquiry).toList();
     }
 
     /**
@@ -925,15 +941,22 @@ public class InquiryService {
             //是 重新计算价格
             BigDecimal totalPrice=new BigDecimal(0);
             BigDecimal  totalPriceVat=new BigDecimal(0);
+            BigDecimal vat;
             if(lists.size()==0){
                 for (InquiryRecord inquiryRecord:inquiryRecords){
                     totalPrice=totalPrice.add(inquiryRecord.getTotalPrice());
                     totalPriceVat=totalPriceVat.add(inquiryRecord.getTotalPriceVat());
                 }
-            }
-            BigDecimal vat = totalPriceVat.setScale(2, RoundingMode.HALF_UP).subtract(totalPrice.setScale(2, RoundingMode.HALF_UP));
+                vat = totalPriceVat.setScale(2, RoundingMode.HALF_UP).subtract(totalPrice.setScale(2, RoundingMode.HALF_UP));
 
-            inquiryRepository.updateInquiry(totalPrice.setScale(2, RoundingMode.HALF_UP),totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,totalPrice.setScale(2, RoundingMode.HALF_UP),id);
+            }else{
+                totalPrice=null;
+                totalPriceVat=null;
+                vat=null;
+            }
+
+            BigDecimal totalPrice1 = totalPrice == null ? null : totalPrice.setScale(2, RoundingMode.HALF_UP);
+            inquiryRepository.updateInquiry(totalPrice1,totalPriceVat==null?null:totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,totalPrice1,id);
             return true;
         }catch (Exception e){
             e.printStackTrace();

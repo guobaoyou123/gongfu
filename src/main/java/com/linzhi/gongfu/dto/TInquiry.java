@@ -179,5 +179,9 @@ public class TInquiry {
      *收货人电话
      */
     private String consigneePhone;
+    /**
+     * 种类
+     */
+    private String counts;
    private List<TInquiryRecord> records;
 }

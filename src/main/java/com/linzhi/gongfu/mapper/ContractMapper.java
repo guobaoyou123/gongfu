@@ -42,5 +42,6 @@ public interface ContractMapper {
     @Mapping(target = "salesContractCode",source = "salesContractCode")
     @Mapping(target = "salesContractNo",source = "salesOrderCode")
     @Mapping(target = "paired",constant = "false")
+    @Mapping(target = "contractNo",source = "orderCode")
     VContractPageResponse.VContract toContractPage(TContract tContract);
 }
