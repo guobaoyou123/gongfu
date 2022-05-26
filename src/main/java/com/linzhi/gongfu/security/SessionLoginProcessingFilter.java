@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.security;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -13,6 +14,7 @@ import com.linzhi.gongfu.security.token.OperatorAuthenticationToken;
 import com.linzhi.gongfu.util.URLTools;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
@@ -31,6 +33,8 @@ import org.springframework.security.web.util.matcher.AnyRequestMatcher;
  */
 public final class SessionLoginProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
+    private final   String  url [] = {"/api-docs", "/login", "/host", "/menus","/strings"};
+
     public SessionLoginProcessingFilter(AuthenticationFailureHandler failureHandler,
             AuthenticationManager authenticationManager) {
         super(AnyRequestMatcher.INSTANCE, authenticationManager);
@@ -40,11 +44,15 @@ public final class SessionLoginProcessingFilter extends AbstractAuthenticationPr
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
+       String requestURI =  request.getRequestURI();
         Optional<String> domainName = Optional.ofNullable(request.getHeader("CompanyDomain"))
-                .or(() -> Optional.ofNullable(request.getParameter("host")))
-                .map(URLTools::extractSubdomainName);
+            .or(() -> Optional.ofNullable(request.getParameter("host")))
+            .map(URLTools::extractSubdomainName);
         final var token = domainName.isPresent() ? obtainToken(request, URLTools.isRunningLocally(domainName.get()))
-                : null;
+            : null;
+       if(!Arrays.stream(url).toList().contains(requestURI) && token==null){
+           throw new AuthenticationServiceException("用户会话过期");
+       }
         var requestToken = new OperatorAuthenticationToken(domainName.orElse(null), token);
         return this.getAuthenticationManager().authenticate(requestToken);
     }
@@ -81,6 +89,7 @@ public final class SessionLoginProcessingFilter extends AbstractAuthenticationPr
             }
             authorization = authorization.substring("Bearer ".length());
         }
+
         return authorization;
     }
 }
