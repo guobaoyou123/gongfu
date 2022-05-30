@@ -2,6 +2,7 @@ package com.linzhi.gongfu.repository;
 
 
 import com.linzhi.gongfu.entity.ContractDetail;
+import com.linzhi.gongfu.enumeration.ContractState;
 import org.apache.poi.sl.draw.geom.GuideIf;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,7 @@ public interface ContractDetailRepository
     Optional<String> findMaxCode(String dcCompId, String createdBy);
 
 
+    @Modifying
+    @Query(value = "update ContractDetail c set c.state=?1 where c.id=?2")
+    void updateContractState(ContractState state ,String id);
 }

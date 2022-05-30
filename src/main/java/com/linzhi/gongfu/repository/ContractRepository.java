@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.ContractList;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
@@ -76,4 +77,6 @@ public interface ContractRepository
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
     List<ContractList> findContractList(String compId, String  type, String  state);
+
+
 }

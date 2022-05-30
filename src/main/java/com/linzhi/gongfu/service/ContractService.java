@@ -556,6 +556,16 @@ public class ContractService {
         return Integer.parseInt(String.valueOf(page.getTotalElements()));
     }
 
+    /**
+     * 添加采购合同产品
+     * @param productId 产品id
+     * @param price 单价
+     * @param amount 数量
+     * @param id 合同主键
+     * @param revision 版本号
+     * @param operator 操作员编码
+     * @return 返回成功或者失败信息
+     */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
         @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision")
     })
@@ -614,6 +624,75 @@ public class ContractService {
         }
     }
 
+    /**
+     * 删除采购合同产品
+     * @param codes 明细序列号
+     * @param id 采购合同
+     * @param revision 版本号
+     * @param operator 操作员
+     * @return 返回成功或者失败信息
+     */
+    @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision")
+    })
+    @Transactional
+    public Boolean deleteContractProduct(List<Integer> codes,String id,int revision,String operator){
+        try{
+            List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractIdAndContractRecordTempId_Revision(id,
+                revision ).stream().filter(contractRecordTemp -> !codes.contains(contractRecordTemp.getContractRecordTempId().getCode()))
+                .toList();
+            List<ContractRecordTempId> contractRecordTempIds = new ArrayList<>();
+            codes.forEach(s -> contractRecordTempIds.add(ContractRecordTempId.builder()
+                    .contractId(id)
+                    .code(s)
+                    .revision(revision)
+                .build()));
+            contractRecordTempRepository.deleteAllById(contractRecordTempIds);
+
+            return countSum(contractRecordTemps,id,revision,operator);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 将采购合同的状态设置为未确认的状态，生成新一版合同，生成临时合同明细记录
+     * @param id 合同主键
+     * @param companyCode 本单位编码
+     * @param operator 操作员编码
+     * @return  返回版本号
+     */
+    @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
+    })
+    @Transactional
+    public Integer modifyContractState(String id,String companyCode,String operator){
+        try{
+          String maxRevision =   contractRevisionDetailRepository.findMaxRevision(id).orElseThrow(()->new IOException("不存在该合同"));
+         Optional<ContractRevisionDetail> contractRevisionDetail = contractRevisionDetailRepository.findDetail(Integer.parseInt(maxRevision),id);
+          ContractRevision contractRevision =  contractRevisionDetail
+              .map(contractMapper::toContractRevision).orElseThrow(()->new IOException("不存在该合同"));
+          if(contractRevisionDetail.get().getState().equals(ContractState.UN_FINISHED.getState()+""))
+              throw new Exception("该合同已经是未确认的，不可再次修改");
+          contractDetailRepository.updateContractState(ContractState.UN_FINISHED,id);
+          contractRevision.getContractRevisionId().setRevision(Integer.parseInt(maxRevision)+1);
+          contractRevision.setCreatedAt(LocalDateTime.now());
+          contractRevision.setFingerprint(null);
+          contractRevision.setConfirmedAt(null);
+          contractRevision.setConfirmedBy(null);
+          contractRevision.setModifiedAt(LocalDateTime.now());
+          contractRevision.setModifiedBy(operator);
+          contractRevisionRepository.save(contractRevision);
+          List<ContractRecordTemp> contractRecordTemps= contractRecordRepository.findContractRecordsByContractRecordId_ContractIdAndContractRecordId_Revision(id,Integer.parseInt(maxRevision))
+              .stream().map(contractRecordMapper::toContractRecordTemp).toList();
+          contractRecordTempRepository.saveAll(contractRecordTemps);
+            return Integer.parseInt(maxRevision)+1;
+        }catch (Exception e){
+            e.printStackTrace();
+            return  0;
+        }
+    }
 
     /**
      * 更新合同总价

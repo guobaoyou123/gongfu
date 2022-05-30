@@ -3,6 +3,7 @@ package com.linzhi.gongfu.repository;
 import com.linzhi.gongfu.dto.TRevision;
 import com.linzhi.gongfu.entity.ContractRevisionDetail;
 import com.linzhi.gongfu.entity.ContractRevisionId;
+import org.apache.poi.sl.draw.geom.GuideIf;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -38,4 +39,6 @@ public interface ContractRevisionDetailRepository
         nativeQuery = true)
     void  updateContract(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, BigDecimal discountTotalPrice, LocalDateTime localDateTime,String operator, String id, int revision);
 
+    @Query(value = "select max(c.contractRevisionId.revision)   from ContractRevisionDetail as c where c.contractRevisionId.id=?1")
+    Optional<String> findMaxRevision(String id);
 }

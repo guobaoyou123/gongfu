@@ -52,4 +52,27 @@ public interface ContractRecordMapper {
     @Mapping(target = "facePrice",source = "facePrice")
     @Mapping(target = "previousAmount",source = "previousMyAmount")
     TContractRecord toTContractRecord(ContractRecordTemp contractRecordTemp);
+    @Mapping(target = "contractRecordTempId.contractId",source = "contractRecordId.contractId")
+    @Mapping(target = "contractRecordTempId.code",source = "contractRecordId.code")
+    @Mapping(target = "previousVatRate",source = "vatRate")
+    @Mapping(target = "previousRatio",source = "ratio")
+    @Mapping(target = "previousMyChargeUnit",source = "myChargeUnit")
+    @Mapping(target = "previousPrice",source = "price")
+    @Mapping(target = "previousPriceVat",source = "priceVat")
+    @Mapping(target = "previousAmount",source = "amount")
+    @Mapping(target = "previousMyAmount",source = "myAmount")
+    @Mapping(target = "totalPreviousPrice",source = "totalPrice")
+    @Mapping(target = "totalPreviousPriceVat",source = "totalPriceVat")
+    @Mapping(target = "vatRate",source = "vatRate")
+    @Mapping(target = "ratio",source = "ratio")
+    @Mapping(target = "myChargeUnit",source = "myChargeUnit")
+    @Mapping(target = "price",source = "price")
+    @Mapping(target = "priceVat",source = "priceVat")
+    @Mapping(target = "amount",source = "amount")
+    @Mapping(target = "myAmount",source = "myAmount")
+    @Mapping(target = "totalPrice",source = "totalPrice")
+    @Mapping(target = "totalPriceVat",source = "totalPriceVat")
+    @Mapping(target = "contractRecordTempId.revision",expression = "java(contractRecordId.getRevision()+1)")
+    ContractRecordTemp toContractRecordTemp(ContractRecord contractRecord);
+
 }

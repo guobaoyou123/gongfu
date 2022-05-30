@@ -947,4 +947,45 @@ public class ContractController {
             .message("添加产品失败")
             .build();
     }
+
+    @DeleteMapping("/contract/purchase/{id}/{revision}/product")
+    public VBaseResponse deletePurchaseContract(@RequestParam("codes")List<Integer> codes,@PathVariable("id")String id,@PathVariable("revision") Integer revision){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = contractService.deleteContractProduct(codes,id,revision,session.getSession().getOperatorCode());
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("删除产品成功")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("删除产品失败")
+            .build();
+    }
+
+    /**
+     * 修改合同状态
+     * @param id 合同主键
+     * @return 返回合同版本号
+     */
+    @PutMapping("/contract/purchase/{id}")
+    public VContractRevisionResponse modifyContractState(@PathVariable String id){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var revision = contractService.modifyContractState(id,session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        if(revision.intValue()==0)
+            return VContractRevisionResponse.builder()
+                .code(500)
+                .revision(revision)
+                .message("修改合同失败")
+                .build();
+        return VContractRevisionResponse.builder()
+            .code(200)
+            .revision(revision)
+            .message("修改合同成功")
+            .build();
+    }
+
+    
 }
