@@ -12,6 +12,7 @@ import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.DateConverter;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VGenerateContractRequest;
+import com.linzhi.gongfu.vo.VModifyInquiryRequest;
 import com.linzhi.gongfu.vo.VPurchaseContractDetailResponse;
 import com.linzhi.gongfu.vo.VTaxRateResponse;
 import lombok.RequiredArgsConstructor;
@@ -567,10 +568,11 @@ public class ContractService {
      * @return 返回成功或者失败信息
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
-        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision")
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public boolean saveProduct(String productId, BigDecimal price, BigDecimal amount, String id, Integer revision,String operator){
+    public boolean saveProduct(String productId, BigDecimal price, BigDecimal amount, String id, Integer revision,String companyCode,String operator){
         try {
              ContractRevisionDetail contractRevisionDetail =contractRevisionDetailRepository.findDetail(revision, id).orElseThrow(() -> new IOException("请求的产品不存在"));
              List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractIdAndContractRecordTempId_Revision(id,
@@ -633,10 +635,11 @@ public class ContractService {
      * @return 返回成功或者失败信息
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
-        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision")
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public Boolean deleteContractProduct(List<Integer> codes,String id,int revision,String operator){
+    public Boolean deleteContractProduct(List<Integer> codes,String id,int revision,String companyCode,String operator){
         try{
             List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractIdAndContractRecordTempId_Revision(id,
                 revision ).stream().filter(contractRecordTemp -> !codes.contains(contractRecordTemp.getContractRecordTempId().getCode()))
@@ -695,6 +698,83 @@ public class ContractService {
     }
 
     /**
+     * 修改采购合同
+     * @param vModifyInquiryRequest 修改信息
+     * @param id 合同主键
+     * @param revision 合同版本
+     * @return 返回成功或者失败
+     */
+    @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
+    })
+    @Transactional
+    public  Boolean  modifyPurchaseCotract(VModifyInquiryRequest vModifyInquiryRequest, String id, Integer revision,String companyCode,String operator){
+        try{
+            ContractRevisionDetail contractRevisionDetail = contractRevisionDetailRepository.findDetail(revision,id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            ContractRevision contractRevision =contractRevisionRepository.findById(ContractRevisionId.builder()
+                    .revision(revision)
+                    .id(id)
+                .build()).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractIdAndContractRecordTempId_Revision(id,revision);
+
+            if(StringUtils.isNotBlank(vModifyInquiryRequest.getTaxModel()))
+                contractRevision.setOfferMode(vModifyInquiryRequest.getTaxModel().equals("0")?TaxMode.UNTAXED:TaxMode.INCLUDED);
+            if(vModifyInquiryRequest.getServiceVat()!=null) {
+                contractRevision.setVatServiceRate(vModifyInquiryRequest.getServiceVat());
+                contractRecordTemps.forEach(
+                    record -> {
+                        if(record.getType().equals(VatRateType.SERVICE))
+                            record.setVatRate(vModifyInquiryRequest.getServiceVat());
+                    }
+                );
+            }
+            if(vModifyInquiryRequest.getGoodsVat()!=null) {
+                contractRevision.setVatProductRate(vModifyInquiryRequest.getGoodsVat());
+                contractRecordTemps.forEach(
+                    record -> {
+                        if(record.getType().equals(VatRateType.GOODS))
+                            record.setVatRate(vModifyInquiryRequest.getGoodsVat());
+                    }
+                );
+            }
+
+            if(vModifyInquiryRequest.getProducts()!=null){
+                vModifyInquiryRequest.getProducts().forEach(vProduct -> contractRecordTemps.forEach(record -> {
+                    if(record.getContractRecordTempId().getCode()==vProduct.getCode()){
+                        if(vProduct.getAmount()!=null)
+                            record.setMyAmount(vProduct.getAmount());
+                            record.setAmount(vProduct.getAmount().multiply(record.getRatio()));
+                        if(vProduct.getVatRate()!=null)
+                            record.setVatRate(vProduct.getVatRate());
+                        if(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()<0) {
+                            record.setPrice(null);
+                            record.setPriceVat(null);
+                            record.setTotalPrice(null);
+                            record.setTotalPriceVat(null);
+                        }else if(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0) {
+                            if (contractRevision.getOfferMode().equals(TaxMode.UNTAXED)) {
+                                record.setPrice(vProduct.getPrice());
+                            }else {
+                                record.setPriceVat(vProduct.getPrice());
+                            }
+
+                        }
+                    }
+                }));
+            }
+            List<ContractRecordTemp> contractRecordTempList =countRecord(contractRecordTemps,contractRevision.getOfferMode());
+
+            contractRecordTempRepository.saveAll(contractRecordTemps);
+            return  countSum(contractRecordTempList,id,revision,operator);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
+    /**
      * 更新合同总价
      * @param contractRecordTemps 合同明细列表
      * @param id 合同主键
@@ -732,5 +812,26 @@ public class ContractService {
             return false;
 
         }
+    }
+
+    /**
+     * 计算合同明细
+     * @param contractRecordTemps 明细列表
+     * @param taxMode 税模式
+     * @return 明细列表
+     */
+    public List<ContractRecordTemp> countRecord(List<ContractRecordTemp> contractRecordTemps ,TaxMode taxMode){
+        contractRecordTemps.forEach(record -> {
+            if(taxMode.equals(TaxMode.UNTAXED)&&record.getPrice()!=null){
+                record.setPriceVat(record.getPrice().multiply(new BigDecimal(1).add(record.getVatRate())).setScale(4, RoundingMode.HALF_UP));
+            }else if(taxMode.equals(TaxMode.INCLUDED)&&record.getPriceVat()!=null){
+                record.setPrice(record.getPriceVat().divide(new BigDecimal(1).add(record.getVatRate()),4, RoundingMode.HALF_UP));
+            }
+            if(record.getPrice()!=null){
+                record.setTotalPrice(record.getPrice().multiply(record.getMyAmount()).setScale(2, RoundingMode.HALF_UP));
+                record.setTotalPriceVat(record.getPriceVat().multiply(record.getMyAmount()).setScale(2, RoundingMode.HALF_UP));
+            }
+        });
+        return contractRecordTemps;
     }
 }

@@ -873,15 +873,15 @@ public class ContractController {
      * @return 返回成功信息
      */
     @PostMapping("/contract/purchase/empty")
-    public VEmptyContractResponse savePurchaseContractEmpty(@RequestParam("supplierCode") Optional<String> supplierCode){
+    public VEmptyContractResponse savePurchaseContractEmpty(@RequestBody Optional<VEmptyInquiryRequest> supplierCode){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var id = contractService.savePurchaseContractEmpty(supplierCode.orElse(""),
+        var id = contractService.savePurchaseContractEmpty(supplierCode.get().getSupplierCode(),
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
             session.getSession().getOperatorCode(),
             session.getSession().getOperatorName());
-        if(id.isEmpty())
+        if(id.get().isEmpty())
             return VEmptyContractResponse.builder()
                 .code(500)
                 .message("保存失败")
@@ -935,6 +935,7 @@ public class ContractController {
             product.get().getAmount(),
             id,
             revision,
+            session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
             );
         if(flag)
@@ -952,7 +953,7 @@ public class ContractController {
     public VBaseResponse deletePurchaseContract(@RequestParam("codes")List<Integer> codes,@PathVariable("id")String id,@PathVariable("revision") Integer revision){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = contractService.deleteContractProduct(codes,id,revision,session.getSession().getOperatorCode());
+        var flag = contractService.deleteContractProduct(codes,id,revision,session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -987,5 +988,35 @@ public class ContractController {
             .build();
     }
 
-    
+    /**
+     * 修改采购合同
+     * @param vModifyInquiryRequest 修改内容
+     * @param id 合同主键
+     * @param revision 版本
+     * @return 返回成功或者失败
+     */
+    @PutMapping("/contract/purchase/{id}/{revision}")
+    public VBaseResponse  modifyPurchaseCotract(@RequestBody Optional<VModifyInquiryRequest> vModifyInquiryRequest,
+                                         @PathVariable("id")String id,@PathVariable("revision")Integer revision){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = contractService.modifyPurchaseCotract(
+             vModifyInquiryRequest.orElse(new VModifyInquiryRequest()),
+             id,
+             revision,
+             session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+             );
+        if(flag)
+            return VContractRevisionResponse.builder()
+                .code(500)
+                .revision(revision)
+                .message("修改合同失败")
+                .build();
+        return VContractRevisionResponse.builder()
+            .code(200)
+            .revision(revision)
+            .message("修改合同成功")
+            .build();
+    }
 }
