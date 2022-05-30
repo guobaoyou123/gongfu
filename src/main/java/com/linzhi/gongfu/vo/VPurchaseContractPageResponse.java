@@ -5,13 +5,14 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VContractPageResponse  extends VBaseResponse{
+public class VPurchaseContractPageResponse extends VBaseResponse{
 
     private int current;
     private int total;
@@ -33,5 +34,7 @@ public class VContractPageResponse  extends VBaseResponse{
         private String state;
         private Boolean paired;
         private String supplierContractNo;
+        private int category;
+        private BigDecimal taxedTotal;
     }
 }

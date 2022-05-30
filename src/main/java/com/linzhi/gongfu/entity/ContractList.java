@@ -1,19 +1,14 @@
 package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.ContractState;
-import com.linzhi.gongfu.enumeration.InquiryState;
 import com.linzhi.gongfu.enumeration.InquiryType;
-import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Builder
 @Setter
@@ -22,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="contract_base")
-public class Contract {
+public class ContractList {
     /**
      * 合同唯一id
      */
@@ -112,8 +107,12 @@ public class Contract {
      */
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-
-
+    @Column(name = "category",updatable = false,insertable = false)
+    private int category;
+    /**
+     * 含税总价
+     */
+    @Column(name = "taxedTotal",updatable = false,insertable = false)
+    private BigDecimal taxedTotal;
 
 }

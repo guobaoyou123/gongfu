@@ -89,8 +89,8 @@ public class ContractDetail {
     private LocalDateTime createdAt;
 
 
-    @OneToMany(cascade = CascadeType.ALL)
+   /* @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "id",referencedColumnName = "id", insertable = true, updatable = true)
-    private List<ContractRevision> contractRevisions;
+    private List<ContractRevision> contractRevisions;*/
 
 }

@@ -2,11 +2,10 @@ package com.linzhi.gongfu.mapper;
 
 
 import com.linzhi.gongfu.dto.TContract;
-import com.linzhi.gongfu.dto.TInquiry;
-import com.linzhi.gongfu.entity.Contract;
-import com.linzhi.gongfu.entity.Inquiry;
-import com.linzhi.gongfu.vo.VContractPageResponse;
-import com.linzhi.gongfu.vo.VInquiryPageResponse;
+import com.linzhi.gongfu.entity.ContractList;
+import com.linzhi.gongfu.entity.ContractRevisionDetail;
+import com.linzhi.gongfu.vo.VPurchaseContractDetailResponse;
+import com.linzhi.gongfu.vo.VPurchaseContractPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -28,7 +27,7 @@ public interface ContractMapper {
     @Mapping(target = "createdAt",expression ="java(com.linzhi.gongfu.util.DateConverter.dateFormat(contract.getCreatedAt()))" )
     @Mapping(target = "type",expression = "java(String.valueOf(contract.getType().getType()))")
     @Mapping(target = "state",expression = "java(String.valueOf(contract.getState().getState()))")
-    TContract toContractList(Contract contract);
+    TContract toContractList(ContractList contract);
 
     /**
      * 转换采购合同列表
@@ -43,5 +42,52 @@ public interface ContractMapper {
     @Mapping(target = "salesContractNo",source = "salesOrderCode")
     @Mapping(target = "paired",constant = "false")
     @Mapping(target = "contractNo",source = "orderCode")
-    VContractPageResponse.VContract toContractPage(TContract tContract);
+    VPurchaseContractPageResponse.VContract toContractPage(TContract tContract);
+
+    @Mapping(target = "id",source = "contractRevisionId.id")
+    @Mapping(target = "revision",source = "contractRevisionId.revision")
+    @Mapping(target = "code",source = "code")
+    @Mapping(target = "orderCode",source = "orderCode")
+    @Mapping(target = "supplierContractNo",source = "salerOrderCode")
+    @Mapping(target = "salesContractId",source = "salesContractId")
+    @Mapping(target = "salesContractCode",source = "salesContractCode")
+    @Mapping(target = "salesOrderCode",source = "salesOrderCode")
+    @Mapping(target = "createdByComp",source = "createdByComp")
+    @Mapping(target = "createdBy",source = "createdBy")
+    @Mapping(target = "createdByName",source = "createdByName")
+    @Mapping(target = "buyerComp",source = "buyerComp")
+    @Mapping(target = "buyerCompName",source = "buyerCompName")
+    @Mapping(target = "salerComp",source = "salerComp")
+    @Mapping(target = "salerCompName",source = "salerCompName")
+    @Mapping(target = "createdAt",expression ="java(com.linzhi.gongfu.util.DateConverter.dateFormat(contractRevisionDetail.getCreatedAt()))" )
+    @Mapping(target = "offerMode",expression = "java(String.valueOf(contractRevisionDetail.getOfferMode().getTaxMode()))")
+    @Mapping(target = "tax",source = "vat")
+    @Mapping(target = "untaxedTotal",source = "totalPrice")
+    @Mapping(target = "taxedTotal",source = "totalPriceVat")
+    @Mapping(target = "supplierContactName",source = "salerContactName")
+    @Mapping(target = "supplierContactPhone",source = "salerContactPhone")
+    @Mapping(target = "goodsVat",source = "vatProductRate")
+    @Mapping(target = "serviceVat",source = "vatServiceRate")
+    @Mapping(target = "areaCode",source = "areaCode")
+    @Mapping(target = "areaName",source = "areaName")
+    @Mapping(target = "address",source = "address")
+    @Mapping(target = "consigneeName",source = "consigneeName")
+    @Mapping(target = "consigneePhone",source = "consigneePhone")
+    @Mapping(target = "confirmTaxedTotal",source = "confirmTotalPriceVat")
+    @Mapping(target = "discount",source = "discount")
+    @Mapping(target = "discountedTotalPrice",source = "discountedTotalPrice")
+    TContract toTContractDetail(ContractRevisionDetail contractRevisionDetail);
+
+
+    @Mapping(target = "contractNo",source = "orderCode")
+    @Mapping(target = "supplierNo",source = "supplierContractNo")
+    @Mapping(target = "salesContractId",source = "salesContractId")
+    @Mapping(target = "salesContractCode",source = "salesContractCode")
+    @Mapping(target = "salesContractNo",source = "salesOrderCode")
+    @Mapping(target = "ownerCode",source = "createdBy")
+    @Mapping(target = "ownerName",source = "createdByName")
+    @Mapping(target = "supplierCode",source = "salerComp")
+    @Mapping(target = "supplierName",source = "salerCompName")
+    @Mapping(target = "products",source = "records")
+    VPurchaseContractDetailResponse.VContract toContractDetail(TContract tContract);
 }

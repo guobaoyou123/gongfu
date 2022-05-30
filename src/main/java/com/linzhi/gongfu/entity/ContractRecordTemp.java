@@ -16,17 +16,20 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="contract_record_rev")
-public class ContractRecord {
+@Table(name="contract_record_temp")
+public class ContractRecordTemp {
     /**
      * 合同唯一id
      */
-   @EmbeddedId
+    @EmbeddedId
     private ContractRecordId contractRecordId ;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
+    /**
+     * 类型（1-货物 2-服务）
+     */
+    @Column(length = 1)
+    private VatRateType type;
     /**
      * 产品id
      */
@@ -53,11 +56,7 @@ public class ContractRecord {
     @Column(name = "product_description",length = 100)
     private String productDescription;
 
-    /**
-     * 类型（1-货物 2-服务）
-     */
-    @Column(length = 1)
-    private VatRateType type;
+
     /**
      * 品牌编码
      */
@@ -74,6 +73,11 @@ public class ContractRecord {
     @Column(name = "vat_rate")
     private BigDecimal vatRate;
     /**
+     * 税率
+     */
+    @Column(name = "previous_vat_rate")
+    private BigDecimal previousVatRate;
+    /**
      *计价单位
      */
     @Column(name = "charge_unit")
@@ -84,11 +88,22 @@ public class ContractRecord {
      */
     @Column(name = "ratio")
     private BigDecimal ratio;
+
+    /**
+     * 上一版计价单位比例
+     */
+    @Column(name = "previous_ratio")
+    private BigDecimal previousRatio;
     /**
      *我的计价单位
      */
     @Column(name = "my_charge_unit")
     private String myChargeUnit;
+    /**
+     *上一版我的计价单位
+     */
+    @Column(name = "previous_my_charge_unit")
+    private String previousMyChargeUnit;
     /**
      * 面价
      */
@@ -100,15 +115,35 @@ public class ContractRecord {
     @Column(name = "price")
     private BigDecimal price;
     /**
+     * 上一版价格
+     */
+    @Column(name = "previous_price")
+    private BigDecimal previousPrice;
+    /**
      * 含税价格
      */
     @Column(name = "price_vat")
     private BigDecimal priceVat;
     /**
+     * 上一版含税价格
+     */
+    @Column(name = "previous_price_vat")
+    private BigDecimal previousPriceVat;
+    /**
      * 数量
      */
     @Column(name = "quantity")
     private BigDecimal amount;
+    /**
+     * 上一版数量
+     */
+    @Column(name = "previous_quantity")
+    private BigDecimal previousAmount;
+    /**
+     * 上一版按我的计价单位的数量
+     */
+    @Column(name = "previous_my_quantity")
+    private BigDecimal previousMyAmount;
     /**
      * 按我的计价单位的数量
      */
@@ -120,37 +155,21 @@ public class ContractRecord {
     @Column(name = "total_price")
     private BigDecimal totalPrice;
     /**
+     * 上一版未税总价
+     */
+    @Column(name = "total_previous_price")
+    private BigDecimal totalPreviousPrice;
+    /**
      * 含税总价
      */
     @Column(name = "total_price_vat")
     private BigDecimal totalPriceVat;
+    /**
+     * 上一版含税总价
+     */
+    @Column(name = "total_previous_price_vat")
+    private BigDecimal totalPreviousPriceVat;
 
-    /**
-     *折扣
-     */
-    @Column(name = "discount")
-    private BigDecimal discount;
-
-    /**
-     *折扣后未税价格
-     */
-    @Column(name = "discounted_price")
-    private BigDecimal discountedPrice;
-    /**
-     *折扣后未税小计
-     */
-    @Column(name = "total_discounted_price")
-    private BigDecimal totalDiscountedPrice;
-    /**
-     *折扣后含税价格
-     */
-    @Column(name = "discounted_price_vat")
-    private BigDecimal discountedPriceVat;
-    /**
-     *折扣后含税小计
-     */
-    @Column(name = "total_discounted_price_vat")
-    private BigDecimal totalDiscountedPriceVat;
     /**
      * 备货期
      */

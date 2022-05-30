@@ -64,6 +64,9 @@ public class InquiryService {
     private final PurchasePlanRepository purchasePlanRepository;
     private final UnfinishedInquiryRepository unfinishedInquiryRepository;
 
+    private final CompTaxModelRepository compTaxModelRepository;
+    private final CompanyService companyService;
+
     /**
      * 保存询价单
      * @param planCode 采购计划
@@ -97,10 +100,14 @@ public class InquiryService {
             //查出服务税率
             // Optional<TaxRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
             //查出对应的销售合同
-            Contract salesContract = null;
+            ContractList salesContract = null;
             if(purchasePlan.get().getSalesId()!=null){
                  salesContract = contractRepository.findById(purchasePlan.get().getSalesId()).get();
             }
+            //查询每个供应商税模式对本单位设置的税模式
+            List<CompTrad>compTades=compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(companyCode, Trade.TRANSACTION);
+            Map<String,CompTrad> compTradMap = new HashMap<>();
+            compTades.forEach(compTrad -> compTradMap.put(compTrad.getCompTradId().getCompSaler(),compTrad));
             //查出向每个供应商询价商品且询价数量>0的有哪些
             purchasePlan.get().getProduct().forEach(purchasePlanProduct -> purchasePlanProduct.getSalers().forEach(supplier -> {
                 if(supplier.getDemand().intValue()>0) {
@@ -114,7 +121,7 @@ public class InquiryService {
                         .chargeUnit(purchasePlanProduct.getChargeUnit())
                         .facePrice(purchasePlanProduct.getFacePrice())
                             .build(),
-                        null,null,    supplier.getDemand(),goods
+                        null,null,    supplier.getDemand(),goods.getRate(),null,compTradMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode()).getTaxModel()
                     );
                     List<InquiryRecord> list = supplierInquiryRecordMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode());
                     if (list==null) {
@@ -125,17 +132,14 @@ public class InquiryService {
                     supplierInquiryRecordMap.put(supplier.getPurchasePlanProductSupplierId().getSalerCode(),list);
                 }
             }));
-            //查询每个供应商税模式对本单位设置的税模式
-            List<CompTrad>compTades=compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(companyCode, Trade.TRANSACTION);
-            Map<String,CompTrad> compTradMap = new HashMap<>();
-            compTades.forEach(compTrad -> compTradMap.put(compTrad.getCompTradId().getCompSaler(),compTrad));
+
             //查询询价单最大编号
             String maxCode = inquiryDetailRepository.findMaxCode(companyCode, operatorCode);
             if(maxCode ==null)
                 maxCode ="01";
             AtomicInteger max = new AtomicInteger(Integer.parseInt(maxCode));
             //对每个供应商生成询价单
-            Contract finalSalesContract = salesContract;
+            ContractList finalSalesContract = salesContract;
             companyRepository.findAllById(suppliers).forEach(company -> {
 
                     List<String> inquiryCodes = getInquiryCode(max.get()+"",operatorCode,companyCode,company.getRole().equals(CompanyRole.EXTERIOR_SUPPLIER.getSign())?company.getEncode():company.getCode());
@@ -218,10 +222,10 @@ public class InquiryService {
 
     /**
      * 根据供应商编码查询未完成的询价单列表
-     * @param companyCode
-     * @param operator
-     * @param supplierCode
-     * @return
+     * @param companyCode 客户编码
+     * @param operator 操作员
+     * @param supplierCode 供应商编码
+     * @return 返回未完成的询价单列表
      */
     public List<VUnfinishedInquiryListResponse.VInquiry> unfinishedInquiry(String companyCode,String operator,String supplierCode){
 
@@ -303,12 +307,11 @@ public class InquiryService {
      * @param companyCode 单位id
      * @param companyName 单位名称
      * @param operator 操作员id
-     * @param operatorName 操作员姓名
      * @param supplierCode 供应商名称
      * @return 询价单编码
      */
     @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
-    public String  emptyInquiry(String companyCode,String companyName,String operator,String operatorName,String supplierCode){
+    public String  emptyInquiry(String companyCode,String companyName,String operator,String supplierCode){
         try {
             //查询询价单最大编号
             String maxCode = inquiryDetailRepository.findMaxCode(companyCode, operator);
@@ -319,15 +322,11 @@ public class InquiryService {
             String supplierName = supplier.getNameInCN();
             List<String> inquiryCodes = getInquiryCode(maxCode,operator,companyCode,supplier.getRole().equals(CompanyRole.EXTERIOR_SUPPLIER.getSign())?supplier.getEncode():supplierCode);
             //税模式
-            Optional<CompTrad> compTrad = compTradeRepository.findById(
-                CompTradId.builder()
-                    .compBuyer(companyCode)
-                    .compSaler(supplierCode)
-                    .build()
-            );
-            TaxMode taxMode = null;
-            if(compTrad.isPresent())
-                taxMode= compTrad.get().getTaxModel();
+            CompTaxModel taxModel = compTaxModelRepository.findById(CompTradId.builder()
+                .compSaler(supplierCode)
+                .compBuyer(companyCode)
+                .build()).orElseThrow(()->new IOException("从数据库中没有查询到"));
+            TaxMode taxMode = taxModel.getTaxModel();
             inquiryDetailRepository.save(
                 createInquiryDetail(inquiryCodes.get(0),
                     inquiryCodes.get(1),
@@ -356,7 +355,9 @@ public class InquiryService {
      * @param amount 数量
      * @return 返回成功或者失败信息
      */
-    @CacheEvict(value="inquiry_record_List;1800", key="#id")
+    @Caching(evict = {@CacheEvict(value="inquiry_detail;1800",key = "#id"),
+        @CacheEvict(value="inquiry_record_List;1800", key="#id")
+    })
     @Transactional
     public Boolean saveInquiryProduct(String id, String productId, BigDecimal price,BigDecimal amount){
         try{
@@ -377,19 +378,10 @@ public class InquiryService {
                     "001"
                 ).orElseThrow(() -> new IOException("请求的货物税率不存在"));
             //保存产品inquiry = {InquiryDetail@17473}
-            InquiryRecord record = getInquiryRecord(product,id,maxCode,amount,goods);
-            if(inquiry.getVatProductRate()!=null)
-                record.setVatRate(inquiry.getVatProductRate());
-            if(price!=null){
-                if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)){
-                    record.setPrice(price);
-                }else{
-                    record.setPriceVat(price);
-                }
-            }
-            List<InquiryRecord> recordList = new ArrayList<>();
-            recordList.add(record);
-            inquiryRecordRepository.save(countRecord(recordList,inquiry.getOfferMode()).get(0));
+            InquiryRecord record = getInquiryRecord(product,id,maxCode,amount,goods.getRate(),price,inquiry.getOfferMode());
+
+
+            inquiryRecordRepository.save(record);
             inquiryRecordList.add(record);
             return  countSum(inquiryRecordList,id);
         }catch (Exception e){
@@ -442,7 +434,7 @@ public class InquiryService {
      * @param taxRates 税率
      * @return 询价单明细实体
      */
-    public  InquiryRecord getInquiryRecord(Product product,String id,String maxCode,BigDecimal amount,TaxRates taxRates){
+    public  InquiryRecord getInquiryRecord(Product product,String id,String maxCode,BigDecimal amount,BigDecimal taxRates,BigDecimal price,TaxMode taxMode){
         return InquiryRecord.builder()
             .inquiryRecordId(
                 InquiryRecordId.builder()
@@ -461,7 +453,11 @@ public class InquiryService {
             .facePrice(product.getFacePrice())
             .chargeUnit(product.getChargeUnit())
             .stockTime(0)
-            .vatRate(taxRates.getRate())
+            .vatRate(taxRates)
+            .price(price!=null?taxMode.equals(TaxMode.UNTAXED)?price:price.divide(new BigDecimal(1).add(taxRates),4, RoundingMode.HALF_UP):null)
+            .priceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?price:price.multiply(new BigDecimal(1).add(taxRates)).setScale(4, RoundingMode.HALF_UP):null)
+            .totalPrice(price!=null?taxMode.equals(TaxMode.UNTAXED)?price.multiply(amount).setScale(2, RoundingMode.HALF_UP):price.divide(new BigDecimal(1).add(taxRates),4, RoundingMode.HALF_UP).multiply(amount).setScale(2, RoundingMode.HALF_UP):null)
+            .totalPriceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?price.multiply(amount).setScale(2, RoundingMode.HALF_UP):price.multiply(new BigDecimal(1).add(taxRates)).setScale(4, RoundingMode.HALF_UP).multiply(amount).setScale(2, RoundingMode.HALF_UP):null)
             .build();
     }
 
@@ -471,7 +467,9 @@ public class InquiryService {
      * @param codes 询价单明细条目号
      * @return 返回成功或者失败
      */
-    @CacheEvict(value="inquiry_record_List;1800", key="#id")
+    @Caching(evict = {@CacheEvict(value="inquiry_detail;1800",key = "#id"),
+        @CacheEvict(value="inquiry_record_List;1800", key="#id")
+    })
     @Transactional
     public Boolean deleteInquiryProduct(String id,List<Integer> codes){
         try {
@@ -626,7 +624,7 @@ public class InquiryService {
      * @param operator 操作员编码
      * @return 返回成功或者失败信息
      */
-    @CacheEvict(value="inquiry_record_List;1800", key="#id")
+   // @CacheEvict(value="inquiry_record_List;1800", key="#id")
     @Transactional
     public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operator){
         Map<String,Object> resultMap = new HashMap<>();
@@ -827,8 +825,9 @@ public class InquiryService {
      * @param operator 操作员编码
      * @return 返回成功或者失败信息
      */
-
-     @CacheEvict(value="inquiry_record_List;1800", key="#id")
+    @Caching(evict = {@CacheEvict(value="inquiry_detail;1800",key = "#id"),
+        @CacheEvict(value="inquiry_record_List;1800", key="#id")
+    })
     @Transactional
     public Map<String,Object> saveImportProducts(String id,String companyCode,String operator){
         Map<String,Object> resultMap = new HashMap<>();
@@ -858,22 +857,23 @@ public class InquiryService {
                     id,
                     maxCode+"" ,
                     new BigDecimal(importProductTemp.getAmount()),
-                    goods
+                    inquiry.getVatProductRate() != null ? inquiry.getVatProductRate() : goods.getRate(),
+                    StringUtils.isNotBlank(importProductTemp.getPrice())?new BigDecimal(importProductTemp.getPrice()):null,inquiry.getOfferMode()
                 );
-                record.setVatRate(inquiry.getVatProductRate() != null ? inquiry.getVatProductRate() : goods.getRate());
+/*
                 if (StringUtils.isNotBlank(importProductTemp.getPrice())) {
                     if (inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
                         record.setPrice(new BigDecimal(importProductTemp.getPrice()));
                     } else {
                         record.setPriceVat(new BigDecimal(importProductTemp.getPrice()));
                     }
-                }
+                }*/
                 inquiryRecords.add(record);
                 maxCode++;
             }
             //删除原有的产品明细
             importProductTempRepository.deleteProduct(id,companyCode,operator);
-            inquiryRecords=countRecord(inquiryRecords,inquiry.getOfferMode());
+          //  inquiryRecords=countRecord(inquiryRecords,inquiry.getOfferMode());
             inquiryRecordRepository.saveAll(inquiryRecords);
             if(countSum(inquiryRecords,id))
                 resultMap.put("code",200);
@@ -903,27 +903,7 @@ public class InquiryService {
         }
     }
 
-    /**
-     * 计算询价单明细
-     * @param records 明细列表
-     * @param taxMode 税模式
-     * @return 明细列表
-     */
-    public List<InquiryRecord> countRecord(List<InquiryRecord> records ,TaxMode taxMode){
-        records.forEach(record -> {
-            if(taxMode.equals(TaxMode.UNTAXED)&&record.getPrice()!=null){
-                record.setPriceVat(record.getPrice().multiply(new BigDecimal(1).add(record.getVatRate())).setScale(4, RoundingMode.HALF_UP));
-            }else if(taxMode.equals(TaxMode.INCLUDED)&&record.getPriceVat()!=null){
-                record.setPrice(record.getPriceVat().divide(new BigDecimal(1).add(record.getVatRate()),4, RoundingMode.HALF_UP));
-            }
 
-            if(record.getPrice()!=null){
-                record.setTotalPrice(record.getPrice().multiply(record.getAmount()).setScale(2, RoundingMode.HALF_UP));
-                record.setTotalPriceVat(record.getPriceVat().multiply(record.getAmount()).setScale(2, RoundingMode.HALF_UP));
-            }
-        });
-        return records;
-    }
 
     /**
      * 更新询价单总价
@@ -995,10 +975,32 @@ public class InquiryService {
         LocalDate data=LocalDate.now();
         //uuid
         UUID uuid = UUID.randomUUID();
-        String inquiryId = "XJ-"+companyCode+"-0"+operatorCode+"-"+uuid.toString().substring(0,8);
+        String inquiryId = "XJ-"+companyCode+"-"+operatorCode+"-"+uuid.toString().substring(0,8);
         String inquiryCode ="XJ-"+operatorCode+"-"+supplierCode+"-"+dtf.format(data)+"-"+mCode;
         list.add(inquiryId);
         list.add(inquiryCode);
         return  list;
+    }
+
+    /**
+     * 计算询价单明细
+     * @param records 明细列表
+     * @param taxMode 税模式
+     * @return 明细列表
+     */
+    public List<InquiryRecord> countRecord(List<InquiryRecord> records ,TaxMode taxMode){
+        records.forEach(record -> {
+            if(taxMode.equals(TaxMode.UNTAXED)&&record.getPrice()!=null){
+                record.setPriceVat(record.getPrice().multiply(new BigDecimal(1).add(record.getVatRate())).setScale(4, RoundingMode.HALF_UP));
+            }else if(taxMode.equals(TaxMode.INCLUDED)&&record.getPriceVat()!=null){
+                record.setPrice(record.getPriceVat().divide(new BigDecimal(1).add(record.getVatRate()),4, RoundingMode.HALF_UP));
+            }
+
+            if(record.getPrice()!=null){
+                record.setTotalPrice(record.getPrice().multiply(record.getAmount()).setScale(2, RoundingMode.HALF_UP));
+                record.setTotalPriceVat(record.getPriceVat().multiply(record.getAmount()).setScale(2, RoundingMode.HALF_UP));
+            }
+        });
+        return records;
     }
 }

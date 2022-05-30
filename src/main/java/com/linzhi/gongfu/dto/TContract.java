@@ -1,14 +1,13 @@
 package com.linzhi.gongfu.dto;
 
-import com.linzhi.gongfu.enumeration.InquiryState;
-import com.linzhi.gongfu.enumeration.InquiryType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 用于转移合同信息
@@ -27,13 +26,26 @@ public class TContract {
      */
     private String id ;
     /**
+     * 版本号
+     */
+    private int revision;
+    /**
+     * 版本号列表
+     */
+    private List<TRevision> revisions;
+    /**
      * 合同编号
      */
 
     private String code;
+    /**
+     * 合同编码
+     */
 
     private String orderCode;
-    private int revision;
+    /**
+     * 供应商合同编码
+     */
     private String  supplierContractNo;
     /**
      * 类型（0-采购合同 1-销售合同）
@@ -92,6 +104,75 @@ public class TContract {
      * 创建时间
      */
     private String createdAt;
+    /**
+     * 税模式（0-未税 1-含税）
+     */
+    private String offerMode;
+    /**
+     * 税额
+     */
+    private BigDecimal tax;
+    /**
+     * 未税总价
+     */
+    private BigDecimal untaxedTotal;
+    /**
+     * 含税总价
+     */
+    private BigDecimal taxedTotal;
+    /**
+     * 供应商中联系人姓名
+     */
+    private String supplierContactName;
+    /**
+     * 供应商中联系人电话
+     */
+    private String supplierContactPhone;
+    /**
+     * 货物税率
+     */
+    private BigDecimal goodsVat;
+    /**
+     * 货物税率
+     */
+    private BigDecimal serviceVat;
+    /**
+     * 区域编码
+     */
+    private String areaCode;
+    /**
+     * 区域名称
+     */
+    private String areaName;
+    /**
+     * 详细地址
+     */
+    private String address;
+    /**
+     *收货人
+     */
+    private String consigneeName;
+    /**
+     *收货人电话
+     */
+    private String consigneePhone;
+    /**
+     * 确认价税合计
+     */
+    private BigDecimal confirmTaxedTotal;
+    /**
+     *折扣
+     */
+    private BigDecimal discount;
+    /**
+     * 最终未税总价
+     */
+    private BigDecimal discountedTotalPrice;
 
+    /**
+     * 合同明细
+     */
+    private List<TContractRecord> records;
 
+   private int category;
 }
