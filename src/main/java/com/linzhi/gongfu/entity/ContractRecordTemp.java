@@ -22,7 +22,7 @@ public class ContractRecordTemp {
      * 合同唯一id
      */
     @EmbeddedId
-    private ContractRecordId contractRecordId ;
+    private ContractRecordTempId contractRecordTempId ;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     /**

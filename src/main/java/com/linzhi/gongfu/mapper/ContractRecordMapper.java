@@ -27,8 +27,8 @@ public interface ContractRecordMapper {
     @Mapping(target = "type",expression = "java(String.valueOf(contractRecord.getType().getType()))")
     @Mapping(target = "facePrice",source = "facePrice")
     TContractRecord toTContractRecord(ContractRecord contractRecord);
-    @Mapping(target = "itemNo",source = "contractRecordId.code")
-    @Mapping(target = "createdAt",expression ="java(com.linzhi.gongfu.util.DateConverter.dateFormat(contractRecordTemp.getCreatedAt()))" )
+    @Mapping(target = "itemNo",source = "contractRecordTempId.code")
+    @Mapping(target = "createdAt",expression ="java(contractRecordTemp.getCreatedAt()!=null?com.linzhi.gongfu.util.DateConverter.dateFormat(contractRecordTemp.getCreatedAt()):null)" )
     @Mapping(target = "id",source = "productId")
     @Mapping(target = "code",source = "productCode")
     @Mapping(target = "describe",source = "productDescription")

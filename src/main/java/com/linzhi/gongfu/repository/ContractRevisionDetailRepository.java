@@ -10,6 +10,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,8 +34,8 @@ public interface ContractRevisionDetailRepository
     List<Map<String,Object>> findRevisionList(String id );
 
     @Modifying
-    @Query(value="update   contract_rev  set total_price=?1 ,total_price_vat=?2,vat=?3 ,discount_total_price=?4 where  id=?5 and revision=?6 ",
+    @Query(value="update   contract_rev  set total_price=?1 ,total_price_vat=?2,vat=?3 ,discount_total_price=?4,modified_at=?5,modified_by=?6 where  id=?7 and revision=?8 ",
         nativeQuery = true)
-    void  updateContract(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, BigDecimal discountTotalPrice, String id, int revision);
+    void  updateContract(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, BigDecimal discountTotalPrice, LocalDateTime localDateTime,String operator, String id, int revision);
 
 }

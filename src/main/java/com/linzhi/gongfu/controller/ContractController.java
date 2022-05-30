@@ -919,6 +919,13 @@ public class ContractController {
             .build();
     }
 
+    /**
+     * 采购合同添加产品
+     * @param product 产品信息
+     * @param id 合同主键
+     * @param revision 版本号
+     * @return 添加成功或者失败的信息
+     */
     @PostMapping("/contract/purchase/{id}/{revision}/product")
     public  VBaseResponse saveContractProduct(@RequestBody Optional<VInquiryProductResquest> product,@PathVariable("id")String id,@PathVariable("revision") Integer revision){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
@@ -927,11 +934,17 @@ public class ContractController {
             product.get().getPrice(),
             product.get().getAmount(),
             id,
-            revision
+            revision,
+            session.getSession().getOperatorCode()
             );
+        if(flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("添加产品成功")
+                .build();
         return VBaseResponse.builder()
-            .code(200)
-            .message("添加产品成功")
+            .code(500)
+            .message("添加产品失败")
             .build();
     }
 }

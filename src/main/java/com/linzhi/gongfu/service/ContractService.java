@@ -26,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -442,8 +441,8 @@ public class ContractService {
             .map(contractMapper::toTContractDetail)
             .orElseThrow(()->new IOException("数据库中未查询到该数据"));
         List<TContractRecord> contractRecords;
-        if(contractRevision.getState().equals(ContractState.UN_FINISHED)){
-            contractRecords = contractRecordTempRepository.findContractRecordTempsByContractRecordId_ContractIdAndContractRecordId_Revision(id,revision).stream()
+        if(contractRevision.getState().equals(ContractState.UN_FINISHED.getState()+"")){
+            contractRecords = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractIdAndContractRecordTempId_Revision(id,revision).stream()
                 .map(contractRecordMapper::toTContractRecord)
                 .toList();
         }else{
@@ -488,7 +487,7 @@ public class ContractService {
     @Transactional
     public Optional<String> savePurchaseContractEmpty(String supplierCode,String companyCode,String companyName,String operator,String operatorName) {
         try {
-            Company supplier = companyRepository.findById(supplierCode).orElseThrow(()->new IOException());
+            Company supplier = companyRepository.findById(supplierCode).orElseThrow(()->new IOException("未从数据库中查到供应商信息"));
             String maxCode = contractDetailRepository.findMaxCode(companyCode,operator).orElse("01");
             Map<String,String> map = getContractCode(maxCode,operator,companyCode,supplierCode);
             ContractDetail contractDetail = createdContract(map.get("id"),
@@ -561,10 +560,10 @@ public class ContractService {
         @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision")
     })
     @Transactional
-    public boolean saveProduct(String productId, BigDecimal price, BigDecimal amount, String id, Integer revision){
+    public boolean saveProduct(String productId, BigDecimal price, BigDecimal amount, String id, Integer revision,String operator){
         try {
              ContractRevisionDetail contractRevisionDetail =contractRevisionDetailRepository.findDetail(revision, id).orElseThrow(() -> new IOException("请求的产品不存在"));
-             List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordId_ContractIdAndContractRecordId_Revision(id,
+             List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractIdAndContractRecordTempId_Revision(id,
                  revision);
             //查询明细最大顺序号
             String maxCode = contractRecordTempRepository.findMaxCode(id);
@@ -579,7 +578,7 @@ public class ContractService {
                 "001"
             ).orElseThrow(() -> new IOException("请求的货物税率不存在"));
             ContractRecordTemp contractRecordTemp = ContractRecordTemp.builder()
-                .contractRecordId(ContractRecordId.builder()
+                .contractRecordTempId(ContractRecordTempId.builder()
                     .revision(revision)
                     .contractId(id)
                     .code(Integer.parseInt(maxCode)+1)
@@ -598,6 +597,7 @@ public class ContractService {
                 .priceVat(price!=null?contractRevisionDetail.getOfferMode().equals(TaxMode.INCLUDED)?price:price.multiply(new BigDecimal(1).add(goods.getRate())).setScale(4, RoundingMode.HALF_UP):null)
                 .amount(amount)
                 .myAmount(amount)
+                .createdAt(LocalDateTime.now())
                 .ratio(new BigDecimal(1))
                 .myChargeUnit(product.getChargeUnit())
                 .stockTime(0)
@@ -607,7 +607,7 @@ public class ContractService {
                 .build();
             contractRecordTemps.add(contractRecordTemp);
             contractRecordTempRepository.save(contractRecordTemp);
-            return  countSum(contractRecordTemps,id,revision);
+            return  countSum(contractRecordTemps,id,revision,operator);
         }catch (Exception e){
             e.printStackTrace();
             return false;
@@ -621,7 +621,7 @@ public class ContractService {
      * @param id 合同主键
      * @return 返回成功或者失败信息
      */
-    public  boolean countSum(List<ContractRecordTemp> contractRecordTemps,String id,int revision){
+    public  boolean countSum(List<ContractRecordTemp> contractRecordTemps,String id,int revision,String operator){
         try{
             //判断是否需要重新计算价格
             List<ContractRecordTemp> lists = contractRecordTemps
@@ -646,7 +646,7 @@ public class ContractService {
             }
 
             BigDecimal totalPrice1 = totalPrice == null ? null : totalPrice.setScale(2, RoundingMode.HALF_UP);
-            contractRevisionDetailRepository.updateContract(totalPrice1,totalPriceVat==null?null:totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,totalPrice1,id,revision);
+            contractRevisionDetailRepository.updateContract(totalPrice1,totalPriceVat==null?null:totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,totalPrice1,LocalDateTime.now(),operator,id,revision);
              return true;
         }catch (Exception e){
             e.printStackTrace();
