@@ -13,6 +13,7 @@ import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
+import com.linzhi.gongfu.vo.VImportProductTempResponse;
 import com.linzhi.gongfu.vo.VModifyInquiryRequest;
 import com.linzhi.gongfu.vo.VUnfinishedInquiryListResponse;
 import lombok.RequiredArgsConstructor;
@@ -454,10 +455,10 @@ public class InquiryService {
             .chargeUnit(product.getChargeUnit())
             .stockTime(0)
             .vatRate(taxRates)
-            .price(price!=null?taxMode.equals(TaxMode.UNTAXED)?price:price.divide(new BigDecimal(1).add(taxRates),4, RoundingMode.HALF_UP):null)
-            .priceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?price:price.multiply(new BigDecimal(1).add(taxRates)).setScale(4, RoundingMode.HALF_UP):null)
-            .totalPrice(price!=null?taxMode.equals(TaxMode.UNTAXED)?price.multiply(amount).setScale(2, RoundingMode.HALF_UP):price.divide(new BigDecimal(1).add(taxRates),4, RoundingMode.HALF_UP).multiply(amount).setScale(2, RoundingMode.HALF_UP):null)
-            .totalPriceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?price.multiply(amount).setScale(2, RoundingMode.HALF_UP):price.multiply(new BigDecimal(1).add(taxRates)).setScale(4, RoundingMode.HALF_UP).multiply(amount).setScale(2, RoundingMode.HALF_UP):null)
+            .price(price!=null?taxMode.equals(TaxMode.UNTAXED)?price:price.divide(new BigDecimal("1").add(taxRates),4, RoundingMode.HALF_UP):null)
+            .priceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?price:price.multiply(new BigDecimal("1").add(taxRates)).setScale(4, RoundingMode.HALF_UP):null)
+            .totalPrice(price!=null?taxMode.equals(TaxMode.UNTAXED)?price.multiply(amount).setScale(2, RoundingMode.HALF_UP):price.divide(new BigDecimal("1").add(taxRates),4, RoundingMode.HALF_UP).multiply(amount).setScale(2, RoundingMode.HALF_UP):null)
+            .totalPriceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?price.multiply(amount).setScale(2, RoundingMode.HALF_UP):price.multiply(new BigDecimal("1").add(taxRates)).setScale(4, RoundingMode.HALF_UP).multiply(amount).setScale(2, RoundingMode.HALF_UP):null)
             .build();
     }
 
@@ -578,8 +579,8 @@ public class InquiryService {
     }
 
     /**
-     * 导出询价单产品模板
-     * @param id 询价单主键
+     * 导出产品模板
+     * @param id 询价单主键或者合同主键
      * @return 产品列表
      */
     public List<LinkedHashMap<String,Object>> exportProduct(String id){
@@ -626,10 +627,10 @@ public class InquiryService {
      */
    // @CacheEvict(value="inquiry_record_List;1800", key="#id")
     @Transactional
-    public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operator){
+    public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operator,TaxMode taxMode){
         Map<String,Object> resultMap = new HashMap<>();
         try {
-            Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+           // Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<Map<String, Object>> list =  ExcelUtil.excelToList(file);
             List<ImportProductTemp> importProductTemps = new ArrayList<>();
             for (int i =0;i<list.size();i++){
@@ -668,7 +669,7 @@ public class InquiryService {
                         importProductTemp.setPrice(price);
                     importProductTemp.setFlag(TaxMode.INCLUDED);
                 }else{
-                    importProductTemp.setFlag(inquiry.getOfferMode());
+                    importProductTemp.setFlag(taxMode);
                 }
 
                 importProductTemps.add(importProductTemp);
@@ -688,13 +689,15 @@ public class InquiryService {
      * 查询导入产品列表
      * @param companyCode 单位id
      * @param operator 操作员编码
-     * @param id 询价单id
+     * @param id 询价单id或者合同主键
+     * @param code 询价单编码或者合同编码
      * @return 返回导入产品列表信息
      */
-    public Map<String,Object> findImportProductDetail(String companyCode, String operator, String id) throws IOException {
+    public Map<String,Object> findImportProductDetail(String companyCode, String operator, String id,String code,TaxMode taxMode) throws IOException {
        Map<String,Object> map = new HashMap<>();
-       Inquiry inquiry =  findInquiry(id).orElseThrow(()->new IOException("从数据库中查询不到该询价单信息"));
-        map.put("inquiryCode",inquiry.getCode());
+       //Inquiry inquiry =  findInquiry(id).orElseThrow(()->new IOException("从数据库中查询不到该询价单信息"));
+        map.put("inquiryCode",code);
+        map.put("contractCode",code);
         List<ImportProductTemp> list=importProductTempRepository.
             findImportProductTempsByImportProductTempId_DcCompIdAndImportProductTempId_OperatorAndImportProductTempId_InquiryId(companyCode,operator,id);
         List<TImportProductTemp> importProductTemps=list.stream()
@@ -745,8 +748,8 @@ public class InquiryService {
                 if(isNumeric(tImportProductTemp.getPrice())) {
                     errorList.add("单价应为数字");
                 }
-                if(!inquiry.getOfferMode().equals(tImportProductTemp.getFlag())){
-                    String offerMode=inquiry.getOfferMode().equals(TaxMode.UNTAXED)?"未税单价":"含税单价";
+                if(!taxMode.equals(tImportProductTemp.getFlag())){
+                    String offerMode=taxMode.equals(TaxMode.UNTAXED)?"未税单价":"含税单价";
                     errorList.add("单价应为"+offerMode);
                 }
             }
@@ -778,7 +781,7 @@ public class InquiryService {
 
     /**
      * 修改暂存导入产品
-     * @param id 询价单id
+     * @param id 询价单id或者采购合同主键
      * @param companyCode 单位id
      * @param operator 操作员编码
      * @return 返回成功或者失败信息
@@ -919,8 +922,8 @@ public class InquiryService {
                 .filter(inquiryRecord -> inquiryRecord.getPrice()==null)
                 .toList();
             //是 重新计算价格
-            BigDecimal totalPrice=new BigDecimal(0);
-            BigDecimal  totalPriceVat=new BigDecimal(0);
+            BigDecimal totalPrice=new BigDecimal("0");
+            BigDecimal  totalPriceVat=new BigDecimal("0");
             BigDecimal vat;
             if(lists.size()==0){
                 for (InquiryRecord inquiryRecord:inquiryRecords){
@@ -991,9 +994,9 @@ public class InquiryService {
     public List<InquiryRecord> countRecord(List<InquiryRecord> records ,TaxMode taxMode){
         records.forEach(record -> {
             if(taxMode.equals(TaxMode.UNTAXED)&&record.getPrice()!=null){
-                record.setPriceVat(record.getPrice().multiply(new BigDecimal(1).add(record.getVatRate())).setScale(4, RoundingMode.HALF_UP));
+                record.setPriceVat(record.getPrice().multiply(new BigDecimal("1").add(record.getVatRate())).setScale(4, RoundingMode.HALF_UP));
             }else if(taxMode.equals(TaxMode.INCLUDED)&&record.getPriceVat()!=null){
-                record.setPrice(record.getPriceVat().divide(new BigDecimal(1).add(record.getVatRate()),4, RoundingMode.HALF_UP));
+                record.setPrice(record.getPriceVat().divide(new BigDecimal("1").add(record.getVatRate()),4, RoundingMode.HALF_UP));
             }
 
             if(record.getPrice()!=null){
@@ -1002,5 +1005,30 @@ public class InquiryService {
             }
         });
         return records;
+    }
+
+    /**
+     * 查询暂存产品详情
+     * @param id 合同主键或者询价单主键
+     * @param companyCode 本单位编码
+     * @param operator 操作员编码
+     * @param code 合同编码或者询价单编码
+     * @param taxMode 税模式
+     * @return 返回暂存产品列表
+     * @throws IOException
+     */
+    public VImportProductTempResponse getvImportProductTempResponse(String id, String companyCode, String operator, String code, TaxMode taxMode) throws IOException {
+        var map = findImportProductDetail(companyCode,
+            operator,
+            id,code,taxMode);
+        var list =(List<VImportProductTempResponse.VProduct>) map.get("products");
+        return VImportProductTempResponse.builder()
+            .code(200)
+            .message("产品导入临时表成功")
+            .confirmable(list.stream().filter(vProduct -> vProduct.getMessages().size() > 0 || vProduct.getConfirmedBrand()==null).toList().size()==0)
+            .products(list)
+            .contractCode((String)map.get("contractCode"))
+            .inquiryCode((String)map.get("inquiryCode"))
+            .build();
     }
 }

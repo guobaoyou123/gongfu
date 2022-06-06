@@ -2,11 +2,14 @@ package com.linzhi.gongfu.mapper;
 
 
 import com.linzhi.gongfu.dto.TContract;
+import com.linzhi.gongfu.dto.TContractReceived;
 import com.linzhi.gongfu.entity.ContractList;
+import com.linzhi.gongfu.entity.ContractReceived;
 import com.linzhi.gongfu.entity.ContractRevision;
 import com.linzhi.gongfu.entity.ContractRevisionDetail;
 import com.linzhi.gongfu.vo.VPurchaseContractDetailResponse;
 import com.linzhi.gongfu.vo.VPurchaseContractPageResponse;
+import com.linzhi.gongfu.vo.VReceivedResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -65,6 +68,8 @@ public interface ContractMapper {
     @Mapping(target = "tax",source = "vat")
     @Mapping(target = "untaxedTotal",source = "totalPrice")
     @Mapping(target = "taxedTotal",source = "totalPriceVat")
+    @Mapping(target = "previousUntaxedTotal",source = "previousUntaxedTotal")
+    @Mapping(target = "previousTaxedTotal",source = "previousTaxedTotal")
     @Mapping(target = "supplierContactName",source = "salerContactName")
     @Mapping(target = "supplierContactPhone",source = "salerContactPhone")
     @Mapping(target = "goodsVat",source = "vatProductRate")
@@ -93,4 +98,9 @@ public interface ContractMapper {
     VPurchaseContractDetailResponse.VContract toContractDetail(TContract tContract);
 
     ContractRevision toContractRevision(ContractRevisionDetail contractRevisionDetail);
+
+    @Mapping(target = "received",expression = "java(contractReceived.getDelivered().subtract(contractReceived.getReceived()))")
+    TContractReceived toTContractReceived(ContractReceived contractReceived);
+    @Mapping(target = "receivedAmount",source = "received")
+    VReceivedResponse.VProduct toVProduct(TContractReceived tContractReceived);
 }

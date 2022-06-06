@@ -109,14 +109,24 @@ public class ContractRevisionDetail {
     @Column(name = "total_price_vat")
     private BigDecimal totalPriceVat;
     /**
+     * 上一版未税总价
+     */
+    @Column(name = "previousUntaxedTotal")
+    private BigDecimal previousUntaxedTotal;
+    /**
+     * 上一版本含税总价
+     */
+    @Column(name = "previousTaxedTotal")
+    private BigDecimal previousTaxedTotal;
+    /**
      * 最终未税总价
      */
-    @Column(name = "discount_total_price")
+    @Column(name = "discount_total_price",insertable = false,updatable = false)
     private BigDecimal discountedTotalPrice;
     /**
      * 确认价税合计
      */
-    @Column(name = "confirm_total_price_vat")
+    @Column(name = "confirm_total_price_vat",insertable = false,updatable = false)
     private BigDecimal confirmTotalPriceVat;
 
     /**

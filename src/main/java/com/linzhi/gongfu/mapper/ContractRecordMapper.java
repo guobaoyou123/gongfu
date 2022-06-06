@@ -3,6 +3,7 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TContractRecord;
 import com.linzhi.gongfu.entity.ContractRecord;
 import com.linzhi.gongfu.entity.ContractRecordTemp;
+import com.linzhi.gongfu.entity.DeliverTemp;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -74,5 +75,19 @@ public interface ContractRecordMapper {
     @Mapping(target = "totalPriceVat",source = "totalPriceVat")
     @Mapping(target = "contractRecordTempId.revision",expression = "java(contractRecordId.getRevision()+1)")
     ContractRecordTemp toContractRecordTemp(ContractRecord contractRecord);
+    @Mapping(target = "contractRecordId.contractId",source = "contractRecordTempId.contractId")
+    @Mapping(target = "contractRecordId.code",source = "contractRecordTempId.code")
+    @Mapping(target = "price",source = "price")
+    @Mapping(target = "priceVat",source = "priceVat")
+    @Mapping(target = "amount",source = "amount")
+    @Mapping(target = "myAmount",source = "myAmount")
+    @Mapping(target = "totalPrice",source = "totalPrice")
+    @Mapping(target = "totalPriceVat",source = "totalPriceVat")
+    @Mapping(target = "vatRate",source = "vatRate")
+    @Mapping(target = "ratio",source = "ratio")
+    @Mapping(target = "myChargeUnit",source = "myChargeUnit")
+    @Mapping(target = "contractRecordId.revision",source = "contractRecordTempId.revision")
+    ContractRecord toContractRecord(ContractRecordTemp contractRecord);
+
 
 }

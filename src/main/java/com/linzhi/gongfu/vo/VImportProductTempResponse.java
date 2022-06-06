@@ -24,6 +24,10 @@ public class VImportProductTempResponse extends VBaseResponse{
      * 询价单编码
      */
     private String inquiryCode;
+    /**
+     * 采购合同编码
+     */
+    private String contractCode;
     private List<VProduct> products;
 
     @Data

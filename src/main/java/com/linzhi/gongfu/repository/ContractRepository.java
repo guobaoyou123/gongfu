@@ -10,9 +10,18 @@ import java.util.List;
 
 public interface ContractRepository
     extends CrudRepository<ContractList, String>, QuerydslPredicateExecutor<ContractList> {
-    @Query(value="select  count(c.id) from contract_base c ,contract_rev  r  where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  and c.type = '0' and r.revision=(select max(revision) from contract_rev v where v.id = r.id) ",
+    @Query(value="select  count(distinct c.id) " +
+        "from contract_base c ,contract_rev  r  " +
+        "where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  " +
+        "and c.type = '0' ",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode);
+
+    @Query(value="select  count(distinct c.id) from contract_base c ,contract_rev  r " +
+        " where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  and c.type = '0'" +
+        " and id <> ?3",
+        nativeQuery = true)
+    int findByOrderCode(String dcCompId, String orderCode,String contractId);
     @Query(value = "select  c.id from contract_base c ,contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id  and c.type = '0' and r.fingerprint =?2 and r.revision=(select max(revision) from contract_rev v where v.id = r.id) "  ,nativeQuery = true)
     List<String> findContractId(String dcCompId, String sequenceCode);
 

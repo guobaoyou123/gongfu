@@ -121,6 +121,14 @@ public class TContract {
      */
     private BigDecimal taxedTotal;
     /**
+     * 上一版未税总价
+     */
+    private BigDecimal previousUntaxedTotal;
+    /**
+     * 上一版本含税总价
+     */
+    private BigDecimal previousTaxedTotal;
+    /**
      * 供应商中联系人姓名
      */
     private String supplierContactName;
