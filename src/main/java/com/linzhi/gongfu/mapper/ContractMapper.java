@@ -99,7 +99,7 @@ public interface ContractMapper {
 
     ContractRevision toContractRevision(ContractRevisionDetail contractRevisionDetail);
 
-    @Mapping(target = "received",expression = "java(contractReceived.getDelivered().subtract(contractReceived.getReceived()))")
+    @Mapping(target = "received",expression = "java(contractReceived.getDelivered()!=null?contractReceived.getDelivered().subtract(contractReceived.getReceived()):null)")
     TContractReceived toTContractReceived(ContractReceived contractReceived);
     @Mapping(target = "receivedAmount",source = "received")
     VReceivedResponse.VProduct toVProduct(TContractReceived tContractReceived);

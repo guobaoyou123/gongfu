@@ -1238,6 +1238,11 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/{id}/{revision}/preview")
     public VModifyContractPreviewResponse modifyContractPreview(@PathVariable("id") String id,@PathVariable("revision") Integer revision){
-         return VModifyContractPreviewResponse.builder().build();
+        var list=contractService.modifyContractPreview(id,revision);
+         return VModifyContractPreviewResponse.builder()
+             .code(200)
+             .message("获取数据成功")
+             .products(list)
+             .build();
     }
 }

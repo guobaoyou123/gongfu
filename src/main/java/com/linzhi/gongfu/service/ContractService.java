@@ -68,6 +68,7 @@ public class ContractService {
     private final DeliverRecordMapper deliverRecordMapper;
     private final DeliverBaseRepository deliverBaseRepository;
     private final ContractReceivedRepository contractReceivedRepository;
+    private final ContractRecordPreviewRepository contractRecordPreviewRepository;
     /**
      * 查询合同是否重复（产品种类和数量）
      * @param inquiryId 询价单id
@@ -712,7 +713,7 @@ public class ContractService {
      * 查询最大版本号
      * @param id 合同主键
      * @return 版本号
-     * @throws IOException
+     * @throws IOException 异常
      */
     public Integer findMaxRevision(String id) throws IOException {
         return   Integer.parseInt(contractRevisionDetailRepository.findMaxRevision(id).orElseThrow(()->new IOException("不存在该合同")));
@@ -1261,7 +1262,10 @@ public class ContractService {
      * @return 采购合同预览列表
      */
     public List<VModifyContractPreviewResponse.VProduct> modifyContractPreview(String id,Integer revision){
-        return  null;
+        return  contractRecordPreviewRepository.findContractRecordPreviewRepositories(id)
+            .stream().map(contractRecordMapper::toTContractRecordPreview)
+            .map(contractRecordMapper::toVProduct)
+            .toList();
     }
 
     /**

@@ -1,9 +1,12 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TContractRecord;
+import com.linzhi.gongfu.dto.TContractRecordPreview;
 import com.linzhi.gongfu.entity.ContractRecord;
+import com.linzhi.gongfu.entity.ContractRecordPreview;
 import com.linzhi.gongfu.entity.ContractRecordTemp;
 import com.linzhi.gongfu.entity.DeliverTemp;
+import com.linzhi.gongfu.vo.VModifyContractPreviewResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -89,5 +92,10 @@ public interface ContractRecordMapper {
     @Mapping(target = "contractRecordId.revision",source = "contractRecordTempId.revision")
     ContractRecord toContractRecord(ContractRecordTemp contractRecord);
 
+    @Mapping(target = "received",expression = "java(contractRecordPreview.getDelivered()!=null?contractRecordPreview.getDelivered().subtract(contractRecordPreview.getReceived()):null)")
+    TContractRecordPreview toTContractRecordPreview(ContractRecordPreview contractRecordPreview);
 
+
+    @Mapping(target = "receivedAmount",source = "received")
+    VModifyContractPreviewResponse.VProduct toVProduct(TContractRecordPreview tContractRecordPreview);
 }
