@@ -373,7 +373,6 @@ public class ContractController {
             .build();
     }
 
-
     /**
      * 生成空的采购计划
      * @return  返回成功信息
@@ -819,7 +818,8 @@ public class ContractController {
                                                       @RequestParam("endTime") Optional<String> endTime,
                                                       @RequestParam("state") Optional<String> state,
                                                       @RequestParam("pageNum") Optional<String> pageNum,
-                                                      @RequestParam("pageSize") Optional<String> pageSize) throws Exception {
+                                                      @RequestParam("pageSize") Optional<String> pageSize
+    ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         //分页
@@ -827,11 +827,15 @@ public class ContractController {
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10)
         );
-        var page = contractService.findContractPage(state.orElse("0"),
-            supplierCode.orElse(""),startTime.orElse(""),endTime.orElse(""),
+        var page = contractService.findContractPage(
+            state.orElse("0"),
+            supplierCode.orElse(""),
+            startTime.orElse(""),
+            endTime.orElse(""),
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
-            pageable);
+            pageable
+        );
         return  VPurchaseContractPageResponse.builder()
             .code(200)
             .message("查询成功")
@@ -850,7 +854,9 @@ public class ContractController {
      * @throws IOException 异常
      */
     @GetMapping("/contract/purchase/{id}/{revision}")
-    public VPurchaseContractDetailResponse purchaseContractDetail(@PathVariable("id")String id,@PathVariable("revision")Integer revision) throws IOException {
+    public VPurchaseContractDetailResponse purchaseContractDetail(@PathVariable("id")String id,
+                                                                  @PathVariable("revision")Integer revision
+    ) throws IOException {
          var contract= contractService.purchaseContractDetail(id,revision);
         return VPurchaseContractDetailResponse.builder()
             .code(200)
@@ -896,7 +902,8 @@ public class ContractController {
     @GetMapping("/contract/purchase/unconfirmed")
     public VUnFinishedAmountResponse findUnfinishedAmount(@RequestParam("supplierCode") Optional<String> supplierCode,
                                                           @RequestParam("startTime") Optional<String> startTime,
-                                                          @RequestParam("endTime") Optional<String> endTime) throws Exception {
+                                                          @RequestParam("endTime") Optional<String> endTime
+    ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         return VUnFinishedAmountResponse.builder()
@@ -920,7 +927,10 @@ public class ContractController {
      * @return 添加成功或者失败的信息
      */
     @PostMapping("/contract/purchase/{id}/{revision}/product")
-    public  VBaseResponse saveContractProduct(@RequestBody Optional<VInquiryProductResquest> product,@PathVariable("id")String id,@PathVariable("revision") Integer revision){
+    public  VBaseResponse saveContractProduct(@RequestBody Optional<VInquiryProductResquest> product,
+                                              @PathVariable("id")String id,
+                                              @PathVariable("revision") Integer revision
+    ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag=contractService.saveProduct(product.get().getProductId(),
@@ -950,7 +960,10 @@ public class ContractController {
      * @return 返回成功信息
      */
     @DeleteMapping("/contract/purchase/{id}/{revision}/product")
-    public VBaseResponse deletePurchaseContract(@RequestParam("codes")List<Integer> codes,@PathVariable("id")String id,@PathVariable("revision") Integer revision){
+    public VBaseResponse deletePurchaseContract(@RequestParam("codes")List<Integer> codes,
+                                                @PathVariable("id")String id,
+                                                @PathVariable("revision") Integer revision
+    ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.deleteContractProduct(codes,id,revision,session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
@@ -1001,7 +1014,9 @@ public class ContractController {
      */
     @PutMapping("/contract/purchase/{id}/{revision}")
     public VBaseResponse  modifyPurchaseContract(@RequestBody Optional<VModifyInquiryRequest> vModifyInquiryRequest,
-                                         @PathVariable("id")String id,@PathVariable("revision")Integer revision){
+                                                 @PathVariable("id")String id,
+                                                 @PathVariable("revision")Integer revision
+    ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.modifyPurchaseContract(
@@ -1123,7 +1138,11 @@ public class ContractController {
                 .code(500)
                 .message("该版本已撤销")
                 .build();
-        contractService.cancelCurrentRevision(id,contractService.findMaxRevision(id),contract,session.getSession().getCompanyCode());
+        contractService.cancelCurrentRevision(
+            id,
+            contractService.findMaxRevision(id),
+            contract,session.getSession().getCompanyCode()
+        );
 
         return VBaseResponse.builder()
                 .code(200)
@@ -1137,11 +1156,12 @@ public class ContractController {
      * @param id 合同主键
      * @param revision 合同版本
      * @return 返回成功信息
-     * @throws Exception 异常
      */
     @PostMapping("/contract/purchase/{id}/{revision}/delivery/record")
     public VBaseResponse saveDeliveryTemp(@RequestBody List<VDeliveryTempRequest> deliveryTempRequests,
-                                          @PathVariable("id") String id,@PathVariable("revision") Integer revision) throws Exception {
+                                          @PathVariable("id") String id,
+                                          @PathVariable("revision") Integer revision
+    ) throws Exception {
         contractService.saveDeliveryTemp(deliveryTempRequests,id,revision);
         return VBaseResponse.builder()
             .code(200)
@@ -1157,7 +1177,8 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase/{id}/{revision}")
     public VBaseResponse saveContractRevision(@PathVariable String id,@PathVariable Integer revision,
-                                              @RequestBody VGenerateContractRequest generateContractRequest) throws Exception {
+                                              @RequestBody VGenerateContractRequest generateContractRequest
+    ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         String  contractCodes = "";
@@ -1237,7 +1258,9 @@ public class ContractController {
      * @return 返回采购合合同预览列表
      */
     @GetMapping("/contract/purchase/{id}/{revision}/preview")
-    public VModifyContractPreviewResponse modifyContractPreview(@PathVariable("id") String id,@PathVariable("revision") Integer revision){
+    public VModifyContractPreviewResponse modifyContractPreview(@PathVariable("id") String id,
+                                                                @PathVariable("revision") Integer revision
+    ){
         var list=contractService.modifyContractPreview(id,revision);
          return VModifyContractPreviewResponse.builder()
              .code(200)
