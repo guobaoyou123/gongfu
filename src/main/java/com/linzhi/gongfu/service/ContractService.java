@@ -818,7 +818,6 @@ public class ContractService {
             e.printStackTrace();
             return false;
         }
-
     }
 
     /**
@@ -1260,8 +1259,7 @@ public class ContractService {
     public  boolean countSum(List<ContractRecordTemp> contractRecordTemps,
                              String id,
                              int revision,
-                             String operator
-    ){
+                             String operator){
         try{
             //判断是否需要重新计算价格
             List<ContractRecordTemp> lists = contractRecordTemps
@@ -1284,7 +1282,16 @@ public class ContractService {
                 vat=null;
             }
             BigDecimal totalPrice1 = totalPrice == null ? null : totalPrice.setScale(2, RoundingMode.HALF_UP);
-            contractRevisionDetailRepository.updateContract(totalPrice1,totalPriceVat==null?null:totalPriceVat.setScale(2, RoundingMode.HALF_UP),vat,totalPrice1,LocalDateTime.now(),operator,id,revision);
+            contractRevisionDetailRepository.updateContract(
+                totalPrice1,
+                totalPriceVat==null?null:totalPriceVat.setScale(2, RoundingMode.HALF_UP),
+                vat,
+                totalPrice1,
+                LocalDateTime.now(),
+                operator,
+                id,
+                revision
+            );
             return true;
         }catch (Exception e){
             e.printStackTrace();
