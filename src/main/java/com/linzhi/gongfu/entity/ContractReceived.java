@@ -17,11 +17,15 @@ import java.math.BigDecimal;
 public class ContractReceived {
 
     @Id
-    @Column(name = "product_id")
-    private String productId;
+    @Column(name = "id")
+    private String id;
 
-    @Column(name = "product_code")
-    private String productCode;
+    @Column(name = "code")
+    private String code;
+    @Column(name = "describe")
+    private String describe;
+    @Column(name = "charge_unit")
+    private String chargeUnit;
     @Column
     private BigDecimal delivered;
     @Column

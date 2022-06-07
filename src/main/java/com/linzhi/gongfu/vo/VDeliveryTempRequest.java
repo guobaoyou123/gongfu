@@ -14,6 +14,5 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class VDeliveryTempRequest {
     private String productId;
-    private BigDecimal receivedAmount;
     private BigDecimal returnAmount;
 }

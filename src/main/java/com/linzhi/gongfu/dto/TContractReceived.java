@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+import javax.persistence.Column;
 import java.math.BigDecimal;
 /**
  * 用于转移合同中产品收货信息
@@ -19,11 +20,15 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class TContractReceived {
 
-    private String productId;
+    private String id;
 
 
-    private String productCode;
+    private String code;
 
+
+    private String describe;
+
+    private String chargeUnit;
 
     private BigDecimal received;
 

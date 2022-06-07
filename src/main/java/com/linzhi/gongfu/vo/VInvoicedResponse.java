@@ -23,9 +23,11 @@ public class VInvoicedResponse extends VBaseResponse{
 
     @Data
     public static class VProduct{
-        private String productId;
-        private String productCode;
+        private String id;
+        private String code;
+        private String describe;
+        private String chargeUnit;
         private BigDecimal amount;
-        private BigDecimal invoiceMoney;
+        private BigDecimal invoiceAmount;
     }
 }

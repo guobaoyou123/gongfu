@@ -175,13 +175,13 @@ public class ContractService {
                 for (int i  =0;i< inquiry.getRecords().size();i++){
                     InquiryRecord record = inquiry.getRecords().get(i);
                     record.setDiscount(discount);
-                    record.setDiscountedPrice(record.getPrice().multiply(new BigDecimal("1").subtract(discount)).setScale(4, RoundingMode.HALF_UP));
-                    record.setTotalDiscountedPrice(record.getPrice().multiply(new BigDecimal("1").subtract(discount)).multiply(record.getAmount()).setScale(2, RoundingMode.HALF_UP));
-                    record.setDiscountedPriceVat(record.getPriceVat().multiply(new BigDecimal("1").subtract(discount)).setScale(4, RoundingMode.HALF_UP));
+                    record.setDiscountedPrice(calculateDiscountedPrice(record.getPrice(),discount));
+                    record.setTotalDiscountedPrice(calculateDiscountedSubtotal(record.getPrice(),discount,record.getAmount()));
+                    record.setDiscountedPriceVat(calculateDiscountedPrice(record.getPriceVat(),discount));
                     if(i==inquiry.getRecords().size()-1){
                         record.setTotalDiscountedPriceVat(inquiry.getConfirmTotalPriceVat().subtract(discountSumVat));
                     }else {
-                        record.setTotalDiscountedPriceVat(record.getPriceVat().multiply(new BigDecimal("1").subtract(discount)).multiply(record.getAmount()).setScale(2, RoundingMode.HALF_UP));
+                        record.setTotalDiscountedPriceVat(calculateDiscountedSubtotal(record.getPriceVat(),discount,record.getAmount()));
                         discountSumVat = discountSumVat.add(record.getTotalDiscountedPriceVat());
                     }
                     discountSum=discountSum.add(record.getTotalDiscountedPrice());
@@ -1191,16 +1191,20 @@ public class ContractService {
     public List<VInvoicedResponse.VProduct> getInvoicedList(String id ){
         List<VInvoicedResponse.VProduct> products = new ArrayList<>();
         VInvoicedResponse.VProduct product = new VInvoicedResponse.VProduct();
-        product.setProductId("1616490002");
-        product.setProductCode("161546001");
+        product.setId("1616490002");
+        product.setCode("161546001");
+        product.setDescribe("活接 PVDF-HP/FKM SDR21 PN16 d20");
+        product.setChargeUnit("个");
         product.setAmount(new BigDecimal("1"));
-        product.setInvoiceMoney(new BigDecimal("98.4").setScale(2,RoundingMode.HALF_UP));
+        product.setInvoiceAmount(new BigDecimal("98.4").setScale(2,RoundingMode.HALF_UP));
         products.add(product);
         VInvoicedResponse.VProduct product1 = new VInvoicedResponse.VProduct();
-        product1.setProductId("150000001");
-        product1.setProductCode("150000001");
+        product1.setId("150000001");
+        product1.setCode("150000001");
+        product1.setDescribe("活接 PVDF-HP/FKM SDR21 PN16 d20");
+        product1.setChargeUnit("个");
         product1.setAmount(new BigDecimal("4"));
-        product1.setInvoiceMoney(new BigDecimal("198.55").setScale(2,RoundingMode.HALF_UP));
+        product1.setInvoiceAmount(new BigDecimal("198.55").setScale(2,RoundingMode.HALF_UP));
         products.add(product1);
         return products;
     }

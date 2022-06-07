@@ -64,7 +64,7 @@ public class InquiryService {
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final PurchasePlanRepository purchasePlanRepository;
     private final UnfinishedInquiryRepository unfinishedInquiryRepository;
-    private final ContractService contractService;
+  //  private final ContractService contractService;
     private final CompTaxModelRepository compTaxModelRepository;
     private final CompanyService companyService;
 
@@ -455,10 +455,10 @@ public class InquiryService {
             .chargeUnit(product.getChargeUnit())
             .stockTime(0)
             .vatRate(taxRates)
-            .price(price!=null?taxMode.equals(TaxMode.UNTAXED)?price:contractService.calculateUntaxedUnitPrice(price,taxRates):null)
-            .priceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?price:contractService.calculateTaxedUnitPrice(price,taxRates):null)
-            .totalPrice(price!=null?taxMode.equals(TaxMode.UNTAXED)?contractService.calculateSubtotal(price,amount):contractService.calculateSubtotal(contractService.calculateUntaxedUnitPrice(price,taxRates),amount):null)
-            .totalPriceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?contractService.calculateSubtotal(price,amount):contractService.calculateSubtotal(contractService.calculateTaxedUnitPrice(price,taxRates),amount):null)
+            .price(price!=null?taxMode.equals(TaxMode.UNTAXED)?price:calculateUntaxedUnitPrice(price,taxRates):null)
+            .priceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?price:calculateTaxedUnitPrice(price,taxRates):null)
+            .totalPrice(price!=null?taxMode.equals(TaxMode.UNTAXED)?calculateSubtotal(price,amount):calculateSubtotal(calculateUntaxedUnitPrice(price,taxRates),amount):null)
+            .totalPriceVat(price!=null?taxMode.equals(TaxMode.INCLUDED)?calculateSubtotal(price,amount):calculateSubtotal(calculateTaxedUnitPrice(price,taxRates),amount):null)
             .build();
     }
 
@@ -538,10 +538,10 @@ public class InquiryService {
                                 record.setTotalPrice(null);
                                 record.setTotalPriceVat(null);
                         }else if(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0) {
-                            record.setPrice(inquiry.getOfferMode().equals(TaxMode.UNTAXED)?vProduct.getPrice():contractService.calculateUntaxedUnitPrice(vProduct.getPrice(),record.getVatRate()));
-                            record.setPriceVat( inquiry.getOfferMode().equals(TaxMode.INCLUDED)?vProduct.getPrice():contractService.calculateTaxedUnitPrice(vProduct.getPrice(),record.getVatRate()));
-                            record.setTotalPrice(contractService.calculateSubtotal(record.getPrice(),record.getAmount()));
-                            record.setTotalPriceVat(contractService.calculateSubtotal(record.getPriceVat(),record.getAmount()));
+                            record.setPrice(inquiry.getOfferMode().equals(TaxMode.UNTAXED)?vProduct.getPrice():calculateUntaxedUnitPrice(vProduct.getPrice(),record.getVatRate()));
+                            record.setPriceVat( inquiry.getOfferMode().equals(TaxMode.INCLUDED)?vProduct.getPrice():calculateTaxedUnitPrice(vProduct.getPrice(),record.getVatRate()));
+                            record.setTotalPrice(calculateSubtotal(record.getPrice(),record.getAmount()));
+                            record.setTotalPriceVat(calculateSubtotal(record.getPriceVat(),record.getAmount()));
                         }
                     }
                 }));
@@ -998,5 +998,36 @@ public class InquiryService {
             .contractCode((String)map.get("contractCode"))
             .inquiryCode((String)map.get("inquiryCode"))
             .build();
+    }
+
+
+    /**
+     * 计算未税单价
+     * @param price 单价
+     * @param vatRate 税率
+     * @return 未税单价
+     */
+    public BigDecimal calculateUntaxedUnitPrice(BigDecimal price,BigDecimal vatRate){
+        return price.divide(new BigDecimal("1").add(vatRate),4, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 计算含税单价
+     * @param price 单价
+     * @param vatRate 税率
+     * @return 含税单价
+     */
+    public BigDecimal calculateTaxedUnitPrice(BigDecimal price,BigDecimal vatRate){
+        return price.multiply(new BigDecimal("1").add(vatRate)).setScale(4, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 计算小计
+     * @param price 单价
+     * @param amount 数量
+     * @return 小计
+     */
+    public BigDecimal calculateSubtotal(BigDecimal price,BigDecimal amount){
+        return price.multiply(amount).setScale(2, RoundingMode.HALF_UP);
     }
 }
