@@ -615,29 +615,6 @@ public class InquiryService {
         return list;
     }
 
-
-
-
-    /**
-     * 删除暂存产品
-     * @param id 询价单id
-     * @param companyCode 公司编码
-     * @param operator 操作员编码
-     * @return 返回true或者false
-     */
-    @Transactional
-    public Boolean deleteImportProducts(String id,String companyCode,String operator){
-        try{
-            importProductTempRepository.deleteProduct(id,companyCode,operator);
-            return  true;
-        }catch (Exception e){
-            e.printStackTrace();
-            return  false;
-        }
-    }
-
-
-
     /**
      * 保存导入产品为询价单明细
      * @param id 询价单id
@@ -696,26 +673,6 @@ public class InquiryService {
         }
         return resultMap;
     }
-
-    /**
-     * 判断 字符串是否为数字
-     * @param str 字符串
-     * @return 返回是或者否
-     */
-    public static boolean isNumeric(String str){
-        Pattern pattern = Pattern.compile("[0-9]*");
-        if(str.indexOf(".")>0){//判断是否有小数点
-            if(str.indexOf(".")==str.lastIndexOf(".") && str.split("\\.").length==2){ //判断是否只有一个小数点
-                return !pattern.matcher(str.replace(".", "")).matches();
-            }else {
-                return true;
-            }
-        }else {
-            return !pattern.matcher(str).matches();
-        }
-    }
-
-
 
     /**
      * 更新询价单总价

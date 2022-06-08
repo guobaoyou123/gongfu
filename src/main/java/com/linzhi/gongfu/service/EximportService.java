@@ -245,7 +245,23 @@ public class EximportService {
             return resultMap;
         }
     }
-
+    /**
+     * 删除暂存产品
+     * @param id 询价单id
+     * @param companyCode 公司编码
+     * @param operator 操作员编码
+     * @return 返回true或者false
+     */
+    @Transactional
+    public Boolean deleteImportProducts(String id,String companyCode,String operator){
+        try{
+            importProductTempRepository.deleteProduct(id,companyCode,operator);
+            return  true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return  false;
+        }
+    }
     /**
      * 判断 字符串是否为数字
      * @param str 字符串

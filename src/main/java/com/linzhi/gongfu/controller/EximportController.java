@@ -35,7 +35,7 @@ public class EximportController {
     /**
      * 导入产品
      * @param file 导入文件
-     * @param id 询价单id
+     * @param id 询价单或者合同id
      * @return 导入产品列表
      */
     @PostMapping("/import/products/{id}/{type}")
@@ -72,7 +72,7 @@ public class EximportController {
 
     /**
      * 查询导入的产品
-     * @param id 询价单id
+     * @param id 询价单或者合同id
      * @return 返回导入产品列表
      */
     @GetMapping("/import/products/{id}/{type}")
@@ -121,7 +121,7 @@ public class EximportController {
 
     /**
      * 保存导入的产品
-     * @param id 询价单id
+     * @param id 询价单或者合同id
      * @return 成功或者失败的信息
      */
     @PostMapping("/import/products/{id}/{type}")
@@ -145,6 +145,31 @@ public class EximportController {
         return VBaseResponse.builder()
             .code((int)map.get("code"))
             .message((String)map.get("message"))
+            .build();
+    }
+
+    /**
+     * 清空暂存的导入产品数据
+     * @param id 询价单或者合同id
+     * @return 返回成功或者失败信息
+     */
+    @DeleteMapping("/import/products/{id}")
+    public VBaseResponse deleteImportProducts(@PathVariable("id")String id){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = eximportService.deleteImportProducts(
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+        if(flag)
+            return  VBaseResponse.builder()
+                .code(200)
+                .message("删除产品成功")
+                .build();
+        return  VBaseResponse.builder()
+            .code(500)
+            .message("删除产品失败")
             .build();
     }
 }

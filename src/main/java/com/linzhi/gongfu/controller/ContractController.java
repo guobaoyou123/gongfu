@@ -549,33 +549,6 @@ public class ContractController {
     }
 
 
-
-
-    /**
-     * 清空暂存的导入产品数据
-     * @param id 询价单id
-     * @return 返回成功或者失败信息
-     */
-    @DeleteMapping("/contract/purchase/inquiry/{id}/products")
-    public VBaseResponse deleteImportProducts(@PathVariable("id")String id){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext().getAuthentication();
-        var flag = inquiryService.deleteImportProducts(
-            id,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode()
-        );
-        if(flag)
-            return  VBaseResponse.builder()
-                .code(200)
-                .message("删除产品成功")
-                .build();
-        return  VBaseResponse.builder()
-            .code(500)
-            .message("删除产品失败")
-            .build();
-    }
-
     /**
      * 导出产品
      * @param id 询价单id
