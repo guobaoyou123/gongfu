@@ -21,13 +21,10 @@ import java.util.Map;
 public class VImportProductTempResponse extends VBaseResponse{
     private boolean confirmable;
     /**
-     * 询价单编码
+     * 询价单/合同编码
      */
-    private String inquiryCode;
-    /**
-     * 采购合同编码
-     */
-    private String contractCode;
+    private String enCode;
+
     private List<VProduct> products;
 
     @Data

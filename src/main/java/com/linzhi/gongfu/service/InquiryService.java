@@ -615,73 +615,6 @@ public class InquiryService {
         return list;
     }
 
-    /**
-     * 导入产品
-     * @param file 导入文件
-     * @param id 询价单id
-     * @param companyCode 公司编码
-     * @param operator 操作员编码
-     * @return 返回成功或者失败信息
-     */
-   // @CacheEvict(value="inquiry_record_List;1800", key="#id")
-    @Transactional
-    public Map<String,Object> importProduct(MultipartFile file,String id,String companyCode,String operator,TaxMode taxMode){
-        Map<String,Object> resultMap = new HashMap<>();
-        try {
-           // Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
-            List<Map<String, Object>> list =  ExcelUtil.excelToList(file);
-            List<ImportProductTemp> importProductTemps = new ArrayList<>();
-            for (int i =0;i<list.size();i++){
-                Map<String, Object> map = list.get(i);
-                ImportProductTemp importProductTemp = ImportProductTemp.builder().build();
-                importProductTemp.setImportProductTempId(
-                    ImportProductTempId.builder()
-                        .dcCompId(companyCode)
-                        .operator(operator)
-                        .inquiryId(id)
-                        .itemNo(i+2)
-                        .build()
-                );
-                if(map.get("产品编码")!=null){
-                    String code = map.get("产品编码").toString();
-                    importProductTemp.setCode(code);
-                    //验证产品编码是否正确
-                    List<Product> products = productRepository.findProductByCode(code);
-                    if(products.size()==1){
-                        importProductTemp.setProductId(products.get(0).getId());
-                        importProductTemp.setBrandCode(products.get(0).getBrandCode());
-                        importProductTemp.setBrandName(products.get(0).getBrand());
-                    }
-                }
-                if(map.get("数量")!=null){
-                    String amount = map.get("数量").toString();
-                    importProductTemp.setAmount(amount);
-                }
-
-                if(map.get("未税单价")!=null){
-                        String price = map.get("未税单价").toString();
-                        importProductTemp.setPrice(price);
-                        importProductTemp.setFlag(TaxMode.UNTAXED);
-                }else if(map.get("含税单价")!=null){
-                        String price = map.get("含税单价").toString();
-                        importProductTemp.setPrice(price);
-                    importProductTemp.setFlag(TaxMode.INCLUDED);
-                }else{
-                    importProductTemp.setFlag(taxMode);
-                }
-
-                importProductTemps.add(importProductTemp);
-            }
-            importProductTempRepository.saveAll(importProductTemps);
-            resultMap.put("code",200);
-            resultMap.put("message","导入产品成功！");
-            return resultMap;
-        }catch (Exception e){
-            e.printStackTrace();
-            resultMap.put("code",500);
-            return resultMap;
-        }
-    }
 
     /**
      * 查询导入产品列表
@@ -995,8 +928,7 @@ public class InquiryService {
             .message("产品导入临时表成功")
             .confirmable(list.stream().filter(vProduct -> vProduct.getMessages().size() > 0 || vProduct.getConfirmedBrand()==null).toList().size()==0)
             .products(list)
-            .contractCode((String)map.get("contractCode"))
-            .inquiryCode((String)map.get("inquiryCode"))
+            .enCode((String)map.get("contractCode"))
             .build();
     }
 

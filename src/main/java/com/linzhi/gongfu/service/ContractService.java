@@ -613,15 +613,24 @@ public class ContractService {
             if(maxCode==null)
                 maxCode="0";
             //查询产品
-            Product product = productRepository.findById(productId).orElseThrow(() -> new IOException("请求的产品不存在"));
+            Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IOException("请求的产品不存在"));
             //货物税率
             TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(
                 VatRateType.GOODS,
                 Whether.YES,
                 "001"
             ).orElseThrow(() -> new IOException("请求的货物税率不存在"));
-            ContractRecordTemp contractRecordTemp = createContractRecordTemp(id,revision,Integer.parseInt(maxCode)+1,product,
-                price,contractRevisionDetail.getOfferMode(),amount,goods.getRate());
+            ContractRecordTemp contractRecordTemp = createContractRecordTemp(
+                id,
+                revision,
+                Integer.parseInt(maxCode)+1,
+                product,
+                price,
+                contractRevisionDetail.getOfferMode(),
+                amount,
+                goods.getRate()
+            );
             contractRecordTemps.add(contractRecordTemp);
             contractRecordTempRepository.save(contractRecordTemp);
             return  countSum(contractRecordTemps,id,revision,operator);
@@ -1341,7 +1350,6 @@ public class ContractService {
      */
     public BigDecimal calculateDiscountedPrice(BigDecimal price,BigDecimal discount){
         return  price.multiply(new BigDecimal("1").subtract(discount)).setScale(4, RoundingMode.HALF_UP);
-
     }
 
     /**

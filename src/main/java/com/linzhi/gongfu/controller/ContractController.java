@@ -548,32 +548,6 @@ public class ContractController {
             .build();
     }
 
-    /**
-     * 导入产品
-     * @param file 导入文件
-     * @param id 询价单id
-     * @return 导入产品列表
-     */
-    @PostMapping("/contract/purchase/inquiry/{id}/products")
-    public VImportProductTempResponse importProduct(@RequestParam("products") MultipartFile file,@PathVariable String id) throws IOException {
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext().getAuthentication();
-        var inquiry = inquiryService.findInquiry(id).orElseThrow(()->new IOException("没有从数据库中找到该询价单"));
-        var map = inquiryService.importProduct(
-            file,
-            id,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),
-            inquiry.getOfferMode()
-        );
-        if((int) map.get("code")!=200)
-            return VImportProductTempResponse.builder()
-                .code((int) map.get("code"))
-                .message((String) map.get("message"))
-                .build();
-        return inquiryService.getvImportProductTempResponse(id,  session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),inquiry.getCode(),inquiry.getOfferMode());
-    }
 
 
 
@@ -854,8 +828,9 @@ public class ContractController {
      * @throws IOException 异常
      */
     @GetMapping("/contract/purchase/{id}/{revision}")
-    public VPurchaseContractDetailResponse purchaseContractDetail(@PathVariable("id")String id,
-                                                                  @PathVariable("revision")Integer revision
+    public VPurchaseContractDetailResponse purchaseContractDetail(
+        @PathVariable("id")String id,
+        @PathVariable("revision")Integer revision
     ) throws IOException {
          var contract= contractService.purchaseContractDetail(id,revision);
         return VPurchaseContractDetailResponse.builder()
@@ -900,9 +875,10 @@ public class ContractController {
      * @return 返回未确认的采购合同数量
      */
     @GetMapping("/contract/purchase/unconfirmed")
-    public VUnFinishedAmountResponse findUnfinishedAmount(@RequestParam("supplierCode") Optional<String> supplierCode,
-                                                          @RequestParam("startTime") Optional<String> startTime,
-                                                          @RequestParam("endTime") Optional<String> endTime
+    public VUnFinishedAmountResponse findUnfinishedAmount(
+        @RequestParam("supplierCode") Optional<String> supplierCode,
+        @RequestParam("startTime") Optional<String> startTime,
+        @RequestParam("endTime") Optional<String> endTime
     ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
@@ -927,9 +903,10 @@ public class ContractController {
      * @return 添加成功或者失败的信息
      */
     @PostMapping("/contract/purchase/{id}/{revision}/product")
-    public  VBaseResponse saveContractProduct(@RequestBody Optional<VInquiryProductResquest> product,
-                                              @PathVariable("id")String id,
-                                              @PathVariable("revision") Integer revision
+    public  VBaseResponse saveContractProduct(
+        @RequestBody Optional<VInquiryProductResquest> product,
+        @PathVariable("id")String id,
+        @PathVariable("revision") Integer revision
     ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
@@ -960,9 +937,10 @@ public class ContractController {
      * @return 返回成功信息
      */
     @DeleteMapping("/contract/purchase/{id}/{revision}/product")
-    public VBaseResponse deletePurchaseContract(@RequestParam("codes")List<Integer> codes,
-                                                @PathVariable("id")String id,
-                                                @PathVariable("revision") Integer revision
+    public VBaseResponse deletePurchaseContract(
+        @RequestParam("codes")List<Integer> codes,
+        @PathVariable("id")String id,
+        @PathVariable("revision") Integer revision
     ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
@@ -1013,9 +991,10 @@ public class ContractController {
      * @return 返回成功或者失败
      */
     @PutMapping("/contract/purchase/{id}/{revision}")
-    public VBaseResponse  modifyPurchaseContract(@RequestBody Optional<VModifyInquiryRequest> vModifyInquiryRequest,
-                                                 @PathVariable("id")String id,
-                                                 @PathVariable("revision")Integer revision
+    public VBaseResponse  modifyPurchaseContract(
+        @RequestBody Optional<VModifyInquiryRequest> vModifyInquiryRequest,
+        @PathVariable("id")String id,
+        @PathVariable("revision")Integer revision
     ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
@@ -1037,38 +1016,7 @@ public class ContractController {
             .build();
     }
 
-    /**
-     * 导入产品
-     * @param file 导入文件
-     * @param id 询价单id
-     * @return 导入产品列表
-     */
-    @PostMapping("/contract/purchase/{id}/products")
-    public VImportProductTempResponse importContractProduct(@RequestParam("products") MultipartFile file,
-                                                            @PathVariable String id
-    ) throws IOException {
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext().getAuthentication();
-        var contract = contractService.getContractRevisionDetail(id,1)
-            .orElseThrow(()->new IOException("未从数据库中找到该合同"));
-        var map = inquiryService.importProduct(
-            file,
-            id,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),
-            contract.getOfferMode()
-        );
-        if((int) map.get("code")!=200)
-            return VImportProductTempResponse.builder()
-                .code((int) map.get("code"))
-                .message((String) map.get("message"))
-                .build();
-        return inquiryService.getvImportProductTempResponse(id,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),
-            contract.getCode(),
-            contract.getOfferMode());
-    }
+   
 
     /**
      * 查询导入的产品
@@ -1095,9 +1043,10 @@ public class ContractController {
      * @param response  HttpServletResponse
      */
     @GetMapping("/contract/purchase/{id}/{revision}/products/export")
-    public  void  exportContractProduct(@PathVariable String id,
-                                        @PathVariable Integer revision,
-                                        HttpServletResponse response
+    public  void  exportContractProduct(
+        @PathVariable String id,
+        @PathVariable Integer revision,
+        HttpServletResponse response
     ){
         List<LinkedHashMap<String,Object>> database=contractService.exportProduct(id,revision);
         ExcelUtil.exportToExcel(response,"采购合同明细表",database);
@@ -1158,9 +1107,10 @@ public class ContractController {
      * @return 返回成功信息
      */
     @PostMapping("/contract/purchase/{id}/{revision}/delivery/record")
-    public VBaseResponse saveDeliveryTemp(@RequestBody List<VDeliveryTempRequest> deliveryTempRequests,
-                                          @PathVariable("id") String id,
-                                          @PathVariable("revision") Integer revision
+    public VBaseResponse saveDeliveryTemp(
+        @RequestBody List<VDeliveryTempRequest> deliveryTempRequests,
+        @PathVariable("id") String id,
+        @PathVariable("revision") Integer revision
     ) throws Exception {
         contractService.saveDeliveryTemp(deliveryTempRequests,id,revision);
         return VBaseResponse.builder()
@@ -1176,8 +1126,10 @@ public class ContractController {
      * @return 返回成功或者失败
      */
     @PostMapping("/contract/purchase/{id}/{revision}")
-    public VBaseResponse saveContractRevision(@PathVariable String id,@PathVariable Integer revision,
-                                              @RequestBody VGenerateContractRequest generateContractRequest
+    public VBaseResponse saveContractRevision(
+        @PathVariable String id,
+        @PathVariable Integer revision,
+        @RequestBody VGenerateContractRequest generateContractRequest
     ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
@@ -1243,8 +1195,11 @@ public class ContractController {
     public VBaseResponse cancelPurchaseContract(@PathVariable String id ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        contractService.cancelPurchaseContract(id,session.getSession().getCompanyCode(),
-            session.getSession().getOperatorName());
+        contractService.cancelPurchaseContract(
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorName()
+        );
         return VBaseResponse.builder()
             .code(200)
             .message("撤销成功")
@@ -1255,13 +1210,14 @@ public class ContractController {
      * 修改采购合同明细预览
      * @param id 采购合同主键
      * @param revision 版本号
-     * @return 返回采购合合同预览列表
+     * @return 返回采购合同预览列表
      */
     @GetMapping("/contract/purchase/{id}/{revision}/preview")
-    public VModifyContractPreviewResponse modifyContractPreview(@PathVariable("id") String id,
-                                                                @PathVariable("revision") Integer revision
+    public VModifyContractPreviewResponse modifyContractPreview(
+        @PathVariable("id") String id,
+        @PathVariable("revision") Integer revision
     ){
-        var list=contractService.modifyContractPreview(id,revision);
+         var list=contractService.modifyContractPreview(id,revision);
          return VModifyContractPreviewResponse.builder()
              .code(200)
              .message("获取数据成功")
