@@ -96,5 +96,25 @@ public class EximportController {
             taxMode
         );
     }
-
+    
+    /**
+     * 修改导入产品
+     * @param id 询价单id或者采购合同主键
+     * @return 成功或者失败的信息
+     */
+    @PutMapping("/import/products/{id}")
+    public VBaseResponse modifyImportProduct(@PathVariable String id, @RequestBody List<VImportProductTempRequest> vImportProductTempRequest){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var map = eximportService.modifyImportProduct(
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            vImportProductTempRequest
+        );
+        return VBaseResponse.builder()
+            .code((int)map.get("code"))
+            .message((String)map.get("message"))
+            .build();
+    }
 }

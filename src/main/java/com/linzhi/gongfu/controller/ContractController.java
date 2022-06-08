@@ -549,31 +549,6 @@ public class ContractController {
     }
 
 
-
-
-
-
-    /**
-     * 修改导入产品
-     * @param id 询价单id或者采购合同主键
-     * @return 成功或者失败的信息
-     */
-    @PutMapping("/contract/purchase/inquiry/{id}/import/products")
-    public VBaseResponse modifyImportProduct(@PathVariable String id,@RequestBody List<VImportProductTempRequest> vImportProductTempRequest){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext().getAuthentication();
-        var map = inquiryService.modifyImportProduct(
-            id,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),
-            vImportProductTempRequest
-        );
-        return VBaseResponse.builder()
-            .code((int)map.get("code"))
-            .message((String)map.get("message"))
-            .build();
-    }
-
     /**
      * 保存导入的产品
      * @param id 询价单id

@@ -636,47 +636,7 @@ public class InquiryService {
         }
     }
 
-    /**
-     * 修改暂存导入产品
-     * @param id 询价单id或者采购合同主键
-     * @param companyCode 单位id
-     * @param operator 操作员编码
-     * @return 返回成功或者失败信息
-     */
-    @Transactional
-    public Map<String,Object> modifyImportProduct(String id, String companyCode, String operator, List<VImportProductTempRequest> vImportProductTempRequests){
-        Map<String,Object>   resultMap=new HashMap<>();
-        List<ImportProductTemp> list = new ArrayList<>();
-        try {
-            for (VImportProductTempRequest vImport : vImportProductTempRequests) {
-                ImportProductTemp temp =importProductTempRepository.findById(
-                    ImportProductTempId.builder()
-                        .inquiryId(id)
-                        .itemNo(vImport.getItemNo())
-                        .dcCompId(companyCode)
-                        .operator(operator)
-                        .build()
-                ).orElseThrow(() -> new IOException("数据库中找不到该暂存产品"));
-                Product product = productRepository.findProductByCodeAndBrandCode(temp.getCode(), vImport.getBrandCode())
-                    .orElseThrow(() -> new IOException("数据库中找不到该产品"));
-                temp.setProductId(product.getId());
-                temp.setBrandCode(product.getBrandCode());
-                temp.setBrandName(product.getBrand());
-                list.add(temp);
-            }
-            importProductTempRepository.saveAll(list);
-            resultMap.put("code",200);
-            resultMap.put("message","修改成功");
 
-            return resultMap;
-
-        }catch (Exception e){
-            e.printStackTrace();
-            resultMap.put("code",500);
-            resultMap.put("message","保存失败");
-            return resultMap;
-        }
-    }
 
     /**
      * 保存导入产品为询价单明细
