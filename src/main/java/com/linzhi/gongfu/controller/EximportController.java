@@ -30,6 +30,7 @@ public class EximportController {
 
     private final ContractService contractService;
     private final EximportService eximportService;
+
     /**
      * 导入产品
      * @param file 导入文件
@@ -68,5 +69,32 @@ public class EximportController {
             session.getSession().getOperatorCode(),encode,taxMode);
     }
 
+    /**
+     * 查询导入的产品
+     * @param id 询价单id
+     * @return 返回导入产品列表
+     */
+    @GetMapping("/import/products/{id}/{type}")
+    public VImportProductTempResponse findImportProduct(@PathVariable String id, @PathVariable String type) throws IOException {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        TaxMode taxMode;String encode =null;
+        if(type.equals("1")){
+            var inquiry = inquiryService.findInquiry(id).orElseThrow(()->new IOException("没有从数据库中找到该询价单"));
+            taxMode=inquiry.getOfferMode();
+            encode=inquiry.getCode();
+        }else{
+            var contract = contractService.getContractRevisionDetail(id,1)
+                .orElseThrow(()->new IOException("未从数据库中找到该合同"));
+            taxMode=contract.getOfferMode();
+            encode=contract.getCode();
+        }
+        return eximportService.getvImportProductTempResponse(id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            encode,
+            taxMode
+        );
+    }
 
 }

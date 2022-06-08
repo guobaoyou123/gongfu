@@ -551,23 +551,7 @@ public class ContractController {
 
 
 
-    /**
-     * 查询导入的产品
-     * @param id 询价单id
-     * @return 返回导入产品列表
-     */
-    @GetMapping("/contract/purchase/inquiry/{id}/products")
-    public VImportProductTempResponse findImportProduct(@PathVariable String id) throws IOException {
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext().getAuthentication();
-        var inquiry = inquiryService.findInquiry(id).orElseThrow(()->new IOException("没有从数据库中找到该询价单"));
-        return inquiryService.getvImportProductTempResponse(id,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),
-            inquiry.getCode(),
-            inquiry.getOfferMode()
-        );
-    }
+
 
     /**
      * 修改导入产品
@@ -1016,26 +1000,9 @@ public class ContractController {
             .build();
     }
 
-   
 
-    /**
-     * 查询导入的产品
-     * @param id 采购合同主键
-     * @return 返回导入产品列表
-     */
-    @GetMapping("/contract/purchase/{id}/products")
-    public VImportProductTempResponse findContractImportProduct(@PathVariable String id) throws IOException {
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext().getAuthentication();
-        var contract = contractService.getContractRevisionDetail(id,1)
-            .orElseThrow(()->new IOException("未从数据库中找到该合同"));
-        return inquiryService.getvImportProductTempResponse(id,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),
-            contract.getCode(),
-            contract.getOfferMode()
-        );
-    }
+
+
 
     /**
      * 采购合同导出产品
