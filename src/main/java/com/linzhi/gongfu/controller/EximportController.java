@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用于处理导入导出信息
@@ -96,7 +97,7 @@ public class EximportController {
             taxMode
         );
     }
-    
+
     /**
      * 修改导入产品
      * @param id 询价单id或者采购合同主键
@@ -112,6 +113,35 @@ public class EximportController {
             session.getSession().getOperatorCode(),
             vImportProductTempRequest
         );
+        return VBaseResponse.builder()
+            .code((int)map.get("code"))
+            .message((String)map.get("message"))
+            .build();
+    }
+
+    /**
+     * 保存导入的产品
+     * @param id 询价单id
+     * @return 成功或者失败的信息
+     */
+    @PostMapping("/import/products/{id}/{type}")
+    public VBaseResponse saveImportProduct(@PathVariable String id,@PathVariable String type){
+        Map<String,Object> map;
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        if(type.equals("1")){
+             map = inquiryService.saveImportProducts(
+                id,
+                session.getSession().getCompanyCode(),
+                session.getSession().getOperatorCode()
+            );
+        }else {
+            map = contractService.saveImportProducts(
+                id,
+                session.getSession().getCompanyCode(),
+                session.getSession().getOperatorCode()
+            );
+        }
         return VBaseResponse.builder()
             .code((int)map.get("code"))
             .message((String)map.get("message"))

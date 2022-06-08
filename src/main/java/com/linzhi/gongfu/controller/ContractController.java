@@ -549,25 +549,7 @@ public class ContractController {
     }
 
 
-    /**
-     * 保存导入的产品
-     * @param id 询价单id
-     * @return 成功或者失败的信息
-     */
-    @PostMapping("/contract/purchase/inquiry/{id}/imports")
-    public VBaseResponse saveImportProduct(@PathVariable String id){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext().getAuthentication();
-        var map = inquiryService.saveImportProducts(
-            id,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode()
-        );
-        return VBaseResponse.builder()
-            .code((int)map.get("code"))
-            .message((String)map.get("message"))
-            .build();
-    }
+
 
     /**
      * 清空暂存的导入产品数据
@@ -994,24 +976,7 @@ public class ContractController {
         ExcelUtil.exportToExcel(response,"采购合同明细表",database);
     }
 
-    /**
-     * 将导入产品保存为合同明细
-     * @param id 合同主键
-     * @return 返回成功信息
-     */
-    @PostMapping("/contract/purchase/{id}/imports")
-    public VBaseResponse saveContractImportProduct(@PathVariable String id){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext().getAuthentication();
-        var map = contractService.saveImportProducts(id,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode()
-        );
-        return VBaseResponse.builder()
-            .code((int)map.get("code"))
-            .message((String)map.get("message"))
-            .build();
-    }
+
 
     /**
      * 撤销该版本合同
