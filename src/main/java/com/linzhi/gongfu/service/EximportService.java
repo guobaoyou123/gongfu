@@ -9,10 +9,12 @@ import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.mapper.ImportProductTempMapper;
 import com.linzhi.gongfu.repository.ImportProductTempRepository;
 import com.linzhi.gongfu.repository.ProductRepository;
+import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
 import com.linzhi.gongfu.vo.VImportProductTempResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,7 +52,7 @@ public class EximportService {
     public Map<String,Object> importProduct(MultipartFile file, String id, String companyCode, String operator, TaxMode taxMode){
         Map<String,Object> resultMap = new HashMap<>();
         try {
-            // Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            importProductTempRepository.deleteProduct(id,companyCode,operator);
             List<Map<String, Object>> list =  ExcelUtil.excelToList(file);
             List<ImportProductTemp> importProductTemps = new ArrayList<>();
             for (int i =0;i<list.size();i++){
@@ -101,6 +103,7 @@ public class EximportService {
         }catch (Exception e){
             e.printStackTrace();
             resultMap.put("code",500);
+            resultMap.put("message","导入产品失败！");
             return resultMap;
         }
     }
@@ -279,4 +282,6 @@ public class EximportService {
             return !pattern.matcher(str).matches();
         }
     }
+
+
 }

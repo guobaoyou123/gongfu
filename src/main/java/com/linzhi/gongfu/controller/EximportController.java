@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,34 +41,28 @@ public class EximportController {
      */
     @PostMapping("/import/products/{id}/{type}")
     public VImportProductTempResponse importProduct(@RequestParam("products") MultipartFile file, @PathVariable String id, @PathVariable String type) throws IOException {
-        TaxMode taxMode;String encode =null;
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        if(type.equals("1")){
-            var inquiry = inquiryService.findInquiry(id).orElseThrow(()->new IOException("没有从数据库中找到该询价单"));
-            taxMode=inquiry.getOfferMode();
-            encode=inquiry.getCode();
-        }else{
-            var contract = contractService.getContractRevisionDetail(id,1)
-                .orElseThrow(()->new IOException("未从数据库中找到该合同"));
-            taxMode=contract.getOfferMode();
-            encode=contract.getCode();
-        }
-
+        var maps = findTaxModelAndEnCode(id, type);
         var map = eximportService.importProduct(
             file,
             id,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
-            taxMode
+            (TaxMode) maps.get("taxMode")
         );
         if((int) map.get("code")!=200)
             return VImportProductTempResponse.builder()
                 .code((int) map.get("code"))
                 .message((String) map.get("message"))
                 .build();
-        return eximportService.getvImportProductTempResponse(id,  session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),encode,taxMode);
+        return eximportService.getvImportProductTempResponse(
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            (String)maps.get("encode") ,
+            (TaxMode) maps.get("taxMode")
+        );
     }
 
     /**
@@ -79,22 +74,13 @@ public class EximportController {
     public VImportProductTempResponse findImportProduct(@PathVariable String id, @PathVariable String type) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        TaxMode taxMode;String encode =null;
-        if(type.equals("1")){
-            var inquiry = inquiryService.findInquiry(id).orElseThrow(()->new IOException("没有从数据库中找到该询价单"));
-            taxMode=inquiry.getOfferMode();
-            encode=inquiry.getCode();
-        }else{
-            var contract = contractService.getContractRevisionDetail(id,1)
-                .orElseThrow(()->new IOException("未从数据库中找到该合同"));
-            taxMode=contract.getOfferMode();
-            encode=contract.getCode();
-        }
-        return eximportService.getvImportProductTempResponse(id,
+        var map = findTaxModelAndEnCode(id, type);
+        return eximportService.getvImportProductTempResponse(
+            id,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
-            encode,
-            taxMode
+            (String)map.get("encode") ,
+            (TaxMode) map.get("taxMode")
         );
     }
 
@@ -124,7 +110,7 @@ public class EximportController {
      * @param id 询价单或者合同id
      * @return 成功或者失败的信息
      */
-    @PostMapping("/import/products/{id}/{type}")
+    @PostMapping("/import/products/{id}/{type}/save")
     public VBaseResponse saveImportProduct(@PathVariable String id,@PathVariable String type){
         Map<String,Object> map;
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
@@ -134,7 +120,7 @@ public class EximportController {
                 id,
                 session.getSession().getCompanyCode(),
                 session.getSession().getOperatorCode()
-            );
+             );
         }else {
             map = contractService.saveImportProducts(
                 id,
@@ -171,5 +157,27 @@ public class EximportController {
             .code(500)
             .message("删除产品失败")
             .build();
+    }
+
+    /**
+     * 查找税模式和系统合同编码
+     * @param id 合同主键
+     * @param type 类型
+     * @return 税模式和系统合同编码
+     * @throws IOException 异常
+     */
+    public Map<String,Object> findTaxModelAndEnCode(String id,String type) throws IOException {
+        Map<String,Object> map = new HashMap<>();
+        if(type.equals("1")){
+            var inquiry = inquiryService.findInquiry(id).orElseThrow(()->new IOException("没有从数据库中找到该询价单"));
+            map.put("taxMode",inquiry.getOfferMode());
+            map.put("encode",inquiry.getCode());
+        }else{
+            var contract = contractService.getContractRevisionDetail(id,1)
+                .orElseThrow(()->new IOException("未从数据库中找到该合同"));
+            map.put("taxMode",contract.getOfferMode());
+            map.put("encode",contract.getCode());
+        }
+        return  map;
     }
 }
