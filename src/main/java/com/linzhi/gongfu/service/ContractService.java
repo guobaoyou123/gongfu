@@ -875,12 +875,12 @@ public class ContractService {
      * @param operator 操作员编码
      * @return 返回成功或者失败信息
      */
-    @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-1'"),
-        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-1'"),
+    @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public Map<String,Object> saveImportProducts(String id,String companyCode,String operator){
+    public Map<String,Object> saveImportProducts(String id,String companyCode,String operator,Integer revision){
         Map<String,Object> resultMap = new HashMap<>();
         resultMap.put("code",500);
         resultMap.put("message","保存失败");

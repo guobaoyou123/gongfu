@@ -125,7 +125,7 @@ public class EximportController {
             map = contractService.saveImportProducts(
                 id,
                 session.getSession().getCompanyCode(),
-                session.getSession().getOperatorCode()
+                session.getSession().getOperatorCode(),1
             );
         }
         return VBaseResponse.builder()
