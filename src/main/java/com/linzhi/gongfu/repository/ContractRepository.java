@@ -25,7 +25,7 @@ public interface ContractRepository
     @Query(value = "select  c.id from contract_base c ,contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id  and c.type = '0' and r.fingerprint =?2 and r.revision=(select max(revision) from contract_rev v where v.id = r.id) "  ,nativeQuery = true)
     List<String> findContractId(String dcCompId, String sequenceCode);
 
-    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code ,d.revision as revision,'23' as supplierContractNo ," +
+    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code ,d.revision as revision,d.saler_order_code as supplierContractNo ," +
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +
         "end as category,\n" +
@@ -56,7 +56,7 @@ public interface ContractRepository
         nativeQuery = true)
     List<ContractList> findContractList(String compId, String operator, String  type, String  state);
 
-    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code,d.revision as revision ,'23' as supplierContractNo ," +
+    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code,d.revision as revision ,d.saler_order_code as supplierContractNo ," +
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +
         "end as category,\n" +
