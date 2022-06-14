@@ -602,11 +602,11 @@ public class ContractService {
      * @return 返回成功或者失败信息
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
-        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public boolean saveProduct(String productId, BigDecimal price, BigDecimal amount, String id, Integer revision,String companyCode,String operator){
+    public boolean saveProduct(String productId, BigDecimal price, BigDecimal amount, String id, int revision,String companyCode,String operator){
         try {
              ContractRevisionDetail contractRevisionDetail =getContractRevisionDetail(id, revision).orElseThrow(() -> new IOException("请求的产品不存在"));
              List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
@@ -695,7 +695,7 @@ public class ContractService {
      * @return 返回成功或者失败信息
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
-        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
@@ -772,11 +772,11 @@ public class ContractService {
      * @return 返回成功或者失败
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
-        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public  Boolean  modifyPurchaseContract(VModifyInquiryRequest vModifyInquiryRequest, String id, Integer revision,String companyCode,String operator){
+    public  Boolean  modifyPurchaseContract(VModifyInquiryRequest vModifyInquiryRequest, String id, int revision,String companyCode,String operator){
         try{
             ContractRevision contractRevision =contractRevisionRepository.findById(ContractRevisionId.builder()
                     .revision(revision)
@@ -875,12 +875,13 @@ public class ContractService {
      * @param operator 操作员编码
      * @return 返回成功或者失败信息
      */
-    @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
-        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
+    @Caching(evict = {
+        @CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public Map<String,Object> saveImportProducts(String id,String companyCode,String operator,Integer revision){
+    public Map<String,Object> saveImportProducts(String id,String companyCode,String operator,int revision){
         Map<String,Object> resultMap = new HashMap<>();
         resultMap.put("code",500);
         resultMap.put("message","保存失败");
@@ -940,11 +941,11 @@ public class ContractService {
      * @param contractDetail 合同基本信息
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
-        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public void cancelCurrentRevision(String id, Integer revision, ContractDetail contractDetail, String companyCode) {
+    public void cancelCurrentRevision(String id, int revision, ContractDetail contractDetail, String companyCode) {
 
             contractDetail.setState(ContractState.FINISHED);
             if(revision==1){
@@ -1048,11 +1049,11 @@ public class ContractService {
      * @param operator 操作员编码
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
-        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id+'-'+#revision"),
+        @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public void saveContractRevision(String id, Integer revision, VGenerateContractRequest generateContractRequest, String companyCode, String operator) {
+    public void saveContractRevision(String id, int revision, VGenerateContractRequest generateContractRequest, String companyCode, String operator) {
       try{
           //合同明细
           List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
