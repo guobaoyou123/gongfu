@@ -195,8 +195,8 @@ public class EximportService {
                     errorList.add("单价应为数字");
                 }
                 if(!taxMode.equals(tImportProductTemp.getFlag())){
-                    String offerMode=taxMode.equals(TaxMode.UNTAXED)?"未税单价":"含税单价";
-                    errorList.add("单价应为"+offerMode);
+                  //  String offerMode=taxMode.equals(TaxMode.UNTAXED)?"未税单价":"含税单价";
+                    errorList.add("导入的单价与该目标单据的报价模式不一致");
                 }
             }
             tImportProductTemp.setMessages(errorList);
