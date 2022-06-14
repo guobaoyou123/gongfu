@@ -37,9 +37,9 @@ public interface ContractRevisionDetailRepository
     List<Map<String,Object>> findRevisionList(String id );
 
     @Modifying
-    @Query(value="update   contract_rev  set total_price=?1 ,total_price_vat=?2,vat=?3 ,discount_total_price=?4,modified_at=?5,modified_by=?6 where  id=?7 and revision=?8 ",
+    @Query(value="update   contract_rev  set total_price=?1 ,total_price_vat=?2,vat=?3 ,modified_at=?4,modified_by=?5 where  id=?6 and revision=?7 ",
         nativeQuery = true)
-    void  updateContract(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, BigDecimal discountTotalPrice, LocalDateTime localDateTime,String operator, String id, int revision);
+    void  updateContract(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, LocalDateTime localDateTime,String operator, String id, int revision);
 
     @Query(value = "select max(c.contractRevisionId.revision)   from ContractRevisionDetail as c where c.contractRevisionId.id=?1")
     Optional<String> findMaxRevision(String id);

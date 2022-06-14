@@ -1242,18 +1242,29 @@ public class ContractService {
     public void cancelPurchaseContract(String id, String companyCode, String operator) throws Exception{
         ContractDetail contractDetail = contractDetailRepository.findById(id)
             .orElseThrow(()->new IOException("请求的合同不存在"));
-        List<ContractRecord> records = new ArrayList<>();
-        List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
-        for (int i  =0;i< contractRecordTemps.size();i++){
-            ContractRecord record =   Optional.of(contractRecordTemps.get(i)).map(contractRecordMapper::toContractRecord).orElse(null);
-            record.getContractRecordId().setCode(i+1);
-            records.add(
-                record
-            );
-        }
-        if(contractDetail.getState().equals(ContractState.CANCELLATION))
+        int revision = findMaxRevision(id);
+        if(contractDetail.getState().equals(ContractState.UN_FINISHED)&& revision>1){
+            contractRecordTempRepository.deleteProducts(id);
+            contractRevisionRepository.deleteById(ContractRevisionId.builder()
+                    .id(id)
+                    .revision(revision)
+                .build());
+        }else if(contractDetail.getState().equals(ContractState.UN_FINISHED)&& revision==1){
+            List<ContractRecord> records = new ArrayList<>();
+            List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
+            for (int i  =0;i< contractRecordTemps.size();i++){
+                ContractRecord record =   Optional.of(contractRecordTemps.get(i)).map(contractRecordMapper::toContractRecord).orElse(null);
+                record.getContractRecordId().setCode(i+1);
+                records.add(
+                    record
+                );
+            }
+            contractRecordRepository.saveAll(records);
+        }else  if(contractDetail.getState().equals(ContractState.CANCELLATION)){
             throw  new Exception("合同已撤销");
-        contractRecordRepository.saveAll(records);
+        }else{
+
+        }
         contractDetail.setState(ContractState.CANCELLATION);
         saveDelivery(id, companyCode, operator);
     }
@@ -1307,7 +1318,6 @@ public class ContractService {
                 totalPrice1,
                 totalPriceVat==null?null:totalPriceVat.setScale(2, RoundingMode.HALF_UP),
                 vat,
-                totalPrice1,
                 LocalDateTime.now(),
                 operator,
                 id,
