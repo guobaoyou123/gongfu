@@ -100,7 +100,7 @@ public class ContractService {
         @CacheEvict(value="purchase_contract_List;1800", key="#companyCode+'_'",allEntries=true)
     })
     @Transactional
-    public Boolean saveContract(VGenerateContractRequest generateContractRequest,String companyCode,String operatorName){
+    public Boolean saveContract(VGenerateContractRequest generateContractRequest,String companyCode,String operatorName,String operator){
         try{
             //查询询价单详情
             InquiryDetail inquiry = inquiryDetailRepository.findById(generateContractRequest.getInquiryId()).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
@@ -126,7 +126,7 @@ public class ContractService {
                 operatorName,
                 generateContractRequest.getSupplierNo(),
                 inquiry.getOfferMode(),
-                generateContractRequest.getContactNo(),1);
+                generateContractRequest.getContactNo(),1,operator);
             if(inquiry.getVatProductRate()!=null)
                 contractRevision.setVatProductRate(inquiry.getVatProductRate());
             if(inquiry.getVatServiceRate()!=null)
@@ -316,7 +316,8 @@ public class ContractService {
                                                    String salesOrderCode,
                                                    TaxMode offerMode,
                                                    String contractNo,
-                                                   int revision
+                                                   int revision,
+                                                   String operator
     ){
         return ContractRevision.builder()
             .contractRevisionId(ContractRevisionId.builder()
@@ -329,6 +330,8 @@ public class ContractService {
             .createdAt(LocalDateTime.now())
             .offerMode(offerMode)
             .createdAt(LocalDateTime.now())
+            .confirmedAt(LocalDateTime.now())
+            .confirmedBy(operator)
             .build();
     }
     /**
@@ -538,7 +541,7 @@ public class ContractService {
                     .compSaler(supplierCode)
                     .compBuyer(companyCode)
                 .build()).orElseThrow(()->new IOException("从数据库中没有查询到"));
-            ContractRevision contractRevision = createContractRevision(map.get("id"),operatorName,null,taxModel.getTaxModel(),null,1);
+            ContractRevision contractRevision = createContractRevision(map.get("id"),operatorName,null,taxModel.getTaxModel(),null,1,operator);
             contractDetailRepository.save(contractDetail);
             contractRevisionRepository.save(contractRevision);
             return  Optional.of(map.get("id"));
@@ -805,10 +808,10 @@ public class ContractService {
             if(vModifyInquiryRequest.getProducts()!=null){
                 vModifyInquiryRequest.getProducts().forEach(vProduct -> contractRecordTemps.forEach(record -> {
                     if(record.getContractRecordTempId().getCode()==vProduct.getCode()){
-                        if(vProduct.getAmount()!=null)
+                        if(vProduct.getAmount()!=null) {
                             record.setMyAmount(vProduct.getAmount());
-                            record.setAmount(record.getRatio()!=null?vProduct.getAmount().multiply(record.getRatio()):vProduct.getAmount());
-
+                            record.setAmount(record.getAmount() != null ? vProduct.getAmount().multiply(record.getRatio()) : vProduct.getAmount());
+                        }
                         record.setVatRate(vProduct.getVatRate()!=null?vProduct.getVatRate():record.getVatRate());
                         record.setPrice(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()<0?
                             null:vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0?

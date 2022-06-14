@@ -645,7 +645,7 @@ public class ContractController {
                 .code(201)
                 .message("可能重复的合同有："+contractCodes)
                 .build();
-        flag =  contractService.saveContract(generateContractRequest,session.getSession().getCompanyCode(),session.getSession().getOperatorName());
+        flag =  contractService.saveContract(generateContractRequest,session.getSession().getCompanyCode(),session.getSession().getOperatorName(),session.getSession().getOperatorCode());
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
