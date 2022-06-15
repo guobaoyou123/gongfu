@@ -1116,12 +1116,12 @@ public class ContractService {
                   record.getContractRecordId().setCode(i+1);
                   record.setDiscount(discount);
                   record.setDiscountedPrice(calculateDiscountedPrice(record.getPrice(),discount));
-                  record.setTotalDiscountedPrice(calculateDiscountedSubtotal(record.getPrice(),record.getMyAmount(),discount));
+                  record.setTotalDiscountedPrice(calculateDiscountedSubtotal(record.getDiscountedPrice(),discount,record.getMyAmount()));
                   record.setDiscountedPriceVat(calculateDiscountedPrice(record.getPriceVat(),discount));
                   if(i==contractRecordTemps.size()-1){
                       record.setTotalDiscountedPriceVat(contractRevision.getConfirmTotalPriceVat().subtract(discountSumVat));
                   }else {
-                      record.setTotalDiscountedPriceVat(calculateDiscountedSubtotal(record.getPriceVat(),record.getMyAmount(),discount));
+                      record.setTotalDiscountedPriceVat(calculateDiscountedSubtotal(record.getPriceVat(),discount,record.getMyAmount()));
                       discountSumVat = discountSumVat.add(record.getTotalDiscountedPriceVat());
                   }
                   discountSum=discountSum.add(record.getTotalDiscountedPrice());
@@ -1378,7 +1378,7 @@ public class ContractService {
      * @param discount 折扣
      * @return 折扣后小计
      */
-    public BigDecimal calculateDiscountedSubtotal(BigDecimal price,BigDecimal amount,BigDecimal discount){
+    public BigDecimal calculateDiscountedSubtotal(BigDecimal price,BigDecimal discount,BigDecimal amount){
         return price.multiply(new BigDecimal("1").subtract(discount)).multiply(amount).setScale(2, RoundingMode.HALF_UP);
     }
 }
