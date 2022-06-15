@@ -815,8 +815,8 @@ public class ContractService {
                             record.getPrice():vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0?
                             contractRevision.getOfferMode().equals(TaxMode.UNTAXED)?vProduct.getPrice():calculateUntaxedUnitPrice(vProduct.getPrice(),record.getVatRate()):record.getPrice());
                         record.setPriceVat(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()<0?
-                            record.getTotalPriceVat():vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0?
-                            contractRevision.getOfferMode().equals(TaxMode.INCLUDED)?vProduct.getPrice():calculateTaxedUnitPrice(vProduct.getPrice(),record.getVatRate()):record.getTotalPriceVat());
+                            record.getPriceVat():vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0?
+                            contractRevision.getOfferMode().equals(TaxMode.INCLUDED)?vProduct.getPrice():calculateTaxedUnitPrice(vProduct.getPrice(),record.getVatRate()):record.getPriceVat());
                         record.setTotalPrice(record.getPrice()==null?null:calculateSubtotal(record.getPrice(),record.getMyAmount()));
                         record.setTotalPriceVat(record.getPriceVat()==null?null:calculateSubtotal(record.getPriceVat(),record.getMyAmount()));
                     }
