@@ -85,6 +85,8 @@ public class ContractList {
      */
     @Column(name = "buyer_comp_name",length = 100)
     private String buyerCompName;
+
+
     /**
      * 供应商公司编号
      */
@@ -96,6 +98,12 @@ public class ContractList {
      */
     @Column(name = "saler_comp_name",length = 100)
     private String salerCompName;
+
+    /**
+     * 供应商名称简称
+     */
+    @Column(name = "salerCompNameShort",updatable = false,insertable = false)
+    private String salerCompNameShort;
     /**
      * 状态（0-未确认 1-确认 2-撤销）
      */
@@ -114,5 +122,9 @@ public class ContractList {
      */
     @Column(name = "taxedTotal",updatable = false,insertable = false)
     private BigDecimal taxedTotal;
-
+    /**
+     * 确认价税合计
+     */
+    @Column(name = "confirmTaxedTotal",updatable = false,insertable = false)
+    private BigDecimal confirmTaxedTotal;
 }

@@ -29,10 +29,12 @@ public interface ContractRepository
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +
         "end as category,\n" +
-        "case b.state when '1' then d.confirm_total_price_vat\n" +
-        "else d.total_price_vat end as taxedTotal\n"+
+        "d.confirm_total_price_vat as confirmTaxedTotal, \n"+
+        " d.total_price_vat  as taxedTotal,\n"+
+        " cb.chi_short  as salerCompNameShort\n"+
         " from   contract_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
+        "left join comp_base cb on  b.saler_comp = cb.code \n" +
         "left join contract_base c on c.id = b.sales_contract_id\n" +
         "left join contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from contract_rev  where id = r.id)\n" +
         "left join contract_rev d on d.id = b.id  and d.revision in (select max(revision) from contract_rev  where id = d.id)\n" +
@@ -51,7 +53,7 @@ public interface ContractRepository
         "      ,b.saler_comp_name\n" +
         "      ,b.created_at\n" +
         "      ,b.state ,c.code ,r.order_code ,d.order_code,d.saler_order_code ,d.revision,  \n" +
-        "   d.confirm_total_price_vat,d.total_price_vat\n" +
+        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
     List<ContractList> findContractList(String compId, String operator, String  type, String  state);
@@ -60,10 +62,12 @@ public interface ContractRepository
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +
         "end as category,\n" +
-        "case b.state when '1' then d.confirm_total_price_vat\n" +
-        "else d.total_price_vat end as taxedTotal\n"+
+        "d.confirm_total_price_vat as confirmTaxedTotal, \n"+
+        " d.total_price_vat  as taxedTotal,\n"+
+        " cb.chi_short  as salerCompNameShort\n"+
         " from   contract_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
+        "left join comp_base cb on  b.saler_comp = cb.code\n" +
         "left join contract_base c on c.id = b.sales_contract_id\n" +
         "left join contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from contract_rev  where id = r.id)\n" +
         "left join contract_rev d on d.id = b.id  and d.revision in (select max(revision) from contract_rev  where id = d.id)\n" +
@@ -82,7 +86,7 @@ public interface ContractRepository
         "      ,b.saler_comp_name\n" +
         "      ,b.created_at\n" +
         "      ,b.state ,c.code ,r.order_code ,d.order_code ,d.saler_order_code,d.revision,  \n" +
-        "   d.confirm_total_price_vat,d.total_price_vat\n" +
+        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
     List<ContractList> findContractList(String compId, String  type, String  state);

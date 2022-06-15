@@ -31,6 +31,7 @@ public interface ContractMapper {
     @Mapping(target = "createdAt",expression ="java(com.linzhi.gongfu.util.DateConverter.dateFormat(contract.getCreatedAt()))" )
     @Mapping(target = "type",expression = "java(String.valueOf(contract.getType().getType()))")
     @Mapping(target = "state",expression = "java(String.valueOf(contract.getState().getState()))")
+    @Mapping(target = "salerCompName",source = "salerCompNameShort")
     TContract toContractList(ContractList contract);
 
     /**
@@ -46,6 +47,8 @@ public interface ContractMapper {
     @Mapping(target = "salesContractNo",source = "salesOrderCode")
     @Mapping(target = "paired",constant = "false")
     @Mapping(target = "contractNo",source = "orderCode")
+    @Mapping(target = "taxedTotal",source = "taxedTotal")
+    @Mapping(target = "confirmTaxedTotal",source = "confirmTaxedTotal")
     VPurchaseContractPageResponse.VContract toContractPage(TContract tContract);
 
     @Mapping(target = "id",source = "contractRevisionId.id")

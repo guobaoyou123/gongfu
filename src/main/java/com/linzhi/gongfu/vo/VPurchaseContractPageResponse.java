@@ -36,5 +36,6 @@ public class VPurchaseContractPageResponse extends VBaseResponse{
         private String supplierContractNo;
         private int category;
         private BigDecimal taxedTotal;
+        private BigDecimal confirmTaxedTotal;
     }
 }
