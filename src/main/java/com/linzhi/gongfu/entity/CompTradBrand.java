@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.entity;
 
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -26,7 +27,6 @@ public class CompTradBrand implements Serializable {
      * 供应商
      */
     @OneToOne
-
     @JoinColumn(name = "comp_saler", referencedColumnName = "code", insertable = false, updatable = false)
     private Company company;
 }

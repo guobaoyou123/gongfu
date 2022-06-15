@@ -311,7 +311,7 @@ public class PlanService {
      */
     public Map<String,List<Company>> findSuppliersByBrandsAndCompBuyer(List<String> brands,String compBuyer,List<String> suppliers){
         //查询这几个牌子的供应商有哪些
-        List<CompTradBrand> compTradBrands= compTradBrandRepository.findCompTradBrandByCompTradBrandId_BrandCodeInAndCompTradBrandId_CompBuyerOrderBySortDesc(brands,compBuyer);
+        List<CompTradBrand> compTradBrands= compTradBrandRepository.findCompTradBrandByCompTradBrandId_BrandCodeInAndCompTradBrandId_CompBuyerAndCompany_StateOrderBySortDesc(brands,compBuyer,Availability.ENABLED);
         Map<String,List<Company>>  NoIncludeCompMap = new HashMap<>();
         Map<String,List<Company>>  IncludeCompMap = new HashMap<>();
         List<CompTradBrand> compTradIncludeCompList= compTradBrands.stream()
