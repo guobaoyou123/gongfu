@@ -812,11 +812,11 @@ public class ContractService {
                         }
                         record.setVatRate(vProduct.getVatRate()!=null?vProduct.getVatRate():record.getVatRate());
                         record.setPrice(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()<0?
-                            null:vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0?
-                            contractRevision.getOfferMode().equals(TaxMode.UNTAXED)?vProduct.getPrice():calculateUntaxedUnitPrice(vProduct.getPrice(),record.getVatRate()):null);
+                            record.getPrice():vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0?
+                            contractRevision.getOfferMode().equals(TaxMode.UNTAXED)?vProduct.getPrice():calculateUntaxedUnitPrice(vProduct.getPrice(),record.getVatRate()):record.getPrice());
                         record.setPriceVat(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()<0?
-                            null:vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0?
-                            contractRevision.getOfferMode().equals(TaxMode.INCLUDED)?vProduct.getPrice():calculateTaxedUnitPrice(vProduct.getPrice(),record.getVatRate()):null);
+                            record.getTotalPriceVat():vProduct.getPrice()!=null&&vProduct.getPrice().intValue()>=0?
+                            contractRevision.getOfferMode().equals(TaxMode.INCLUDED)?vProduct.getPrice():calculateTaxedUnitPrice(vProduct.getPrice(),record.getVatRate()):record.getTotalPriceVat());
                         record.setTotalPrice(record.getPrice()==null?null:calculateSubtotal(record.getPrice(),record.getMyAmount()));
                         record.setTotalPriceVat(record.getPriceVat()==null?null:calculateSubtotal(record.getPriceVat(),record.getMyAmount()));
                     }
@@ -1347,7 +1347,8 @@ public class ContractService {
      * @return 含税单价
      */
     public BigDecimal calculateTaxedUnitPrice(BigDecimal price,BigDecimal vatRate){
-        return price.multiply(new BigDecimal("1").add(vatRate)).setScale(4, RoundingMode.HALF_UP);
+        return price.multiply(new BigDecimal("1").add(vatRate))
+            .setScale(4, RoundingMode.HALF_UP);
     }
 
     /**

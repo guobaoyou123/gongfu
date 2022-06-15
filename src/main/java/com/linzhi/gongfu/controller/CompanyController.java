@@ -136,11 +136,17 @@ public class CompanyController {
      * @return  成功或者失败信息
      */
     @PutMapping("/supplier/{code}")
-    public VBaseResponse modifyForeignSupplier(@PathVariable("code")String code,@RequestBody VForeignSupplierRequest supplier){
+    public VBaseResponse modifyForeignSupplier(@PathVariable("code")String code,
+                                               @RequestBody VForeignSupplierRequest supplier
+    ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var map = companyService.saveForeignSupplier(supplier,session.getSession().getCompanyCode(),code);
+        var map = companyService.saveForeignSupplier(
+            supplier,
+            session.getSession().getCompanyCode(),
+            code
+        );
         return VBaseResponse.builder()
             .code((int)map.get("code"))
             .message((String)map.get("message"))
