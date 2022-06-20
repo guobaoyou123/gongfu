@@ -5,9 +5,10 @@ import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
- * 用于接前端询价单添加产品信息的请求
+ * 用于接前端询价单生成合同信息的请求
  */
 @Data
 @Jacksonized
@@ -49,5 +50,17 @@ public class VGenerateContractRequest {
      */
     private boolean enforce;
 
+    private List<DeliveryRecord>   deliveryRecords;
 
+    @Data
+    public static class DeliveryRecord{
+        /**
+         * 产品主键
+         */
+        private String productId;
+        /**
+         * 退回数量
+         */
+        private BigDecimal returnAmount;
+    }
 }

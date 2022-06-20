@@ -739,7 +739,6 @@ public class ContractService {
     @Transactional
     public Integer modifyContractState(String id, String companyCode, String operator, Integer revision){
         try{
-
          Optional<ContractRevisionDetail> contractRevisionDetail = getContractRevisionDetail(id, revision);
           ContractRevision contractRevision =  contractRevisionDetail
               .map(contractMapper::toContractRevision).orElseThrow(()->new IOException("不存在该合同"));
@@ -781,7 +780,7 @@ public class ContractService {
             ContractRevision contractRevision =contractRevisionRepository.findById(ContractRevisionId.builder()
                     .revision(revision)
                     .id(id)
-                .build()).orElseThrow(() -> new IOException("请求的询价单不存在"));
+                .build()).orElseThrow(() -> new IOException("请求的采购合同不存在"));
             List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
             contractRevision.setOfferMode(StringUtils.isNotBlank(vModifyInquiryRequest.getTaxModel())?vModifyInquiryRequest.getTaxModel().equals("0")?TaxMode.UNTAXED:TaxMode.INCLUDED:contractRevision.getOfferMode());
             if(vModifyInquiryRequest.getServiceVat()!=null) {
@@ -807,8 +806,8 @@ public class ContractService {
                 vModifyInquiryRequest.getProducts().forEach(vProduct -> contractRecordTemps.forEach(record -> {
                     if(record.getContractRecordTempId().getCode()==vProduct.getCode()){
                         if(vProduct.getAmount()!=null) {
-                            record.setMyAmount(vProduct.getAmount());
-                            record.setAmount(record.getAmount() != null ? vProduct.getAmount().multiply(record.getRatio()) : vProduct.getAmount());
+                            record.setMyAmount(vProduct.getPrice().intValue()<0?new BigDecimal("0"):vProduct.getAmount());
+                            record.setAmount(vProduct.getAmount().multiply(record.getRatio()));
                         }
                         record.setVatRate(vProduct.getVatRate()!=null?vProduct.getVatRate():record.getVatRate());
                         record.setPrice(vProduct.getPrice()!=null&&vProduct.getPrice().intValue()<0?
@@ -828,6 +827,50 @@ public class ContractService {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * 判断修改后的合同是否与上一版本相同
+     * @param id 合同
+     * @param revision 版本号
+     * @return 返回是或者否
+     */
+    public boolean judgeContractRev(String id,Integer revision){
+        ContractRevisionDetail contractRevision = contractRevisionDetailRepository.findDetail(revision,id).orElseThrow();
+        ContractRevisionDetail perContractRevision = contractRevisionDetailRepository.findDetail(revision-1,id).orElseThrow();
+        List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.
+            findContractRecordTempsByContractRecordTempId_ContractId(id);
+        StringBuilder fingerprint = new StringBuilder(contractRevision.getOfferMode() + "-"
+            + contractRevision.getVatProductRate() + "-" +
+            contractRevision.getVatServiceRate() + "-");
+        for (ContractRecordTemp contractRecordTemp: contractRecordTemps) {
+            fingerprint.append(contractRecordTemp.getProductId())
+                .append("-")
+                .append(contractRecordTemp.getMyChargeUnit())
+                .append("-")
+                .append(contractRecordTemp.getMyAmount())
+                .append("-")
+                .append(contractRecordTemp.getPriceVat())
+                .append("-")
+                .append(contractRecordTemp.getVatRate());
+
+        }
+        StringBuilder perFingerprint= new StringBuilder(perContractRevision.getOfferMode() +
+            "-" + perContractRevision.getVatProductRate() +
+            "-" + perContractRevision.getVatServiceRate() + "-");
+        for (ContractRecordTemp contractRecordTemp: contractRecordTemps) {
+            perFingerprint.append(contractRecordTemp.getProductId())
+                .append("-")
+                .append(contractRecordTemp.getPreviousMyChargeUnit())
+                .append("-")
+                .append(contractRecordTemp.getPreviousMyAmount())
+                .append("-")
+                .append(contractRecordTemp.getPreviousPriceVat())
+                .append("-")
+                .append(contractRecordTemp.getPreviousVatRate());
+
+        }
+        return  fingerprint.toString().equals(perFingerprint.toString());
     }
 
     /**
@@ -1152,7 +1195,8 @@ public class ContractService {
           contractRevisionRepository.save(contractRevision);
           contractRecordRepository.saveAll(records);
           //将退回记录录保存到货运信息表中
-          saveDelivery(id, companyCode, operator);
+          if(generateContractRequest.getDeliveryRecords().size()>0)
+                saveDelivery(id, companyCode, operator,generateContractRequest.getDeliveryRecords());
       }catch (Exception e){
           e.printStackTrace();
       }
@@ -1187,7 +1231,67 @@ public class ContractService {
                 .deliverRecords(deliverRecords)
                 .build();
             deliverBaseRepository.save(deliverBase);
+            deliveryTempRepository.deleteDeliverTempsByDeliverTempId_ContracId(id);
         }
+    }
+
+    /**
+     * 将退回的产品生产货运记录
+     * @param id 合同id
+     * @param companyCode 本单位编码
+     * @param operator 操作员编码
+     * @param list 退回产品列表
+     */
+    public void saveDelivery(String id, String companyCode, String operator,List<VGenerateContractRequest.DeliveryRecord> list){
+        // TODO: 2022/6/1 需要完善货运记录 库存等问题
+        List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
+        Map<String,ContractRecordTemp> map = new HashMap<>();
+        contractRecordTemps.forEach(contractRecordTemp -> map.put(contractRecordTemp.getProductId(),contractRecordTemp));
+        List<DeliverRecord> deliverRecords = new ArrayList<>();
+        AtomicInteger maxCode = new AtomicInteger(1);
+        UUID uuid = UUID.randomUUID();
+        String deliveryId = "HY-"+companyCode+"-"+operator+"-"+uuid.toString().substring(0,8);
+        DeliverBase deliverBase = DeliverBase.builder()
+            .id(deliveryId)
+            .contractId(id)
+            .type(DeliverType.RECEIVE)
+            .createdAt(LocalDateTime.now())
+            .createdBy(operator)
+            .createdByComp(companyCode)
+            .state(DeliverState.PENDING)
+            .build();
+        for (VGenerateContractRequest.DeliveryRecord v : list) {
+            ContractRecordTemp temp = map.get(v.getProductId());
+            if(v.getReturnAmount().floatValue()>0){
+                if(temp.getProductId().equals(v.getProductId())){
+                    DeliverRecord deliverTemp = DeliverRecord.builder()
+                        .deliverRecordId(
+                            DeliverRecordId.builder()
+                                .deliverCode(deliveryId)
+                                .code(maxCode.get())
+                                .build()
+                        )
+                        .type(DeliverType.RECEIVE)
+                        .productId(v.getProductId())
+                        .productCode(temp.getProductCode())
+                        .brandCode(temp.getBrandCode())
+                        .brand(temp.getBrand())
+                        .customerPCode(temp.getCustomerCustomCode())
+                        .localPCode(temp.getCompCustomCode())
+                        .productDescription(temp.getProductDescription())
+                        .chargeUnit(temp.getChargeUnit())
+                        .myChargeUnit(temp.getMyChargeUnit())
+                        .ratio(temp.getRatio())
+                        .myAmount(v.getReturnAmount())
+                        .amount(v.getReturnAmount().multiply(temp.getRatio()))
+                        .build();
+                    deliverRecords.add(deliverTemp);
+                }
+            }
+            maxCode.getAndIncrement();
+        }
+        deliverBase.setDeliverRecords(deliverRecords);
+        deliverBaseRepository.save(deliverBase);
     }
 
     /**

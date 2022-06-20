@@ -678,11 +678,27 @@ public class ContractController {
      * @return 是否重复信息
      */
     @GetMapping("/contract/purchase/contractNo")
-    public VBaseResponse changeContractNoRepeated(@RequestParam("contractNo") Optional<String> contractNo,
-                                                  @RequestParam("contractId") Optional<String> contractId){
+    public VBaseResponse changeContractNoRepeated(@RequestParam("contractNo") Optional<String> contractNo){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = contractService.changeContractNoRepeated(contractNo.orElse(""),session.getSession().getCompanyCode(),contractId.orElse(""));
+        var flag = contractService.changeContractNoRepeated(contractNo.orElse(""),session.getSession().getCompanyCode(),"");
+        if(flag)
+            return VBaseResponse.builder().code(200).message("数据不重复").build();
+        return VBaseResponse.builder().code(201).message("数据重复").build();
+    }
+
+    /**
+     * 判断采购合同号是否重复
+     * @param contractNo 本单位采购合同号
+     * @param id 采购合同编码
+     * @return 是否重复信息
+     */
+    @GetMapping("/contract/purchase/{id}/contractNo")
+    public VBaseResponse changeContractNoRepeated(@RequestParam("contractNo") Optional<String> contractNo,
+                                                  @PathVariable String id){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = contractService.changeContractNoRepeated(contractNo.orElse(""),session.getSession().getCompanyCode(),id);
         if(flag)
             return VBaseResponse.builder().code(200).message("数据不重复").build();
         return VBaseResponse.builder().code(201).message("数据重复").build();
@@ -922,15 +938,13 @@ public class ContractController {
                 .code(500)
                 .message("修改合同失败")
                 .build();
+        if(revision.intValue()>1)
+            flag = contractService.judgeContractRev(id, revision);
         return VBaseResponse.builder()
             .code(200)
-            .message("修改合同成功")
+            .message(flag?"该版本修改后与上一版相同":"修改合同成功")
             .build();
     }
-
-
-
-
 
     /**
      * 采购合同导出产品
