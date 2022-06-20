@@ -87,7 +87,6 @@ public interface ContractMapper {
     @Mapping(target = "discountedTotalPrice",source = "discountedTotalPrice")
     TContract toTContractDetail(ContractRevisionDetail contractRevisionDetail);
 
-
     @Mapping(target = "contractNo",source = "orderCode")
     @Mapping(target = "supplierNo",source = "supplierContractNo")
     @Mapping(target = "salesContractId",source = "salesContractId")
@@ -98,6 +97,7 @@ public interface ContractMapper {
     @Mapping(target = "supplierCode",source = "salerComp")
     @Mapping(target = "supplierName",source = "salerCompName")
     @Mapping(target = "products",source = "records")
+    @Mapping(target = "consigneeCode",source = "contactCode")
     VPurchaseContractDetailResponse.VContract toContractDetail(TContract tContract);
 
     ContractRevision toContractRevision(ContractRevisionDetail contractRevisionDetail);

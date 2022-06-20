@@ -244,5 +244,14 @@ public class ContractRevisionDetail {
     @Column(insertable = false,updatable = false)
     private String state;
 
-
+    /**
+     * 收货地址编码
+     */
+    @Column(name = "delivery_code",length = 20)
+    private String deliveryCode;
+    /**
+     * 交货联系人编码
+     */
+    @Column(name = "contact_code",length = 20)
+    private String contactCode;
 }

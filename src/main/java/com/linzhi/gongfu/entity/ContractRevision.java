@@ -174,7 +174,16 @@ public class ContractRevision implements Serializable {
      */
     @Column(name = "confirmed_by")
     private String confirmedBy;
-
+    /**
+     * 收货地址编码
+     */
+    @Column(name = "delivery_code",length = 20)
+    private String deliveryCode;
+    /**
+     * 交货联系人编码
+     */
+    @Column(name = "contact_code",length = 20)
+    private String contactCode;
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumns({
         @JoinColumn(name = "contract_id",referencedColumnName = "id", insertable = true, updatable = true),

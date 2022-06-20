@@ -162,7 +162,11 @@ public class VPurchaseContractDetailResponse extends VBaseResponse{
         private String salesContractNo;
 
         List<VProduct> products;
-
+        private String deliveryCode;
+        /**
+         * 交货联系人编码
+         */
+        private String consigneeCode;
     }
 
     @Data

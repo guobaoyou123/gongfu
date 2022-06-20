@@ -131,36 +131,8 @@ public class ContractService {
                 contractRevision.setVatProductRate(inquiry.getVatProductRate());
             if(inquiry.getVatServiceRate()!=null)
                 contractRevision.setVatServiceRate(inquiry.getVatServiceRate());
-            //供应商联系人
-            contractRevision.setSalerContactName(generateContractRequest.getSupplierContactName());
-            //供应商联系人电话
-            contractRevision.setSalerContactPhone(generateContractRequest.getSupplierContactPhone());
-            //地址
-            if(StringUtils.isNotBlank(generateContractRequest.getAddressCode())){
-                //查找地址
-                Address address =addressRepository.findById(
-                    AddressId.builder()
-                        .dcCompId(inquiry.getCreatedByComp())
-                        .code(generateContractRequest.getAddressCode())
-                        .build()
-                ).orElseThrow(()-> new IOException("数据库中找不到该地址"));
-                contractRevision.setAreaCode(address.getAreaCode());
-                contractRevision.setAreaName(address.getAreaName());
-                contractRevision.setAddress(address.getAddress());
-            }
-            //联系人
-            if(StringUtils.isNotBlank(generateContractRequest.getContactCode())){
-                //联系人
-                CompContacts compContacts =compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_Code(
-                    generateContractRequest.getAddressCode(),
-                    inquiry.getCreatedByComp(),
-                    generateContractRequest.getContactCode()
-                ).orElseThrow(()-> new IOException("数据库中找不到该联系人"));
-                contractRevision.setConsigneeName(compContacts.getContName());
-                contractRevision.setConsigneePhone(compContacts.getContPhone());
-            }
+            contractRevision = modifyContractRevisionDetail(contractRevision,generateContractRequest,companyCode);
             inquiry.setConfirmTotalPriceVat(generateContractRequest.getSum());
-            contractRevision.setConfirmTotalPriceVat(generateContractRequest.getSum());
             //判断产品单价是否为空
             List<InquiryRecord> list = inquiry.getRecords()
                 .stream()
@@ -1110,37 +1082,7 @@ public class ContractService {
           if(!contractDetail.getState().equals(ContractState.UN_FINISHED)){
               throw new Exception("合同已确认");
           }
-          contractRevision.setOrderCode(generateContractRequest.getContactNo());
-          contractRevision.setSalerOrderCode(generateContractRequest.getSupplierNo());
-          //供应商联系人
-          contractRevision.setSalerContactName(generateContractRequest.getSupplierContactName());
-          //供应商联系人电话
-          contractRevision.setSalerContactPhone(generateContractRequest.getSupplierContactPhone());
-          //地址
-          if(StringUtils.isNotBlank(generateContractRequest.getAddressCode())){
-              //查找地址
-              Address address =addressRepository.findById(
-                  AddressId.builder()
-                      .dcCompId(companyCode)
-                      .code(generateContractRequest.getAddressCode())
-                      .build()
-              ).orElseThrow(()-> new IOException("数据库中找不到该地址"));
-              contractRevision.setAreaCode(address.getAreaCode());
-              contractRevision.setAreaName(address.getAreaName());
-              contractRevision.setAddress(address.getAddress());
-          }
-          //联系人
-          if(StringUtils.isNotBlank(generateContractRequest.getContactCode())){
-              //联系人
-              CompContacts compContacts =compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_Code(
-                  generateContractRequest.getAddressCode(),
-                  companyCode,
-                  generateContractRequest.getContactCode()
-              ).orElseThrow(()-> new IOException("数据库中找不到该联系人"));
-              contractRevision.setConsigneeName(compContacts.getContName());
-              contractRevision.setConsigneePhone(compContacts.getContPhone());
-          }
-          contractRevision.setConfirmTotalPriceVat(generateContractRequest.getSum());
+          contractRevision = modifyContractRevisionDetail(contractRevision,generateContractRequest,companyCode);
           //判断产品单价是否为空
           List<ContractRecordTemp> list = contractRecordTemps
               .stream()
@@ -1202,7 +1144,42 @@ public class ContractService {
       }
 
     }
-
+   public ContractRevision modifyContractRevisionDetail(ContractRevision contractRevision,VGenerateContractRequest generateContractRequest,String companyCode) throws IOException {
+       contractRevision.setOrderCode(generateContractRequest.getContactNo());
+       contractRevision.setSalerOrderCode(generateContractRequest.getSupplierNo());
+       //供应商联系人
+       contractRevision.setSalerContactName(generateContractRequest.getSupplierContactName());
+       //供应商联系人电话
+       contractRevision.setSalerContactPhone(generateContractRequest.getSupplierContactPhone());
+       //地址
+       if(StringUtils.isNotBlank(generateContractRequest.getAddressCode())){
+           //查找地址
+           Address address =addressRepository.findById(
+               AddressId.builder()
+                   .dcCompId(companyCode)
+                   .code(generateContractRequest.getAddressCode())
+                   .build()
+           ).orElseThrow(()-> new IOException("数据库中找不到该地址"));
+           contractRevision.setDeliveryCode(generateContractRequest.getAddressCode());
+           contractRevision.setAreaCode(address.getAreaCode());
+           contractRevision.setAreaName(address.getAreaName());
+           contractRevision.setAddress(address.getAddress());
+       }
+       //联系人
+       if(StringUtils.isNotBlank(generateContractRequest.getContactCode())){
+           //联系人
+           CompContacts compContacts =compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_Code(
+               generateContractRequest.getAddressCode(),
+               companyCode,
+               generateContractRequest.getContactCode()
+           ).orElseThrow(()-> new IOException("数据库中找不到该联系人"));
+           contractRevision.setContactCode(generateContractRequest.getContactCode());
+           contractRevision.setConsigneeName(compContacts.getContName());
+           contractRevision.setConsigneePhone(compContacts.getContPhone());
+       }
+       contractRevision.setConfirmTotalPriceVat(generateContractRequest.getSum());
+       return  contractRevision;
+   }
     /**
      * 将退回的产品生产货运记录
      * @param id 合同id

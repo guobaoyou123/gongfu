@@ -183,4 +183,10 @@ public class TContract {
     private List<TContractRecord> records;
 
    private int category;
+
+    private String deliveryCode;
+    /**
+     * 交货联系人编码
+     */
+    private String contactCode;
 }
