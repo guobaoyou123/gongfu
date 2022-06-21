@@ -1166,7 +1166,7 @@ public class ContractService {
           contractRecordRepository.saveAll(records);
           //将退回记录录保存到货运信息表中
           if(generateContractRequest.getDeliveryRecords().size()>0)
-                saveDelivery(id, companyCode, operator,generateContractRequest.getDeliveryRecords());
+                saveDelivery(id,revision, companyCode, operator,generateContractRequest.getDeliveryRecords());
       }catch (Exception e){
           e.printStackTrace();
       }
@@ -1257,11 +1257,11 @@ public class ContractService {
      * @param operator 操作员编码
      * @param list 退回产品列表
      */
-    public void saveDelivery(String id, String companyCode, String operator,List<VGenerateContractRequest.DeliveryRecord> list){
+    public void saveDelivery(String id,Integer revision, String companyCode, String operator,List<VGenerateContractRequest.DeliveryRecord> list){
         // TODO: 2022/6/1 需要完善货运记录 库存等问题
-        List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
-        Map<String,ContractRecordTemp> map = new HashMap<>();
-        contractRecordTemps.forEach(contractRecordTemp -> map.put(contractRecordTemp.getProductId(),contractRecordTemp));
+        List<ContractRecord> contractRecords = contractRecordRepository.findContractRecordsByContractRecordId_ContractIdAndContractRecordId_Revision(id,revision);
+        Map<String,ContractRecord> map = new HashMap<>();
+        contractRecords.forEach(contractRecord -> map.put(contractRecord.getProductId(),contractRecord));
         List<DeliverRecord> deliverRecords = new ArrayList<>();
         AtomicInteger maxCode = new AtomicInteger(1);
         UUID uuid = UUID.randomUUID();
@@ -1276,7 +1276,7 @@ public class ContractService {
             .state(DeliverState.PENDING)
             .build();
         for (VGenerateContractRequest.DeliveryRecord v : list) {
-            ContractRecordTemp temp = map.get(v.getProductId());
+            ContractRecord temp = map.get(v.getProductId());
             if(v.getReturnAmount().floatValue()>0){
                 if(temp.getProductId().equals(v.getProductId())){
                     DeliverRecord deliverTemp = DeliverRecord.builder()
