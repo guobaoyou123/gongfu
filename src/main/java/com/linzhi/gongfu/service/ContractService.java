@@ -78,9 +78,13 @@ public class ContractService {
             Inquiry inquiry = inquiryService.findInquiry(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
             List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecord(inquiryId);
             String str = createSequenceCode(
-                records.stream().map(inquiryRecord-> inquiryRecord.getProductId() + "-" + inquiryRecord.getAmount()).toList(),
+                records.stream().map(inquiryRecord-> inquiryRecord.getProductId()+"-"
+                    +inquiryRecord.getChargeUnit()+"-"
+                    +inquiryRecord.getAmount().setScale(4,RoundingMode.HALF_UP)+"-"
+                    +inquiryRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP)+"-"
+                    +inquiryRecord.getVatRate()).toList(),
                 inquiry.getSalerComp(),
-                inquiry.getBuyerComp()
+                inquiry.getBuyerComp(),inquiry.getOfferMode()
             );
             //产品种类和数量相同的合同号
             List<String> contractId = contractRepository.findContractId(inquiry.getCreatedByComp(),str);
@@ -217,7 +221,7 @@ public class ContractService {
             String str = createSequenceCode(
                 recordSort(records),
                 inquiry.getSalerComp(),
-                inquiry.getBuyerComp()
+                inquiry.getBuyerComp(),inquiry.getOfferMode()
             );
             //更新询价单
            inquiry.setConfirmedAt(LocalDateTime.now());
@@ -409,13 +413,19 @@ public class ContractService {
      * @param records 明细
      * @param supplierCode 供应商编码
      * @param buyerCode 客户编码
+     * @param taxMode 税模式
      * @return MD5编码
      */
-    private String createSequenceCode(List<String> records,String supplierCode ,String buyerCode){
-        String str = supplierCode + "-" + buyerCode +"-"+ String.join("-", records);
+    private String createSequenceCode(List<String> records,String supplierCode ,String buyerCode,TaxMode taxMode){
+        String str = supplierCode + "-" + buyerCode +"-"+taxMode+"-"+ String.join("-", records);
         return  DigestUtils.md5Hex(str);
     }
 
+    /**
+     * 将合同列表进行排序，并以产品编码-我的计价单位-我的数量-含税单价-税率模式进行拼接成字符串
+     * @param records 合同明细
+     * @return 返回字符串列表
+     */
     private List<String> recordSort(List<ContractRecord> records){
         records.sort((o1, o2) -> {
             if (o1.getProductId().compareTo(o2.getProductId()) == 0) {
@@ -427,8 +437,15 @@ public class ContractService {
             }
             return o1.getProductId().compareTo(o2.getProductId());
         });
-        return  records.stream().map(contractRecord -> contractRecord.getProductId()+"-"+contractRecord.getAmount()).toList();
+        return  records.stream().map(contractRecord ->
+            contractRecord.getProductId()+"-"
+                +contractRecord.getMyChargeUnit()+"-"
+                +contractRecord.getMyAmount().setScale(4,RoundingMode.HALF_UP)+"-"
+                +contractRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP)+"-"
+                +contractRecord.getVatRate()
+        ).toList();
     }
+
     /**
      * 根据合同主键、版本号查询采购合同详情
      * @param id 合同主键
@@ -812,34 +829,34 @@ public class ContractService {
         ContractRevisionDetail perContractRevision = contractRevisionDetailRepository.findDetail(revision-1,id).orElseThrow();
         List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.
             findContractRecordTempsByContractRecordTempId_ContractId(id);
-        StringBuilder fingerprint = new StringBuilder(contractRevision.getOfferMode() + "-"
-            + contractRevision.getVatProductRate() + "-" +
-            contractRevision.getVatServiceRate() + "-");
+        StringBuilder fingerprint = new StringBuilder(contractRevision.getOfferMode() + "-");
         for (ContractRecordTemp contractRecordTemp: contractRecordTemps) {
+
             fingerprint.append(contractRecordTemp.getProductId())
                 .append("-")
                 .append(contractRecordTemp.getMyChargeUnit())
                 .append("-")
-                .append(contractRecordTemp.getMyAmount())
+                .append(contractRecordTemp.getMyAmount().setScale(4,RoundingMode.HALF_UP))
                 .append("-")
-                .append(contractRecordTemp.getPriceVat())
+                .append(contractRecordTemp.getPriceVat().setScale(4,RoundingMode.HALF_UP))
                 .append("-")
                 .append(contractRecordTemp.getVatRate());
 
         }
-        StringBuilder perFingerprint= new StringBuilder(perContractRevision.getOfferMode() +
-            "-" + perContractRevision.getVatProductRate() +
-            "-" + perContractRevision.getVatServiceRate() + "-");
+        StringBuilder perFingerprint= new StringBuilder(perContractRevision.getOfferMode() + "-");
         for (ContractRecordTemp contractRecordTemp: contractRecordTemps) {
-            perFingerprint.append(contractRecordTemp.getProductId())
-                .append("-")
-                .append(contractRecordTemp.getPreviousMyChargeUnit())
-                .append("-")
-                .append(contractRecordTemp.getPreviousMyAmount())
-                .append("-")
-                .append(contractRecordTemp.getPreviousPriceVat())
-                .append("-")
-                .append(contractRecordTemp.getPreviousVatRate());
+            if(contractRecordTemp.getPreviousMyAmount()!=null){
+                perFingerprint.append(contractRecordTemp.getProductId())
+                    .append("-")
+                    .append(contractRecordTemp.getPreviousMyChargeUnit())
+                    .append("-")
+                    .append(contractRecordTemp.getPreviousMyAmount().setScale(4,RoundingMode.HALF_UP))
+                    .append("-")
+                    .append(contractRecordTemp.getPreviousPriceVat().setScale(4,RoundingMode.HALF_UP))
+                    .append("-")
+                    .append(contractRecordTemp.getPreviousVatRate());
+            }
+
 
         }
         return  fingerprint.toString().equals(perFingerprint.toString());
@@ -1048,11 +1065,16 @@ public class ContractService {
 
         String str = createSequenceCode(
             contractRecordTemps.stream()
-                .map(record->
-                    record.getProductId() + "-" + record.getAmount()
+                .map(contractRecord->
+                    contractRecord.getProductId()+"-"
+                        +contractRecord.getMyChargeUnit()+"-"
+                        +contractRecord.getMyAmount().setScale(4,RoundingMode.HALF_UP)+"-"
+                        +contractRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP)+"-"
+                        +contractRecord.getVatRate()
                 ).toList(),
             contractRevisionDetail.getSalerComp(),
-            contractRevisionDetail.getBuyerComp()
+            contractRevisionDetail.getBuyerComp(),
+            contractRevisionDetail.getOfferMode()
         );
         //产品种类和数量相同的合同号
         List<String> contractId = contractRepository.findContractId(contractRevisionDetail.getCreatedByComp(),str);
@@ -1130,7 +1152,8 @@ public class ContractService {
           String str = createSequenceCode(
               recordSort(records),
               contractDetail.getSalerComp(),
-              contractDetail.getBuyerComp()
+              contractDetail.getBuyerComp(),
+              contractRevision.getOfferMode()
           );
           contractRecordTempRepository.deleteProducts(id);
           contractRevision.setConfirmedAt(LocalDateTime.now());
@@ -1156,7 +1179,7 @@ public class ContractService {
      * @param generateContractRequest 修改数据
      * @param companyCode 本单位编码
      * @return 合同详情
-     * @throws IOException
+     * @throws IOException 异常
      */
    public ContractRevision modifyContractRevisionDetail(ContractRevision contractRevision,VGenerateContractRequest generateContractRequest,String companyCode) throws IOException {
        contractRevision.setOrderCode(generateContractRequest.getContactNo());
@@ -1331,38 +1354,40 @@ public class ContractService {
      * @param id 合同主键
      * @param companyCode 本单位编码
      * @param operator 操作员编码
-     * @throws Exception 异常
      */
     @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     @Transactional
-    public void cancelPurchaseContract(String id, String companyCode, String operator) throws Exception{
-        ContractDetail contractDetail = contractDetailRepository.findById(id)
-            .orElseThrow(()->new IOException("请求的合同不存在"));
-        int revision = findMaxRevision(id);
-        if(contractDetail.getState().equals(ContractState.UN_FINISHED)&& revision>1){
-            contractRecordTempRepository.deleteProducts(id);
-            contractRevisionRepository.deleteById(ContractRevisionId.builder()
+    public void cancelPurchaseContract(String id, String companyCode, String operator){
+        try{
+            ContractDetail contractDetail = contractDetailRepository.findById(id)
+                .orElseThrow(()->new IOException("请求的合同不存在"));
+            int revision = findMaxRevision(id);
+            if(contractDetail.getState().equals(ContractState.UN_FINISHED)&& revision>1){
+                contractRecordTempRepository.deleteProducts(id);
+                contractRevisionRepository.deleteById(ContractRevisionId.builder()
                     .id(id)
                     .revision(revision)
-                .build());
-        }else if(contractDetail.getState().equals(ContractState.UN_FINISHED)&& revision==1){
-            List<ContractRecord> records = new ArrayList<>();
-            List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
-            for (int i  =0;i< contractRecordTemps.size();i++){
-                ContractRecord record =   Optional.of(contractRecordTemps.get(i)).map(contractRecordMapper::toContractRecord).orElse(null);
-                record.getContractRecordId().setCode(i+1);
-                records.add(
-                    record
-                );
+                    .build());
+            }else if(contractDetail.getState().equals(ContractState.UN_FINISHED)&& revision==1){
+                List<ContractRecord> records = new ArrayList<>();
+                List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
+                for (int i  =0;i< contractRecordTemps.size();i++){
+                    ContractRecord record =   Optional.of(contractRecordTemps.get(i)).map(contractRecordMapper::toContractRecord).orElse(null);
+                    record.getContractRecordId().setCode(i+1);
+                    records.add(
+                        record
+                    );
+                }
+                contractRecordRepository.saveAll(records);
+            }else  if(contractDetail.getState().equals(ContractState.CANCELLATION)){
+                throw  new Exception("合同已撤销");
             }
-            contractRecordRepository.saveAll(records);
-        }else  if(contractDetail.getState().equals(ContractState.CANCELLATION)){
-            throw  new Exception("合同已撤销");
-        }else{
-
+            contractDetail.setState(ContractState.CANCELLATION);
+            saveDelivery(id, companyCode, operator);
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        contractDetail.setState(ContractState.CANCELLATION);
-        saveDelivery(id, companyCode, operator);
+
     }
 
     /**

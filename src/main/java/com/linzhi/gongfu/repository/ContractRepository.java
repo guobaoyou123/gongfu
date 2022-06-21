@@ -23,7 +23,7 @@ public interface ContractRepository
         " where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  and c.type = '0'" +
         "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) "+
         "  and  c.state <>'0' "+
-        " and id <> ?3",
+        " and c.id <> ?3",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode,String contractId);
     @Query(value = "select  c.id from contract_base c ,contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id  and c.type = '0' and r.fingerprint =?2 and r.revision=(select max(revision) from contract_rev v where v.id = r.id) "  ,nativeQuery = true)

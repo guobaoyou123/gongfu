@@ -946,7 +946,7 @@ public class ContractController {
                 .code(500)
                 .message("修改合同失败")
                 .build();
-        if(revision.intValue()>1)
+        if(revision >1)
             state = contractService.judgeContractRev(id, revision);
         return VModifyContractResponse.builder()
             .code(200)
@@ -1010,7 +1010,7 @@ public class ContractController {
         @RequestBody List<VDeliveryTempRequest> deliveryTempRequests,
         @PathVariable("id") String id,
         @PathVariable("revision") Integer revision
-    ) throws Exception {
+    ){
         contractService.saveDeliveryTemp(deliveryTempRequests,id,revision);
         return VBaseResponse.builder()
             .code(200)
@@ -1091,7 +1091,7 @@ public class ContractController {
      * @return 返回成功或者失败
      */
     @DeleteMapping("/contract/purchase/{id}")
-    public VBaseResponse cancelPurchaseContract(@PathVariable String id ) throws Exception {
+    public VBaseResponse cancelPurchaseContract(@PathVariable String id ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         contractService.cancelPurchaseContract(
