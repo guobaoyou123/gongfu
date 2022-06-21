@@ -777,7 +777,8 @@ public class ContractController {
     public VEmptyContractResponse savePurchaseContractEmpty(@RequestBody Optional<VEmptyInquiryRequest> supplierCode){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var id = contractService.savePurchaseContractEmpty(supplierCode.get().getSupplierCode(),
+        var id = contractService.savePurchaseContractEmpty(
+            supplierCode.get().getSupplierCode(),
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
             session.getSession().getOperatorCode(),
@@ -872,7 +873,13 @@ public class ContractController {
     ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = contractService.deleteContractProduct(codes,id,revision,session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        var flag = contractService.deleteContractProduct(
+            codes,
+            id,
+            revision,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -919,11 +926,12 @@ public class ContractController {
      * @return 返回成功或者失败
      */
     @PutMapping("/contract/purchase/{id}/{revision}")
-    public VBaseResponse  modifyPurchaseContract(
+    public VModifyContractResponse  modifyPurchaseContract(
         @RequestBody Optional<VModifyInquiryRequest> vModifyInquiryRequest,
         @PathVariable("id")String id,
         @PathVariable("revision")Integer revision
     ){
+        boolean state=false;
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.modifyPurchaseContract(
@@ -934,15 +942,16 @@ public class ContractController {
             session.getSession().getOperatorCode()
         );
         if(!flag)
-            return VBaseResponse.builder()
+            return VModifyContractResponse.builder()
                 .code(500)
                 .message("修改合同失败")
                 .build();
         if(revision.intValue()>1)
-            flag = contractService.judgeContractRev(id, revision);
-        return VBaseResponse.builder()
+            state = contractService.judgeContractRev(id, revision);
+        return VModifyContractResponse.builder()
             .code(200)
-            .message(flag?"该版本修改后与上一版相同":"修改合同成功")
+            .message("修改合同成功")
+            .state(state)
             .build();
     }
 
@@ -960,8 +969,6 @@ public class ContractController {
         List<LinkedHashMap<String,Object>> database=contractService.exportProduct(id,revision);
         ExcelUtil.exportToExcel(response,"采购合同明细表",database);
     }
-
-
 
     /**
      * 撤销该版本合同

@@ -778,7 +778,7 @@ public class ContractService {
                 vModifyInquiryRequest.getProducts().forEach(vProduct -> contractRecordTemps.forEach(record -> {
                     if(record.getContractRecordTempId().getCode()==vProduct.getCode()){
                         if(vProduct.getAmount()!=null) {
-                            record.setMyAmount(vProduct.getPrice().intValue()<0?new BigDecimal("0"):vProduct.getAmount());
+                            record.setMyAmount(vProduct.getAmount().intValue()<0?new BigDecimal("0"):vProduct.getAmount());
                             record.setAmount(vProduct.getAmount().multiply(record.getRatio()));
                         }
                         record.setVatRate(vProduct.getVatRate()!=null?vProduct.getVatRate():record.getVatRate());
@@ -984,16 +984,17 @@ public class ContractService {
      * @param revision 版本号
      */
     @Transactional
-    public void saveDeliveryTemp(List<VDeliveryTempRequest> list, String id, Integer revision) throws Exception{
-        //删除上次的数据
-        deliveryTempRepository.deleteDeliverTempsByDeliverTempId_ContracId(id);
-        List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
-        Map<String,ContractRecordTemp> map = new HashMap<>();
-        contractRecordTemps.forEach(contractRecordTemp -> map.put(contractRecordTemp.getProductId(),contractRecordTemp));
-        List<DeliverTemp> deliverTemps = new ArrayList<>();
-        AtomicInteger maxCode = new AtomicInteger(1);
-        for (VDeliveryTempRequest v : list) {
-            ContractRecordTemp temp = map.get(v.getProductId());
+    public void saveDeliveryTemp(List<VDeliveryTempRequest> list, String id, Integer revision){
+        try{
+            //删除上次的数据
+            deliveryTempRepository.deleteDeliverTempsByDeliverTempId_ContracId(id);
+            List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
+            Map<String,ContractRecordTemp> map = new HashMap<>();
+            contractRecordTemps.forEach(contractRecordTemp -> map.put(contractRecordTemp.getProductId(),contractRecordTemp));
+            List<DeliverTemp> deliverTemps = new ArrayList<>();
+            AtomicInteger maxCode = new AtomicInteger(1);
+            for (VDeliveryTempRequest v : list) {
+                ContractRecordTemp temp = map.get(v.getProductId());
                 if(v.getReturnAmount().floatValue()>0){
                     if(temp.getProductId().equals(v.getProductId())){
                         DeliverTemp deliverTemp = DeliverTemp.builder()
@@ -1018,11 +1019,15 @@ public class ContractService {
                             .amount(v.getReturnAmount().multiply(temp.getRatio()))
                             .build();
                         deliverTemps.add(deliverTemp);
+                    }
                 }
-               }
-            maxCode.getAndIncrement();
+                maxCode.getAndIncrement();
+            }
+            deliveryTempRepository.saveAll(deliverTemps);
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        deliveryTempRepository.saveAll(deliverTemps);
+
     }
 
     /**
@@ -1144,6 +1149,15 @@ public class ContractService {
       }
 
     }
+
+    /**
+     * 修改合同
+     * @param contractRevision 合同
+     * @param generateContractRequest 修改数据
+     * @param companyCode 本单位编码
+     * @return 合同详情
+     * @throws IOException
+     */
    public ContractRevision modifyContractRevisionDetail(ContractRevision contractRevision,VGenerateContractRequest generateContractRequest,String companyCode) throws IOException {
        contractRevision.setOrderCode(generateContractRequest.getContactNo());
        contractRevision.setSalerOrderCode(generateContractRequest.getSupplierNo());
@@ -1180,6 +1194,7 @@ public class ContractService {
        contractRevision.setConfirmTotalPriceVat(generateContractRequest.getSum());
        return  contractRevision;
    }
+
     /**
      * 将退回的产品生产货运记录
      * @param id 合同id
