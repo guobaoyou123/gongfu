@@ -20,7 +20,7 @@ import java.util.List;
 @SuperBuilder(toBuilder = true)
 public class VPurchaseContractDetailResponse extends VBaseResponse{
     private VContract contract;
-
+    private Boolean repetitive;
     @Data
     public static class VContract{
         /**

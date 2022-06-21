@@ -760,11 +760,15 @@ public class ContractController {
         @PathVariable("id")String id,
         @PathVariable("revision")Integer revision
     ) throws IOException {
+        boolean repetitive =false;
          var contract= contractService.purchaseContractDetail(id,revision);
+        if(revision >1&&contract.getState().equals(ContractState.UN_FINISHED.getState()+""))
+            repetitive = contractService.judgeContractRev(id, revision);
         return VPurchaseContractDetailResponse.builder()
             .code(200)
             .message("获取数据成功")
             .contract(contract)
+            .repetitive(repetitive)
             .build();
     }
 
@@ -926,7 +930,7 @@ public class ContractController {
      * @return 返回成功或者失败
      */
     @PutMapping("/contract/purchase/{id}/{revision}")
-    public VModifyContractResponse  modifyPurchaseContract(
+    public VBaseResponse  modifyPurchaseContract(
         @RequestBody Optional<VModifyInquiryRequest> vModifyInquiryRequest,
         @PathVariable("id")String id,
         @PathVariable("revision")Integer revision
@@ -942,16 +946,15 @@ public class ContractController {
             session.getSession().getOperatorCode()
         );
         if(!flag)
-            return VModifyContractResponse.builder()
+            return VBaseResponse.builder()
                 .code(500)
                 .message("修改合同失败")
                 .build();
-        if(revision >1)
-            state = contractService.judgeContractRev(id, revision);
-        return VModifyContractResponse.builder()
+      /*  if(revision >1)
+            state = contractService.judgeContractRev(id, revision);*/
+        return VBaseResponse.builder()
             .code(200)
             .message("修改合同成功")
-            .state(state)
             .build();
     }
 
