@@ -37,7 +37,7 @@ public class DeliverBase implements Serializable {
     private String contractId;
 
     /**
-     * 类型（1-发货 2-收货 3-退回 4-收回 5-不退回 6-不收回）
+     * 类型（ 1-收货 2-发货）
      */
     @Column(name = "type", length = 1)
     private DeliverType type;

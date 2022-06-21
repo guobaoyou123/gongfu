@@ -1021,7 +1021,7 @@ public class ContractService {
                                     .code(maxCode.get())
                                     .build()
                             )
-                            .type(DeliverType.RECEIVE)
+                            .type(DeliverType.DELIVER)
                             .productId(v.getProductId())
                             .productCode(temp.getProductCode())
                             .brandCode(temp.getBrandCode())
@@ -1233,12 +1233,12 @@ public class ContractService {
             String deliveryId = "HY-"+companyCode+"-"+operator+"-"+uuid.toString().substring(0,8);
             deliverRecords.forEach(deliverRecord -> {
                 deliverRecord.getDeliverRecordId().setDeliverCode(deliveryId);
-                deliverRecord.setType(DeliverType.RECEIVE);
+                deliverRecord.setType(DeliverType.DELIVER);
             });
             DeliverBase deliverBase = DeliverBase.builder()
                 .id(deliveryId)
                 .contractId(id)
-                .type(DeliverType.RECEIVE)
+                .type(DeliverType.DELIVER)
                 .createdAt(LocalDateTime.now())
                 .createdBy(operator)
                 .createdByComp(companyCode)
@@ -1269,7 +1269,7 @@ public class ContractService {
         DeliverBase deliverBase = DeliverBase.builder()
             .id(deliveryId)
             .contractId(id)
-            .type(DeliverType.RECEIVE)
+            .type(DeliverType.DELIVER)
             .createdAt(LocalDateTime.now())
             .createdBy(operator)
             .createdByComp(companyCode)
@@ -1286,7 +1286,7 @@ public class ContractService {
                                 .code(maxCode.get())
                                 .build()
                         )
-                        .type(DeliverType.RECEIVE)
+                        .type(DeliverType.DELIVER)
                         .productId(v.getProductId())
                         .productCode(temp.getProductCode())
                         .brandCode(temp.getBrandCode())
