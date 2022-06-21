@@ -81,7 +81,7 @@ public class ContractService {
                 records.stream().map(inquiryRecord-> inquiryRecord.getProductId()+"-"
                     +inquiryRecord.getChargeUnit()+"-"
                     +inquiryRecord.getAmount().setScale(4,RoundingMode.HALF_UP)+"-"
-                    +inquiryRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP)+"-"
+                    +inquiryRecord.getPriceVat()==null?null:inquiryRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP)+"-"
                     +inquiryRecord.getVatRate()).toList(),
                 inquiry.getSalerComp(),
                 inquiry.getBuyerComp(),inquiry.getOfferMode()
@@ -441,7 +441,7 @@ public class ContractService {
             contractRecord.getProductId()+"-"
                 +contractRecord.getMyChargeUnit()+"-"
                 +contractRecord.getMyAmount().setScale(4,RoundingMode.HALF_UP)+"-"
-                +contractRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP)+"-"
+                +contractRecord.getPriceVat()==null?null:contractRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP)+"-"
                 +contractRecord.getVatRate()
         ).toList();
     }
@@ -838,7 +838,7 @@ public class ContractService {
                 .append("-")
                 .append(contractRecordTemp.getMyAmount().setScale(4,RoundingMode.HALF_UP))
                 .append("-")
-                .append(contractRecordTemp.getPriceVat().setScale(4,RoundingMode.HALF_UP))
+                .append(contractRecordTemp.getPriceVat()==null?null:contractRecordTemp.getPriceVat().setScale(4,RoundingMode.HALF_UP))
                 .append("-")
                 .append(contractRecordTemp.getVatRate());
 
@@ -852,7 +852,7 @@ public class ContractService {
                     .append("-")
                     .append(contractRecordTemp.getPreviousMyAmount().setScale(4,RoundingMode.HALF_UP))
                     .append("-")
-                    .append(contractRecordTemp.getPreviousPriceVat().setScale(4,RoundingMode.HALF_UP))
+                    .append(contractRecordTemp.getPreviousPriceVat()==null?null:contractRecordTemp.getPreviousPriceVat().setScale(4,RoundingMode.HALF_UP))
                     .append("-")
                     .append(contractRecordTemp.getPreviousVatRate());
             }
