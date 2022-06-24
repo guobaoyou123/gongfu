@@ -16,6 +16,7 @@ import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.mapstruct.Mapping;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -1504,6 +1505,8 @@ public class ContractService {
      * @param operator 操作员编码
      * @return 返回新建合同主键
      */
+    @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
+    @Transactional
     public String copyContract(String contractId,Integer revision,String companyCode,String operator){
         try {
 
@@ -1524,12 +1527,11 @@ public class ContractService {
             }
             String maxCode = contractDetailRepository.findMaxCode(companyCode,operator).orElse("01");
             Map<String,String> map = getContractCode(maxCode,operator,companyCode,contractDetail.getSalerComp());
-            contractRecordTemps.stream().map(contractRecordTemp -> {
-                    contractRecordTemp.getContractRecordTempId().setContractId(map.get("id"));
-                    contractRecordTemp.getContractRecordTempId().setRevision(1);
-                   return contractRecordTemp;
-                }
-            );
+
+            contractRecordTemps.forEach(contractRecordTemp -> {
+                contractRecordTemp.getContractRecordTempId().setContractId(map.get("id"));
+                contractRecordTemp.getContractRecordTempId().setRevision(1);
+            });
             contractDetail.setCode(map.get("code"));
             contractDetail.setId(map.get("id"));
             contractDetail.setState(ContractState.UN_FINISHED);

@@ -105,11 +105,20 @@ public interface ContractMapper {
     VReceivedResponse.VProduct toVProduct(TContractReceived tContractReceived);
 
     @Mapping(target ="id" ,constant = "")
-    @Mapping(target = "code",constant = "")
-    @Mapping(target = "salesContractId",constant = "")
+    @Mapping(target = "code",ignore = true)
+    @Mapping(target = "salesContractId",ignore = true)
     ContractDetail toContractDetail(ContractDetail contractDetail);
 
-    @Mapping(target ="contractRevisionId.id" ,constant = "")
+    @Mapping(target ="contractRevisionId.id" ,ignore = true)
     @Mapping(target = "contractRevisionId.revision",constant = "1")
+    @Mapping(target = "orderCode",ignore = true)
+    @Mapping(target  ="salerOrderCode",ignore = true)
+    @Mapping(target = "revokedAt",ignore = true)
+    @Mapping(target = "revokedBy",ignore = true)
+    @Mapping(target = "modifiedAt",ignore = true)
+    @Mapping(target = "modifiedBy",ignore = true)
+    @Mapping(target = "confirmedAt",ignore = true)
+    @Mapping(target = "confirmedBy",ignore = true)
+    @Mapping(target = "contractRecords",ignore = true)
     ContractRevision toContractRevision(ContractRevision contractRevision);
 }

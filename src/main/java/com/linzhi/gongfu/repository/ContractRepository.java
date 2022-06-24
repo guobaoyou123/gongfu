@@ -13,7 +13,7 @@ public interface ContractRepository
         "from contract_base c ,contract_rev  r  " +
         "where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  " +
         "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) "+
-        "  and  c.state <>'0' "+
+        "  and  c.state ='1' "+
         "and c.type = '0' ",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode);
@@ -21,7 +21,7 @@ public interface ContractRepository
     @Query(value="select  count(distinct c.id) from contract_base c ,contract_rev  r " +
         " where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  and c.type = '0'" +
         "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) "+
-        "  and  c.state <>'0' "+
+        "  and  c.state ='1' "+
         " and c.id <> ?3",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode,String contractId);
