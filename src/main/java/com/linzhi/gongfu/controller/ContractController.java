@@ -332,7 +332,7 @@ public class ContractController {
      * @return 供应商列表
      */
     @GetMapping("/contract/purchase/inquiry/preview/suppliers")
-    public VSuppliersResponse suppliersByPlancode(@RequestParam("planCode") Optional<String> planCode) {
+    public VSuppliersResponse suppliersByPlanCode(@RequestParam("planCode") Optional<String> planCode) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var supplier = planService.findSuppliersByPlanCode(
@@ -344,7 +344,7 @@ public class ContractController {
             .message("获取我的供应列表成功。")
             .suppliers(
                 supplier.stream()
-                    .map(companyMapper::toPreloadSupliers)
+                    .map(companyMapper::toPreloadSuppliers)
                     .collect(Collectors.toList())
             )
             .build();
@@ -521,18 +521,18 @@ public class ContractController {
     /**
      * 添加产品
      * @param id 询价单主键
-     * @param vInquiryProductResquest 产品信息
+     * @param vInquiryProductRequest 产品信息
      * @return 返回成功或者失败信息
      */
     @PostMapping("/contract/purchase/inquiry/{id}/product")
     public  VBaseResponse saveInquiryProduct(
         @PathVariable("id") String id,
-        @RequestBody VInquiryProductResquest vInquiryProductResquest){
+        @RequestBody VInquiryProductRequest vInquiryProductRequest){
         var flag = inquiryService.saveInquiryProduct(
             id,
-            vInquiryProductResquest.getProductId(),
-            vInquiryProductResquest.getPrice(),
-            vInquiryProductResquest.getAmount()
+            vInquiryProductRequest.getProductId(),
+            vInquiryProductRequest.getPrice(),
+            vInquiryProductRequest.getAmount()
         );
         if(flag) {
             return VBaseResponse.builder()
@@ -837,7 +837,7 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase/{id}/{revision}/product")
     public  VBaseResponse saveContractProduct(
-        @RequestBody Optional<VInquiryProductResquest> product,
+        @RequestBody Optional<VInquiryProductRequest> product,
         @PathVariable("id")String id,
         @PathVariable("revision") Integer revision
     ){
@@ -935,7 +935,6 @@ public class ContractController {
         @PathVariable("id")String id,
         @PathVariable("revision")Integer revision
     ){
-        boolean state=false;
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.modifyPurchaseContract(
@@ -950,8 +949,6 @@ public class ContractController {
                 .code(500)
                 .message("修改合同失败")
                 .build();
-      /*  if(revision >1)
-            state = contractService.judgeContractRev(id, revision);*/
         return VBaseResponse.builder()
             .code(200)
             .message("修改合同成功")
@@ -959,7 +956,22 @@ public class ContractController {
     }
 
     /**
-     * 采购合同导出产品
+     * 采购合同导出产品模板
+     * @param id 合同id
+     * @param response  HttpServletResponse
+     */
+    @GetMapping("/contract/purchase/{id}/{revision}/template/export")
+    public  void  exportContractProductTemplate(
+        @PathVariable String id,
+        @PathVariable Integer revision,
+        HttpServletResponse response
+    ){
+        List<LinkedHashMap<String,Object>> database=contractService.exportProductTemplate(id,revision);
+        ExcelUtil.exportToExcel(response,"采购合同明细表",database);
+    }
+
+    /**
+     * 采购合同导出产品明细
      * @param id 合同id
      * @param response  HttpServletResponse
      */
@@ -1047,7 +1059,7 @@ public class ContractController {
             revision,
             generateContractRequest,
             session.getSession().getCompanyCode(),
-            session.getSession().getOperatorName()
+            session.getSession().getOperatorCode()
         );
 
         return VBaseResponse.builder()
@@ -1100,7 +1112,7 @@ public class ContractController {
         contractService.cancelPurchaseContract(
             id,
             session.getSession().getCompanyCode(),
-            session.getSession().getOperatorName()
+            session.getSession().getOperatorCode()
         );
         return VBaseResponse.builder()
             .code(200)

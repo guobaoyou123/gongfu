@@ -1,15 +1,14 @@
 package com.linzhi.gongfu.mapper;
 
-import com.linzhi.gongfu.dto.TCompanyBaseInformation;
+
 import com.linzhi.gongfu.dto.TPurchasePlanProductSupplier;
-import com.linzhi.gongfu.entity.Company;
+
 import com.linzhi.gongfu.entity.PurchasePlanProductSupplier;
 import com.linzhi.gongfu.vo.VPurchasePlanResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper(componentModel = "spring")
 public interface PurchasePlanProductSupplierMapper {

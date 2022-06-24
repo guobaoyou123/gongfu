@@ -1,12 +1,11 @@
 package com.linzhi.gongfu.vo;
 
-import com.linzhi.gongfu.enumeration.DemandSource;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.persistence.Column;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

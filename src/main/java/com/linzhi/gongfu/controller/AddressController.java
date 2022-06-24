@@ -63,7 +63,7 @@ public class AddressController {
             .code(200)
             .areas(list.stream()
                 .map(disabledAreaMapper::toDo)
-                .map(disabledAreaMapper::todisabledArea)
+                .map(disabledAreaMapper::toDisabledArea)
                 .toList()
             )
             .message("查询禁用区域列表成功")

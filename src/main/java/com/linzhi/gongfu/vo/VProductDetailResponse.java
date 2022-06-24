@@ -6,7 +6,6 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data

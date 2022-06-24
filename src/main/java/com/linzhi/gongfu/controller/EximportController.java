@@ -56,7 +56,7 @@ public class EximportController {
                 .code((int) map.get("code"))
                 .message((String) map.get("message"))
                 .build();
-        return eximportService.getvImportProductTempResponse(
+        return eximportService.getVImportProductTempResponse(
             id,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
@@ -75,7 +75,7 @@ public class EximportController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var map = findTaxModelAndEnCode(id, type);
-        return eximportService.getvImportProductTempResponse(
+        return eximportService.getVImportProductTempResponse(
             id,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),

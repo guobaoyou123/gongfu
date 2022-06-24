@@ -2,8 +2,6 @@ package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.ContractRecord;
 import com.linzhi.gongfu.entity.ContractRecordId;
-import com.linzhi.gongfu.entity.ContractRevisionDetail;
-import com.linzhi.gongfu.entity.ContractRevisionId;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;

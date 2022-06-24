@@ -65,7 +65,7 @@ public interface CompanyMapper {
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "shortName")
     @Mapping(target = "sort",constant = "1")
-    VSuppliersResponse.VSupplier toPreloadSupliers(TCompanyBaseInformation info);
+    VSuppliersResponse.VSupplier toPreloadSuppliers(TCompanyBaseInformation info);
 
     /**
      * 将获取到的外供应商公司信息，转换成可供使用的公司基础信息
@@ -76,7 +76,7 @@ public interface CompanyMapper {
     @Mapping(target = "companyName", source = "name")
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "usci", source = "USCI")
-    VForeignSuppliersResponse.VForeignSupplier toforeignSupplier(TCompanyBaseInformation company);
+    VForeignSuppliersResponse.VForeignSupplier toForeignSupplier(TCompanyBaseInformation company);
 
     /**
      * 将获取到的外供应商公司信息，转换成可供使用的公司基础信息

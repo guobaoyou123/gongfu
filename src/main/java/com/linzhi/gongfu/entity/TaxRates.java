@@ -68,6 +68,6 @@ public class TaxRates implements Serializable {
      * 默认（1-是 0-否）
      */
     @Column
-    private Whether deflag;
+    private Whether deFlag;
 
 }

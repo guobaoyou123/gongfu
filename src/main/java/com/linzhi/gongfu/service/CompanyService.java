@@ -68,7 +68,7 @@ public class CompanyService {
      * @return 供应商信息列表
      */
 
-    public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandbyId(String id, Optional<String> pageNum,Optional<String> pageSize) {
+    public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandById(String id, Optional<String> pageNum,Optional<String> pageSize) {
 
         List<CompTrad> compTradList=findSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
         List<TCompanyIncludeBrand>  tCompanyIncludeBrandList=compTradList.stream()

@@ -2,12 +2,10 @@ package com.linzhi.gongfu.vo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Singular;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * 用于前端查询供应商列表的响应体组建

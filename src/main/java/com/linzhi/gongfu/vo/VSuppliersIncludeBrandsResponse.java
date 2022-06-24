@@ -1,12 +1,11 @@
 package com.linzhi.gongfu.vo;
 
-import com.linzhi.gongfu.dto.TBrand;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Singular;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Set;

@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Data
 @Jacksonized
 @NoArgsConstructor
-public class VInquiryProductResquest {
+public class VInquiryProductRequest {
     private String productId;
     private BigDecimal price;
     private BigDecimal amount;

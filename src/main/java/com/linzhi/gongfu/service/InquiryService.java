@@ -1,19 +1,14 @@
 package com.linzhi.gongfu.service;
 
-import com.linzhi.gongfu.dto.TBrand;
-import com.linzhi.gongfu.dto.TImportProductTemp;
+
 import com.linzhi.gongfu.dto.TInquiry;
 import com.linzhi.gongfu.dto.TInquiryRecord;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
-import com.linzhi.gongfu.mapper.ImportProductTempMapper;
 import com.linzhi.gongfu.mapper.InquiryMapper;
 import com.linzhi.gongfu.mapper.InquiryRecordMapper;
 import com.linzhi.gongfu.repository.*;
-import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.util.PageTools;
-import com.linzhi.gongfu.vo.VImportProductTempRequest;
-import com.linzhi.gongfu.vo.VImportProductTempResponse;
 import com.linzhi.gongfu.vo.VModifyInquiryRequest;
 import com.linzhi.gongfu.vo.VUnfinishedInquiryListResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -35,7 +29,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 
 /**
  * 采购询价信息处理及业务服务
@@ -58,7 +51,6 @@ public class InquiryService {
     private final ProductRepository productRepository;
     private final TaxRatesRepository vatRatesRepository;
     private final ImportProductTempRepository importProductTempRepository;
-    private final ImportProductTempMapper importProductTempMapper;
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
     private final ContractRepository contractRepository;
     private final PurchasePlanProductRepository purchasePlanProductRepository;
@@ -66,7 +58,6 @@ public class InquiryService {
     private final UnfinishedInquiryRepository unfinishedInquiryRepository;
   //  private final ContractService contractService;
     private final CompTaxModelRepository compTaxModelRepository;
-    private final CompanyService companyService;
 
     /**
      * 保存询价单
@@ -97,7 +88,7 @@ public class InquiryService {
                 return resultMap;
             }
             //查出货物税率
-            TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001").orElseThrow(()-> new IOException("数据库中找不到该税率"));
+            TaxRates goods= vatRatesRepository.findByTypeAndDeFlagAndUseCountry(VatRateType.GOODS,Whether.YES,"001").orElseThrow(()-> new IOException("数据库中找不到该税率"));
             //查出服务税率
             // Optional<TaxRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
             //查出对应的销售合同
@@ -231,7 +222,7 @@ public class InquiryService {
     public List<VUnfinishedInquiryListResponse.VInquiry> unfinishedInquiry(String companyCode,String operator,String supplierCode){
 
         return  unfinishedInquiryRepository.findUnfinishedInquiry(companyCode,operator,supplierCode).stream()
-            .map(inquiryMapper::toUnfinishedTinquiry)
+            .map(inquiryMapper::toUnfinishedTInquiry)
             .map(inquiryMapper::toUnfinishedInquiry).toList();
     }
 
@@ -373,7 +364,7 @@ public class InquiryService {
             //查询产品
             Product product = productRepository.findById(productId).orElseThrow(() -> new IOException("请求的产品不存在"));
             //货物税率
-            TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(
+            TaxRates goods= vatRatesRepository.findByTypeAndDeFlagAndUseCountry(
                 VatRateType.GOODS,
                     Whether.YES,
                     "001"
@@ -568,7 +559,7 @@ public class InquiryService {
     @Transactional
     public  Boolean deleteInquiry(String id,String companyCode){
         try {
-            inquiryRepository.cancleInquiry(LocalDateTime.now(),InquiryState.CANCELLATION,id);
+            inquiryRepository.cancelInquiry(LocalDateTime.now(),InquiryState.CANCELLATION,id);
             return  true;
         }catch (Exception e){
             e.printStackTrace();
@@ -588,22 +579,22 @@ public class InquiryService {
             List<InquiryRecord> records = findInquiryRecords(id);
             records.forEach(record -> {
                 LinkedHashMap<String,Object> m = new LinkedHashMap<>();
-                m.put("产品编码",record.getProductCode());
+                m.put("产品代码",record.getProductCode());
                 if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
-                    m.put("未税单价", record.getPrice());
+                    m.put("单价（未税）", record.getPrice());
                 }else{
-                    m.put("含税单价", record.getPriceVat());
+                    m.put("单价（含税）", record.getPriceVat());
                 }
                 m.put("数量", record.getAmount());
                 list.add(m);
             });
             if(list.size()==0){
                 LinkedHashMap<String,Object> m = new LinkedHashMap<>();
-                m.put("产品编码","");
+                m.put("产品代码","");
                 if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)) {
-                    m.put("未税单价","");
+                    m.put("单价（未税）","");
                 }else{
-                    m.put("含税单价", "");
+                    m.put("单价（含税）", "");
                 }
                 m.put("数量","");
                 list.add(m);
@@ -636,7 +627,7 @@ public class InquiryService {
             inquiryRecordRepository.deleteProducts(id);
             List<InquiryRecord> inquiryRecords = new ArrayList<>();
             //货物税率
-            TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
+            TaxRates goods= vatRatesRepository.findByTypeAndDeFlagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
                 .orElseThrow(() -> new IOException("请求的货物税率不存在"));
             //查询询价单
             Inquiry inquiry =findInquiry(id)  .orElseThrow(() -> new IOException("请求的询价单不存在"));

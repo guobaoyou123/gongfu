@@ -2,7 +2,6 @@ package com.linzhi.gongfu.repository;
 
 
 import com.linzhi.gongfu.entity.Inquiry;
-import com.linzhi.gongfu.entity.UnfinishedInquiry;
 import com.linzhi.gongfu.enumeration.InquiryState;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +11,6 @@ import org.springframework.data.repository.CrudRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface InquiryRepository
@@ -57,7 +55,7 @@ public interface InquiryRepository
 
     @Modifying
     @Query(value="update   Inquiry i set i.deletedAt=?1,i.state=?2 where i.id=?3")
-    void  cancleInquiry(LocalDateTime deletedAt,InquiryState inquiryState, String id);
+    void  cancelInquiry(LocalDateTime deletedAt,InquiryState inquiryState, String id);
 
 
 

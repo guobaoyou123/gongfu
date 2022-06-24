@@ -3,13 +3,11 @@ package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.ContractDetail;
 import com.linzhi.gongfu.enumeration.ContractState;
-import org.apache.poi.sl.draw.geom.GuideIf;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 public interface ContractDetailRepository

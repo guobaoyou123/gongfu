@@ -38,7 +38,7 @@ public class CompanyController {
         @RequestParam("pageSize") Optional<String> pageSize
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var supplier = companyService.CompanyIncludeBrandbyId(session.getSession().getCompanyCode(),pageNum,pageSize);
+        var supplier = companyService.CompanyIncludeBrandById(session.getSession().getCompanyCode(),pageNum,pageSize);
         return VSuppliersIncludeBrandsResponse.builder()
                .code(200)
                .message("获取我的供应以及品牌列表成功。")
@@ -66,7 +66,7 @@ public class CompanyController {
             .message("获取我的供应列表成功。")
             .suppliers(
                  supplier.stream()
-                .map(companyMapper::toPreloadSupliers)
+                .map(companyMapper::toPreloadSuppliers)
                 .collect(Collectors.toList())
             )
             .build();
@@ -90,7 +90,7 @@ public class CompanyController {
             .message("获取供应商列表成功")
             .suppliers(
                 list.stream()
-                    .map(companyMapper::toforeignSupplier)
+                    .map(companyMapper::toForeignSupplier)
                     .toList()
             )
             .build();

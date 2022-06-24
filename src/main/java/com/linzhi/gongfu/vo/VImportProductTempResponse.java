@@ -6,7 +6,6 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 用于响应前端对于导入产品详情展示请求

@@ -66,8 +66,8 @@ public class EximportService {
                         .itemNo(i+2)
                         .build()
                 );
-                if(map.get("产品编码")!=null){
-                    String code = map.get("产品编码").toString();
+                if(map.get("产品代码")!=null){
+                    String code = map.get("产品代码").toString();
                     importProductTemp.setCode(code);
                     //验证产品编码是否正确
                     List<Product> products = productRepository.findProductByCode(code);
@@ -82,12 +82,12 @@ public class EximportService {
                     importProductTemp.setAmount(amount);
                 }
 
-                if(map.get("未税单价")!=null){
-                    String price = map.get("未税单价").toString();
+                if(map.get("单价（未税）")!=null){
+                    String price = map.get("单价（未税）").toString();
                     importProductTemp.setPrice(price);
                     importProductTemp.setFlag(TaxMode.UNTAXED);
-                }else if(map.get("含税单价")!=null){
-                    String price = map.get("含税单价").toString();
+                }else if(map.get("单价（含税）")!=null){
+                    String price = map.get("单价（含税）").toString();
                     importProductTemp.setPrice(price);
                     importProductTemp.setFlag(TaxMode.INCLUDED);
                 }else{
@@ -118,7 +118,7 @@ public class EximportService {
      * @return 返回暂存产品列表
      * @throws IOException
      */
-    public VImportProductTempResponse getvImportProductTempResponse(String id, String companyCode, String operator, String code, TaxMode taxMode) throws IOException {
+    public VImportProductTempResponse getVImportProductTempResponse(String id, String companyCode, String operator, String code, TaxMode taxMode) throws IOException {
         var map = findImportProductDetail(companyCode,
             operator,
             id,code,taxMode);
@@ -154,14 +154,14 @@ public class EximportService {
             List<String> errorList = new ArrayList<>();
             List<TBrand> tBrands = new ArrayList<>();
             if(tImportProductTemp.getProductId()==null&&tImportProductTemp.getCode()==null){
-                errorList.add("产品编码不能为空");
+                errorList.add("产品代码不能为空");
             }else if(tImportProductTemp.getProductId()==null&&tImportProductTemp.getCode()!=null){
                 //验证产品编码是否正确
                 List<Product> products = productRepository.findProductByCode(tImportProductTemp.getCode());
                 if(products.size()==0){
-                    errorList.add("产品编码错误或不存在于系统中");
+                    errorList.add("产品代码错误或不存在于系统中");
                 }else{
-                    errorList.add("该产品编码在系统中存在多个，请选择品牌");
+                    errorList.add("该产品代码在系统中存在多个，请选择品牌");
                     AtomicInteger i= new AtomicInteger();
                     products.forEach(product -> {
                         i.getAndIncrement();

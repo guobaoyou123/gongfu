@@ -18,5 +18,5 @@ public interface DisabledAreaMapper {
     @Mapping(target = "code",source = "disabledAreaId.code")
     TDisableArea toDo(DisabledArea disabledArea);
     @Mapping(target = "createdAt",expression = "java(com.linzhi.gongfu.util.DateConverter.getDateTime(area.getCreatedAt()))")
-    VDisableAreaResponse.Area todisabledArea(TDisableArea area);
+    VDisableAreaResponse.Area toDisabledArea(TDisableArea area);
 }

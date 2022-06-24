@@ -5,7 +5,6 @@ import com.linzhi.gongfu.dto.TContractRecordPreview;
 import com.linzhi.gongfu.entity.ContractRecord;
 import com.linzhi.gongfu.entity.ContractRecordPreview;
 import com.linzhi.gongfu.entity.ContractRecordTemp;
-import com.linzhi.gongfu.entity.DeliverTemp;
 import com.linzhi.gongfu.vo.VModifyContractPreviewResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

@@ -40,7 +40,7 @@ public class BrandController {
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var brandPage = brandService.brandsPagebyId(
+        var brandPage = brandService.brandsPageById(
            session.getSession().getCompanyCode(),
            pageNum,
            pageSize
@@ -99,7 +99,7 @@ public class BrandController {
     public VDcBrandResponse brandsByCompany(@RequestParam("company") Optional<List<String>> company) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var brandList = brandService.brandListBySupliers(
+        var brandList = brandService.brandListBySuppliers(
             company,
             session.getSession().getCompanyCode()
         );

@@ -4,8 +4,10 @@ import com.linzhi.gongfu.mapper.MainProductClassMapper;
 import com.linzhi.gongfu.mapper.ProductMapper;
 import com.linzhi.gongfu.mapper.SysCompareDetailMapper;
 import com.linzhi.gongfu.service.ProductService;
+import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -113,14 +115,16 @@ public class ProductController {
         @RequestParam("pageNum")Optional<String> pageNum){
 
         return productService.productList(
-            brands,
-            classes,
-            material,
-            drive,
-            connection1,
-            connection2,
-            pageSize,
-            pageNum
+            brands.orElse(new ArrayList<>()),
+            classes.orElse(""),
+            material.orElse(""),
+            drive.orElse(""),
+            connection1.orElse(""),
+            connection2.orElse(""),
+            PageRequest.of(
+                pageNum.map(PageTools::verificationPageNum).orElse(0),
+                pageSize.map(PageTools::verificationPageSize).orElse(10)
+            )
         );
     }
 

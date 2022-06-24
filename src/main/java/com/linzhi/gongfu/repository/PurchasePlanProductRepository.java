@@ -8,7 +8,6 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 public interface PurchasePlanProductRepository extends CrudRepository<PurchasePlanProduct, PurchasePlanProductId>, QuerydslPredicateExecutor<PurchasePlanProduct> {
     @Modifying

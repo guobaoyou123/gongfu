@@ -22,7 +22,7 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
 
     @Query(value = " SELECT  cast(max(b.encode) as int)+1 code  FROM    comp_base b,comp_trade t  where b.role=?1 and t.comp_saler=b.code and t.comp_buyer=?2  "
        ,nativeQuery = true)
-   String findMaxCode(String roler,String dcCompId);
+   String findMaxCode(String role,String dcCompId);
 
 
     @Modifying

@@ -1,6 +1,6 @@
 package com.linzhi.gongfu.vo;
 
-import com.linzhi.gongfu.dto.TProductClass;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;

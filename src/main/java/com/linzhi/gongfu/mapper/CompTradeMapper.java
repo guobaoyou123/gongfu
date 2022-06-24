@@ -1,13 +1,12 @@
 package com.linzhi.gongfu.mapper;
 
-import com.linzhi.gongfu.dto.TBrand;
+
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
 import com.linzhi.gongfu.entity.CompTrad;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.util.Set;
 
 /**
  * 用于查询本单位的供应商和客户

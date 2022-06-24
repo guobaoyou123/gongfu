@@ -1,10 +1,8 @@
 package com.linzhi.gongfu.repository;
 
-import com.linzhi.gongfu.dto.TRevision;
+
 import com.linzhi.gongfu.entity.ContractRevisionDetail;
 import com.linzhi.gongfu.entity.ContractRevisionId;
-import org.apache.poi.sl.draw.geom.GuideIf;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;

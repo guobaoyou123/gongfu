@@ -33,6 +33,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 /**
  * 合同信息处理及业务服务
  *
@@ -116,8 +118,8 @@ public class ContractService {
             ContractDetail contract = createdContract(
                 id,
                 code,
-                inquiry.getCreatedByComp(),
-                inquiry.getCreatedBy(),
+                companyCode,
+                operator,
                 inquiry.getBuyerComp(),
                 inquiry.getBuyerCompName(),
                 inquiry.getSalerComp(),
@@ -607,7 +609,7 @@ public class ContractService {
             Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IOException("请求的产品不存在"));
             //货物税率
-            TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(
+            TaxRates goods= vatRatesRepository.findByTypeAndDeFlagAndUseCountry(
                 VatRateType.GOODS,
                 Whether.YES,
                 "001"
@@ -864,7 +866,46 @@ public class ContractService {
 
     /**
      * 导出产品模板
-     * @param id 询价单主键或者合同主键
+     * @param id 合同主键
+     * @param revision  版本
+     * @return 产品列表
+     */
+    public List<LinkedHashMap<String,Object>> exportProductTemplate(String id,Integer revision){
+        List<LinkedHashMap<String,Object>> list = new ArrayList<>();
+        try{
+            var contract = purchaseContractDetail(id,revision);
+            contract.getProducts().forEach(record -> {
+                LinkedHashMap<String,Object> m = new LinkedHashMap<>();
+                m.put("产品代码",record.getCode());
+                if(contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode()+"")) {
+                    m.put("单价（未税）", record.getPrice());
+                }else{
+                    m.put("单价（含税）", record.getPriceVat());
+                }
+                m.put("数量", record.getAmount());
+                list.add(m);
+            });
+            if(list.size()==0 ){
+                LinkedHashMap<String,Object> m = new LinkedHashMap<>();
+                m.put("产品代码","");
+                if(contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode()+"")) {
+                    m.put("单价（未税）","");
+                }else{
+                    m.put("单价（含税）", "");
+                }
+                m.put("数量","");
+                list.add(m);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * 导出产品
+     * @param id 合同主键
+     * @param revision  版本
      * @return 产品列表
      */
     public List<LinkedHashMap<String,Object>> exportProduct(String id,Integer revision){
@@ -873,33 +914,28 @@ public class ContractService {
             var contract = purchaseContractDetail(id,revision);
             contract.getProducts().forEach(record -> {
                 LinkedHashMap<String,Object> m = new LinkedHashMap<>();
-                m.put("产品编码",record.getCode());
-                if(contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode()+"")) {
-                    m.put("未税单价", record.getPrice());
-                }else{
-                    m.put("含税单价", record.getPriceVat());
-                }
+                m.put("产品代码",record.getCode());
+                m.put("描述",record.getDescribe());
                 m.put("数量", record.getAmount());
+                if(contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode()+"")) {
+                    m.put("单价（未税）", record.getPrice());
+                }else{
+                    m.put("单价（含税）", record.getPriceVat());
+                }
+                m.put("税率",record.getVatRate().multiply(new BigDecimal("100")).setScale(2)+"%");
+                if(contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode()+"")) {
+                        m.put("小计（未税）", record.getTotalPrice().setScale(2,RoundingMode.HALF_UP));
+                }else{
+                        m.put("小计（含税）", record.getTotalPriceVat().setScale(2,RoundingMode.HALF_UP));
+                }
                 list.add(m);
             });
-            if(list.size()==0){
-                LinkedHashMap<String,Object> m = new LinkedHashMap<>();
-                m.put("产品编码","");
-                if(contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode()+"")) {
-                    m.put("未税单价","");
-                }else{
-                    m.put("含税单价", "");
-                }
-                m.put("数量","");
-                list.add(m);
-            }
 
         }catch (Exception e){
             e.printStackTrace();
         }
         return list;
     }
-
     /**
      * 保存导入产品为询价单明细
      * @param id 询价单id
@@ -923,7 +959,7 @@ public class ContractService {
             contractRecordTempRepository.deleteProducts(id);
             List<ContractRecordTemp> contractRecordTemps = new ArrayList<>();
             //货物税率
-            TaxRates goods= vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
+            TaxRates goods= vatRatesRepository.findByTypeAndDeFlagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
                 .orElseThrow(() -> new IOException("请求的货物税率不存在"));
             //查询采购合同
             var contract = getContractRevisionDetail(id,1).orElseThrow(() -> new IOException("请求的合同不存在"));
@@ -990,7 +1026,7 @@ public class ContractService {
             }
             contractDetailRepository.save(contractDetail);
             contractRecordTempRepository.deleteProducts(id);
-            deliveryTempRepository.deleteDeliverTempsByDeliverTempId_ContracId(id);
+            deliveryTempRepository.deleteDeliverTempsByDeliverTempId_ContractId(id);
 
     }
 
@@ -1004,7 +1040,7 @@ public class ContractService {
     public void saveDeliveryTemp(List<VDeliveryTempRequest> list, String id, Integer revision){
         try{
             //删除上次的数据
-            deliveryTempRepository.deleteDeliverTempsByDeliverTempId_ContracId(id);
+            deliveryTempRepository.deleteDeliverTempsByDeliverTempId_ContractId(id);
             List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
             Map<String,ContractRecordTemp> map = new HashMap<>();
             contractRecordTemps.forEach(contractRecordTemp -> map.put(contractRecordTemp.getProductId(),contractRecordTemp));
@@ -1017,7 +1053,7 @@ public class ContractService {
                         DeliverTemp deliverTemp = DeliverTemp.builder()
                             .deliverTempId(
                                 DeliverTempId.builder()
-                                    .contracId(id)
+                                    .contractId(id)
                                     .code(maxCode.get())
                                     .build()
                             )
@@ -1145,7 +1181,7 @@ public class ContractService {
               contractRevision.setVat(contractRevision.getConfirmTotalPriceVat().subtract(discountSum));
               contractRevision.setDiscount(discount);
           }
-
+          contractRecordRepository.saveAll(records);
             /*
               获取序列编码
              */
@@ -1163,7 +1199,7 @@ public class ContractService {
           contractDetailRepository.save(contractDetail);
           contractRevision.setFingerprint(str);
           contractRevisionRepository.save(contractRevision);
-          contractRecordRepository.saveAll(records);
+
           //将退回记录录保存到货运信息表中
           if(generateContractRequest.getDeliveryRecords().size()>0)
                 saveDelivery(id,revision, companyCode, operator,generateContractRequest.getDeliveryRecords());
@@ -1201,6 +1237,11 @@ public class ContractService {
            contractRevision.setAreaCode(address.getAreaCode());
            contractRevision.setAreaName(address.getAreaName());
            contractRevision.setAddress(address.getAddress());
+       }else{
+           contractRevision.setDeliveryCode(null);
+           contractRevision.setAreaCode(null);
+           contractRevision.setAreaName(null);
+           contractRevision.setAddress(null);
        }
        //联系人
        if(StringUtils.isNotBlank(generateContractRequest.getContactCode())){
@@ -1213,6 +1254,10 @@ public class ContractService {
            contractRevision.setContactCode(generateContractRequest.getContactCode());
            contractRevision.setConsigneeName(compContacts.getContName());
            contractRevision.setConsigneePhone(compContacts.getContPhone());
+       }else{
+           contractRevision.setContactCode(null);
+           contractRevision.setConsigneeName(null);
+           contractRevision.setConsigneePhone(null);
        }
        contractRevision.setConfirmTotalPriceVat(generateContractRequest.getSum());
        return  contractRevision;
@@ -1226,7 +1271,7 @@ public class ContractService {
      */
     public void saveDelivery(String id, String companyCode, String operator){
         // TODO: 2022/6/1 需要完善货运记录 库存等问题
-        List<DeliverRecord> deliverRecords = deliveryTempRepository.findDeliverTempsByDeliverTempId_ContracId(id)
+        List<DeliverRecord> deliverRecords = deliveryTempRepository.findDeliverTempsByDeliverTempId_ContractId(id)
             .stream().map(deliverRecordMapper::toDeliverRecord).toList();
         if(deliverRecords.size()>0){
             UUID uuid = UUID.randomUUID();
@@ -1246,7 +1291,7 @@ public class ContractService {
                 .deliverRecords(deliverRecords)
                 .build();
             deliverBaseRepository.save(deliverBase);
-            deliveryTempRepository.deleteDeliverTempsByDeliverTempId_ContracId(id);
+            deliveryTempRepository.deleteDeliverTempsByDeliverTempId_ContractId(id);
         }
     }
 

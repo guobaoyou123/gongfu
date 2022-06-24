@@ -18,7 +18,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -77,33 +76,29 @@ public class ProductService {
      * @param drive 驱动方式名称
      * @param connection1 连接方式名称
      * @param connection2 连接方式名称
-     * @param pageSize 第几页
-     * @param pageNum 每页显示的数量
+     * @param pageable 分页
      * @return 产品列表信息
      */
-    public VProductPageResponse  productList(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
+    public VProductPageResponse  productList(List<String> brands, String classes, String material
 
-        , Optional<String> drive, Optional<String> connection1, Optional<String> connection2, Optional<String> pageSize, Optional<String> pageNum){
-        Pageable pageable = PageRequest.of(
-            pageNum.map(PageTools::verificationPageNum).orElse(0),
-            pageSize.map(PageTools::verificationPageSize).orElse(10)
-        );
+        , String drive, String connection1, String connection2,  Pageable pageable){
+
         //根据条件查询产品信息
         List<TProduct> products = findProductAll(brands, classes, material, drive, connection1, connection2).stream()
             .map(productMapper::toProduct)
             .collect(Collectors.toList());
         if(products.size()==0){
-            products = findProductAll(Optional.empty(), classes, material, drive, connection1, connection2).stream()
+            products = findProductAll(new ArrayList<>(), classes, material, drive, connection1, connection2).stream()
                 .map(productMapper::toProduct)
                 .collect(Collectors.toList());
-            Page<TProduct> otherproductPage = PageTools.listConvertToPage(products,pageable);
+            Page<TProduct> otherProductPage = PageTools.listConvertToPage(products,pageable);
                 return VProductPageResponse.builder()
                     .code(200)
                     .message("获取产品列表成功。")
-                    .total(otherproductPage.getTotalPages())
-                    .current(otherproductPage.getNumber()+1)
+                    .total(otherProductPage.getTotalPages())
+                    .current(otherProductPage.getNumber()+1)
                     .products(new ArrayList<>())
-                    .otherproducts(otherproductPage.getContent().stream().map(productMapper::toPreloadProduct).collect(Collectors.toList()))
+                    .otherproducts(otherProductPage.getContent().stream().map(productMapper::toPreloadProduct).collect(Collectors.toList()))
                     .build();
         }
         //进行分页
@@ -129,25 +124,25 @@ public class ProductService {
      * @return 产品列表
      */
     @Cacheable(value = "products;1800", unless = "#result == null")
-    public  List<Product>  findProductAll(Optional<List<String>> brands, Optional<String> classes, Optional<String> material
-        , Optional<String> drive, Optional<String> connection1, Optional<String> connection2){
+    public  List<Product>  findProductAll(List<String> brands, String classes, String material
+        , String drive, String connection1, String connection2){
         //根据条件查询产品信息
         QProduct qProduct = QProduct.product;
         JPAQuery<Product> query = queryFactory.select(qProduct).from(qProduct);
-        if(!brands.isEmpty())
-            query.where(qProduct.brandCode.in(brands.get()));
-        if(!classes.get().isEmpty())
-            query.where(qProduct.class2.eq(classes.get()));
-        if ( !drive.get().isEmpty())
-            query.where(qProduct.drivMode.eq(drive.get()));
-        if ( !material.get().isEmpty())
-            query.where(qProduct.mainMate.eq(material.get()));
-        if ( !connection1.get().isEmpty() &&  !connection2.get().isEmpty())
-            query.where((qProduct.conn1Type.eq(connection1.get()).and(qProduct.conn2Type.eq(connection2.get()))).or((qProduct.conn1Type.eq(connection2.get()).and(qProduct.conn2Type.eq(connection1.get())))));
-        if ( !connection1.get().isEmpty() &&connection2.get().isEmpty())
-            query.where(qProduct.conn1Type.eq(connection1.get()).or(qProduct.conn2Type.eq(connection1.get())));
-        if (connection1.get().isEmpty() && !connection2.get().isEmpty())
-            query.where(qProduct.conn1Type.eq(connection2.get()).or(qProduct.conn2Type.eq(connection2.get())));
+        if(brands.size()>0)
+            query.where(qProduct.brandCode.in(brands));
+        if(!classes.isEmpty())
+            query.where(qProduct.class2.eq(classes));
+        if ( !drive.isEmpty())
+            query.where(qProduct.drivMode.eq(drive));
+        if ( !material.isEmpty())
+            query.where(qProduct.mainMate.eq(material));
+        if ( !connection1.isEmpty() &&  !connection2.isEmpty())
+            query.where((qProduct.conn1Type.eq(connection1).and(qProduct.conn2Type.eq(connection2))).or((qProduct.conn1Type.eq(connection2).and(qProduct.conn2Type.eq(connection1)))));
+        if ( !connection1.isEmpty() &&connection2.isEmpty())
+            query.where(qProduct.conn1Type.eq(connection1).or(qProduct.conn2Type.eq(connection1)));
+        if (connection1.isEmpty() && !connection2.isEmpty())
+            query.where(qProduct.conn1Type.eq(connection2).or(qProduct.conn2Type.eq(connection2)));
         return query.fetch();
     }
 

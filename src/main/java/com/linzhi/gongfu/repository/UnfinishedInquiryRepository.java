@@ -1,6 +1,6 @@
 package com.linzhi.gongfu.repository;
 
-import com.linzhi.gongfu.entity.Inquiry;
+
 import com.linzhi.gongfu.entity.UnfinishedInquiry;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;

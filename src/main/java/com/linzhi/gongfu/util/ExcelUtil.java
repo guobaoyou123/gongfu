@@ -1,9 +1,9 @@
 package com.linzhi.gongfu.util;
 
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -71,6 +71,11 @@ public abstract class ExcelUtil {
             String fileName = name + ".xls";
             HSSFWorkbook hssfWorkbook = new HSSFWorkbook();
             HSSFSheet hssfSheet = hssfWorkbook.createSheet(name);
+
+            //hssfWorkbook.createCellStyle();
+            CellStyle cellStyle = hssfWorkbook.createCellStyle();//创建单元格样
+            cellStyle.setFillForegroundColor(HSSFColor.HSSFColorPredefined.GREY_25_PERCENT.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             int rowNum = 0;
             //新建行
             HSSFRow hssfRow = hssfSheet.createRow(rowNum++);
@@ -79,12 +84,17 @@ public abstract class ExcelUtil {
             if (list.size() > 0) {
                 for (String i : list.get(0).keySet()) {
                     //新建第一行
-                    hssfRow.createCell(j++).setCellValue(i);
+                   HSSFCell cell =  hssfRow.createCell(j++);
+                    cell.setCellValue(i);
+                    cell.setCellStyle(cellStyle);
+                    hssfSheet.autoSizeColumn(j);
+                    hssfSheet.setColumnWidth(j,hssfSheet.getColumnWidth(j)*17/10);
                 }
                 //将数据放入表中
                 for (int i = 0; i < list.size(); i++) {
                     //新建一行
                     HSSFRow row = hssfSheet.createRow(rowNum++);
+
                     Map<String, Object> map = list.get(i);
                     j = 0;
                     for (Object obj : map.values()) {

@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
 public interface TaxRatesMapper {
     @Mapping(target = "state",expression = "java(String.valueOf(taxRates.getState().getState()))")
     @Mapping(target = "createdAt",expression = "java(com.linzhi.gongfu.util.DateConverter.getDateTime(taxRates.getCreatedAt()))")
-    @Mapping(target = "deflag",expression = "java(String.valueOf(taxRates.getDeflag().getState()))")
+    @Mapping(target = "deflag",expression = "java(String.valueOf(taxRates.getDeFlag().getState()))")
     @Mapping(target = "type",expression = "java(String.valueOf(taxRates.getType().getType()))")
     TTaxRates toTTaxRates(TaxRates taxRates);
 

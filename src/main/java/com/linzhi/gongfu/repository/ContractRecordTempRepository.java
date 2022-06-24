@@ -1,6 +1,5 @@
 package com.linzhi.gongfu.repository;
 
-import com.linzhi.gongfu.entity.ContractRecordId;
 import com.linzhi.gongfu.entity.ContractRecordTemp;
 import com.linzhi.gongfu.entity.ContractRecordTempId;
 import org.springframework.cache.annotation.Cacheable;

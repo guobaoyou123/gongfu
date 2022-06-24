@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface TaxRatesRepository extends CrudRepository<TaxRates,String>, QuerydslPredicateExecutor<TaxRates> {
 
-    Optional<TaxRates> findByTypeAndDeflagAndUseCountry(VatRateType type, Whether deflag, String userCountry);
+    Optional<TaxRates> findByTypeAndDeFlagAndUseCountry(VatRateType type, Whether deFlag, String userCountry);
 
     List<TaxRates> findTaxRatesByUseCountryAndTypeAndState(String userCountry, VatRateType type, Availability state);
 }

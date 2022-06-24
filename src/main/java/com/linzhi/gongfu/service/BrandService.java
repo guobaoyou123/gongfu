@@ -45,7 +45,7 @@ public class BrandService {
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 品牌信息列表
      */
-    public Page<TBrand> brandsPagebyId(String id, Optional<String> pageNum, Optional<String> pageSize) {
+    public Page<TBrand> brandsPageById(String id, Optional<String> pageNum, Optional<String> pageSize) {
         //根据单位id查询全部品牌信息（包括自营、经营、授权等信息）
          List<TBrand> list= findBrandsAllById(id);
         //分页
@@ -95,7 +95,7 @@ public class BrandService {
            })
            .collect(Collectors.toList());
        //过滤除经营品牌以外的其他品牌
-       List<TBrand> otherdBrand = tBrandSet.stream()
+       List<TBrand> otherBrand = tBrandSet.stream()
            .filter(brands -> {
                AtomicReference<Boolean> flag = new AtomicReference<>(true);
                compAllowedBrandSet.forEach(compAllowedBrand -> {
@@ -104,7 +104,7 @@ public class BrandService {
                });
                return flag.get();
            }).toList();
-        allowedBrand.addAll(otherdBrand);
+        allowedBrand.addAll(otherBrand);
         return allowedBrand;
    }
 
@@ -139,7 +139,7 @@ public class BrandService {
      * @return 品牌列表
      */
     @Cacheable(value = "brands_company;1800", unless = "#result == null")
-    public List<TBrand> brandListBySupliers(Optional<List<String>>  company,String id){
+    public List<TBrand> brandListBySuppliers(Optional<List<String>>  company,String id){
         QDcBrand qDcBrand = QDcBrand.dcBrand;
         QCompTradBrand compTradBrand = QCompTradBrand.compTradBrand;
         List<DcBrand> dcBrands= queryFactory.selectDistinct(qDcBrand).from(compTradBrand)

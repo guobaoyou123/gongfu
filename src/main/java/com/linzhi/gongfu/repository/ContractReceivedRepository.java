@@ -1,8 +1,6 @@
 package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.ContractReceived;
-import com.linzhi.gongfu.entity.ContractRecord;
-import com.linzhi.gongfu.entity.ContractRecordId;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
