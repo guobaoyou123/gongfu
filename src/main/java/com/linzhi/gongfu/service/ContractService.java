@@ -1497,6 +1497,58 @@ public class ContractService {
     }
 
     /**
+     * 复制合同
+     * @param contractId 合同id
+     * @param revision 版本
+     * @param companyCode 本单位编码
+     * @param operator 操作员编码
+     * @return 返回新建合同主键
+     */
+    public String copyContract(String contractId,Integer revision,String companyCode,String operator){
+        try {
+
+            ContractDetail contractDetail = Optional.of(getContractDetail(contractId)).map(contractMapper::toContractDetail).orElseThrow();
+            ContractRevision contractRevision = contractRevisionRepository.findById(
+                ContractRevisionId
+                .builder()
+                    .id(contractId)
+                    .revision(revision)
+                    .build()
+            ).map(contractMapper::toContractRevision).orElseThrow();
+            List<ContractRecordTemp> contractRecordTemps ;
+            if(contractDetail.getState().equals(ContractState.UN_FINISHED)){
+                contractRecordTemps=contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(contractId);
+            }else{
+                contractRecordTemps=contractRecordRepository.findContractRecordsByContractRecordId_ContractIdAndContractRecordId_Revision(contractId,revision)
+                    .stream().map(contractRecordMapper::toContractRecordTemp).toList();
+            }
+            String maxCode = contractDetailRepository.findMaxCode(companyCode,operator).orElse("01");
+            Map<String,String> map = getContractCode(maxCode,operator,companyCode,contractDetail.getSalerComp());
+            contractRecordTemps.stream().map(contractRecordTemp -> {
+                    contractRecordTemp.getContractRecordTempId().setContractId(map.get("id"));
+                    contractRecordTemp.getContractRecordTempId().setRevision(1);
+                   return contractRecordTemp;
+                }
+            );
+            contractDetail.setCode(map.get("code"));
+            contractDetail.setId(map.get("id"));
+            contractDetail.setState(ContractState.UN_FINISHED);
+            contractDetail.setCreatedAt(LocalDateTime.now());
+            contractRevision.getContractRevisionId().setId(map.get("id"));
+            contractRevision.setContractRecords(null);
+            contractRevision.setCreatedAt(LocalDateTime.now());
+            contractDetailRepository.save(contractDetail);
+            contractRevisionRepository.save(contractRevision);
+            contractRecordTempRepository.saveAll(contractRecordTemps);
+            return  map.get("id");
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    /**
      * 计算未税单价
      * @param price 单价
      * @param vatRate 税率

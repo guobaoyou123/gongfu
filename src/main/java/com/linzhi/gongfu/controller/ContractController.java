@@ -1138,4 +1138,28 @@ public class ContractController {
              .products(list)
              .build();
     }
+
+    /**
+     * 生成与该合同相同的新的未确认的采购合同
+     * @param id 合同id
+     * @param revision 版本
+     * @return 返回新合同主键
+     */
+    @PostMapping("/contract/purchase/{id}/{revision}/copy")
+    public VEmptyContractResponse copyContract(@PathVariable String id,@PathVariable Integer revision){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        String contractId = contractService.copyContract(
+            id,
+            revision,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+
+        return VEmptyContractResponse.builder()
+            .code(contractId==null?500:200)
+            .message(contractId==null?"操作失败":"操作成功")
+            .contractId(contractId)
+            .build();
+    }
 }

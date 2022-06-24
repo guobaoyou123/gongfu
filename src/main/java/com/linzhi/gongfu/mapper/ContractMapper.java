@@ -3,10 +3,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TContract;
 import com.linzhi.gongfu.dto.TContractReceived;
-import com.linzhi.gongfu.entity.ContractList;
-import com.linzhi.gongfu.entity.ContractReceived;
-import com.linzhi.gongfu.entity.ContractRevision;
-import com.linzhi.gongfu.entity.ContractRevisionDetail;
+import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.vo.VPurchaseContractDetailResponse;
 import com.linzhi.gongfu.vo.VPurchaseContractPageResponse;
 import com.linzhi.gongfu.vo.VReceivedResponse;
@@ -106,4 +103,13 @@ public interface ContractMapper {
     TContractReceived toTContractReceived(ContractReceived contractReceived);
     @Mapping(target = "receivedAmount",source = "received")
     VReceivedResponse.VProduct toVProduct(TContractReceived tContractReceived);
+
+    @Mapping(target ="id" ,constant = "")
+    @Mapping(target = "code",constant = "")
+    @Mapping(target = "salesContractId",constant = "")
+    ContractDetail toContractDetail(ContractDetail contractDetail);
+
+    @Mapping(target ="contractRevisionId.id" ,constant = "")
+    @Mapping(target = "contractRevisionId.revision",constant = "1")
+    ContractRevision toContractRevision(ContractRevision contractRevision);
 }
