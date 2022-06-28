@@ -16,7 +16,6 @@ import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.mapstruct.Mapping;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -34,7 +33,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * 合同信息处理及业务服务
@@ -81,11 +79,16 @@ public class ContractService {
             Inquiry inquiry = inquiryService.findInquiry(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
             List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecord(inquiryId);
             String str = createSequenceCode(
-                records.stream().map(inquiryRecord-> inquiryRecord.getProductId()+"-"
-                    +inquiryRecord.getChargeUnit()+"-"
-                    +inquiryRecord.getAmount().setScale(4,RoundingMode.HALF_UP)+"-"
-                    +inquiryRecord.getPriceVat()==null?null:inquiryRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP)+"-"
-                    +inquiryRecord.getVatRate()).toList(),
+                records.stream().map(inquiryRecord-> {
+                    {
+                        inquiryRecord.setPriceVat(inquiryRecord.getPriceVat()==null?null:inquiryRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP));
+                        return inquiryRecord.getProductId()+"-"
+                            +inquiryRecord.getChargeUnit()+"-"
+                            +inquiryRecord.getAmount().setScale(4,RoundingMode.HALF_UP)+"-"
+                            +inquiryRecord.getPriceVat()+"-"
+                            +inquiryRecord.getVatRate();
+                    }
+                }).toList(),
                 inquiry.getSalerComp(),
                 inquiry.getBuyerComp(),inquiry.getOfferMode()
             );
@@ -440,12 +443,15 @@ public class ContractService {
             }
             return o1.getProductId().compareTo(o2.getProductId());
         });
-        return  records.stream().map(contractRecord ->
-            contractRecord.getProductId()+"-"
+        return  records.stream().map(contractRecord ->{
+            contractRecord.setPriceVat(contractRecord.getPriceVat()==null?null:contractRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP));
+             return contractRecord.getProductId()+"-"
                 +contractRecord.getMyChargeUnit()+"-"
                 +contractRecord.getMyAmount().setScale(4,RoundingMode.HALF_UP)+"-"
-                +contractRecord.getPriceVat()==null?null:contractRecord.getPriceVat().setScale(4,RoundingMode.HALF_UP)+"-"
-                +contractRecord.getVatRate()
+                +contractRecord.getPriceVat()+"-"
+                +contractRecord.getVatRate();
+            }
+
         ).toList();
     }
 
@@ -1509,7 +1515,6 @@ public class ContractService {
     @Transactional
     public String copyContract(String contractId,Integer revision,String companyCode,String operator){
         try {
-
             ContractDetail contractDetail = Optional.of(getContractDetail(contractId)).map(contractMapper::toContractDetail).orElseThrow();
             ContractRevision contractRevision = contractRevisionRepository.findById(
                 ContractRevisionId
@@ -1527,7 +1532,6 @@ public class ContractService {
             }
             String maxCode = contractDetailRepository.findMaxCode(companyCode,operator).orElse("01");
             Map<String,String> map = getContractCode(maxCode,operator,companyCode,contractDetail.getSalerComp());
-
             contractRecordTemps.forEach(contractRecordTemp -> {
                 contractRecordTemp.getContractRecordTempId().setContractId(map.get("id"));
                 contractRecordTemp.getContractRecordTempId().setRevision(1);

@@ -782,7 +782,7 @@ public class ContractController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var id = contractService.savePurchaseContractEmpty(
-            supplierCode.get().getSupplierCode(),
+            supplierCode.orElse(new VEmptyInquiryRequest()).getSupplierCode(),
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
             session.getSession().getOperatorCode(),
@@ -843,7 +843,7 @@ public class ContractController {
     ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag=contractService.saveProduct(product.get().getProductId(),
+        var flag=contractService.saveProduct(product.orElseThrow().getProductId(),
             product.get().getPrice(),
             product.get().getAmount(),
             id,
