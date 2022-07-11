@@ -23,6 +23,6 @@ public class TMenu {
     private String parent;
     private String location;
     private Integer sort;
-    private TScene scene;
+    private Set<TScene> scenes;
     private Set<TMenu> children;
 }

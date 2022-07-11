@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.vo;
 
+import java.util.List;
 import java.util.Set;
 
 import lombok.Data;
@@ -48,7 +49,7 @@ public class VPreloadMenuResponse extends VBaseResponse {
         /**
          * 访问菜单对应功能所需要的场景（权限）
          */
-        private String scene;
+        private List<String> scene;
 
         /**
          * 主菜单所携带的子菜单集合
@@ -84,6 +85,6 @@ public class VPreloadMenuResponse extends VBaseResponse {
         /**
          * 访问菜单对应的功能所需要的场景（权限）
          */
-        private String scene;
+        private List<String> scene;
     }
 }

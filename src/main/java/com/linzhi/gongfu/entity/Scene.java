@@ -52,4 +52,10 @@ public class Scene {
     @Column(length = 20, nullable = false)
     @NonNull
     private String name;
+
+    /**
+     * 建议授权描述
+     */
+    @Column(name = "auth_suggest", length = 50)
+    private String authorizationSuggestion;
 }

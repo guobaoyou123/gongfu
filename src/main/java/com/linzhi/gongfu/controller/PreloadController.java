@@ -63,6 +63,7 @@ public class PreloadController {
      */
     @GetMapping("/menus")
     public VPreloadMenuResponse fetchFrontendMenus() {
+
         var mainMenus = menuService.fetchAllMenus().stream()
                 .map(menuMapper::toPreloadMainMenu)
                 .collect(Collectors.toSet());

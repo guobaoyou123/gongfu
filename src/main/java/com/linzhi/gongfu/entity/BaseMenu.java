@@ -52,12 +52,6 @@ public abstract class BaseMenu {
     @Column(length = 6)
     private String parent;
 
-    /**
-     * 访问菜单所需要的权限
-     */
-    @Column(name = "perms")
-    @Deprecated
-    private String perms;
 
     /**
      * 菜单在界面上的显示排序
@@ -80,22 +74,12 @@ public abstract class BaseMenu {
     private LocalDateTime modifiedAt;
 
     /**
-     * 菜单对应的URL路径
-     */
-    @Column(length = 50)
-    private String url;
-
-    /**
      * 菜单的描述
      */
     @Column(length = 50)
     private String description;
 
-    /**
-     * 建议授权描述
-     */
-    @Column(name = "auth_suggest", length = 50)
-    private String authorizationSuggestion;
+
 
     /**
      * 菜单英文名称

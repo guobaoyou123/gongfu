@@ -18,19 +18,21 @@ import org.mapstruct.Mapping;
  */
 @Mapper(componentModel = "spring", uses = { SceneMapper.class })
 public interface MenuMapper {
+    @Mapping(target = "scenes",source = "scenes")
     TMenu toDTO(MainMenu menu);
 
     @Mapping(target = "children", ignore = true)
+    @Mapping(target = "scenes",source = "scenes")
     TMenu toDTO(SubMenu menu);
 
     Set<TMenu> toMainMenuDTOs(Set<MainMenu> menus);
 
     Set<TMenu> toSubMenuDTOs(Set<SubMenu> menus);
 
-    @Mapping(target = "scene", source = "scene.code")
+    @Mapping(target = "scene",expression = "java(menu.getScenes().stream().map(tScene -> tScene.getCode()).toList())")
     VPreloadMenuResponse.VMainMenu toPreloadMainMenu(TMenu menu);
 
-    @Mapping(target = "scene", source = "scene.code")
+    @Mapping(target = "scene",expression = "java(menu.getScenes().stream().map(tScene -> tScene.getCode()).toList())")
     VPreloadMenuResponse.VSubMenu toPreloadSubMenu(TMenu menu);
 
     Set<VPreloadMenuResponse.VSubMenu> toPreloadSubMenus(Set<TMenu> menus);

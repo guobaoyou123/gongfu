@@ -29,13 +29,17 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "sys_menu")
 @Where(clause = "parent = '0'")
 public class MainMenu extends BaseMenu {
+
     /**
      * 访问菜单所需要的场景（权限）
      */
-    @OneToOne
-    @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = true, updatable = true)
-    private Scene scene;
-
+    @ManyToMany
+    @JoinTable(name="dc_scene_menu",joinColumns = {
+        @JoinColumn(name="menu_code",referencedColumnName = "code", insertable = false, updatable = false)
+    },inverseJoinColumns = {
+        @JoinColumn(name="scene_code",referencedColumnName = "code",insertable = false, updatable = false)
+    })
+    private Set<Scene> scenes;
     /**
      * 菜单项下所拥有的二级菜单
      */

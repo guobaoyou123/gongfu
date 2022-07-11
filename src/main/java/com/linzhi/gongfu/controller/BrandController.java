@@ -75,7 +75,7 @@ public class BrandController {
     }
 
     /**
-     * 查询所有品牌
+     * 根据分类查询所有品牌
      * @return 对系统所有的品牌信息
      */
     @GetMapping("/brands/by/class")
@@ -113,6 +113,4 @@ public class BrandController {
             )
             .build();
     }
-
-
 }
