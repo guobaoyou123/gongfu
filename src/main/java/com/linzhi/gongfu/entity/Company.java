@@ -2,11 +2,9 @@ package com.linzhi.gongfu.entity;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -159,4 +157,11 @@ public class Company implements Serializable {
      */
     @Column(length = 40)
     private String email;
+
+    /**
+     * 入格单位
+     */
+    @OneToOne
+    @JoinColumn(name = "id", referencedColumnName = "id",insertable = false,updatable = false)
+    private EnrolledCompany enrolledCompany;
 }

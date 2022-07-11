@@ -32,7 +32,7 @@ public class MenuService {
      *
      * @return 携带有前端菜单项的流
      */
-    @Cacheable("Menu;1800")
+   @Cacheable("Menu;1800")
     public Set<TMenu> fetchAllMenus() {
        // Iterable<MainMenu> menus= menuRepository.findAll();
         Set<TMenu> menus=  StreamSupport.stream(menuRepository.findAll().spliterator(), false)
@@ -40,7 +40,7 @@ public class MenuService {
                 .map(menuMapper::toDTO)
                 .collect(Collectors.toSet());
         menus.forEach(tMenu -> {
-            if(tMenu.getScenes()==null ){
+            if(tMenu.getScenes()==null || tMenu.getScenes().size()==0){
                 Set<TScene> tScenes = new HashSet<>();
                 tMenu.getChildren().forEach(tMenu1 -> {
                     tScenes.addAll(tMenu1.getScenes());

@@ -260,8 +260,10 @@ public class CompanyService {
                company =   companyRepository.findById(code).orElseThrow(()->new IOException("从数据库搜索不到该供应商"));
                compTradBrandRepository.deleteCompTradBrand(companyCode,code)  ;
           }
-           company.setAreaCode(foreignSupplier.getAreaCode());
-           company.setAreaName(addressService.findByCode("",foreignSupplier.getAreaCode()));
+           if(foreignSupplier.getAreaCode()!=null&&!foreignSupplier.getAreaCode().equals("")){
+               company.setAreaCode(foreignSupplier.getAreaCode());
+               company.setAreaName(addressService.findByCode("",foreignSupplier.getAreaCode()));
+           }
            company.setAddress(foreignSupplier.getAddress());
            company.setShortNameInCN(foreignSupplier.getCompanyShortName());
            company.setContactName(foreignSupplier.getContactName());
@@ -341,8 +343,7 @@ public class CompanyService {
      */
    public  Map<String,Object> supplierVerification(String usci,String companyCode){
        Map<String,Object> map = new HashMap<>();
-      EnrolledCompany  enrolledCompany =   enrolledCompanyRepository.findByUSCI(usci).orElse(new EnrolledCompany());
-      List<Company> list = companyRepository.findCompanyByUSCI(usci);
+       List<Company> list = companyRepository.findCompanyByUSCI(usci);
       if (list.size()>0){
           //判断用户是否为外供
          List<String> outSuppliers =list.stream()

@@ -54,6 +54,7 @@ public interface CompanyMapper {
     @Mapping(target = "name", source = "nameInCN")
     @Mapping(target = "shortName", source = "shortNameInCN")
     @Mapping(target = "state",expression = "java(String.valueOf(company.getState().getState()))")
+    @Mapping(target = "USCI",source = "enrolledCompany.USCI")
     TCompanyBaseInformation toBaseInformation(Company company);
 
     /**
