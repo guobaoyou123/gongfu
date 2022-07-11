@@ -29,5 +29,7 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
     @Query("update Company as a set a.state=?1 where a.code in ?2")
     void  updateCompanyState(Availability availability, List<String> code);
 
+    @Query(value = " SELECT  b.*  FROM    comp_base b,dc_comp t  where t.credit_code=? and t.id=b.id  "
+        ,nativeQuery = true)
     List<Company> findCompanyByUSCI(String ucsi);
 }

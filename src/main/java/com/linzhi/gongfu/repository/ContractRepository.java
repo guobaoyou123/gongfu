@@ -25,6 +25,7 @@ public interface ContractRepository
         " and c.id <> ?3",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode,String contractId);
+
     @Query(value = "select  c.id from contract_base c ,contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id  and c.type = '0' and r.fingerprint =?2 and r.revision=(select max(revision) from contract_rev v where v.id = r.id) "  ,nativeQuery = true)
     List<String> findContractId(String dcCompId, String sequenceCode);
 
@@ -93,6 +94,4 @@ public interface ContractRepository
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
     List<ContractList> findContractList(String compId, String  type, String  state);
-
-
 }

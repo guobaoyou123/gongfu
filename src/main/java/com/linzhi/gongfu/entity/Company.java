@@ -80,11 +80,7 @@ public class Company implements Serializable {
     @Column(length = 100)
     private String address;
 
-    /**
-     * 地址邮编
-     */
-    @Column(name = "post_code", length = 20)
-    private String postCode;
+
 
     /**
      * 公司启停用状态
@@ -113,69 +109,6 @@ public class Company implements Serializable {
     @Column(name = "eng_short", length = 40)
     private String shortNameInEN;
 
-    /**
-     * 公司Logo文本
-     */
-    @Column(length = 100)
-    private String logo;
-
-    /**
-     * 公司Logo图片所在位置（路径）
-     */
-    @Column(name = "logobmp", length = 200)
-    private String logoPath;
-
-    /**
-     * 公司商标文本
-     */
-    @Column(length = 100)
-    private String trademark;
-
-    /**
-     * 公司商标图片所在位置（路径）
-     */
-    @Column(name = "trademarkbmp", length = 200)
-    private String trademarkPath;
-
-    /**
-     * 公司官网地址
-     */
-    @Column(name = "Official_website")
-    private String website;
-
-    /**
-     * 公司成立日期
-     */
-    @Column(name = "establish_at", columnDefinition = "DATE")
-    @Past
-    private LocalDate establishedAt;
-
-    /**
-     * 公司经营期限
-     */
-    @Column(name = "expire_at", columnDefinition = "DATE")
-    @FutureOrPresent
-    private LocalDate expiresAt;
-
-    /**
-     * 公司联系电话
-     */
-    @Column(length = 20)
-    private String phone;
-
-    /**
-     * 公司传真
-     */
-    @Column(length = 20)
-    private String fax;
-
-    /**
-     * 社会统一信用代码（Unified Social Credit Identifier）
-     */
-    @Column(name = "credit_code", length = 40)
-    @NotNull
-    @NotBlank
-    private String USCI;
 
     /**
      * 区域编号，区级行政区划编号
@@ -189,11 +122,7 @@ public class Company implements Serializable {
     @Column(name = "area_name", length = 60)
     private String areaName;
 
-    /**
-     * 公司企业电子邮件地址
-     */
-    @Column(length = 40)
-    private String email;
+
 
     /**
      * 公司联系人
@@ -218,4 +147,16 @@ public class Company implements Serializable {
      */
     @Column(name = "ls_code", length = 20)
     private String lsCode;
+
+    /**
+     * 公司联系电话
+     */
+    @Column(length = 20)
+    private String phone;
+
+    /**
+     * 公司企业电子邮件地址
+     */
+    @Column(length = 40)
+    private String email;
 }

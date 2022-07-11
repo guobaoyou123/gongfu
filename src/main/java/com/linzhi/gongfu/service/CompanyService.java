@@ -212,9 +212,11 @@ public class CompanyService {
                //判重
                QCompany qCompany = QCompany.company;
                QCompTrad qCompTrad = QCompTrad.compTrad;
-               JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompany).leftJoin(qCompTrad)
+               QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
+               JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompany,qEnrolledCompany).leftJoin(qCompTrad)
                    .on(qCompany.code.eq(qCompTrad.compTradId.compSaler).and(qCompTrad.compTradId.compBuyer.eq(companyCode)));
-               query.where(qCompany.USCI.eq(foreignSupplier.getUsci()));
+               query.where(qEnrolledCompany.USCI.eq(foreignSupplier.getUsci()));
+               query.where(qEnrolledCompany.id.eq(qCompany.identityCode));
                query.where(qCompany.role.eq(CompanyRole.EXTERIOR_SUPPLIER.getSign()));
                List<Company> list=query.fetch();
                if(list.size()>0){
@@ -248,7 +250,7 @@ public class CompanyService {
                 company = Company.builder()
                    .code(code)
                    .encode(maxCode)
-                   .USCI(foreignSupplier.getUsci())
+                  // .USCI(foreignSupplier.getUsci())
                    .role(CompanyRole.EXTERIOR_SUPPLIER.getSign())
                    .nameInCN(foreignSupplier.getCompanyName())
                     .identityCode(enrolledCompany.get().getId())
@@ -339,7 +341,8 @@ public class CompanyService {
      */
    public  Map<String,Object> supplierVerification(String usci,String companyCode){
        Map<String,Object> map = new HashMap<>();
-      List<Company>  list =   companyRepository.findCompanyByUSCI(usci);
+      EnrolledCompany  enrolledCompany =   enrolledCompanyRepository.findByUSCI(usci).orElse(new EnrolledCompany());
+      List<Company> list = companyRepository.findCompanyByUSCI(usci);
       if (list.size()>0){
           //判断用户是否为外供
          List<String> outSuppliers =list.stream()

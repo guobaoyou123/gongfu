@@ -6,8 +6,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
 
 import com.linzhi.gongfu.enumeration.Enrollment;
 
@@ -19,6 +21,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.time.LocalDate;
 
 @Builder
 @Getter
@@ -87,4 +91,62 @@ public class EnrolledCompany {
     @OneToOne
     @JoinColumn(name = "id", referencedColumnName = "code", insertable = true, updatable = true)
     private Company details;
+
+    /**
+     * 地址邮编
+     */
+    @Column(name = "post_code", length = 20)
+    private String postCode;
+    /**
+     * 公司Logo文本
+     */
+    @Column(length = 100)
+    private String logo;
+
+    /**
+     * 公司Logo图片所在位置（路径）
+     */
+    @Column(name = "logobmp", length = 200)
+    private String logoPath;
+
+    /**
+     * 公司商标文本
+     */
+    @Column(length = 100)
+    private String trademark;
+
+    /**
+     * 公司商标图片所在位置（路径）
+     */
+    @Column(name = "trademarkbmp", length = 200)
+    private String trademarkPath;
+
+    /**
+     * 公司官网地址
+     */
+    @Column(name = "Official_website")
+    private String website;
+
+    /**
+     * 公司成立日期
+     */
+    @Column(name = "establish_at", columnDefinition = "DATE")
+    @Past
+    private LocalDate establishedAt;
+
+    /**
+     * 公司经营期限
+     */
+    @Column(name = "expire_at", columnDefinition = "DATE")
+    @FutureOrPresent
+    private LocalDate expiresAt;
+
+
+    /**
+     * 公司传真
+     */
+    @Column(length = 20)
+    private String fax;
+
+
 }

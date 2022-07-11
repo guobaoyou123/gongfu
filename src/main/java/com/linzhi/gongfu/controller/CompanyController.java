@@ -105,7 +105,7 @@ public class CompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-       var supplier = companyService.findForeignSupplierDetail(code,session.getSession().getCompanyCode());
+        var supplier = companyService.findForeignSupplierDetail(code,session.getSession().getCompanyCode());
         return VSupplierDetailResponse.builder()
             .code(200)
             .message("获取供应商详情成功")
