@@ -13,6 +13,7 @@ import com.linzhi.gongfu.repository.CompTradeRepository;
 import com.linzhi.gongfu.repository.CompanyRepository;
 import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
 import com.linzhi.gongfu.util.PageTools;
+import com.linzhi.gongfu.vo.VCompanyDetailResponse;
 import com.linzhi.gongfu.vo.VForeignSupplierRequest;
 import com.linzhi.gongfu.vo.VSupplierDetailResponse;
 import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
@@ -374,4 +375,18 @@ public class CompanyService {
       }
        return map;
    }
+
+    /**
+     * 查找公司详情
+     * @param companyCode 单位编码
+     * @return 返回详细信息
+     */
+    @Cacheable(value = "companyDetail;1800", unless = "#result == null ",key = "#companyCode")
+    public VCompanyDetailResponse.VCompany findCompanyDetail(String companyCode) throws Exception {
+       Company company = new Company();
+
+        return  companyRepository.findById(companyCode).map(companyMapper::toBaseInformation)
+           .map(companyMapper::toCompanyDetail).orElseThrow(()->new IOException("未找到公司信息"));
+    }
+
 }

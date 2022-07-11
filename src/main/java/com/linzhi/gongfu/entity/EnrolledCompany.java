@@ -13,6 +13,7 @@ import javax.validation.constraints.Past;
 
 import com.linzhi.gongfu.enumeration.Enrollment;
 
+import com.linzhi.gongfu.enumeration.Whether;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -147,6 +148,15 @@ public class EnrolledCompany {
      */
     @Column(length = 20)
     private String fax;
-
+    /**
+     * 公司简介
+     */
+    @Column
+    private String  introduction;
+    /**
+     * 是否对格友可见
+     */
+    @Column(name = "visible")
+    private Whether visible;
 
 }

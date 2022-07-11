@@ -3,6 +3,7 @@ package com.linzhi.gongfu.dto;
 import java.io.Serializable;
 import java.util.List;
 
+import com.linzhi.gongfu.enumeration.Whether;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class TCompanyBaseInformation implements Serializable {
     private String code;
 
     private String encode;
+
     /**
      * 公司全名
      */
@@ -79,4 +81,8 @@ public class TCompanyBaseInformation implements Serializable {
     private List<String> scenes;
 
     private String state;
+
+    private String introduction;
+
+    private String  visible;
 }

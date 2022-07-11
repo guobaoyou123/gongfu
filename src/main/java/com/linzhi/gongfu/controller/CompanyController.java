@@ -211,5 +211,22 @@ public class CompanyController {
             .companyname((String) map.get("companyName"))
             .build();
     }
+
+    /**
+     * 本单位的外供应商的详情
+     * @return 外供应商列表
+     */
+    @GetMapping("/company/detail")
+    public VCompanyDetailResponse companyDetail() throws Exception {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var company = companyService.findCompanyDetail(session.getSession().getCompanyCode());
+        return VCompanyDetailResponse.builder()
+            .code(200)
+            .message("获取供应商详情成功")
+            .company(company)
+            .build();
+    }
 }
 

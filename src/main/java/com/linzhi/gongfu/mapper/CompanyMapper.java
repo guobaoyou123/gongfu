@@ -3,11 +3,8 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.EnrolledCompany;
-import com.linzhi.gongfu.vo.VForeignSuppliersResponse;
-import com.linzhi.gongfu.vo.VPreloadCompanyInfoResponse;
+import com.linzhi.gongfu.vo.*;
 
-import com.linzhi.gongfu.vo.VSupplierDetailResponse;
-import com.linzhi.gongfu.vo.VSuppliersResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -55,6 +52,8 @@ public interface CompanyMapper {
     @Mapping(target = "shortName", source = "shortNameInCN")
     @Mapping(target = "state",expression = "java(String.valueOf(company.getState().getState()))")
     @Mapping(target = "USCI",source = "enrolledCompany.USCI")
+    @Mapping(target = "introduction",source = "enrolledCompany.introduction")
+    @Mapping(target = "visible",expression = "java(company.getEnrolledCompany().getVisible()==null?null:String.valueOf(company.getEnrolledCompany().getVisible().getState()))")
     TCompanyBaseInformation toBaseInformation(Company company);
 
     /**
@@ -89,5 +88,14 @@ public interface CompanyMapper {
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "usci", source = "USCI")
     VSupplierDetailResponse.VSupplier toSupplierDetail(TCompanyBaseInformation company);
-
+    /**
+     * 将获取到的本公司信息，转换成可供使用的公司基础信息
+     *
+     * @param company 本公司全部信息
+     * @return 本公司简要基础信息
+     */
+    @Mapping(target = "companyName", source = "name")
+    @Mapping(target = "companyShortName", source = "shortName")
+    @Mapping(target = "usci", source = "USCI")
+    VCompanyDetailResponse.VCompany toCompanyDetail(TCompanyBaseInformation company);
 }
