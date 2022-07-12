@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.dto;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Set;
 
 import com.linzhi.gongfu.enumeration.Availability;
@@ -10,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.persistence.Column;
 
 /**
  * 用于转移操作员基本信息
@@ -34,4 +37,11 @@ public class TOperatorInfo implements Serializable {
     private Whether admin;
     private String LSCode;
     private Set<TScene> scenes;
+    private String birthday;
+    private String  sex;
+    private String areaCode;
+    private String areaName;
+    private String address;
+    private String entryAt;
+    private String resignationAt;
 }

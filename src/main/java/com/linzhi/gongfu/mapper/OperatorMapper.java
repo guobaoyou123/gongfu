@@ -3,6 +3,8 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.Operator;
 
+import com.linzhi.gongfu.entity.OperatorDetail;
+import com.linzhi.gongfu.vo.VOperatorDetailResponse;
 import com.linzhi.gongfu.vo.VOperatorPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -24,4 +26,13 @@ public interface OperatorMapper {
 
     @Mapping(target = "state", expression = "java(String.valueOf(operator.getState().getState()))")
     VOperatorPageResponse.VOperator toVOperatorDTO(TOperatorInfo operator);
+
+
+    @Mapping(target = "code", source = "identity.operatorCode")
+    @Mapping(target = "birthday",expression = "java(operator.getBirthday()==null?null:com.linzhi.gongfu.util.DateConverter.dateFormat(operator.getBirthday()))")
+    @Mapping(target = "entryAt",expression = "java(operator.getEntryAt()==null?null:com.linzhi.gongfu.util.DateConverter.dateFormat(operator.getEntryAt()))")
+    @Mapping(target = "resignationAt",expression = "java(operator.getResignationAt()==null?null:com.linzhi.gongfu.util.DateConverter.dateFormat(operator.getResignationAt()))")
+    TOperatorInfo toOperatorDetailDTO(OperatorDetail operator);
+
+    VOperatorDetailResponse.VOperator toOperatorDetailDTOs(TOperatorInfo operator);
 }

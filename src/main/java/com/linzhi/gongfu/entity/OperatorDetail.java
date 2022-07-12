@@ -1,26 +1,15 @@
 package com.linzhi.gongfu.entity;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.linzhi.gongfu.enumeration.Availability;
+import com.linzhi.gongfu.enumeration.Whether;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.linzhi.gongfu.enumeration.Availability;
-import com.linzhi.gongfu.enumeration.Whether;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.Singular;
-import lombok.ToString;
+import java.time.LocalDate;
+import java.util.Set;
 
 /**
  * 公司操作员实体
@@ -37,20 +26,12 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @Entity
 @Table(name = "comp_operator")
-public class Operator {
+public class OperatorDetail {
     /**
      * 操作员编号
      */
     @EmbeddedId
     private OperatorId identity;
-
-    /**
-     * 关联公司基本信息
-     */
-    @OneToOne
-    @JoinColumn(name = "dc_comp_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @JsonBackReference
-    private EnrolledCompany company;
 
     /**
      * 操作员名称
@@ -95,18 +76,6 @@ public class Operator {
     @Column(name = "ls_code", length = 20)
     private String LSCode;
 
-    /**
-     * 操作员所拥有的场景（权限）
-     */
-    @Singular
-    @ManyToMany
-    @JoinTable(name = "dc_operator_scene", joinColumns = {
-            @JoinColumn(name = "dc_comp_id", referencedColumnName = "dc_comp_id", insertable = true, updatable = true),
-            @JoinColumn(name = "operator_code", referencedColumnName = "code", insertable = true, updatable = true)
-    }, inverseJoinColumns = {
-            @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = true, updatable = true)
-    })
-    private Set<Scene> scenes;
 
     /**
      * 出身日期

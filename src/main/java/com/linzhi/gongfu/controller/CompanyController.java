@@ -3,6 +3,7 @@ package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.mapper.CompanyMapper;
+import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.OperatorService;
@@ -10,7 +11,6 @@ import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +32,7 @@ public class CompanyController {
     private final CompanyService companyService;
     private final CompanyMapper companyMapper;
     private final OperatorService operatorService;
+    private final OperatorMapper operatorMapper;
     /**
      * 通过本公司id查询所有供应商以及经营，自营的品牌
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
@@ -305,6 +306,25 @@ public class CompanyController {
             .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
             .operators(page.getContent())
             .build();
+    }
+
+    /**
+     * 操作员详情
+     * @param code 操作员编码
+     * @return 操作员详细信息
+     */
+    @GetMapping("/company/operator/detail/{code}")
+    public  VOperatorDetailResponse operatorDetail(@PathVariable String code){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var operator = operatorService.findOperatorDtail(session.getSession().getCompanyCode(),code)
+            .map(operatorMapper::toOperatorDetailDTOs).orElseThrow();
+         return VOperatorDetailResponse.builder()
+             .code(200)
+             .message("获取数据成功")
+             .operator(operator)
+             .build();
     }
 }
 
