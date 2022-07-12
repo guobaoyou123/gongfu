@@ -3,6 +3,7 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.Operator;
 
+import com.linzhi.gongfu.vo.VOperatorPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -20,4 +21,7 @@ public interface OperatorMapper {
     @Mapping(target = "companyShortName", source = "company.details.shortNameInCN")
     @Mapping(target = "companyDomain", source = "company.subdomainName")
     TOperatorInfo toDTO(Operator operator);
+
+    @Mapping(target = "state", expression = "java(String.valueOf(operator.getState().getState()))")
+    VOperatorPageResponse.VOperator toVOperatorDTO(TOperatorInfo operator);
 }

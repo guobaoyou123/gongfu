@@ -1,5 +1,7 @@
 package com.linzhi.gongfu.entity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -112,4 +114,46 @@ public class Operator {
             @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = true, updatable = true)
     })
     private Set<Scene> scenes;
+
+    /**
+     * 出身日期
+     */
+    @Column(name = "birthday")
+    private LocalDate birthday;
+
+    /**
+     * 性别
+     */
+    @Column(name = "sex")
+    private String  sex;
+
+    /**
+     * 区域编号，区级行政区划编号
+     */
+    @Column(name = "area_code", length = 6)
+    private String areaCode;
+
+    /**
+     * 区域名称，区级行政区划全称
+     */
+    @Column(name = "area_name", length = 60)
+    private String areaName;
+
+    /**
+     * 详细地址
+     */
+    @Column(length = 100)
+    private String address;
+
+    /**
+     * 入职日期
+     */
+    @Column(name = "entry_at")
+    private LocalDate entryAt;
+
+    /**
+     * 离职日期
+     */
+    @Column(name = "resignation_at")
+    private LocalDate resignationAt;
 }
