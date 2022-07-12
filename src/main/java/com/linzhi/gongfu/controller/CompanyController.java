@@ -320,11 +320,29 @@ public class CompanyController {
             .getAuthentication();
         var operator = operatorService.findOperatorDtail(session.getSession().getCompanyCode(),code)
             .map(operatorMapper::toOperatorDetailDTOs).orElseThrow();
-         return VOperatorDetailResponse.builder()
+        return VOperatorDetailResponse.builder()
              .code(200)
              .message("获取数据成功")
              .operator(operator)
              .build();
+    }
+
+    /**
+     * 修改人员基本信息
+     * @param operator 操作员信息
+     * @param code 操作员编码
+     * @return 返回成功或者失败信息
+     */
+    @PutMapping("/company/operator/detail/{code}")
+    public VBaseResponse modifyOperator(@RequestBody VOperatorRequest operator,@PathVariable String code){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = operatorService.modifyOperator(session.getSession().getCompanyCode(),code,operator);
+        return  VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"修改成功":"修改失败")
+            .build();
     }
 }
 

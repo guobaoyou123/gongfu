@@ -14,13 +14,19 @@ import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.repository.SceneRepository;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VOperatorPageResponse;
+import com.linzhi.gongfu.vo.VOperatorRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.sl.draw.geom.GuideIf;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -40,6 +46,7 @@ public class OperatorService {
     private final OperatorMapper operatorMapper;
     private final SceneRepository sceneRepository;
     private final SceneMapper sceneMapper;
+    private final AddressService addressService;
     /**
      * 根据所提供的操作员ID寻找制定的操作员信息。
      *
@@ -84,7 +91,7 @@ public class OperatorService {
      * @param operatorCode 操作员编码
      * @return 人员详情
      */
-    @Cacheable(value = "Operator_datail;1800", key = "#companyCode+'-'+#operatorCode")
+    @Cacheable(value = "Operator_detail;1800", key = "#companyCode+'-'+#operatorCode")
     public Optional<OperatorDetail> operatorDetail(String companyCode, String operatorCode){
              return  operatorDetailRepository.findById(OperatorId.builder()
                      .companyCode(companyCode)
@@ -109,5 +116,38 @@ public class OperatorService {
        Set<TScene> tScenes=findScene( companyCode, operatorCode).stream().map(sceneMapper::toDTO).collect(Collectors.toSet());
        operator.get().setScenes(tScenes);
         return  operator;
+    }
+
+    /**
+     * 修改人员信息
+     * @param companyCode 公司编码
+     * @param operatorCode 操作员编码
+     * @param operatorRequest 修改人员信息
+     * @return 返回修改成功或者失败信息
+     */
+    @Caching(evict = {
+        @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#operatorCode"),
+        @CacheEvict(value="Operator_page;1800",key = "#companyCode")
+    })
+    @Transactional
+    public boolean modifyOperator(String companyCode, String operatorCode, VOperatorRequest operatorRequest){
+        try {
+            OperatorDetail operatorDetail = operatorDetail(companyCode,operatorCode).orElseThrow(()->new IOException("为从数据库找到"));
+            operatorDetail.setName(operatorRequest.getName());
+            operatorDetail.setBirthday(operatorRequest.getBirthday()==null?null:LocalDate.parse(operatorRequest.getBirthday()));
+            operatorDetail.setSex(operatorRequest.getSex());
+            operatorDetail.setAreaCode(operatorRequest.getAreaCode());
+            operatorDetail.setPhone(operatorRequest.getPhone());
+            if(operatorRequest.getAreaCode()!=null){
+                operatorDetail.setAreaName(addressService.findByCode("",operatorRequest.getAreaCode()));
+            }
+            operatorDetail.setAddress(operatorRequest.getAddress());
+            operatorDetail.setEntryAt(operatorRequest.getEntryAt()==null?null:LocalDate.parse(operatorRequest.getEntryAt()));
+            operatorDetail.setResignationAt(operatorRequest.getResignationAt()==null?null:LocalDate.parse(operatorRequest.getResignationAt()));
+            operatorDetailRepository.save(operatorDetail);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 }
