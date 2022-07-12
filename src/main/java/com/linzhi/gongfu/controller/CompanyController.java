@@ -5,8 +5,12 @@ import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.service.OperatorService;
+import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +31,7 @@ import java.util.stream.Collectors;
 public class CompanyController {
     private final CompanyService companyService;
     private final CompanyMapper companyMapper;
-
+    private final OperatorService operatorService;
     /**
      * 通过本公司id查询所有供应商以及经营，自营的品牌
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
@@ -226,6 +230,80 @@ public class CompanyController {
             .code(200)
             .message("获取供应商详情成功")
             .company(company)
+            .build();
+    }
+
+    /**
+     * 修改本公司
+     * @param company 本公司信息
+     * @return  成功或者失败信息
+     */
+    @PutMapping("/company/detail")
+    public VBaseResponse modifyCompany(@RequestBody VCompanyRequest company
+    ){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+
+        var flag = companyService.shortNameRepeat(session.getSession().getCompanyCode(),company.getCompanyShortName());
+        if(flag)
+            return VBaseResponse.builder()
+                .code(201)
+                .message("公司简称重复")
+                .build();
+        flag = companyService.saveCompanyDetail(
+            company,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+        return VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"数据修改成功":"修改失败")
+            .build();
+    }
+
+    /**
+     * 设置格友可见
+     * @param visibleContent 设置是否可见信息
+     * @return 返回成功信息
+     */
+    @PostMapping("/company/visible")
+    public VBaseResponse setVisible(@RequestBody VCompanyVisibleRequest visibleContent){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = companyService.setVisible(session.getSession().getCompanyCode(),visibleContent);
+        return  VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"设置成功":"设置失败")
+            .build();
+    }
+
+    /**
+     * 获取人员列表分页
+     * @param pageNum 页码
+     * @param pageSize 每页显示几条
+     * @param state 状态
+     * @return 返回人员信息列表
+     */
+    @GetMapping("/company/operators")
+    public VOperatorPageResponse operatorPage(@RequestParam("pageNum") Optional<String> pageNum ,
+                                              @RequestParam("pageSize") Optional<String> pageSize ,
+                                              @RequestParam("state") Optional<String> state){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var page=operatorService.getOperatorPage(PageRequest.of(
+            pageNum.map(PageTools::verificationPageNum).orElse(0),
+            pageSize.map(PageTools::verificationPageSize).orElse(10)
+        ),session.getSession().getCompanyCode(),state.orElse("1")
+        );
+        return  VOperatorPageResponse.builder()
+            .code(200)
+            .message("数据成功")
+            .current(page.getNumber()+1)
+            .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
+            .operators(page.getContent())
             .build();
     }
 }

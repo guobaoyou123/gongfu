@@ -44,7 +44,15 @@ public class VCompanyDetailResponse extends VBaseResponse  {
 
         private String introduction;
 
-        private String  visible;
+        /**
+         * 是否对格友可见
+         */
+        private Boolean  visible;
+
+        /**
+         * 可见内容
+         */
+        private String content;
     }
 
 }

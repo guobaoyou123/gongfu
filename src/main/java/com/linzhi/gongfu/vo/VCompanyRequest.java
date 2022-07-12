@@ -7,21 +7,14 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于接前端添加、修改地外供应商信息的请求
+ * 用于接前端添加、修改本公司信息的请求
  */
 @Data
 @Jacksonized
 @NoArgsConstructor
-public class VForeignSupplierRequest {
-    private String code;
-
-    private String encode;
-
-    private String companyName;
+public class VCompanyRequest {
 
     private String companyShortName;
-
-    private String usci;
 
     private String contactName;
 
@@ -33,13 +26,5 @@ public class VForeignSupplierRequest {
 
     private String address;
 
-    private String email;
-
-    private String phone;
-
-    private String taxMode;
-
-    private List<String> brands ;
-
-    private List<String> codes;
+    private String introduction;
 }

@@ -158,5 +158,10 @@ public class EnrolledCompany {
      */
     @Column(name = "visible")
     private Whether visible;
-
+    /**
+     * 对应的公司设置的对外可见内容，这里利用入格供应商的id与公司信息的code相同的原则进行一对一匹配
+     */
+    @OneToOne
+    @JoinColumn(name = "id", referencedColumnName = "dc_comp_id", insertable = true, updatable = true)
+    private CompVisible compVisible;
 }

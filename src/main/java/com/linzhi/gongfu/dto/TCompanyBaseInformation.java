@@ -82,7 +82,18 @@ public class TCompanyBaseInformation implements Serializable {
 
     private String state;
 
+    /**
+     * 格友可见
+     */
     private String introduction;
 
+    /**
+     * 是否对格友可见
+     */
     private String  visible;
+
+    /**
+     * 可见内容
+     */
+    private String content;
 }

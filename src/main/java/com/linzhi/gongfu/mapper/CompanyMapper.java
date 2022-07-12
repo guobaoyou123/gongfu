@@ -39,6 +39,7 @@ public interface CompanyMapper {
     @Mapping(target = "name", source = "nameInCN")
     @Mapping(target = "shortName", source = "details.shortNameInCN")
     @Mapping(target = "subdomain", source = "subdomainName")
+    @Mapping(target = "visible",expression = "java(company.getVisible()==null?null:String.valueOf(company.getVisible().getState()))")
     TCompanyBaseInformation toBaseInformation(EnrolledCompany company);
 
     /**
@@ -51,10 +52,26 @@ public interface CompanyMapper {
     @Mapping(target = "name", source = "nameInCN")
     @Mapping(target = "shortName", source = "shortNameInCN")
     @Mapping(target = "state",expression = "java(String.valueOf(company.getState().getState()))")
-    @Mapping(target = "USCI",source = "enrolledCompany.USCI")
-    @Mapping(target = "introduction",source = "enrolledCompany.introduction")
-    @Mapping(target = "visible",expression = "java(company.getEnrolledCompany().getVisible()==null?null:String.valueOf(company.getEnrolledCompany().getVisible().getState()))")
-    TCompanyBaseInformation toBaseInformation(Company company);
+   TCompanyBaseInformation toBaseInformation(Company company);
+
+    /**
+     * 将获取到的本公司的入格信息以及设置的基本信息，转换成可供使用的公司基础信息
+     * 用于查看本公司基本信息
+     * @param company 已经入格的公司全部信息
+     * @return 可供使用的公司基础信息
+     */
+    @Mapping(target = "code", source = "id")
+    @Mapping(target = "name", source = "nameInCN")
+    @Mapping(target = "shortName", source = "details.shortNameInCN")
+    @Mapping(target = "subdomain", source = "subdomainName")
+    @Mapping(target = "visible",expression = "java(company.getVisible()==null?\"0\":String.valueOf(company.getVisible().getState()))")
+    @Mapping(target = "contactName",source = "details.contactName")
+    @Mapping(target = "contactPhone",source = "details.contactPhone")
+    @Mapping(target = "areaCode",source = "details.areaCode")
+    @Mapping(target = "areaName",source = "details.areaName")
+    @Mapping(target = "address",source = "details.address")
+    @Mapping(target = "content",source = "compVisible.visibleContent")
+    TCompanyBaseInformation toCompDetail(EnrolledCompany company);
 
     /**
      * 明确可以成功获取到公司基础信息时，向预获取响应转换
@@ -88,6 +105,7 @@ public interface CompanyMapper {
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "usci", source = "USCI")
     VSupplierDetailResponse.VSupplier toSupplierDetail(TCompanyBaseInformation company);
+
     /**
      * 将获取到的本公司信息，转换成可供使用的公司基础信息
      *
@@ -97,5 +115,6 @@ public interface CompanyMapper {
     @Mapping(target = "companyName", source = "name")
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "usci", source = "USCI")
+    @Mapping(target = "visible",expression = "java(company.getVisible().equals(\"1\")?true:false)")
     VCompanyDetailResponse.VCompany toCompanyDetail(TCompanyBaseInformation company);
 }

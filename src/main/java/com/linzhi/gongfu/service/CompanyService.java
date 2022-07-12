@@ -8,15 +8,9 @@ import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
-import com.linzhi.gongfu.repository.CompTradBrandRepository;
-import com.linzhi.gongfu.repository.CompTradeRepository;
-import com.linzhi.gongfu.repository.CompanyRepository;
-import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
+import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
-import com.linzhi.gongfu.vo.VCompanyDetailResponse;
-import com.linzhi.gongfu.vo.VForeignSupplierRequest;
-import com.linzhi.gongfu.vo.VSupplierDetailResponse;
-import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
+import com.linzhi.gongfu.vo.*;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +19,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,8 +43,9 @@ public class CompanyService {
     private final CompTradeMapper compTradeMapper;
     private final JPAQueryFactory queryFactory;
     private final BrandMapper brandMapper;
-    private  final  AddressService addressService;
+    private final AddressService addressService;
     private final CompTradBrandRepository compTradBrandRepository;
+    private final CompVisibleRepository compVisibleRepository;
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -264,6 +260,9 @@ public class CompanyService {
            if(foreignSupplier.getAreaCode()!=null&&!foreignSupplier.getAreaCode().equals("")){
                company.setAreaCode(foreignSupplier.getAreaCode());
                company.setAreaName(addressService.findByCode("",foreignSupplier.getAreaCode()));
+           }else{
+               company.setAreaCode(null);
+               company.setAreaName(null);
            }
            company.setAddress(foreignSupplier.getAddress());
            company.setShortNameInCN(foreignSupplier.getCompanyShortName());
@@ -381,12 +380,90 @@ public class CompanyService {
      * @param companyCode 单位编码
      * @return 返回详细信息
      */
-    @Cacheable(value = "companyDetail;1800", unless = "#result == null ",key = "#companyCode")
     public VCompanyDetailResponse.VCompany findCompanyDetail(String companyCode) throws Exception {
-       Company company = new Company();
-
-        return  companyRepository.findById(companyCode).map(companyMapper::toBaseInformation)
+        return  findCompanyById(companyCode).map(companyMapper::toCompDetail)
            .map(companyMapper::toCompanyDetail).orElseThrow(()->new IOException("未找到公司信息"));
     }
+
+    /**
+     * 查找公司详情
+     * @param companyCode 单位编码
+     * @return 返回详细信息
+     */
+    @Cacheable(value = "companyDetail;1800", unless = "#result == null ",key = "#companyCode")
+    public Optional<EnrolledCompany>  findCompanyById(String companyCode)  {
+        return  enrolledCompanyRepository.findById(companyCode);
+    }
+
+
+    /**
+     * 判重
+     * @param companyCode 公司编码
+     * @param name 公司简称
+     * @return 是否重复
+     */
+    public boolean shortNameRepeat(String companyCode,String name){
+        int count = companyRepository.checkRepeat(name,companyCode);
+        return  count>=1;
+    }
+
+    /**
+     * 保存本公司详情
+     * @param companyRequest 供应商信息
+     * @param companyCode 单位id
+     * @return 返回成功或者失败消息
+     */
+    @CacheEvict(value = "companyDetail;1800",key = "#companyCode")
+    @Transactional
+    public boolean saveCompanyDetail(VCompanyRequest companyRequest, String companyCode,String operator){
+        try{
+            EnrolledCompany company = findCompanyById(companyCode).orElseThrow(()->new IOException("未找到公司信息"));
+           company.getDetails().setShortNameInCN(companyRequest.getCompanyShortName());
+           company.getDetails().setContactName(companyRequest.getContactName());
+           company.getDetails().setContactPhone(companyRequest.getContactPhone());
+           company.getDetails().setAreaCode(companyRequest.getAreaCode());
+           if(companyRequest.getAreaCode()!=null){
+               company.getDetails().setAreaName(addressService.findByCode("",companyRequest.getAreaCode()));
+           }else{
+               company.getDetails().setAreaName(null);
+           }
+            company.getDetails().setAddress(companyRequest.getAddress());
+            company.setIntroduction(companyRequest.getIntroduction());
+            enrolledCompanyRepository.save(company);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * 设置可见
+     * @param companyCode 公司编码
+     * @param visibleContent 可见内容
+     * @return 返回操作是否成功信息
+     */
+    @CacheEvict(value = "companyDetail;1800",key = "#companyCode")
+    @Transactional
+    public boolean setVisible(String companyCode,VCompanyVisibleRequest visibleContent){
+        try{
+           EnrolledCompany company =  findCompanyById(companyCode).orElseThrow(()->new IOException("没有从数据库中找到该公司公司信息"));
+           company.setVisible(visibleContent.getVisible()?Whether.YES:Whether.NO);
+           Optional<CompVisible> compVisible =  compVisibleRepository.findById(companyCode);
+           if(visibleContent.getContent()==null&&!compVisible.isEmpty()) {
+               compVisibleRepository.findById(companyCode);
+           }else if(visibleContent.getContent()!=null){
+               CompVisible compVisible1 =  compVisible.orElse(new CompVisible(companyCode,null));
+               compVisible1.setVisibleContent(visibleContent.getContent());
+               compVisibleRepository.save(compVisible1);
+           }
+           enrolledCompanyRepository.save(company);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
+    }
+
 
 }

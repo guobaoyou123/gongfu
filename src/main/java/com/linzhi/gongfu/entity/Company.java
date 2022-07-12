@@ -158,10 +158,5 @@ public class Company implements Serializable {
     @Column(length = 40)
     private String email;
 
-    /**
-     * 入格单位
-     */
-    @OneToOne
-    @JoinColumn(name = "id", referencedColumnName = "id",insertable = false,updatable = false)
-    private EnrolledCompany enrolledCompany;
+
 }

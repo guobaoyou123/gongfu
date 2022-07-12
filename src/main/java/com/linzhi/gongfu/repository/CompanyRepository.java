@@ -32,4 +32,10 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
     @Query(value = " SELECT  b.*  FROM    comp_base b,dc_comp t  where t.credit_code=? and t.id=b.id  "
         ,nativeQuery = true)
     List<Company> findCompanyByUSCI(String ucsi);
+
+    @Query(value = " SELECT count(*)\n" +
+        "  FROM comp_base\n" +
+        "  where chi_short=?1 and code <>?2  and role='1' "
+        ,nativeQuery = true)
+    int checkRepeat(String shortName,String companyCode);
 }
