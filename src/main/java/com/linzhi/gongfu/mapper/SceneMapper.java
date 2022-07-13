@@ -5,7 +5,9 @@ import java.util.Set;
 import com.linzhi.gongfu.dto.TScene;
 import com.linzhi.gongfu.entity.Scene;
 
+import com.linzhi.gongfu.vo.VSceneListResponse;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 /**
  * 用于转换操作员以及菜单项所使用的场景信息
@@ -22,4 +24,7 @@ public interface SceneMapper {
     Scene toEntity(TScene scene);
 
     Set<Scene> toEntities(Set<TScene> scenes);
+
+    @Mapping(target = "suggestion",source = "authorizationSuggestion")
+    VSceneListResponse.VScene toVScene(TScene scene);
 }

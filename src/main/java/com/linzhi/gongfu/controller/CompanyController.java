@@ -4,9 +4,11 @@ package com.linzhi.gongfu.controller;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.mapper.OperatorMapper;
+import com.linzhi.gongfu.mapper.SceneMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.OperatorService;
+import com.linzhi.gongfu.service.SceneService;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +36,8 @@ public class CompanyController {
     private final CompanyMapper companyMapper;
     private final OperatorService operatorService;
     private final OperatorMapper operatorMapper;
+    private final SceneService sceneService;
+    private final SceneMapper sceneMapper;
     /**
      * 通过本公司id查询所有供应商以及经营，自营的品牌
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
@@ -314,7 +319,7 @@ public class CompanyController {
      * @return 操作员详细信息
      */
     @GetMapping("/company/operator/detail/{code}")
-    public  VOperatorDetailResponse operatorDetail(@PathVariable String code){
+    public  VOperatorDetailResponse operatorDetail(@PathVariable String code) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -342,6 +347,78 @@ public class CompanyController {
         return  VBaseResponse.builder()
             .code(flag?200:500)
             .message(flag?"修改成功":"修改失败")
+            .build();
+    }
+
+    /**
+     * 添加人员信息
+     * @param operator 人员信息
+     * @return 返回添加成功或者失败信息
+     */
+    @PostMapping("/company/operator/detail")
+    public VBaseResponse addOperator(@RequestBody VOperatorRequest operator){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = operatorService.addOperator(session.getSession().getCompanyCode(),operator);
+        return  VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"添加成功":"添加失败")
+            .build();
+    }
+
+    /**
+     * 获取场景列表
+     * @return 返回场景列表
+     */
+    @GetMapping("/company/scenes")
+    public VSceneListResponse findScenes() throws IOException {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var scenes = sceneService.findScenes(session.getSession().getCompanyCode())
+            .stream().map(sceneMapper::toDTO)
+            .map(sceneMapper::toVScene).toList();
+        return VSceneListResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .scenes(scenes)
+            .build();
+
+    }
+
+    /**
+     * 修改人员场景
+     * @param operatorRequests 人员场景信息
+     * @return
+     */
+    @PutMapping("/company/operator/{code}/detail/scene")
+    public VBaseResponse modifyOperatorScene(@RequestBody VOperatorRequest operatorRequests,
+                                             @PathVariable String code){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = operatorService.modifyOperatorScene(session.getSession().getCompanyCode(),operatorRequests,code);
+        return VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"操作成功":"操作失败")
+            .build();
+    }
+
+    /**
+     * 重置密码
+     * @param code 操作员编码
+     * @return 返回成功信息
+     */
+    @PostMapping("/company/operator/detail/{code}/password")
+    public VBaseResponse resetPassword(@PathVariable String code){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = operatorService.resetPassword(session.getSession().getCompanyCode(),code);
+        return VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"操作成功":"操作失败")
             .build();
     }
 }

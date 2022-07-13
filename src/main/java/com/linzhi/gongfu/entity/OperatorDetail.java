@@ -27,6 +27,8 @@ import java.util.Set;
 @Entity
 @Table(name = "comp_operator")
 public class OperatorDetail {
+    //默认初始密码
+    public static final String  PASSWORD="123456";
     /**
      * 操作员编号
      */

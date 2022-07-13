@@ -23,4 +23,5 @@ public class TScene implements Serializable {
     private String code;
     private CompanyRole role;
     private String name;
+    private String authorizationSuggestion;
 }

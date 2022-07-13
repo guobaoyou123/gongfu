@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.linzhi.gongfu.entity.EnrolledCompany;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
@@ -23,4 +24,6 @@ public interface EnrolledCompanyRepository
     @Query(value="select  (cast(max(id) as int)+1) from dc_comp " ,
         nativeQuery = true)
     String findMaxCode();
+    @Cacheable(value = "companyDetail;1800", unless = "#result == null ",key = "#id")
+    Optional<EnrolledCompany> findById(String id);
 }

@@ -2,31 +2,34 @@ package com.linzhi.gongfu.service;
 
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.dto.TScene;
-import com.linzhi.gongfu.entity.Operator;
-import com.linzhi.gongfu.entity.OperatorDetail;
-import com.linzhi.gongfu.entity.OperatorId;
-import com.linzhi.gongfu.entity.Scene;
+import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.Availability;
+import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.mapper.SceneMapper;
 import com.linzhi.gongfu.repository.OperatorDetailRepository;
 import com.linzhi.gongfu.repository.OperatorRepository;
+import com.linzhi.gongfu.repository.OperatorSceneRepository;
 import com.linzhi.gongfu.repository.SceneRepository;
+import com.linzhi.gongfu.security.MD5PasswordEncoder;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VOperatorPageResponse;
 import com.linzhi.gongfu.vo.VOperatorRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.sl.draw.geom.GuideIf;
+import org.apache.tomcat.util.security.MD5Encoder;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -47,6 +50,8 @@ public class OperatorService {
     private final SceneRepository sceneRepository;
     private final SceneMapper sceneMapper;
     private final AddressService addressService;
+    private final OperatorSceneRepository operatorSceneRepository;
+    private final PasswordEncoder passwordEncoder;
     /**
      * 根据所提供的操作员ID寻找制定的操作员信息。
      *
@@ -80,7 +85,7 @@ public class OperatorService {
      * @param state 状态
      * @return 人员列表
      */
-    @Cacheable(value = "Operator_page;1800", key = "#companyCode+'-'+#state")
+    @Cacheable(value = "Operator_List;1800", key = "#companyCode+'-'+#state")
     public List<Operator>  operatorList(String companyCode,String state){
         return operatorRepository.findOperatorByStateAndIdentity_CompanyCode(state.equals("0")? Availability.DISABLED:Availability.ENABLED,companyCode);
     }
@@ -110,11 +115,11 @@ public class OperatorService {
      * @param operatorCode 操作员编码
      * @return 操作员详情
      */
-    public  Optional<TOperatorInfo> findOperatorDtail(String companyCode, String operatorCode){
+    public  Optional<TOperatorInfo> findOperatorDtail(String companyCode, String operatorCode) throws IOException {
        Optional<TOperatorInfo> operator =  operatorDetail( companyCode, operatorCode)
             .map(operatorMapper::toOperatorDetailDTO);
        Set<TScene> tScenes=findScene( companyCode, operatorCode).stream().map(sceneMapper::toDTO).collect(Collectors.toSet());
-       operator.get().setScenes(tScenes);
+       operator.orElseThrow(()->new IOException("未查询到数据")).setScenes(tScenes);
         return  operator;
     }
 
@@ -127,7 +132,7 @@ public class OperatorService {
      */
     @Caching(evict = {
         @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#operatorCode"),
-        @CacheEvict(value="Operator_page;1800",key = "#companyCode")
+        @CacheEvict(value="Operator_List;1800",key = "#companyCode")
     })
     @Transactional
     public boolean modifyOperator(String companyCode, String operatorCode, VOperatorRequest operatorRequest){
@@ -149,5 +154,115 @@ public class OperatorService {
         }catch (Exception e){
             return false;
         }
+    }
+
+    /**
+     * 添加人员信息
+     * @param companyCode 公司编码
+     * @param operatorRequest 人员信息
+     * @return 返回成功或则失败信息
+     */
+    @CacheEvict(value="Operator_List;1800",key = "#companyCode")
+    @Transactional
+    public boolean addOperator(String companyCode,VOperatorRequest operatorRequest){
+        try{
+            String maxCode = operatorDetailRepository.findMaxCode(companyCode).orElse("001");
+            OperatorDetail operatorDetail = OperatorDetail.builder()
+                .identity(OperatorId.builder()
+                    .companyCode(companyCode)
+                    .operatorCode(maxCode)
+                    .build())
+                .name(operatorRequest.getName())
+                .phone(operatorRequest.getPhone())
+                .sex(operatorRequest.getSex())
+                .admin(Whether.NO)
+                .birthday(operatorRequest.getBirthday()==null?null:LocalDate.parse(operatorRequest.getBirthday()))
+                .entryAt(operatorRequest.getEntryAt()==null?null:LocalDate.parse(operatorRequest.getEntryAt()))
+                .areaCode(operatorRequest.getAreaCode())
+                .address(operatorRequest.getAddress())
+                .state(Availability.ENABLED)
+                .password(passwordEncoder.encode(OperatorDetail.PASSWORD))
+                .build();
+            if(operatorRequest.getAreaCode()!=null){
+                operatorDetail.setAreaName(addressService.findByCode("",operatorRequest.getAreaCode()));
+            }
+            operatorDetailRepository.save(operatorDetail);
+            if(operatorRequest.getScenes().size()>0)
+                saveOperatorScene(operatorRequest.getScenes(),companyCode,maxCode);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    /**
+     * 修改人员场景权限
+     * @param companyCode 公司编码
+     * @param operatorRequests 场景列表
+     * @param code 人员编码
+     * @return 保存成功或者失败信息
+     */
+    @Transactional
+    @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#code")
+    public boolean modifyOperatorScene(String companyCode,VOperatorRequest operatorRequests,String code){
+          try{
+              operatorSceneRepository.deleteByOperatorSceneId_DcCompIdAndOperatorSceneId_OperatorCode(companyCode,code);
+              if(operatorRequests.getScenes().size()>0)
+                  saveOperatorScene(operatorRequests.getScenes(),companyCode,code);
+          }catch (Exception e){
+              e.printStackTrace();
+              return false;
+          }
+           return true;
+    }
+
+    /**
+     * 重置密码
+     * @param companyCode 公司编码
+     * @param code 人员编码
+     * @return 保存成功或者失败信息
+     */
+    @Transactional
+    public boolean resetPassword(String companyCode,String code){
+        try{
+            operatorDetailRepository.updatePassword(
+                passwordEncoder.encode(OperatorDetail.PASSWORD)
+                ,OperatorId.builder()
+                        .operatorCode(code)
+                        .companyCode(companyCode)
+                    .build()
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 保存场景信息
+     * @param scene 场景列表
+     * @param companyCode 公司编码
+     * @param operatorCode 操作员编码
+     * @return 返回成功 或者失败
+     */
+    public boolean saveOperatorScene(List<String> scene ,String companyCode,String operatorCode){
+        List<OperatorScene> operatorSceneList = new ArrayList<>();
+        scene.forEach(
+            s -> {
+                operatorSceneList.add(OperatorScene.builder()
+                    .operatorSceneId(
+                        OperatorSceneId.builder()
+                            .operatorCode(operatorCode)
+                            .dcCompId(companyCode)
+                            .sceneCode(s)
+                            .build()
+                    )
+                    .build());
+            }
+        );
+
+         operatorSceneRepository.saveAll(operatorSceneList);
+        return true;
     }
 }

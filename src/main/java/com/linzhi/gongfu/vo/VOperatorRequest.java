@@ -4,6 +4,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+/**
+ * 用于接前端添加人员信息的请求
+ */
 @Jacksonized
 @Data
 @NoArgsConstructor
@@ -16,4 +20,5 @@ public class VOperatorRequest {
     private String address;
     private String entryAt;
     private String resignationAt;
+    private List<String> scenes;
 }

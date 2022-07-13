@@ -381,19 +381,18 @@ public class CompanyService {
      * @return 返回详细信息
      */
     public VCompanyDetailResponse.VCompany findCompanyDetail(String companyCode) throws Exception {
-        return  findCompanyById(companyCode).map(companyMapper::toCompDetail)
+        return  enrolledCompanyRepository.findById(companyCode).map(companyMapper::toCompDetail)
            .map(companyMapper::toCompanyDetail).orElseThrow(()->new IOException("未找到公司信息"));
     }
 
-    /**
+  /*  *//**
      * 查找公司详情
      * @param companyCode 单位编码
      * @return 返回详细信息
-     */
-    @Cacheable(value = "companyDetail;1800", unless = "#result == null ",key = "#companyCode")
-    public Optional<EnrolledCompany>  findCompanyById(String companyCode)  {
+     *//*
+   public Optional<EnrolledCompany>  findCompanyById(String companyCode)  {
         return  enrolledCompanyRepository.findById(companyCode);
-    }
+    }*/
 
 
     /**
@@ -417,7 +416,7 @@ public class CompanyService {
     @Transactional
     public boolean saveCompanyDetail(VCompanyRequest companyRequest, String companyCode,String operator){
         try{
-            EnrolledCompany company = findCompanyById(companyCode).orElseThrow(()->new IOException("未找到公司信息"));
+            EnrolledCompany company = enrolledCompanyRepository.findById(companyCode).orElseThrow(()->new IOException("未找到公司信息"));
            company.getDetails().setShortNameInCN(companyRequest.getCompanyShortName());
            company.getDetails().setContactName(companyRequest.getContactName());
            company.getDetails().setContactPhone(companyRequest.getContactPhone());
@@ -448,7 +447,7 @@ public class CompanyService {
     @Transactional
     public boolean setVisible(String companyCode,VCompanyVisibleRequest visibleContent){
         try{
-           EnrolledCompany company =  findCompanyById(companyCode).orElseThrow(()->new IOException("没有从数据库中找到该公司公司信息"));
+           EnrolledCompany company =  enrolledCompanyRepository.findById(companyCode).orElseThrow(()->new IOException("没有从数据库中找到该公司公司信息"));
            company.setVisible(visibleContent.getVisible()?Whether.YES:Whether.NO);
            Optional<CompVisible> compVisible =  compVisibleRepository.findById(companyCode);
            if(visibleContent.getContent()==null&&!compVisible.isEmpty()) {
