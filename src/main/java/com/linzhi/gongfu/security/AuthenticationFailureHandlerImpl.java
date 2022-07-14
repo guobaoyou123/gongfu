@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.security;
 
 import com.linzhi.gongfu.infrastructure.HttpServletJsonResponseWrapper;
+import com.linzhi.gongfu.vo.VAuthenticationResponse;
 import com.linzhi.gongfu.vo.VBaseResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +27,22 @@ public class AuthenticationFailureHandlerImpl implements AuthenticationFailureHa
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         log.debug("操作员登录被拒绝：[{}] {}", exception.getClass().getSimpleName(), exception.getMessage());
-        var failureResponse = VBaseResponse.builder()
-            .code(403)
-            .message("Access Denied")
-            .build();
-        HttpServletJsonResponseWrapper.wrap(response).write(200, failureResponse);
+
+        if(exception.getClass().getSimpleName().equals("NoPasswordException")){
+           var  failureResponse = VAuthenticationResponse.builder()
+                .code(402)
+               .operatorCode(request.getParameter("code"))
+                .message("需要重新设置密码")
+                .build();
+            HttpServletJsonResponseWrapper.wrap(response).write(200, failureResponse);
+        }else{
+            var  failureResponse   = VBaseResponse.builder()
+                .code(403)
+                .message("Access Denied")
+                .build();
+            HttpServletJsonResponseWrapper.wrap(response).write(200, failureResponse);
+        }
     }
+
+
 }

@@ -10,15 +10,13 @@ import com.linzhi.gongfu.dto.TScene;
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Whether;
+import com.linzhi.gongfu.security.exception.NoFoundPasswordException;
 import com.linzhi.gongfu.security.token.OperatorLoginRequestToken;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.OperatorService;
 
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -61,6 +59,10 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
                             .build())
                     .flatMap(operatorService::findOperatorByID)
                     .orElseThrow(() -> new UsernameNotFoundException("请求的操作员不存在"));
+            if(operator.getPassword()==null||operator.getPassword().equals("")){
+                log.info("操作员 [{}@{}] 需要重新设置密码。", principals[0], principals[1]);
+                throw new NoFoundPasswordException();
+            }
             // 这里对操作员的其他状态进行处理
             if (operator.getState().equals(Availability.DISABLED)) {
                 log.info("操作员 [{}@{}] 试图登录，但因为已被禁用，登录请求已拒绝。", principals[0], principals[1]);
