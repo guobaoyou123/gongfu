@@ -26,10 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -214,26 +211,32 @@ public class OperatorService {
     }
 
     /**
-     * 重置密码
+     * 重置和修改密码
      * @param companyCode 公司编码
      * @param code 人员编码
      * @return 保存成功或者失败信息
      */
     @Transactional
-    public boolean resetPassword(String companyCode,String code,String password){
+    public String resetPassword(String companyCode,String code,String password){
         try{
+            var flag = true;
+            if(password==null) {
+                flag=false;
+                password = getLowerLetter(3) + getNumber(3);
+            }
             operatorDetailRepository.updatePassword(
-                password==null?"":passwordEncoder.encode(password)
+                passwordEncoder.encode(password)
+                ,flag?Whether.YES:Whether.NO
                 ,OperatorId.builder()
                         .operatorCode(code)
                         .companyCode(companyCode)
                     .build()
             );
+            return password;
         }catch (Exception e){
             e.printStackTrace();
-            return false;
+            return null;
         }
-        return true;
     }
 
     /**
@@ -259,4 +262,34 @@ public class OperatorService {
         operatorSceneRepository.saveAll(operatorSceneList);
         return true;
     }
+
+    /**
+     * 获取随机字符串 0-9
+     * @param length    长度
+     * @return
+     */
+    public static String getNumber(int length) {
+        String str = "0123456789";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; ++i) {
+            sb.append(str.charAt(random.nextInt(10)));
+        }
+        return sb.toString();
+    }
+    /**
+     * 获取随机字符串 a-z
+     * @param length    长度
+     * @return
+     */
+    public static String getLowerLetter(int length) {
+        String str = "abcdefghijklmnopqrstuvwxyz";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; ++i) {
+            sb.append(str.charAt(random.nextInt(26)));
+        }
+        return sb.toString();
+    }
+
 }

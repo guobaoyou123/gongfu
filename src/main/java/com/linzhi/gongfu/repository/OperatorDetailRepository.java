@@ -3,6 +3,7 @@ package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.OperatorDetail;
 import com.linzhi.gongfu.entity.OperatorId;
+import com.linzhi.gongfu.enumeration.Whether;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -25,7 +26,7 @@ public interface OperatorDetailRepository extends CrudRepository<OperatorDetail,
     Optional<String> findMaxCode(String companyCode);
 
     @Modifying
-    @Query(value = "update OperatorDetail o set o.password=?1 where o.identity=?2")
-    void  updatePassword(String password,OperatorId operatorId);
+    @Query(value = "update OperatorDetail o set o.password=?1 ,o.changed=?2 where o.identity=?3")
+    void  updatePassword(String password, Whether changed, OperatorId operatorId);
 
 }

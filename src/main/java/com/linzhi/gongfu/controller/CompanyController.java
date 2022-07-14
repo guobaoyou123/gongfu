@@ -411,14 +411,15 @@ public class CompanyController {
      * @return 返回成功信息
      */
     @PostMapping("/company/operator/detail/{code}/password")
-    public VBaseResponse resetPassword(@PathVariable String code,@RequestBody String password){
+    public VResetPasswordResponse resetPassword(@PathVariable String code,@RequestBody String password){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var flag = operatorService.resetPassword(session.getSession().getCompanyCode(),code,password);
-        return VBaseResponse.builder()
-            .code(flag?200:500)
-            .message(flag?"操作成功":"操作失败")
+        var newPassword = operatorService.resetPassword(session.getSession().getCompanyCode(),code,password);
+        return VResetPasswordResponse.builder()
+            .code(newPassword!=null?200:500)
+            .message(newPassword!=null?"操作成功":"操作失败")
+            .password(password==null?newPassword:null)
             .build();
     }
 }
