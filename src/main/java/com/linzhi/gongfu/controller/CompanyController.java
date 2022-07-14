@@ -257,14 +257,14 @@ public class CompanyController {
                 .code(201)
                 .message("公司简称重复")
                 .build();
-        flag = companyService.saveCompanyDetail(
+        var str = companyService.saveCompanyDetail(
             company,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
         );
         return VBaseResponse.builder()
-            .code(flag?200:500)
-            .message(flag?"数据修改成功":"修改失败")
+            .code(str!=null?200:500)
+            .message(str!=null?"数据修改成功":"修改失败")
             .build();
     }
 

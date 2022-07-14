@@ -44,4 +44,5 @@ public class TOperatorInfo implements Serializable {
     private String address;
     private String entryAt;
     private String resignationAt;
+    private Whether changed;
 }

@@ -149,4 +149,11 @@ public class Operator {
      */
     @Column(name = "resignation_at")
     private LocalDate resignationAt;
+
+    /**
+     * 操作员是否修改密码
+     * 1：是，0：否
+     */
+    @Column(length = 1)
+    private Whether changed;
 }

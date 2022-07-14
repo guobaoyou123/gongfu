@@ -197,7 +197,10 @@ public class OperatorService {
      * @return 保存成功或者失败信息
      */
     @Transactional
-    @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#code")
+    @Caching(evict = {
+        @CacheEvict(value = "Operator_Login;1800", key = "T(String).valueOf(#companyCode).concat(#code)"),
+        @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#code")
+    })
     public boolean modifyOperatorScene(String companyCode,VOperatorRequest operatorRequests,String code){
           try{
               operatorSceneRepository.deleteByOperatorSceneId_DcCompIdAndOperatorSceneId_OperatorCode(companyCode,code);
@@ -216,6 +219,7 @@ public class OperatorService {
      * @param code 人员编码
      * @return 保存成功或者失败信息
      */
+    @CacheEvict(value = "Operator_Login;1800", key = "T(String).valueOf(#companyCode).concat(#code)")
     @Transactional
     public String resetPassword(String companyCode,String code,String password){
         try{

@@ -64,7 +64,6 @@ public class CompanyService {
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 供应商信息列表
      */
-
     public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandById(String id, Optional<String> pageNum,Optional<String> pageSize) {
 
         List<CompTrad> compTradList=findSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
@@ -115,6 +114,7 @@ public class CompanyService {
     public  List<CompTrad> findSuppliersByCompTradIdCompBuyerAndState(String compBuyer, Trade state){
         return  compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(compBuyer,state);
     }
+
     /**
      * 根据品牌查询本单位的供应商
      * @param brands 品牌编码列表
@@ -381,7 +381,6 @@ public class CompanyService {
      * @return 返回详细信息
      */
     public VCompanyDetailResponse.VCompany findCompanyDetail(String companyCode) throws Exception {
-        Optional<EnrolledCompany> enrolledCompany= enrolledCompanyRepository.findById(companyCode);
         return  enrolledCompanyRepository.findById(companyCode).map(companyMapper::toCompDetail)
            .map(companyMapper::toCompanyDetail).orElseThrow(()->new IOException("未找到公司信息"));
     }
@@ -413,9 +412,13 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回成功或者失败消息
      */
-    @CacheEvict(value = "companyDetail;1800",key = "#companyCode")
+    @Caching(evict =  {
+        @CacheEvict(value = "Company_Host;1800",key = "#result"),
+        @CacheEvict(value = "companyDetail;1800",key = "#companyCode")
+    }
+    )
     @Transactional
-    public boolean saveCompanyDetail(VCompanyRequest companyRequest, String companyCode,String operator){
+    public String  saveCompanyDetail(VCompanyRequest companyRequest, String companyCode,String operator){
         try{
             EnrolledCompany company = enrolledCompanyRepository.findById(companyCode).orElseThrow(()->new IOException("未找到公司信息"));
            company.getDetails().setShortNameInCN(companyRequest.getCompanyShortName());
@@ -431,11 +434,11 @@ public class CompanyService {
             company.setIntroduction(companyRequest.getIntroduction());
             enrolledCompanyRepository.save(company);
             companyRepository.save(company.getDetails());
+            return company.getSubdomainName();
         }catch (Exception e){
             e.printStackTrace();
-            return false;
+            return null;
         }
-        return true;
     }
 
 
@@ -445,9 +448,10 @@ public class CompanyService {
      * @param visibleContent 可见内容
      * @return 返回操作是否成功信息
      */
+
     @CacheEvict(value = "companyDetail;1800",key = "#companyCode")
     @Transactional
-    public boolean setVisible(String companyCode,VCompanyVisibleRequest visibleContent){
+    public Boolean  setVisible(String companyCode,VCompanyVisibleRequest visibleContent){
         try{
            EnrolledCompany company =  enrolledCompanyRepository.findById(companyCode).orElseThrow(()->new IOException("没有从数据库中找到该公司公司信息"));
            company.setVisible(visibleContent.getVisible()?Whether.YES:Whether.NO);
@@ -465,6 +469,4 @@ public class CompanyService {
             return false;
         }
     }
-
-
 }

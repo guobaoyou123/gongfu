@@ -59,7 +59,7 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
                             .build())
                     .flatMap(operatorService::findOperatorByID)
                     .orElseThrow(() -> new UsernameNotFoundException("请求的操作员不存在"));
-            if(operator.getPassword()==null||operator.getPassword().equals("")){
+            if(operator.getChanged().equals(Whether.NO)){
                 log.info("操作员 [{}@{}] 需要重新设置密码。", principals[0], principals[1]);
                 throw new NoFoundPasswordException();
             }
