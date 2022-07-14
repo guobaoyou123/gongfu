@@ -71,6 +71,7 @@ public class CompTrad implements Serializable {
         @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
     })
     private Set<DcBrand> authBrands;
+
     /**
      * 自营品牌
      */
@@ -82,7 +83,4 @@ public class CompTrad implements Serializable {
         @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
     })
     private Set<DcBrand> selfSupportBrands;
-
-
-
 }

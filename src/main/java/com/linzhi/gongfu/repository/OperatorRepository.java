@@ -19,5 +19,5 @@ import java.util.List;
  */
 public interface OperatorRepository extends CrudRepository<Operator, OperatorId>, QuerydslPredicateExecutor<Operator> {
 
-     List<Operator> findOperatorByStateAndIdentity_CompanyCode(Availability state, String companyCode);
+     List<Operator> findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(Availability state, String companyCode,String operator);
 }

@@ -381,6 +381,7 @@ public class CompanyService {
      * @return 返回详细信息
      */
     public VCompanyDetailResponse.VCompany findCompanyDetail(String companyCode) throws Exception {
+        Optional<EnrolledCompany> enrolledCompany= enrolledCompanyRepository.findById(companyCode);
         return  enrolledCompanyRepository.findById(companyCode).map(companyMapper::toCompDetail)
            .map(companyMapper::toCompanyDetail).orElseThrow(()->new IOException("未找到公司信息"));
     }
@@ -429,6 +430,7 @@ public class CompanyService {
             company.getDetails().setAddress(companyRequest.getAddress());
             company.setIntroduction(companyRequest.getIntroduction());
             enrolledCompanyRepository.save(company);
+            companyRepository.save(company.getDetails());
         }catch (Exception e){
             e.printStackTrace();
             return false;

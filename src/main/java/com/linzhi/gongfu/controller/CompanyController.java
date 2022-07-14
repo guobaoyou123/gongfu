@@ -323,7 +323,7 @@ public class CompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var operator = operatorService.findOperatorDtail(session.getSession().getCompanyCode(),code)
+        var operator = operatorService.findOperatorDetail(session.getSession().getCompanyCode(),code)
             .map(operatorMapper::toOperatorDetailDTOs).orElseThrow();
         return VOperatorDetailResponse.builder()
              .code(200)
@@ -390,7 +390,7 @@ public class CompanyController {
     /**
      * 修改人员场景
      * @param operatorRequests 人员场景信息
-     * @return
+     * @return 返回修改成功信息
      */
     @PutMapping("/company/operator/{code}/detail/scene")
     public VBaseResponse modifyOperatorScene(@RequestBody VOperatorRequest operatorRequests,
@@ -411,11 +411,11 @@ public class CompanyController {
      * @return 返回成功信息
      */
     @PostMapping("/company/operator/detail/{code}/password")
-    public VBaseResponse resetPassword(@PathVariable String code){
+    public VBaseResponse resetPassword(@PathVariable String code,@RequestBody String password){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var flag = operatorService.resetPassword(session.getSession().getCompanyCode(),code);
+        var flag = operatorService.resetPassword(session.getSession().getCompanyCode(),code,password);
         return VBaseResponse.builder()
             .code(flag?200:500)
             .message(flag?"操作成功":"操作失败")

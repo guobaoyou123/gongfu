@@ -11,13 +11,10 @@ import com.linzhi.gongfu.repository.OperatorDetailRepository;
 import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.repository.OperatorSceneRepository;
 import com.linzhi.gongfu.repository.SceneRepository;
-import com.linzhi.gongfu.security.MD5PasswordEncoder;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VOperatorPageResponse;
 import com.linzhi.gongfu.vo.VOperatorRequest;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.sl.draw.geom.GuideIf;
-import org.apache.tomcat.util.security.MD5Encoder;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -87,7 +84,7 @@ public class OperatorService {
      */
     @Cacheable(value = "Operator_List;1800", key = "#companyCode+'-'+#state")
     public List<Operator>  operatorList(String companyCode,String state){
-        return operatorRepository.findOperatorByStateAndIdentity_CompanyCode(state.equals("0")? Availability.DISABLED:Availability.ENABLED,companyCode);
+        return operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(state.equals("0")? Availability.DISABLED:Availability.ENABLED,companyCode,"000");
     }
 
     /**
@@ -104,7 +101,7 @@ public class OperatorService {
                  .build());
     }
 
-    @Cacheable(value = "Scene_List;1800", key = "#companyCode+'-'+#operatorCode")
+    @Cacheable(value = "Scene_List;1800", key = "#companyCode+'-'+#operator")
     public Set<Scene> findScene(String companyCode, String operator){
        return sceneRepository.findScene(operator,companyCode);
     }
@@ -115,7 +112,7 @@ public class OperatorService {
      * @param operatorCode 操作员编码
      * @return 操作员详情
      */
-    public  Optional<TOperatorInfo> findOperatorDtail(String companyCode, String operatorCode) throws IOException {
+    public  Optional<TOperatorInfo> findOperatorDetail(String companyCode, String operatorCode) throws IOException {
        Optional<TOperatorInfo> operator =  operatorDetail( companyCode, operatorCode)
             .map(operatorMapper::toOperatorDetailDTO);
        Set<TScene> tScenes=findScene( companyCode, operatorCode).stream().map(sceneMapper::toDTO).collect(Collectors.toSet());
@@ -181,7 +178,7 @@ public class OperatorService {
                 .areaCode(operatorRequest.getAreaCode())
                 .address(operatorRequest.getAddress())
                 .state(Availability.ENABLED)
-                .password(passwordEncoder.encode(OperatorDetail.PASSWORD))
+                .password("")
                 .build();
             if(operatorRequest.getAreaCode()!=null){
                 operatorDetail.setAreaName(addressService.findByCode("",operatorRequest.getAreaCode()));
@@ -223,10 +220,10 @@ public class OperatorService {
      * @return 保存成功或者失败信息
      */
     @Transactional
-    public boolean resetPassword(String companyCode,String code){
+    public boolean resetPassword(String companyCode,String code,String password){
         try{
             operatorDetailRepository.updatePassword(
-                passwordEncoder.encode(OperatorDetail.PASSWORD)
+                password==null?"":passwordEncoder.encode(password)
                 ,OperatorId.builder()
                         .operatorCode(code)
                         .companyCode(companyCode)
@@ -249,20 +246,17 @@ public class OperatorService {
     public boolean saveOperatorScene(List<String> scene ,String companyCode,String operatorCode){
         List<OperatorScene> operatorSceneList = new ArrayList<>();
         scene.forEach(
-            s -> {
-                operatorSceneList.add(OperatorScene.builder()
-                    .operatorSceneId(
-                        OperatorSceneId.builder()
-                            .operatorCode(operatorCode)
-                            .dcCompId(companyCode)
-                            .sceneCode(s)
-                            .build()
-                    )
-                    .build());
-            }
+            s -> operatorSceneList.add(OperatorScene.builder()
+                .operatorSceneId(
+                    OperatorSceneId.builder()
+                        .operatorCode(operatorCode)
+                        .dcCompId(companyCode)
+                        .sceneCode(s)
+                        .build()
+                )
+                .build())
         );
-
-         operatorSceneRepository.saveAll(operatorSceneList);
+        operatorSceneRepository.saveAll(operatorSceneList);
         return true;
     }
 }

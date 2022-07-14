@@ -24,6 +24,7 @@ public interface EnrolledCompanyRepository
     @Query(value="select  (cast(max(id) as int)+1) from dc_comp " ,
         nativeQuery = true)
     String findMaxCode();
-    @Cacheable(value = "companyDetail;1800", unless = "#result == null ",key = "#id")
-    Optional<EnrolledCompany> findById(String id);
+
+    @Cacheable(value = "companyDetail;1800", unless = "#result == null ",key = "#companyCode")
+    Optional<EnrolledCompany> findById(String companyCode);
 }
