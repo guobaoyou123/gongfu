@@ -102,7 +102,7 @@ public class PreloadController {
      * @throws Exception 异常
      */
     @PostMapping("/password")
-    public VResetPasswordResponse resetPassword( @RequestBody Optional<VResetPasswordRequest> password ,@RequestHeader("CompanyDomain") Optional<String> domain) throws Exception {
+    public VBaseResponse resetPassword( @RequestBody Optional<VResetPasswordRequest> password ,@RequestHeader("CompanyDomain") Optional<String> domain) throws Exception {
         //查询公司编码
         TCompanyBaseInformation tCompanyBaseInformation= domain
             .map(URLTools::extractSubdomainName)
@@ -122,7 +122,7 @@ public class PreloadController {
                 password.orElseThrow().getPassword()
             )
             .orElseThrow(()->new Exception("设置失败"));
-        return VResetPasswordResponse.builder()
+        return VBaseResponse.builder()
             .code(200)
             .message("操作成功")
             .build();

@@ -1,7 +1,10 @@
 package com.linzhi.gongfu.controller;
 
 
+import com.linzhi.gongfu.dto.TOperatorInfo;
+import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.enumeration.Availability;
+import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.mapper.SceneMapper;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.security.sasl.AuthenticationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -411,15 +415,24 @@ public class CompanyController {
      * @return 返回成功信息
      */
     @PostMapping("/company/operator/detail/{code}/password")
-    public VResetPasswordResponse resetPassword(@PathVariable String code,@RequestBody String password){
+    public VResetPasswordResponse resetPassword(@PathVariable String code) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var newPassword = operatorService.resetPassword(session.getSession().getCompanyCode(),code,password);
+        TOperatorInfo operatorInfo= operatorService.findOperatorByID(OperatorId.builder()
+                .companyCode(session.getSession().getCompanyCode())
+                .operatorCode(session.getSession().getOperatorCode())
+            .build()).orElseThrow(()->new Exception("设置失败未查询到"));
+        if(operatorInfo.getAdmin().equals(Whether.NO))
+            throw new Exception("该用户无该操作权限");
+        var newPassword = operatorService.resetPassword(
+            session.getSession().getCompanyCode(),
+            code,null
+        ).orElseThrow(()->new Exception("设置失败"));
         return VResetPasswordResponse.builder()
-            .code(newPassword!=null?200:500)
-            .message(newPassword!=null?"操作成功":"操作失败")
-            .password(password==null?newPassword:null)
+            .code(200)
+            .message("操作成功")
+            .password(newPassword)
             .build();
     }
 }
