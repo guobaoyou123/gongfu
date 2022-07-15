@@ -1,6 +1,5 @@
 package com.linzhi.gongfu.service;
 
-import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.dto.TScene;
 import com.linzhi.gongfu.entity.*;
@@ -13,6 +12,7 @@ import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.repository.OperatorSceneRepository;
 import com.linzhi.gongfu.repository.SceneRepository;
 import com.linzhi.gongfu.util.PageTools;
+import com.linzhi.gongfu.util.RNGUtil;
 import com.linzhi.gongfu.vo.VOperatorPageResponse;
 import com.linzhi.gongfu.vo.VOperatorRequest;
 import lombok.RequiredArgsConstructor;
@@ -66,8 +66,8 @@ public class OperatorService {
      *  @param state 状态
      * @return 公司人员列表
      */
-    public Page<VOperatorPageResponse.VOperator> getOperatorPage(Pageable pageable, String companyCode, String state){
-        List<VOperatorPageResponse.VOperator> operatorList= operatorList(companyCode,state).stream()
+    public Page<VOperatorPageResponse.VOperator> getOperatorPage(Pageable pageable, String companyCode, String state,String keyWord){
+        List<VOperatorPageResponse.VOperator> operatorList= operatorList(companyCode,state,keyWord).stream()
             .map(operatorMapper::toDTO)
             .map(operatorMapper::toVOperatorDTO)
             .toList();
@@ -81,9 +81,16 @@ public class OperatorService {
      * @param state 状态
      * @return 人员列表
      */
-    @Cacheable(value = "Operator_List;1800", key = "#companyCode+'-'+#state")
-    public List<Operator>  operatorList(String companyCode,String state){
-        return operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(state.equals("0")? Availability.DISABLED:Availability.ENABLED,companyCode,"000");
+    @Cacheable(value = "Operator_List;1800", key = "#companyCode+'-'+#state+'-'+#keyWord")
+    public List<Operator>  operatorList(String companyCode,String state,String keyWord){
+        return keyWord.equals("")?operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(state.equals("0")? Availability.DISABLED:Availability.ENABLED,
+            companyCode,
+            "000"):operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNotAndAreaNameLikeOrPhoneLike(
+            state.equals("0")? Availability.DISABLED:Availability.ENABLED,
+            companyCode,
+            "000",
+            keyWord,
+            keyWord);
     }
 
     /**
@@ -100,6 +107,12 @@ public class OperatorService {
                  .build());
     }
 
+    /**
+     * 场景列表
+     * @param companyCode 公司编码
+     * @param operator 操作员编码
+     * @return 场景列表
+     */
     @Cacheable(value = "Scene_List;1800", key = "#companyCode+'-'+#operator")
     public Set<Scene> findScene(String companyCode, String operator){
        return sceneRepository.findScene(operator,companyCode);
@@ -128,7 +141,7 @@ public class OperatorService {
      */
     @Caching(evict = {
         @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#operatorCode"),
-        @CacheEvict(value="Operator_List;1800",key = "#companyCode")
+        @CacheEvict(value="Operator_List;1800",key = "#companyCode+'-'",allEntries = true)
     })
     @Transactional
     public boolean modifyOperator(String companyCode, String operatorCode, VOperatorRequest operatorRequest){
@@ -158,7 +171,7 @@ public class OperatorService {
      * @param operatorRequest 人员信息
      * @return 返回成功或则失败信息
      */
-    @CacheEvict(value="Operator_List;1800",key = "#companyCode")
+    @CacheEvict(value="Operator_List;1800",key = "#companyCode+'-'",allEntries = true)
     @Transactional
     public boolean addOperator(String companyCode,VOperatorRequest operatorRequest){
         try{
@@ -228,7 +241,7 @@ public class OperatorService {
             var flag = true;
             if(password==null) {
                 flag=false;
-                password = getLowerLetter(3) + getNumber(3);
+                password = RNGUtil.getLowerLetter(3) + RNGUtil.getNumber(3);
             }
             operatorDetailRepository.updatePassword(
                 passwordEncoder.encode(password)
@@ -253,23 +266,22 @@ public class OperatorService {
      * @return 返回是或否
      */
     public boolean verifyPassword(String companyCode ,String operatorCode,String password){
-        var operator =findOperatorByID(OperatorId.builder()
+        var operator =findOperatorByID(
+            OperatorId.builder()
             .companyCode(companyCode)
             .operatorCode(operatorCode)
-            .build())
-            .orElseThrow(() -> new UsernameNotFoundException("请求的操作员不存在"));
+            .build()
+        ).orElseThrow(() -> new UsernameNotFoundException("请求的操作员不存在"));
         return passwordEncoder.matches(password,operator.getPassword()) ;
     }
-
 
     /**
      * 保存场景信息
      * @param scene 场景列表
      * @param companyCode 公司编码
      * @param operatorCode 操作员编码
-     * @return 返回成功 或者失败
      */
-    public boolean saveOperatorScene(List<String> scene ,String companyCode,String operatorCode){
+    public void saveOperatorScene(List<String> scene ,String companyCode,String operatorCode){
         List<OperatorScene> operatorSceneList = new ArrayList<>();
         scene.forEach(
             s -> operatorSceneList.add(OperatorScene.builder()
@@ -283,36 +295,5 @@ public class OperatorService {
                 .build())
         );
         operatorSceneRepository.saveAll(operatorSceneList);
-        return true;
     }
-
-    /**
-     * 获取随机字符串 0-9
-     * @param length    长度
-     * @return
-     */
-    public static String getNumber(int length) {
-        String str = "0123456789";
-        Random random = new Random();
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < length; ++i) {
-            sb.append(str.charAt(random.nextInt(10)));
-        }
-        return sb.toString();
-    }
-    /**
-     * 获取随机字符串 a-z
-     * @param length    长度
-     * @return
-     */
-    public static String getLowerLetter(int length) {
-        String str = "abcdefghijklmnopqrstuvwxyz";
-        Random random = new Random();
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < length; ++i) {
-            sb.append(str.charAt(random.nextInt(26)));
-        }
-        return sb.toString();
-    }
-
 }

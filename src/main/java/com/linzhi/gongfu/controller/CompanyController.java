@@ -299,14 +299,16 @@ public class CompanyController {
     @GetMapping("/company/operators")
     public VOperatorPageResponse operatorPage(@RequestParam("pageNum") Optional<String> pageNum ,
                                               @RequestParam("pageSize") Optional<String> pageSize ,
-                                              @RequestParam("state") Optional<String> state){
+                                              @RequestParam("state") Optional<String> state,
+                                              @RequestParam("keyword") Optional<String> keyword){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
         var page=operatorService.getOperatorPage(PageRequest.of(
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10)
-        ),session.getSession().getCompanyCode(),state.orElse("1")
+        ),session.getSession().getCompanyCode(),state.orElse("1"),
+            keyword.orElse("")
         );
         return  VOperatorPageResponse.builder()
             .code(200)
