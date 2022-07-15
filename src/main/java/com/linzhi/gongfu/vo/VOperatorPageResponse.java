@@ -28,6 +28,5 @@ public class VOperatorPageResponse extends VBaseResponse{
         private String code;
         private String name;
         private String phone;
-        private String state;
     }
 }

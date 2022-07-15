@@ -390,7 +390,6 @@ public class CompanyController {
             .message("获取数据成功")
             .scenes(scenes)
             .build();
-
     }
 
     /**
