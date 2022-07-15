@@ -70,6 +70,7 @@ public class ContractService {
     private final DeliverBaseRepository deliverBaseRepository;
     private final ContractReceivedRepository contractReceivedRepository;
     private final ContractRecordPreviewRepository contractRecordPreviewRepository;
+
     /**
      * 查询合同是否重复（产品种类和数量）
      * @param inquiryId 询价单id
@@ -132,11 +133,15 @@ public class ContractService {
                 InquiryType.INQUIRY_LIST,
                 ContractState.FINISHED
             );
-            ContractRevision contractRevision =  createContractRevision(id,
+            ContractRevision contractRevision =  createContractRevision(
+                id,
                 operatorName,
                 generateContractRequest.getSupplierNo(),
                 inquiry.getOfferMode(),
-                generateContractRequest.getContactNo(),1,operator);
+                generateContractRequest.getContactNo(),
+                1,
+                operator
+            );
             if(inquiry.getVatProductRate()!=null)
                 contractRevision.setVatProductRate(inquiry.getVatProductRate());
             if(inquiry.getVatServiceRate()!=null)
@@ -943,6 +948,7 @@ public class ContractService {
         }
         return list;
     }
+
     /**
      * 保存导入产品为询价单明细
      * @param id 询价单id

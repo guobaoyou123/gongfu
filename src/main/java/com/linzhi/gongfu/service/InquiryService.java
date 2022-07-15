@@ -56,7 +56,6 @@ public class InquiryService {
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final PurchasePlanRepository purchasePlanRepository;
     private final UnfinishedInquiryRepository unfinishedInquiryRepository;
-  //  private final ContractService contractService;
     private final CompTaxModelRepository compTaxModelRepository;
 
     /**
@@ -67,7 +66,9 @@ public class InquiryService {
      * @param operatorCode 操作员编码
      * @return 返回成功信息
      */
-    @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
+    @Caching(evict = {
+        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
+    })
     @Transactional
     public Map<String,Object> savePurchaseInquiry(String planCode, String companyCode,String compName, String operatorCode){
         Map<String,Object> resultMap = new HashMap<>();

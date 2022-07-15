@@ -5,6 +5,7 @@ import com.linzhi.gongfu.entity.Operator;
 
 import com.linzhi.gongfu.entity.OperatorDetail;
 import com.linzhi.gongfu.vo.VOperatorDetailResponse;
+import com.linzhi.gongfu.vo.VOperatorListResponse;
 import com.linzhi.gongfu.vo.VOperatorPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -24,7 +25,7 @@ public interface OperatorMapper {
     @Mapping(target = "companyDomain", source = "company.subdomainName")
     TOperatorInfo toDTO(Operator operator);
 
-    @Mapping(target = "state", expression = "java(String.valueOf(operator.getState().getState()))")
+
     VOperatorPageResponse.VOperator toVOperatorDTO(TOperatorInfo operator);
 
 
@@ -34,5 +35,9 @@ public interface OperatorMapper {
     @Mapping(target = "resignationAt",expression = "java(operator.getResignationAt()==null?null:com.linzhi.gongfu.util.DateConverter.dateFormat(operator.getResignationAt()))")
     TOperatorInfo toOperatorDetailDTO(OperatorDetail operator);
 
+    @Mapping(target = "state", expression = "java(String.valueOf(operator.getState().getState()))")
     VOperatorDetailResponse.VOperator toOperatorDetailDTOs(TOperatorInfo operator);
+
+    @Mapping(target = "scenes",expression = "java(operator.getScenes().stream().map(TScene::getCode).collect(java.util.stream.Collectors.toSet()))")
+    VOperatorListResponse.VOperator toOperatorDTOs(TOperatorInfo operator);
 }

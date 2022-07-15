@@ -19,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.security.sasl.AuthenticationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +97,6 @@ public class CompanyController {
         var list = companyService.findForeignSuppliers(
             session.getSession().getCompanyCode()
         );
-
         return VForeignSuppliersResponse.builder()
             .code(200)
             .message("获取供应商列表成功")
@@ -137,7 +135,11 @@ public class CompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var map = companyService.saveForeignSupplier(supplier,session.getSession().getCompanyCode(),null);
+        var map = companyService.saveForeignSupplier(
+            supplier,
+            session.getSession().getCompanyCode(),
+            null
+        );
         return VBaseResponse.builder()
             .code((int)map.get("code"))
             .message((String)map.get("message"))
@@ -420,10 +422,12 @@ public class CompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        TOperatorInfo operatorInfo= operatorService.findOperatorByID(OperatorId.builder()
+        TOperatorInfo operatorInfo= operatorService.findOperatorByID(
+            OperatorId.builder()
                 .companyCode(session.getSession().getCompanyCode())
                 .operatorCode(session.getSession().getOperatorCode())
-            .build()).orElseThrow(()->new Exception("设置失败未查询到"));
+            .build()
+        ).orElseThrow(()->new Exception("设置失败未查询到"));
         if(operatorInfo.getAdmin().equals(Whether.NO))
             throw new Exception("该用户无该操作权限");
         var newPassword = operatorService.resetPassword(
@@ -434,6 +438,25 @@ public class CompanyController {
             .code(200)
             .message("操作成功")
             .password(newPassword)
+            .build();
+    }
+
+    /**
+     * 人员权限统计列表
+     * @return 返回人员权限列表
+     */
+    @GetMapping("/company/operator/scenes/statistics")
+    public VOperatorListResponse authorityStatistics(){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var list = operatorService.findOperatorList(session.getSession().getCompanyCode())
+            .stream().map(operatorMapper::toOperatorDTOs)
+            .toList();
+        return VOperatorListResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .operators(list)
             .build();
     }
 }

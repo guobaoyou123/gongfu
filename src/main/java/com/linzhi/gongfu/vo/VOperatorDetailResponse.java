@@ -33,6 +33,7 @@ public class VOperatorDetailResponse extends VBaseResponse{
         private String address;
         private String entryAt;
         private String resignationAt;
+        private String state;
         private List<VScene> scenes;
     }
 

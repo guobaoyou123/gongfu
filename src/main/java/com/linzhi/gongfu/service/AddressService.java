@@ -54,7 +54,6 @@ public class AddressService {
      * @param companyCode 单位id
      * @return 三级行政区划查找（包括禁用区域状态）列表
      */
-
     public List<TArea> areas(String companyCode){
         var list = findAllArea().stream()
             .map(administrativeAreaMapper::toDo)
@@ -299,9 +298,6 @@ public class AddressService {
             address.setAreaName(name);
             address.setFlag(vAddress.getFlag()? Whether.YES:Whether.NO);
             address.setAreaCode(vAddress.getAreaCode());
-
-           /* if(vAddress.getFlag())
-                addressRepository.updateAddressById("0",companyCode);*/
             addressRepository.save(address);
 
             map.put("code",200);
@@ -383,7 +379,7 @@ public class AddressService {
      * @param companyCode 公司id
      * @return 返回联系人列表
      */
-  public List<TCompContacts> findContactByAddrCode(String operator,String companyCode,String addressCode,String state){
+    public List<TCompContacts> findContactByAddrCode(String operator,String companyCode,String addressCode,String state){
        List<CompContacts> list;
        Operator operator1= operatorRepository.findById(OperatorId.builder()
               .operatorCode(operator)

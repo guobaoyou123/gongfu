@@ -67,10 +67,14 @@ public class OperatorService {
      * @return 公司人员列表
      */
     public Page<VOperatorPageResponse.VOperator> getOperatorPage(Pageable pageable, String companyCode, String state,String keyWord){
-        List<VOperatorPageResponse.VOperator> operatorList= operatorList(companyCode,state,keyWord).stream()
-            .map(operatorMapper::toDTO)
+        List<VOperatorPageResponse.VOperator> operatorList= operatorList(companyCode,state).stream()
+            .map(operatorMapper::toOperatorDetailDTO)
             .map(operatorMapper::toVOperatorDTO)
             .toList();
+        if(!keyWord.equals(""))
+            operatorList=operatorList.stream()
+                .filter(vOperator -> vOperator.getName().contains(keyWord)||vOperator.getPhone().contains(keyWord))
+                .toList();
 
         return PageTools.listConvertToPage(operatorList,pageable);
     }
@@ -81,16 +85,11 @@ public class OperatorService {
      * @param state 状态
      * @return 人员列表
      */
-    @Cacheable(value = "Operator_List;1800", key = "#companyCode+'-'+#state+'-'+#keyWord")
-    public List<Operator>  operatorList(String companyCode,String state,String keyWord){
-        return keyWord.equals("")?operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(state.equals("0")? Availability.DISABLED:Availability.ENABLED,
+    @Cacheable(value = "Operator_List;1800", key = "#companyCode+'-'+#state")
+    public List<OperatorDetail>  operatorList(String companyCode,String state){
+        return operatorDetailRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(state.equals("0")? Availability.DISABLED:Availability.ENABLED,
             companyCode,
-            "000"):operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNotAndAreaNameLikeOrPhoneLike(
-            state.equals("0")? Availability.DISABLED:Availability.ENABLED,
-            companyCode,
-            "000",
-            keyWord,
-            keyWord);
+            "000");
     }
 
     /**
@@ -133,6 +132,17 @@ public class OperatorService {
     }
 
     /**
+     * 人员权限列表
+     * @param companyCode 单位编码
+     * @return 返回人员权限列表
+     */
+    public List<TOperatorInfo> findOperatorList(String companyCode){
+        return   operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(Availability.ENABLED,companyCode,"000")
+            .stream().map(operatorMapper::toDTO).toList();
+
+    }
+
+    /**
      * 修改人员信息
      * @param companyCode 公司编码
      * @param operatorCode 操作员编码
@@ -141,7 +151,8 @@ public class OperatorService {
      */
     @Caching(evict = {
         @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#operatorCode"),
-        @CacheEvict(value="Operator_List;1800",key = "#companyCode+'-'",allEntries = true)
+        @CacheEvict(value="Operator_List;1800",key = "#companyCode+'-1'"),
+        @CacheEvict(value = "Operator_scene_statistics;1800", key = "#companyCode")
     })
     @Transactional
     public boolean modifyOperator(String companyCode, String operatorCode, VOperatorRequest operatorRequest){
@@ -171,7 +182,12 @@ public class OperatorService {
      * @param operatorRequest 人员信息
      * @return 返回成功或则失败信息
      */
-    @CacheEvict(value="Operator_List;1800",key = "#companyCode+'-'",allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value="Operator_List;1800",key = "#companyCode+'-1'")
+        ,
+        @CacheEvict(value = "Operator_scene_statistics;1800", key = "#companyCode")
+    })
+
     @Transactional
     public boolean addOperator(String companyCode,VOperatorRequest operatorRequest){
         try{
@@ -214,7 +230,8 @@ public class OperatorService {
     @Transactional
     @Caching(evict = {
         @CacheEvict(value = "Operator_Login;1800", key = "T(String).valueOf(#companyCode).concat(#code)"),
-        @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#code")
+        @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#code") ,
+        @CacheEvict(value = "Operator_scene_statistics;1800", key = "#companyCode")
     })
     public boolean modifyOperatorScene(String companyCode,VOperatorRequest operatorRequests,String code){
           try{

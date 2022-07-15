@@ -4,6 +4,7 @@ import com.linzhi.gongfu.entity.Operator;
 import com.linzhi.gongfu.entity.OperatorId;
 
 import com.linzhi.gongfu.enumeration.Availability;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -19,17 +20,11 @@ import java.util.List;
  */
 public interface OperatorRepository extends CrudRepository<Operator, OperatorId>, QuerydslPredicateExecutor<Operator> {
 
-     List<Operator> findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNotAndAreaNameLikeOrPhoneLike(
-         Availability state,
-         String companyCode,
-         String operator,
-         String name,
-         String phone
-     );
-
+    @Cacheable(value = "Operator_scene_statistics;1800", key = "#companyCode")
     List<Operator> findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(
         Availability state,
         String companyCode,
         String operator
     );
+
 }

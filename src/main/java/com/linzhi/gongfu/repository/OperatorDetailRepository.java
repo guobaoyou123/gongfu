@@ -1,8 +1,10 @@
 package com.linzhi.gongfu.repository;
 
 
+import com.linzhi.gongfu.entity.Operator;
 import com.linzhi.gongfu.entity.OperatorDetail;
 import com.linzhi.gongfu.entity.OperatorId;
+import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Whether;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,5 +30,9 @@ public interface OperatorDetailRepository extends CrudRepository<OperatorDetail,
     @Modifying
     @Query(value = "update OperatorDetail o set o.password=?1 ,o.changed=?2 where o.identity=?3")
     void  updatePassword(String password, Whether changed, OperatorId operatorId);
-
+    List<OperatorDetail> findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(
+        Availability state,
+        String companyCode,
+        String operator
+    );
 }
