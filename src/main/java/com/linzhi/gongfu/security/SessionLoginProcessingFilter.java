@@ -33,7 +33,7 @@ import org.springframework.security.web.util.matcher.AnyRequestMatcher;
  */
 public final class SessionLoginProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
-    private final   String  url [] = {"/api-docs", "/login", "/host", "/menus","/strings"};
+    private final   String  url [] = {"/api-docs", "/login", "/host", "/menus","/strings","/password"};
 
     public SessionLoginProcessingFilter(AuthenticationFailureHandler failureHandler,
             AuthenticationManager authenticationManager) {

@@ -1,21 +1,23 @@
 package com.linzhi.gongfu.controller;
 
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
+import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.mapper.MenuMapper;
 import com.linzhi.gongfu.mapper.WordMapper;
+import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.MenuService;
+import com.linzhi.gongfu.service.OperatorService;
 import com.linzhi.gongfu.service.WordService;
 import com.linzhi.gongfu.util.URLTools;
-import com.linzhi.gongfu.vo.VPreloadCompanyInfoResponse;
-import com.linzhi.gongfu.vo.VPreloadMenuResponse;
-import com.linzhi.gongfu.vo.VPreloadWordsResponse;
+import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
+import javax.security.sasl.AuthenticationException;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,7 @@ public class PreloadController {
     private final MenuMapper menuMapper;
     private final WordService wordService;
     private final WordMapper wordMapper;
+    private final OperatorService operatorService;
 
     /**
      * 通过给定的主机域名名称获取对应的公司基本信息接口
@@ -89,5 +92,39 @@ public class PreloadController {
                 .message("所有文案词汇已经获取，使用时请注意定位键。")
                 .words(words)
                 .build();
+    }
+
+    /**
+     * 修改密码
+     * @param password 密码信息
+     * @param domain 域名
+     * @return 返回成功信息
+     * @throws Exception 异常
+     */
+    @PostMapping("/password")
+    public VResetPasswordResponse resetPassword( @RequestBody Optional<VResetPasswordRequest> password ,@RequestHeader("CompanyDomain") Optional<String> domain) throws Exception {
+        //查询公司编码
+        TCompanyBaseInformation tCompanyBaseInformation= domain
+            .map(URLTools::extractSubdomainName)
+            .flatMap(companyService::findCompanyInformationByHostname)
+            .orElseThrow(()->new IOException("未从数据库中查到"));
+        //验证旧密码是否正确
+        var flag = operatorService.verifyPassword(
+            tCompanyBaseInformation.getCode(),
+            password.orElseThrow().getCode(),
+            password.orElseThrow().getOldpassword()
+        );
+        if(!flag)
+            throw new AuthenticationException("输入的原密码不正确");
+        operatorService.resetPassword(
+            tCompanyBaseInformation.getCode(),
+                password.orElseThrow().getCode(),
+                password.orElseThrow().getPassword()
+            )
+            .orElseThrow(()->new Exception("设置失败"));
+        return VResetPasswordResponse.builder()
+            .code(200)
+            .message("操作成功")
+            .build();
     }
 }

@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.service;
 
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.dto.TScene;
 import com.linzhi.gongfu.entity.*;
@@ -20,6 +21,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -221,7 +223,7 @@ public class OperatorService {
      */
     @CacheEvict(value = "Operator_Login;1800", key = "T(String).valueOf(#companyCode).concat(#code)")
     @Transactional
-    public String resetPassword(String companyCode,String code,String password){
+    public Optional<String> resetPassword(String companyCode,String code,String password){
         try{
             var flag = true;
             if(password==null) {
@@ -236,12 +238,29 @@ public class OperatorService {
                         .companyCode(companyCode)
                     .build()
             );
-            return password;
+            return Optional.of(password);
         }catch (Exception e){
             e.printStackTrace();
             return null;
         }
     }
+
+    /**
+     * 验证密码是否正确
+     * @param companyCode 单位编码
+     * @param operatorCode 操作员编码
+     * @param password 密码
+     * @return 返回是或否
+     */
+    public boolean verifyPassword(String companyCode ,String operatorCode,String password){
+        var operator =findOperatorByID(OperatorId.builder()
+            .companyCode(companyCode)
+            .operatorCode(operatorCode)
+            .build())
+            .orElseThrow(() -> new UsernameNotFoundException("请求的操作员不存在"));
+        return passwordEncoder.matches(password,operator.getPassword()) ;
+    }
+
 
     /**
      * 保存场景信息

@@ -43,7 +43,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         var sessionProcessingFilter = new SessionLoginProcessingFilter(failureHandler, authenticationManagerBean());
         http
                 .authorizeRequests(authorize -> authorize.antMatchers("/api-docs", "/login", "/host", "/menus",
-                        "/strings").permitAll())
+                        "/strings","/password").permitAll())
                 .authorizeRequests(authorize -> authorize.anyRequest().authenticated())
                 .logout(logout -> logout.logoutUrl("/logout").permitAll().logoutSuccessHandler(logoutHandler))
                 .exceptionHandling(handle -> handle.authenticationEntryPoint(failureEntryPoint))
