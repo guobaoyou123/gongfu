@@ -117,4 +117,9 @@ public interface CompanyMapper {
     @Mapping(target = "usci", source = "USCI")
     @Mapping(target = "visible",expression = "java(company.getVisible().equals(\"1\")?true:false)")
     VCompanyDetailResponse.VCompany toCompanyDetail(TCompanyBaseInformation company);
+
+
+    @Mapping(target = "companyName", source = "name")
+    @Mapping(target = "companyShortName", source = "shortName")
+    VEnrolledCompanyPageResponse.VCompany toEnrolledCompany(TCompanyBaseInformation company);
 }

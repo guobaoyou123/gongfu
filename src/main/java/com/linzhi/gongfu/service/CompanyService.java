@@ -448,7 +448,6 @@ public class CompanyService {
      * @param visibleContent 可见内容
      * @return 返回操作是否成功信息
      */
-
     @CacheEvict(value = "companyDetail;1800",key = "#companyCode")
     @Transactional
     public Boolean  setVisible(String companyCode,VCompanyVisibleRequest visibleContent){
@@ -468,5 +467,27 @@ public class CompanyService {
         }catch(Exception e){
             return false;
         }
+    }
+
+    /**
+     * 查询入格单位列表分页
+     * @param name 公司名称
+     * @param pageable 分页
+     * @return 入格单位信息列表
+     */
+    public Page<VEnrolledCompanyPageResponse.VCompany> findEnrolledCompanyPage(String name,Pageable pageable,String companyCode){
+         var list =  enrolledCompanyRepository.findAllByVisibleAndState(Whether.YES,Enrollment.ENROLLED)
+            .stream().filter(enrolledCompany -> {
+                if(enrolledCompany.getDetails()!=null&&enrolledCompany.getDetails().getShortNameInCN()!=null){
+                    return enrolledCompany.getDetails().getShortNameInCN().contains(name);
+                }else {
+                    return false;
+                }
+           })
+           .filter(enrolledCompany -> !enrolledCompany.getId().equals(companyCode))
+            .map(companyMapper::toCompDetail)
+            .map(companyMapper::toEnrolledCompany)
+            .toList();
+        return PageTools.listConvertToPage(list,pageable);
     }
 }

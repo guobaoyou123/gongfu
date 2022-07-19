@@ -1,6 +1,6 @@
 package com.linzhi.gongfu.entity;
 
-import com.linzhi.gongfu.converter.AvailabilityConverter;
+
 import com.linzhi.gongfu.enumeration.Availability;
 import lombok.*;
 

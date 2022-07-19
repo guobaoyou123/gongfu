@@ -7,7 +7,7 @@ package com.linzhi.gongfu.enumeration;
  * @create_at 2021-12-22
  */
 public enum Enrollment {
-    NOT_ENROLLED('1'), MANAGEMENT('2'), ENROLLED('3');
+    NOT_ENROLLED('0'), MANAGEMENT('3'), ENROLLED('1');
 
     private final char flag;
 

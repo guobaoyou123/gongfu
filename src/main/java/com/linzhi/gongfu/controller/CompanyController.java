@@ -459,5 +459,35 @@ public class CompanyController {
             .operators(list)
             .build();
     }
+
+    /**
+     * 查询入格单位信息列表
+     * @param name
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @GetMapping("/enrolled/companies")
+    public VEnrolledCompanyPageResponse findCompanyPage(@RequestParam("name") Optional<String> name,
+                                                        @RequestParam("pageNum") Optional<String> pageNum,
+                                                        @RequestParam("pageSize") Optional<String> pageSize ){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var page = companyService.findEnrolledCompanyPage(
+            name.orElse(""),
+            PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),
+                pageSize.map(PageTools::verificationPageSize).orElse(10)),
+            session.getSession().getCompanyCode()
+        );
+        return VEnrolledCompanyPageResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .current(page.getNumber()+1)
+            .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
+            .companies(page.getContent())
+            .build();
+    }
+
 }
 
