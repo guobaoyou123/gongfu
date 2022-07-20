@@ -6,14 +6,19 @@ import com.linzhi.gongfu.entity.Notification;
 import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.TradeApply;
 import com.linzhi.gongfu.enumeration.Whether;
+import com.linzhi.gongfu.mapper.CompTradeApplyMapper;
 import com.linzhi.gongfu.repository.CompInvitationCodeRepository;
 import com.linzhi.gongfu.repository.CompTradeApplyRepository;
 import com.linzhi.gongfu.repository.NotificationRepository;
 import com.linzhi.gongfu.repository.SceneMenuRepository;
+import com.linzhi.gongfu.util.PageTools;
+import com.linzhi.gongfu.vo.VTradeApplyPageResponse;
 import com.linzhi.gongfu.vo.VTradeApplyRequest;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +40,7 @@ public class CompTradeApplyService {
     private final NotificationRepository notificationRepository;
     private final CompInvitationCodeRepository compInvitationCodeRepository;
     private final SceneMenuRepository sceneMenuRepository;
+    private final CompTradeApplyMapper compTradeApplyMapper;
 
     /**
      * 申请采购
@@ -103,5 +109,22 @@ public class CompTradeApplyService {
         return true;
     }
 
+
+    /**
+     * 分页查询待处理列表
+     * @param companyCode
+     * @param pageable
+     * @param name
+     * @return
+     */
+    public Page<VTradeApplyPageResponse.VTradeApply> findTradeApply(String companyCode, Pageable pageable, String name){
+         List<VTradeApplyPageResponse.VTradeApply> compTradeApplies=  compTradeApplyRepository.findByHandledCompByAndStateAndTypeOrderByCreatedAtDesc(companyCode,TradeApply.APPLYING,"1")
+             .stream().filter(compTradeApply -> compTradeApply.getCreatedCompany().getNameInCN().contains(name))
+             .map(compTradeApplyMapper::toTComTradeApply)
+             .map(compTradeApplyMapper::toVTradeApply)
+             .toList();
+
+        return PageTools.listConvertToPage(compTradeApplies,pageable);
+    }
 
 }

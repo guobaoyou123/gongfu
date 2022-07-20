@@ -3,10 +3,7 @@ package com.linzhi.gongfu.entity;
 import com.linzhi.gongfu.enumeration.TradeApply;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -96,6 +93,13 @@ public class CompTradeApply implements Serializable {
      */
     @Column(name = "state")
     private TradeApply state;
+
+    /**
+     * 申请单位公司
+     */
+    @OneToOne
+    @JoinColumn(name = "created_comp_by", referencedColumnName = "id", insertable = false, updatable = false)
+    private EnrolledCompany createdCompany;
 
 
 }

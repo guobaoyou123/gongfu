@@ -566,27 +566,36 @@ public class CompanyController {
            .build();
    }
 
+    /**
+     * 查看待处理列表
+     * @param name 公司名称
+     * @param pageNum 页数
+     * @param pageSize 每页展示几条
+     * @return 待处理申请列表
+     */
    @GetMapping("/enrolled/company/apply")
-   public VEnrolledCompanyPageResponse findTradeApply(@RequestParam("name") Optional<String> name,
+   public VTradeApplyPageResponse findTradeApply(@RequestParam("name") Optional<String> name,
                                                       @RequestParam("pageNum") Optional<String> pageNum,
                                                       @RequestParam("pageSize") Optional<String> pageSize ){
        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
            .getContext()
            .getAuthentication();
-       var page = companyService.findEnrolledCompanyPage(
-           name.orElse(""),
+       var page = compTradeApplyService.findTradeApply(
+           session.getSession().getCompanyCode(),
            PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),
                pageSize.map(PageTools::verificationPageSize).orElse(10)),
-           session.getSession().getCompanyCode()
+           name.orElse("")
        );
-       return VEnrolledCompanyPageResponse.builder()
+       return VTradeApplyPageResponse.builder()
            .code(200)
            .message("获取数据成功")
            .current(page.getNumber()+1)
            .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
-           .companies(page.getContent())
+           .applies(page.getContent())
            .build();
-
    }
+
+
+   
 }
 

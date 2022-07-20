@@ -7,6 +7,7 @@ import com.linzhi.gongfu.enumeration.TradeApply;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CompTradeApplyRepository extends CrudRepository<CompTradeApply, String>, QuerydslPredicateExecutor<CompTradeApply> {
@@ -25,4 +26,5 @@ public interface CompTradeApplyRepository extends CrudRepository<CompTradeApply,
      */
     Optional<CompTradeApply> findTopByCreatedCompByAndHandledCompByAndTypeOrderByCreatedAtDesc(String createdCompBy, String handledCompBy,String type);
 
+    List<CompTradeApply> findByHandledCompByAndStateAndTypeOrderByCreatedAtDesc(String companyCode,TradeApply tradeApply,String type);
 }
