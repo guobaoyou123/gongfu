@@ -76,7 +76,7 @@ public class CompTradeApply implements Serializable {
     /**
      * 处理人
      */
-    @Column(name = "handled_by",length = 40, nullable = false)
+    @Column(name = "handled_by",length = 40)
     private String handledBy;
 
     /**
@@ -96,4 +96,6 @@ public class CompTradeApply implements Serializable {
      */
     @Column(name = "state")
     private TradeApply state;
+
+
 }

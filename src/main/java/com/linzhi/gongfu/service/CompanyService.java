@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,6 +48,8 @@ public class CompanyService {
     private final AddressService addressService;
     private final CompTradBrandRepository compTradBrandRepository;
     private final CompVisibleRepository compVisibleRepository;
+    private final CompInvitationCodeRepository compInvitationCodeRepository;
+    private final CompTradeApplyRepository compTradeApplyRepository;
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -489,5 +493,92 @@ public class CompanyService {
             .map(companyMapper::toEnrolledCompany)
             .toList();
         return PageTools.listConvertToPage(list,pageable);
+    }
+
+    /**
+     * 根据邀请码查找入格单位编码
+     * @param invitationCode 邀请码
+     * @return 入格单位编码
+     */
+    public Optional<String> findInvitationCode(String invitationCode){
+        Optional<CompInvitationCode> compInvitationCode=compInvitationCodeRepository.findCompInvitationCodeByCompInvitationCodeId_InvitationCode(invitationCode);
+         if(!compInvitationCode.isEmpty()){
+             //判断是否超时
+            Long m= Duration.between(LocalDateTime.now(),compInvitationCode.get().getCreatedAt()).toMinutes();
+            if(m>30)
+                return Optional.empty();
+         }else {
+             return Optional.empty();
+         }
+        return Optional.of(compInvitationCode.get().getCompInvitationCodeId().getDcCompId()) ;
+    }
+
+    /**
+     * 格友公司可见详情
+     * @param enrolledCode 格友编码
+     *  @param companyCode 公司编码
+     * @return 格友公司可见详情
+     */
+    public Optional<VEnrolledCompanyDetailResponse.VCompany> findEnrolledCompany(String enrolledCode,String companyCode) throws IOException {
+      var company = findEnrolledCompany(enrolledCode)
+          .orElseThrow(()->new IOException("未从数据库找到"));
+        //是否为供应商
+        var compTrad1 =   compTradeRepository.findById(CompTradId.builder()
+            .compSaler(enrolledCode)
+            .compBuyer(companyCode)
+            .build()
+        );
+        if(!compTrad1.isEmpty())
+            company.setIsSupplier(true);
+        //是否为客户
+        var compTrad2= compTradeRepository.findById(CompTradId.builder()
+            .compSaler(companyCode)
+            .compBuyer(enrolledCode)
+            .build()
+        );
+        if(!compTrad2.isEmpty())
+            company.setIsCustomer(true);
+        //是否有申请记录
+        var compTradeApply= compTradeApplyRepository.findByCreatedCompByAndHandledCompByAndStateAndType(
+            companyCode,
+            enrolledCode,
+            TradeApply.APPLYING,"1"
+        );
+        if(!compTradeApply.isEmpty())
+            company.setState("1");
+        return  Optional.of(company);
+
+    }
+
+    /**
+     * 查找入格单位可见公司详情信息
+     * @param enrolledCode 公司编码
+     * @return 公司可见详情
+     */
+    public  Optional<VEnrolledCompanyDetailResponse.VCompany>  findEnrolledCompany(String enrolledCode) {
+        return     enrolledCompanyRepository.findById(enrolledCode).map(companyMapper::toEnrolledCompanyDetail)
+            .map(companyMapper::toEnrolledCompanyDetail);
+    }
+
+    /**
+     * 拒绝名单中格友公司可见详情
+     * @param enrolledCode 格友编码
+     *  @param companyCode 公司编码
+     * @return 格友公司可见详情
+     */
+    public Optional<VEnrolledCompanyDetailResponse.VCompany> findRefuseEnrolledCompanyDetail(String enrolledCode,String companyCode) throws IOException {
+        var company = findEnrolledCompany(enrolledCode)
+            .orElseThrow(()->new IOException("未从数据库找到"));
+
+        //是否有申请记录
+        var compTradeApply= compTradeApplyRepository.findTopByCreatedCompByAndHandledCompByAndTypeOrderByCreatedAtDesc(
+            companyCode,
+            enrolledCode,
+            "1"
+        );
+        if(!compTradeApply.isEmpty())
+            company.setRemark(compTradeApply.get().getCreatedRemark());
+        return  Optional.of(company);
+
     }
 }

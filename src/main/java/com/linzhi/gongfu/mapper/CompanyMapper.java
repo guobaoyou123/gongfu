@@ -43,6 +43,26 @@ public interface CompanyMapper {
     TCompanyBaseInformation toBaseInformation(EnrolledCompany company);
 
     /**
+     * 将获取到的入格公司可见信息，转换成可供使用的可见公司基础信息
+     *
+     * @param company 已经入格的公司可见信息
+     * @return 公司简要可见基础信息
+     */
+    @Mapping(target = "code", source = "id")
+    @Mapping(target = "name", source = "nameInCN")
+    @Mapping(target = "shortName", source = "details.shortNameInCN")
+    @Mapping(target = "subdomain", source = "subdomainName")
+    @Mapping(target = "visible",expression = "java(company.getVisible()==null?\"0\":String.valueOf(company.getVisible().getState()))")
+    @Mapping(target = "contactName",expression = "java(company.getCompVisible()!=null&&company.getCompVisible().getVisibleContent().contains(\"contactPhone\")?company.getDetails().getContactName():null)")
+    @Mapping(target = "contactPhone",expression = "java(company.getCompVisible()!=null&&company.getCompVisible().getVisibleContent().contains(\"contactPhone\")?company.getDetails().getContactPhone():null)")
+    @Mapping(target = "areaCode",expression = "java(company.getCompVisible()!=null&&company.getCompVisible().getVisibleContent().contains(\"address\")?company.getDetails().getAreaCode():null)")
+    @Mapping(target = "areaName",expression = "java(company.getCompVisible()!=null&&company.getCompVisible().getVisibleContent().contains(\"address\")?company.getDetails().getAreaName():null)")
+    @Mapping(target = "address",expression = "java(company.getCompVisible()!=null&&company.getCompVisible().getVisibleContent().contains(\"address\")?company.getDetails().getAddress():null)")
+    @Mapping(target = "content",source = "compVisible.visibleContent")
+    @Mapping(target = "introduction",expression = "java(company.getCompVisible()!=null&&company.getCompVisible().getVisibleContent().contains(\"introduction\")?company.getIntroduction():null)")
+
+    TCompanyBaseInformation toEnrolledCompanyDetail(EnrolledCompany company);
+    /**
      * 将获取到的公司信息，转换成可供使用的公司基础信息
      *
      * @param company 已经入格的公司全部信息
@@ -122,4 +142,17 @@ public interface CompanyMapper {
     @Mapping(target = "companyName", source = "name")
     @Mapping(target = "companyShortName", source = "shortName")
     VEnrolledCompanyPageResponse.VCompany toEnrolledCompany(TCompanyBaseInformation company);
+
+    @Mapping(target = "companyName", source = "name")
+    @Mapping(target = "companyShortName", source = "shortName")
+    @Mapping(target = "usci", source = "USCI")
+    @Mapping(target = "contactName", source = "contactName")
+    @Mapping(target = "contactPhone", source = "contactPhone")
+    @Mapping(target = "areaCode", source = "areaCode")
+    @Mapping(target = "areaName", source = "areaName")
+    @Mapping(target = "address", source = "address")
+    @Mapping(target = "isSupplier",constant = "false")
+    @Mapping(target = "isCustomer",constant = "false")
+    @Mapping(target = "state",constant = "0")
+    VEnrolledCompanyDetailResponse.VCompany toEnrolledCompanyDetail(TCompanyBaseInformation company);
 }

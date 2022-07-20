@@ -1,15 +1,15 @@
 package com.linzhi.gongfu.enumeration;
 
 public enum TradeApply {
-    APPLYING("0"), AGREE("1"), REFUSE("2");
+    APPLYING('0'), AGREE('1'), REFUSE('2');
 
-    private final String state;
+    private final char state;
 
-    TradeApply(String state) {
+    TradeApply(char state) {
         this.state = state;
     }
 
-    public String getState() {
+    public char getState() {
         return state;
     }
 }
