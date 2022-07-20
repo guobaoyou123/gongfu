@@ -6,7 +6,7 @@ package com.linzhi.gongfu.enumeration;
  * @create_at 2022-07-20
  */
 public enum NotificationType {
-    ENROLLED_APPLY('0'),  MODIFY_TRADE('1');
+    ENROLLED_APPLY('0'),  MODIFY_TRADE('1'),ENROLLED_APPLY_HISTORY('2'),;
 
     private final char type;
 

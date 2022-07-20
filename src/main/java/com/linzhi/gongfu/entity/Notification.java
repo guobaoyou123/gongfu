@@ -37,7 +37,7 @@ public class Notification {
     private String code;
 
     /**
-     * 消息类型（0-格友申请 1-格友供应商）
+     * 消息类型（0-格友申请 1-格友供应商 2-申请采购历史记录）
      */
     @Column(length = 1, nullable = false)
     private NotificationType type;
@@ -85,9 +85,13 @@ public class Notification {
     /**
      * 推送场景
      */
-    @Column(name = "push_scene",length = 40)
+    @Column(name = "push_scene",length = 50)
     private String pushScene;
-
+    /**
+     * 推送人
+     */
+    @Column(name = "push_operator",length = 50)
+    private String pushOperator;
     /**
      * 是否已读
      */

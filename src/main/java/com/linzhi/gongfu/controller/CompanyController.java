@@ -603,9 +603,19 @@ public class CompanyController {
      */
    @PostMapping("/enrolled/company/apply/{code}/pass")
     public  VBaseResponse  consentApply(@PathVariable String code,@RequestBody Optional<VTradeApplyConsentRequest> vTradeApplyConsentRequest){
-
-
-       return  null;
+       OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+           .getContext()
+           .getAuthentication();
+       var flag = compTradeApplyService.consentApply(
+           code,
+           session.getSession().getCompanyCode(),
+           session.getSession().getCompanyName(),
+           session.getSession().getOperatorCode(),
+           vTradeApplyConsentRequest.orElseThrow(()->new NullPointerException("数据为空")));
+       return VBaseResponse.builder()
+           .code(flag?200:500)
+           .message(flag?"操作成功":"操作失败")
+           .build();
    }
 }
 

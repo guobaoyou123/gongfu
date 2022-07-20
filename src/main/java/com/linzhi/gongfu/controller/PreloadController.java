@@ -1,11 +1,9 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
-import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.mapper.MenuMapper;
 import com.linzhi.gongfu.mapper.WordMapper;
-import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.MenuService;
 import com.linzhi.gongfu.service.OperatorService;
@@ -13,7 +11,6 @@ import com.linzhi.gongfu.service.WordService;
 import com.linzhi.gongfu.util.URLTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.sasl.AuthenticationException;

@@ -9,12 +9,10 @@ import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.mapper.ImportProductTempMapper;
 import com.linzhi.gongfu.repository.ImportProductTempRepository;
 import com.linzhi.gongfu.repository.ProductRepository;
-import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
 import com.linzhi.gongfu.vo.VImportProductTempResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -115,13 +113,14 @@ public class EximportService {
      * @param operator 操作员编码
      * @param code 合同编码或者询价单编码
      * @param taxMode 税模式
-     * @return 返回暂存产品列表
-     * @throws IOException
+     * @return 返回暂存产品列
      */
-    public VImportProductTempResponse getVImportProductTempResponse(String id, String companyCode, String operator, String code, TaxMode taxMode) throws IOException {
-        var map = findImportProductDetail(companyCode,
+    public VImportProductTempResponse getVImportProductTempResponse(String id, String companyCode, String operator, String code, TaxMode taxMode) {
+        var map = findImportProductDetail(
+            companyCode,
             operator,
-            id,code,taxMode);
+            id,code,taxMode
+        );
         var list =(List<VImportProductTempResponse.VProduct>) map.get("products");
         return VImportProductTempResponse.builder()
             .code(200)
@@ -141,7 +140,7 @@ public class EximportService {
      * @param code 询价单编码或者合同编码
      * @return 返回导入产品列表信息
      */
-    public Map<String,Object> findImportProductDetail(String companyCode, String operator, String id,String code,TaxMode taxMode) throws IOException {
+    public Map<String,Object> findImportProductDetail(String companyCode, String operator, String id,String code,TaxMode taxMode){
         Map<String,Object> map = new HashMap<>();
         map.put("enCode",code);
         List<ImportProductTemp> list=importProductTempRepository.
