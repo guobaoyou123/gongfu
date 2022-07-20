@@ -366,14 +366,15 @@ public class CompanyController {
      * @return 返回添加成功或者失败信息
      */
     @PostMapping("/company/operator/detail")
-    public VBaseResponse addOperator(@RequestBody VOperatorRequest operator){
+    public VResetPasswordResponse addOperator(@RequestBody VOperatorRequest operator){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var flag = operatorService.addOperator(session.getSession().getCompanyCode(),operator);
-        return  VBaseResponse.builder()
-            .code(flag?200:500)
-            .message(flag?"添加成功":"添加失败")
+        var password = operatorService.addOperator(session.getSession().getCompanyCode(),operator);
+        return  VResetPasswordResponse.builder()
+            .code(password!=null?200:500)
+            .message(password!=null?"添加成功":"添加失败")
+            .password(password)
             .build();
     }
 
@@ -595,7 +596,16 @@ public class CompanyController {
            .build();
    }
 
+    /**
+     * 同意申请
+     * @param code 申请记录编码
+     * @return 返回成功或者失败信息
+     */
+   @PostMapping("/enrolled/company/apply/{code}/pass")
+    public  VBaseResponse  consentApply(@PathVariable String code,@RequestBody Optional<VTradeApplyConsentRequest> vTradeApplyConsentRequest){
 
-   
+
+       return  null;
+   }
 }
 

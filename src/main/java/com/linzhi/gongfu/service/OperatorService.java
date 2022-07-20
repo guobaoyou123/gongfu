@@ -189,9 +189,10 @@ public class OperatorService {
     })
 
     @Transactional
-    public boolean addOperator(String companyCode,VOperatorRequest operatorRequest){
+    public String addOperator(String companyCode,VOperatorRequest operatorRequest){
         try{
             String maxCode = operatorDetailRepository.findMaxCode(companyCode).orElse("001");
+           String  password = RNGUtil.getLowerLetter(3) + RNGUtil.getNumber(3);
             OperatorDetail operatorDetail = OperatorDetail.builder()
                 .identity(OperatorId.builder()
                     .companyCode(companyCode)
@@ -206,7 +207,8 @@ public class OperatorService {
                 .areaCode(operatorRequest.getAreaCode())
                 .address(operatorRequest.getAddress())
                 .state(Availability.ENABLED)
-                .password("")
+                .password(passwordEncoder.encode(password))
+                .changed(Whether.NO)
                 .build();
             if(operatorRequest.getAreaCode()!=null){
                 operatorDetail.setAreaName(addressService.findByCode("",operatorRequest.getAreaCode()));
@@ -214,9 +216,10 @@ public class OperatorService {
             operatorDetailRepository.save(operatorDetail);
             if(operatorRequest.getScenes().size()>0)
                 saveOperatorScene(operatorRequest.getScenes(),companyCode,maxCode);
-            return true;
+            return password;
         }catch (Exception e){
-            return false;
+            e.printStackTrace();
+            return null;
         }
     }
 
