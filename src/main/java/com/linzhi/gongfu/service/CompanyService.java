@@ -68,7 +68,10 @@ public class CompanyService {
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 供应商信息列表
      */
-    public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandById(String id, Optional<String> pageNum,Optional<String> pageSize) {
+    public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandById(String id,
+                                                                                   Optional<String> pageNum,
+                                                                                   Optional<String> pageSize
+    ) {
 
         List<CompTrad> compTradList=findSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
         List<TCompanyIncludeBrand>  tCompanyIncludeBrandList=compTradList.stream()
@@ -85,11 +88,17 @@ public class CompanyService {
 
         tCompanyIncludeBrands.forEach(compTrad ->  {
             //将供应商中的经营品牌与授权品牌和自营品牌对比进行去重
-            List<TBrand>   selfSupportBrands =  compTrad.getSelfSupportBrands().stream().filter(tBrand -> compTrad.getManageBrands().contains(tBrand)).collect(Collectors.toList());
-            List<TBrand>      authBrands     = compTrad.getAuthBrands().stream().filter(tBrand -> compTrad.getManageBrands().contains(tBrand)).toList();
-            List<TBrand>    managerBrands    =  compTrad.getManageBrands().stream().filter(tBrand -> !selfSupportBrands.contains(tBrand))
-                                                    .collect(Collectors.toList());
-                             managerBrands   =  managerBrands.stream().filter(tBrand -> !authBrands.contains(tBrand))
+            List<TBrand>   selfSupportBrands =  compTrad.getSelfSupportBrands().stream()
+                .filter(tBrand -> compTrad.getManageBrands().contains(tBrand))
+                .collect(Collectors.toList());
+            List<TBrand>      authBrands     = compTrad.getAuthBrands().stream()
+                .filter(tBrand -> compTrad.getManageBrands().contains(tBrand))
+                .toList();
+            List<TBrand>    managerBrands    =  compTrad.getManageBrands().stream()
+                .filter(tBrand -> !selfSupportBrands.contains(tBrand))
+                .collect(Collectors.toList());
+
+            managerBrands   =  managerBrands.stream().filter(tBrand -> !authBrands.contains(tBrand))
                                                    .collect(Collectors.toList());
             selfSupportBrands.forEach(dcBrand -> dcBrand.setOwned(true));
             authBrands.forEach(dcBrand -> dcBrand.setVending(true));
@@ -204,7 +213,10 @@ public class CompanyService {
        @CacheEvict(value = "supplierDetail;1800",key = "#companyCode+'-'+#code" ,condition = "#code != null"),
    })
    @Transactional
-   public Map<String,Object> saveForeignSupplier(VForeignSupplierRequest foreignSupplier, String companyCode, String code){
+   public Map<String,Object> saveForeignSupplier(VForeignSupplierRequest foreignSupplier,
+                                                 String companyCode,
+                                                 String code)
+   {
        Map<String,Object> map = new HashMap<>();
        String maxCode;
        Company company;
@@ -214,8 +226,11 @@ public class CompanyService {
                QCompany qCompany = QCompany.company;
                QCompTrad qCompTrad = QCompTrad.compTrad;
                QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
-               JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompany,qEnrolledCompany).leftJoin(qCompTrad)
-                   .on(qCompany.code.eq(qCompTrad.compTradId.compSaler).and(qCompTrad.compTradId.compBuyer.eq(companyCode)));
+               JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany)
+                   .from(qCompany,qEnrolledCompany)
+                   .leftJoin(qCompTrad)
+                   .on(qCompany.code.eq(qCompTrad.compTradId.compSaler)
+                       .and(qCompTrad.compTradId.compBuyer.eq(companyCode)));
                query.where(qEnrolledCompany.USCI.eq(foreignSupplier.getUsci()));
                query.where(qEnrolledCompany.id.eq(qCompany.identityCode));
                query.where(qCompany.role.eq(CompanyRole.EXTERIOR_SUPPLIER.getSign()));
@@ -226,7 +241,8 @@ public class CompanyService {
                    return map;
                }
                //查询有没有系统唯一码
-               Optional<EnrolledCompany> enrolledCompany= enrolledCompanyRepository.findByUSCI(foreignSupplier.getUsci());
+               Optional<EnrolledCompany> enrolledCompany= enrolledCompanyRepository
+                   .findByUSCI(foreignSupplier.getUsci());
                //判断系统单位表是否为空
                if(enrolledCompany.isEmpty()){
                    //空的话获取系统单位表的最大编码，生成新的单位
@@ -355,7 +371,8 @@ public class CompanyService {
              .map(Company::getCode)
              .toList();
          if(outSuppliers.size()>0){
-             List<CompTrad> compTradList=compTradeRepository.findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(companyCode,outSuppliers);
+             List<CompTrad> compTradList=compTradeRepository
+                 .findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(companyCode,outSuppliers);
              if(compTradList.size()>0){
                  map.put("code",201);
                  map.put("companyName","UNKNOWN");
@@ -389,15 +406,6 @@ public class CompanyService {
            .map(companyMapper::toCompanyDetail).orElseThrow(()->new IOException("未找到公司信息"));
     }
 
-  /*  *//**
-     * 查找公司详情
-     * @param companyCode 单位编码
-     * @return 返回详细信息
-     *//*
-   public Optional<EnrolledCompany>  findCompanyById(String companyCode)  {
-        return  enrolledCompanyRepository.findById(companyCode);
-    }*/
-
 
     /**
      * 判重
@@ -424,7 +432,8 @@ public class CompanyService {
     @Transactional
     public String  saveCompanyDetail(VCompanyRequest companyRequest, String companyCode,String operator){
         try{
-            EnrolledCompany company = enrolledCompanyRepository.findById(companyCode).orElseThrow(()->new IOException("未找到公司信息"));
+            EnrolledCompany company = enrolledCompanyRepository.findById(companyCode)
+                .orElseThrow(()->new IOException("未找到公司信息"));
            company.getDetails().setShortNameInCN(companyRequest.getCompanyShortName());
            company.getDetails().setContactName(companyRequest.getContactName());
            company.getDetails().setContactPhone(companyRequest.getContactPhone());
@@ -456,11 +465,12 @@ public class CompanyService {
     @Transactional
     public Boolean  setVisible(String companyCode,VCompanyVisibleRequest visibleContent){
         try{
-           EnrolledCompany company =  enrolledCompanyRepository.findById(companyCode).orElseThrow(()->new IOException("没有从数据库中找到该公司公司信息"));
+           EnrolledCompany company =  enrolledCompanyRepository.findById(companyCode).
+               orElseThrow(()->new IOException("没有从数据库中找到该公司公司信息"));
            company.setVisible(visibleContent.getVisible()?Whether.YES:Whether.NO);
            Optional<CompVisible> compVisible =  compVisibleRepository.findById(companyCode);
-           if(visibleContent.getContent()==null&&!compVisible.isEmpty()) {
-               compVisibleRepository.findById(companyCode);
+           if(visibleContent.getContent()==null&& compVisible.isPresent()) {
+               compVisibleRepository.deleteById(companyCode);
            }else if(visibleContent.getContent()!=null){
                CompVisible compVisible1 =  compVisible.orElse(new CompVisible(companyCode,null));
                compVisible1.setVisibleContent(visibleContent.getContent());
@@ -479,8 +489,11 @@ public class CompanyService {
      * @param pageable 分页
      * @return 入格单位信息列表
      */
-    public Page<VEnrolledCompanyPageResponse.VCompany> findEnrolledCompanyPage(String name,Pageable pageable,String companyCode){
-         var list =  enrolledCompanyRepository.findAllByVisibleAndState(Whether.YES,Enrollment.ENROLLED)
+    public Page<VEnrolledCompanyPageResponse.VCompany> findEnrolledCompanyPage(String name,Pageable pageable,
+                                                                               String companyCode
+    ){
+         var list =  enrolledCompanyRepository.
+             findAllByVisibleAndState(Whether.YES,Enrollment.ENROLLED)
             .stream().filter(enrolledCompany -> {
                 if(enrolledCompany.getDetails()!=null&&enrolledCompany.getDetails().getShortNameInCN()!=null){
                     return enrolledCompany.getDetails().getShortNameInCN().contains(name);
@@ -501,10 +514,11 @@ public class CompanyService {
      * @return 入格单位编码
      */
     public Optional<String> findInvitationCode(String invitationCode){
-        Optional<CompInvitationCode> compInvitationCode=compInvitationCodeRepository.findCompInvitationCodeByCompInvitationCodeId_InvitationCode(invitationCode);
-         if(!compInvitationCode.isEmpty()){
+        Optional<CompInvitationCode> compInvitationCode=compInvitationCodeRepository.
+            findCompInvitationCodeByCompInvitationCodeId_InvitationCode(invitationCode);
+         if(compInvitationCode.isPresent()){
              //判断是否超时
-            Long m= Duration.between(LocalDateTime.now(),compInvitationCode.get().getCreatedAt()).toMinutes();
+            long m= Duration.between(LocalDateTime.now(),compInvitationCode.get().getCreatedAt()).toMinutes();
             if(m>30)
                 return Optional.empty();
          }else {
@@ -519,7 +533,10 @@ public class CompanyService {
      *  @param companyCode 公司编码
      * @return 格友公司可见详情
      */
-    public Optional<VEnrolledCompanyDetailResponse.VCompany> findEnrolledCompany(String enrolledCode,String companyCode) throws IOException {
+    public Optional<VEnrolledCompanyDetailResponse.VCompany> findEnrolledCompany(String enrolledCode,
+                                                                                 String companyCode
+    )
+        throws IOException {
       var company = findEnrolledCompany(enrolledCode)
           .orElseThrow(()->new IOException("未从数据库找到"));
         //是否为供应商
@@ -528,7 +545,7 @@ public class CompanyService {
             .compBuyer(companyCode)
             .build()
         );
-        if(!compTrad1.isEmpty())
+        if(compTrad1.isPresent())
             company.setIsSupplier(true);
         //是否为客户
         var compTrad2= compTradeRepository.findById(CompTradId.builder()
@@ -536,15 +553,16 @@ public class CompanyService {
             .compBuyer(enrolledCode)
             .build()
         );
-        if(!compTrad2.isEmpty())
+        if(compTrad2.isPresent())
             company.setIsCustomer(true);
         //是否有申请记录
-        var compTradeApply= compTradeApplyRepository.findByCreatedCompByAndHandledCompByAndStateAndType(
+        var compTradeApply= compTradeApplyRepository.
+            findByCreatedCompByAndHandledCompByAndStateAndType(
             companyCode,
             enrolledCode,
             TradeApply.APPLYING,"1"
         );
-        if(!compTradeApply.isEmpty())
+        if(compTradeApply.isPresent())
             company.setState("1");
         return  Optional.of(company);
 
@@ -566,19 +584,50 @@ public class CompanyService {
      *  @param companyCode 公司编码
      * @return 格友公司可见详情
      */
-    public Optional<VEnrolledCompanyDetailResponse.VCompany> findRefuseEnrolledCompanyDetail(String enrolledCode,String companyCode) throws IOException {
+    public Optional<VEnrolledCompanyDetailResponse.VCompany> findRefuseEnrolledCompanyDetail(
+        String enrolledCode,
+        String companyCode
+    ) throws IOException {
         var company = findEnrolledCompany(enrolledCode)
             .orElseThrow(()->new IOException("未从数据库找到"));
 
         //是否有申请记录
-        var compTradeApply= compTradeApplyRepository.findTopByCreatedCompByAndHandledCompByAndTypeOrderByCreatedAtDesc(
+       compTradeApplyRepository.findTopByCreatedCompByAndHandledCompByAndTypeOrderByCreatedAtDesc(
             companyCode,
             enrolledCode,
             "1"
-        );
-        if(!compTradeApply.isEmpty())
-            company.setRemark(compTradeApply.get().getCreatedRemark());
-        return  Optional.of(company);
+        ).ifPresent(compTradeApply -> company.setRemark(compTradeApply.getCreatedRemark()));
 
+        return  Optional.of(company);
+    }
+
+    /**
+     * 生成邀请码
+     * @param companyCode  公司编码
+     * @return 返回邀请码
+     */
+    @Transactional
+    public  String getInvitationCode(String companyCode){
+        try {
+            Optional<CompInvitationCode> compInvitationCode=compInvitationCodeRepository.
+                findCompInvitationCodeByCompInvitationCodeId_DcCompId(companyCode);
+            if(compInvitationCode.isPresent())
+                compInvitationCodeRepository.deleteById(compInvitationCode.get().getCompInvitationCodeId());
+            String InvitationCode = companyCode+"-"+UUID.randomUUID();
+            compInvitationCodeRepository.save(
+                CompInvitationCode.builder()
+                    .compInvitationCodeId(
+                        CompInvitationCodeId.builder()
+                            .invitationCode(InvitationCode)
+                            .dcCompId(companyCode)
+                        .build())
+                    .createdAt(LocalDateTime.now())
+                .build()
+            );
+            return InvitationCode;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -13,4 +13,7 @@ public interface CompInvitationCodeRepository extends CrudRepository<CompInvitat
     Optional<CompInvitationCode> findCompInvitationCodeByCompInvitationCodeId_InvitationCode(String invitationCode);
 
     void deleteByCompInvitationCodeId_InvitationCode(String invitationCode);
+
+    Optional<CompInvitationCode> findCompInvitationCodeByCompInvitationCodeId_DcCompId(String dcCompId);
+
 }

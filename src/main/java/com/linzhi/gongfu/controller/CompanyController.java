@@ -532,13 +532,13 @@ public class CompanyController {
      * @throws IOException 异常
      */
     @GetMapping("/enrolled/company/apply/refused/detail/{code}")
-    public VEnrolledCompanyDetailResponse findRefuseEnrolledCompanyDetail(@PathVariable Optional<String> code) throws IOException {
+    public VEnrolledCompanyDetailResponse findRefuseEnrolledCompanyDetail(@PathVariable String code) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
         //查询格友单位详情
         var company = companyService.findRefuseEnrolledCompanyDetail(
-                code.get(),session.getSession().getCompanyCode())
+                code,session.getSession().getCompanyCode())
             .orElseThrow(()->new IOException("未从数据库找到"));
         return VEnrolledCompanyDetailResponse.builder()
             .code(200)
@@ -643,6 +643,23 @@ public class CompanyController {
        return VBaseResponse.builder()
            .code(flag?200:500)
            .message(flag?"操作成功":"操作失败")
+           .build();
+   }
+
+    /**
+     * 生成邀请码
+     * @return 邀请码
+     */
+   @PostMapping("/enrolled/company/invitation/code")
+   public VInvitationCodeResponse getInvitationCode(){
+       OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+           .getContext()
+           .getAuthentication();
+       String code = companyService.getInvitationCode(session.getSession().getCompanyCode());
+       return VInvitationCodeResponse.builder()
+           .code(code!=null?200:500)
+           .message(code!=null?"操作成功":"操作失败")
+           .invitationCode(code)
            .build();
    }
 }
