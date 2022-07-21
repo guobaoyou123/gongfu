@@ -402,13 +402,12 @@ public class CompanyController {
      * @param operatorRequests 人员场景信息
      * @return 返回修改成功信息
      */
-    @PutMapping("/company/operator/{code}/detail/scene")
-    public VBaseResponse modifyOperatorScene(@RequestBody VOperatorRequest operatorRequests,
-                                             @PathVariable String code){
+    @PutMapping("/company/operator/detail/scene")
+    public VBaseResponse modifyOperatorScene(@RequestBody List<VOperatorSceneRequest> operatorRequests){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var flag = operatorService.modifyOperatorScene(session.getSession().getCompanyCode(),operatorRequests,code);
+        var flag = operatorService.modifyOperatorScene(session.getSession().getCompanyCode(),operatorRequests);
         return VBaseResponse.builder()
             .code(flag?200:500)
             .message(flag?"操作成功":"操作失败")

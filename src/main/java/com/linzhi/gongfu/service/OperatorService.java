@@ -15,6 +15,7 @@ import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.util.RNGUtil;
 import com.linzhi.gongfu.vo.VOperatorPageResponse;
 import com.linzhi.gongfu.vo.VOperatorRequest;
+import com.linzhi.gongfu.vo.VOperatorSceneRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -227,20 +228,33 @@ public class OperatorService {
      * 修改人员场景权限
      * @param companyCode 公司编码
      * @param operatorRequests 场景列表
-     * @param code 人员编码
      * @return 保存成功或者失败信息
      */
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "Operator_Login;1800", key = "T(String).valueOf(#companyCode).concat(#code)"),
-        @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#code") ,
+        @CacheEvict(value = "Operator_Login;1800",allEntries = true),
+        @CacheEvict(value = "Operator_detail;1800",allEntries = true) ,
         @CacheEvict(value = "Operator_scene_statistics;1800", key = "#companyCode")
     })
-    public boolean modifyOperatorScene(String companyCode,VOperatorRequest operatorRequests,String code){
+    public boolean modifyOperatorScene(String companyCode, List<VOperatorSceneRequest> operatorRequests){
           try{
-              operatorSceneRepository.deleteByOperatorSceneId_DcCompIdAndOperatorSceneId_OperatorCode(companyCode,code);
-              if(operatorRequests.getScenes().size()>0)
-                  saveOperatorScene(operatorRequests.getScenes(),companyCode,code);
+              List<String> operators = new ArrayList<>();
+              List<OperatorScene> operatorSceneList = new ArrayList<>();
+              operatorRequests.forEach(vOperatorSceneRequest -> {
+                  operators.add(vOperatorSceneRequest.getCode());
+                  vOperatorSceneRequest.getScenes().forEach(s -> operatorSceneList.add(OperatorScene.builder()
+                      .operatorSceneId(
+                          OperatorSceneId.builder()
+                              .operatorCode(vOperatorSceneRequest.getCode())
+                              .dcCompId(companyCode)
+                              .sceneCode(s)
+                              .build()
+                      )
+                      .build()) );
+
+              });
+              operatorSceneRepository.deleteByOperatorSceneId_DcCompIdAndOperatorSceneId_OperatorCodeIn(companyCode,operators);
+              operatorSceneRepository.saveAll(operatorSceneList);
           }catch (Exception e){
               e.printStackTrace();
               return false;
