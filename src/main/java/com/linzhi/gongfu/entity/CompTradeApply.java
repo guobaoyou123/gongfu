@@ -32,7 +32,7 @@ public class CompTradeApply implements Serializable {
     private String code;
 
     /**
-     * 通知类型（1-申请采购 ）
+     * 类型（1-申请采购 ）
      */
     @Column(length = 1, nullable = false)
     private  String type;

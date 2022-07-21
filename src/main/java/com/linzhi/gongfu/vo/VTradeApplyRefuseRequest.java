@@ -6,18 +6,15 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.io.Serializable;
 import java.util.List;
-
 /**
- * 同意申请采购的请求参数
+ * 拒绝申请采购和始终拒绝申请采购的请求参数
+ *
  */
 @Data
 @Jacksonized
 @NoArgsConstructor
-public class VTradeApplyConsentRequest implements Serializable {
+public class VTradeApplyRefuseRequest implements Serializable {
 
-    private List<String> brandCodes;
-
-    private String taxModel;
-
-    private List<String> authorizedOperator;
+    private String remark;
+    private String state;
 }

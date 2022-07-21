@@ -5,6 +5,11 @@ import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
 import java.io.Serializable;
+
+/**
+ * 申请采购请求参数
+ *
+ */
 @Data
 @Jacksonized
 @NoArgsConstructor

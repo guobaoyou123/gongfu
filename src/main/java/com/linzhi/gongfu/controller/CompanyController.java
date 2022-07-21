@@ -553,17 +553,18 @@ public class CompanyController {
      * @return 返回成功信息或者失败信息
      */
     @PostMapping("/enrolled/company/apply")
-   public VBaseResponse tradeApply(@RequestBody Optional<VTradeApplyRequest> vTradeApplyRequest){
+   public VTradeApplyResponse tradeApply(@RequestBody Optional<VTradeApplyRequest> vTradeApplyRequest){
        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
            .getContext()
            .getAuthentication();
-       var flag = compTradeApplyService.tradeApply(vTradeApplyRequest.orElseThrow(()->new NullPointerException("数据为空")),
+       var map = compTradeApplyService.tradeApply(vTradeApplyRequest.orElseThrow(()->new NullPointerException("数据为空")),
            session.getSession().getCompanyCode(),
            session.getSession().getOperatorCode(),
            session.getSession().getCompanyName());
-       return VBaseResponse.builder()
-           .code(flag?200:500)
-           .message(flag?"操作成功":"操作失败")
+       return VTradeApplyResponse.builder()
+           .code(map.get("flag").equals("0")?500:map.get("flag").equals("1")?200:202)
+           .message(map.get("flag").equals("0")?"操作失败":map.get("flag").equals("1")?"操作成功":"该格友已拒绝申请")
+           .applyCode(map.get("code"))
            .build();
    }
 
@@ -612,6 +613,33 @@ public class CompanyController {
            session.getSession().getCompanyName(),
            session.getSession().getOperatorCode(),
            vTradeApplyConsentRequest.orElseThrow(()->new NullPointerException("数据为空")));
+       return VBaseResponse.builder()
+           .code(flag?200:500)
+           .message(flag?"操作成功":"操作失败")
+           .build();
+   }
+
+    /**
+     * 拒绝申请和始终拒绝申请
+     * @param code 申请记录编码
+     * @param vTradeApplyRefuseRequest  请求参数
+     * @return  返回成功或者失败信息
+     */
+   @PostMapping("/enrolled/company/apply/{code}/refuse")
+   public VBaseResponse tradeApplyRefuse(@PathVariable String code,
+                                         @RequestBody Optional<VTradeApplyRefuseRequest> vTradeApplyRefuseRequest
+   ){
+       OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+           .getContext()
+           .getAuthentication();
+       var flag = compTradeApplyService.refuseApply(
+           session.getSession().getCompanyCode(),
+           session.getSession().getCompanyName(),
+           session.getSession().getOperatorCode(),
+           vTradeApplyRefuseRequest.orElseThrow().getRemark(),
+           vTradeApplyRefuseRequest.orElseThrow().getState(),
+           code
+       );
        return VBaseResponse.builder()
            .code(flag?200:500)
            .message(flag?"操作成功":"操作失败")
