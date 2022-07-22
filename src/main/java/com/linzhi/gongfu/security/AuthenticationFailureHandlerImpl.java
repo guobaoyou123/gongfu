@@ -28,7 +28,7 @@ public class AuthenticationFailureHandlerImpl implements AuthenticationFailureHa
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         log.debug("操作员登录被拒绝：[{}] {}", exception.getClass().getSimpleName(), exception.getMessage());
 
-        if(exception.getClass().getSimpleName().equals("NoPasswordException")){
+        if(exception.getClass().getSimpleName().equals("NoFoundPasswordException")){
            var  failureResponse = VAuthenticationResponse.builder()
                 .code(402)
                .operatorCode(request.getParameter("code"))

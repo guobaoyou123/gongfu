@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.service;
 
 
+import com.linzhi.gongfu.dto.TCompTradeApply;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.CompTradeApplyMapper;
@@ -11,6 +12,9 @@ import com.linzhi.gongfu.vo.VTradeApplyPageResponse;
 import com.linzhi.gongfu.vo.VTradeApplyRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -48,6 +52,10 @@ public class CompTradeApplyService {
      * @param companyName 单位名称
      * @return 返回是或否
      */
+    @Caching(evict = {
+        @CacheEvict(value="trade_apply_history_List;1800", key="#companyCode"),
+        @CacheEvict(value="trade_apply_List;1800", key="#vTradeApplyRequest.applyCompCode+'-'+1")
+    })
     @Transactional
     public Map<String,String> tradeApply(VTradeApplyRequest vTradeApplyRequest,String companyCode,String operatorCode,String companyName){
           Map<String,String> map = new HashMap<>();
@@ -135,18 +143,22 @@ public class CompTradeApplyService {
 
     /**
      * 同意申请采购
-     * @param code 申请记录编码
+     * @param compTradeApply 申请记录
      * @param companyCode 单位编码
      * @param companyName 单位名称
      * @param operatorCode 操作员编码
      * @param vTradeApplyConsentRequest 交易信息
      * @return 返回是或者否
      */
-    public boolean consentApply(String code, String companyCode,String companyName, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
+    @Caching(evict = {
+        @CacheEvict(value="trade_apply_history_List;1800", key="#companyCode"),
+        @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
+        @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy")
+    })
+    public boolean consentApply(CompTradeApply compTradeApply, String companyCode,String companyName, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
         try{
-           CompTradeApply compTradeApply=  compTradeApplyRepository.findById(code).orElseThrow(()->new IOException("从数据中未找到该申请"));
-           if(!compTradeApply.getState().equals(TradeApply.APPLYING))
-                return false;
+
+
            compTradeApply.setHandledBy(operatorCode);
            compTradeApply.setHandledAt(LocalDateTime.now());
            compTradeApply.setState(TradeApply.AGREE);
@@ -184,7 +196,7 @@ public class CompTradeApplyService {
                 companyName+"公司同意了您的申请采购的请求",
                 operatorCode,
                 NotificationType.ENROLLED_APPLY_HISTORY,
-                code,
+                compTradeApply.getCode(),
                 compTradeApply.getCreatedCompBy(),
                 null,
                 compTradeApply.getCreatedBy()
@@ -195,6 +207,16 @@ public class CompTradeApplyService {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * 根据申请记录编码查找申请记录
+     * @param code 申请记录编码
+     * @return 申请记录
+     * @throws IOException 异常
+     */
+    public CompTradeApply  getCompInvitationCode(String code) throws IOException {
+        return  compTradeApplyRepository.findById(code).orElseThrow(()->new IOException("从数据中未找到该申请"));
     }
 
     /**
@@ -234,17 +256,19 @@ public class CompTradeApplyService {
      * @param operatorCode 操作员编码
      * @param remark 拒绝原因
      * @param state 状态 1-拒绝 2-始终拒绝
-     * @param code 申请记录编码
+     * @param compTradeApply 申请记录
      * @return 返回是或者否
      */
+    @Caching(evict = {
+        @CacheEvict(value="trade_apply_history_List;1800", key="#companyCode"),
+        @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
+        @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy")
+    })
     @Transactional
     public boolean refuseApply(String companyCode,String companyName,
                                String operatorCode,String remark,
-                               String state,String code){
+                               String state,CompTradeApply compTradeApply){
         try {
-            CompTradeApply compTradeApply=  compTradeApplyRepository.findById(code).orElseThrow(()->new IOException("从数据中未找到该申请"));
-            if(!compTradeApply.getState().equals(TradeApply.APPLYING))
-                return false;
             compTradeApply.setHandledBy(operatorCode);
             compTradeApply.setRefuseRemark(remark);
             compTradeApply.setState(TradeApply.REFUSE);
@@ -270,7 +294,7 @@ public class CompTradeApplyService {
                 companyName+"公司拒绝了您的申请采购的请求",
                 operatorCode,
                 NotificationType.ENROLLED_APPLY_HISTORY,
-                code,
+                compTradeApply.getCode(),
                 compTradeApply.getCreatedCompBy(),
                 null,
                 compTradeApply.getCreatedBy()
@@ -281,6 +305,40 @@ public class CompTradeApplyService {
             e.printStackTrace();
             return false;
         }
+    }
 
+    /**
+     * 查询申请历史记录列表分页
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param  name  公司名称
+     * @param pageable 分页
+     * @return 返回申请历史记录列表
+     */
+    public Page<CompTradeApply> findApplyHistory(String startTime,String endTime,
+                                                 String name,Pageable pageable,
+                                                 String companyCode
+    ){
+        List<TCompTradeApply> compTradeApplies=compTradeApplyRepository.findApplyHistory(companyCode).stream()
+            .filter(compTradeApply -> {
+                if(compTradeApply.getCreatedCompBy().equals(companyCode)){
+                    return compTradeApply.getHandledCompany().getNameInCN().equals(name);
+                }else {
+                    return compTradeApply.getCreatedCompany().getNameInCN().equals(name);
+                }
+            }).filter(compTradeApply -> {
+                if(StringUtils.isNotBlank(startTime)&&StringUtils.isNotBlank(endTime)){
+                    DateTimeFormatter dateTimeFormatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                    DateTimeFormatter dateTimeFormatters = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDateTime startTimes = LocalDate.parse(startTime, dateTimeFormatterDay).atStartOfDay();
+                    LocalDateTime endTimes = LocalDateTime.parse(endTime+" 23:59:59", dateTimeFormatters);
+                    return compTradeApply.getCreatedAt().isAfter(startTimes) &&
+                        compTradeApply.getCreatedAt().isBefore(endTimes);
+                }
+                return true;
+            }).map(compTradeApplyMapper::toTComTradeApply)
+            .toList();
+
+        return null;
     }
 }

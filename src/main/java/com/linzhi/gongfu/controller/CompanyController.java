@@ -424,14 +424,14 @@ public class CompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        TOperatorInfo operatorInfo= operatorService.findOperatorByID(
+        /*TOperatorInfo operatorInfo= operatorService.findOperatorByID(
             OperatorId.builder()
                 .companyCode(session.getSession().getCompanyCode())
                 .operatorCode(session.getSession().getOperatorCode())
             .build()
         ).orElseThrow(()->new Exception("设置失败未查询到"));
         if(operatorInfo.getAdmin().equals(Whether.NO))
-            throw new Exception("该用户无该操作权限");
+            throw new Exception("该用户无该操作权限");*/
         var newPassword = operatorService.resetPassword(
             session.getSession().getCompanyCode(),
             code,null
@@ -462,6 +462,26 @@ public class CompanyController {
             .build();
     }
 
-
+    /**
+     * 启用和禁用人员
+     * @param code 人员编码
+     * @param state 状态
+     * @return 返回成功或者失败信息
+     */
+    @PostMapping("/company/operator/detail/{code}")
+    public VBaseResponse modifyOperatorState(@PathVariable String code,@RequestBody Optional<VOperatorRequest> state){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = operatorService.modifyOperatorState(
+            code,
+            session.getSession().getCompanyCode(),
+            state.orElseThrow(()->new NullPointerException("数据为空")).getState()
+        );
+        return VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"操作成功":"操作失败")
+            .build();
+    }
 }
 

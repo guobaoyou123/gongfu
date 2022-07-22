@@ -20,7 +20,7 @@ import java.util.List;
  */
 public interface OperatorRepository extends CrudRepository<Operator, OperatorId>, QuerydslPredicateExecutor<Operator> {
 
-    @Cacheable(value = "Operator_scene_statistics;1800", key = "#companyCode")
+
     List<Operator> findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(
         Availability state,
         String companyCode,

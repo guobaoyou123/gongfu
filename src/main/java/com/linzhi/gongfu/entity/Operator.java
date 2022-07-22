@@ -99,12 +99,12 @@ public class Operator {
      * 操作员所拥有的场景（权限）
      */
     @Singular
-    @ManyToMany
+    @ManyToMany(cascade =CascadeType.ALL ,fetch = FetchType.LAZY)
     @JoinTable(name = "dc_operator_scene", joinColumns = {
-            @JoinColumn(name = "dc_comp_id", referencedColumnName = "dc_comp_id", insertable = true, updatable = true),
-            @JoinColumn(name = "operator_code", referencedColumnName = "code", insertable = true, updatable = true)
+            @JoinColumn(name = "dc_comp_id", referencedColumnName = "dc_comp_id", insertable = false, updatable = false),
+            @JoinColumn(name = "operator_code", referencedColumnName = "code", insertable = false, updatable = false)
     }, inverseJoinColumns = {
-            @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = true, updatable = true)
+            @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
     private Set<Scene> scenes;
 

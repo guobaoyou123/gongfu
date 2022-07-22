@@ -1,9 +1,9 @@
 package com.linzhi.gongfu.repository;
 
-import com.linzhi.gongfu.entity.CompTradBrand;
-import com.linzhi.gongfu.entity.CompTradBrandId;
 import com.linzhi.gongfu.entity.CompTradeApply;
 import com.linzhi.gongfu.enumeration.TradeApply;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
@@ -26,5 +26,18 @@ public interface CompTradeApplyRepository extends CrudRepository<CompTradeApply,
      */
     Optional<CompTradeApply> findTopByCreatedCompByAndHandledCompByAndTypeOrderByCreatedAtDesc(String createdCompBy, String handledCompBy,String type);
 
+    /**
+     * 待处理申请列表
+     * @param companyCode 本公司编码
+     * @param tradeApply 待申请
+     * @param type 申请采购
+     * @return 待处理列表
+     */
+    @Cacheable(value="trade_apply_List;1800", key="#companyCode+'-'+#type")
     List<CompTradeApply> findByHandledCompByAndStateAndTypeOrderByCreatedAtDesc(String companyCode,TradeApply tradeApply,String type);
+
+    @Cacheable(value="trade_apply_history_List;1800", key="#companyCode")
+    @Query(value = "select * from comp_trade_apply\n" +
+        "where created_comp_by=?1 or(handled_comp_by=?1 and state<>'0')",nativeQuery = true)
+    List<CompTradeApply> findApplyHistory(String compCode);
 }

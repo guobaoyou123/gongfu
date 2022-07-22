@@ -7,7 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于接前端添加人员信息的请求
+ * 用于接前端修改人员场景信息的请求
  */
 @Jacksonized
 @Data

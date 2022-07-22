@@ -6,7 +6,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 /**
- * 用于接前端添加人员信息的请求
+ * 用于接前端添加和修改人员信息的请求
  */
 @Jacksonized
 @Data
@@ -21,4 +21,5 @@ public class VOperatorRequest {
     private String entryAt;
     private String resignationAt;
     private List<String> scenes;
+    private String state;
 }

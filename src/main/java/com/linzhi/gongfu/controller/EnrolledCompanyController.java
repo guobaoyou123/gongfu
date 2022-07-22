@@ -1,5 +1,7 @@
 package com.linzhi.gongfu.controller;
 
+import com.linzhi.gongfu.entity.CompTradeApply;
+import com.linzhi.gongfu.enumeration.TradeApply;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompTradeApplyService;
 import com.linzhi.gongfu.service.CompanyService;
@@ -164,12 +166,18 @@ public class EnrolledCompanyController {
      * @return 返回成功或者失败信息
      */
     @PostMapping("/enrolled/company/apply/{code}/pass")
-    public  VBaseResponse  consentApply(@PathVariable String code,@RequestBody Optional<VTradeApplyConsentRequest> vTradeApplyConsentRequest){
+    public  VBaseResponse  consentApply(@PathVariable String code,@RequestBody Optional<VTradeApplyConsentRequest> vTradeApplyConsentRequest) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
+        CompTradeApply compTradeApply = compTradeApplyService.getCompInvitationCode(code);
+        if(!compTradeApply.getState().equals(TradeApply.APPLYING))
+            return VBaseResponse.builder()
+                .code(500)
+                .message("操作失败")
+                .build();
         var flag = compTradeApplyService.consentApply(
-            code,
+            compTradeApply,
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
             session.getSession().getOperatorCode(),
@@ -189,17 +197,23 @@ public class EnrolledCompanyController {
     @PostMapping("/enrolled/company/apply/{code}/refuse")
     public VBaseResponse tradeApplyRefuse(@PathVariable String code,
                                           @RequestBody Optional<VTradeApplyRefuseRequest> vTradeApplyRefuseRequest
-    ){
+    ) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
+        CompTradeApply compTradeApply = compTradeApplyService.getCompInvitationCode(code);
+        if(!compTradeApply.getState().equals(TradeApply.APPLYING))
+            return VBaseResponse.builder()
+                .code(500)
+                .message("操作失败")
+                .build();
         var flag = compTradeApplyService.refuseApply(
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
             session.getSession().getOperatorCode(),
             vTradeApplyRefuseRequest.orElseThrow().getRemark(),
             vTradeApplyRefuseRequest.orElseThrow().getState(),
-            code
+            compTradeApply
         );
         return VBaseResponse.builder()
             .code(flag?200:500)
@@ -222,5 +236,26 @@ public class EnrolledCompanyController {
             .message(code!=null?"操作成功":"操作失败")
             .invitationCode(code)
             .build();
+    }
+
+    /**
+     * 申请采购历史记录
+     * @param pageNum 页码
+     * @param pageSize 每页几条
+     * @param name 公司名称
+     * @param startTime 开始时间
+     * @param emdTime  结束时间
+     * @return 申请采购历史记录
+     */
+    @GetMapping("/enrolled/company/apply/history")
+    public VTradeApplyHistoryResponse applyHistoryPage(@RequestParam("pageNum") Optional<String> pageNum ,
+                                                       @RequestParam("pageSize") Optional<String> pageSize ,
+                                                       @RequestParam("name") Optional<String> name,
+                                                       @RequestParam("startTime") Optional<String> startTime,
+                                                       @RequestParam("emdTime") Optional<String> emdTime){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        return VTradeApplyHistoryResponse.builder().build();
     }
 }

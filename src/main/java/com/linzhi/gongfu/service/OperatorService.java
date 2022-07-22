@@ -74,7 +74,7 @@ public class OperatorService {
             .toList();
         if(!keyWord.equals(""))
             operatorList=operatorList.stream()
-                .filter(vOperator -> vOperator.getName().contains(keyWord)||vOperator.getPhone().contains(keyWord))
+                .filter(vOperator -> vOperator.getName().contains(keyWord)||(vOperator.getPhone()!=null&&vOperator.getPhone().contains(keyWord)))
                 .toList();
 
         return PageTools.listConvertToPage(operatorList,pageable);
@@ -137,6 +137,7 @@ public class OperatorService {
      * @param companyCode 单位编码
      * @return 返回人员权限列表
      */
+    @Cacheable(value = "Operator_scene_statistics;1800", key = "#companyCode")
     public List<TOperatorInfo> findOperatorList(String companyCode){
         return   operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(Availability.ENABLED,companyCode,"000")
             .stream().map(operatorMapper::toDTO).toList();
@@ -161,7 +162,7 @@ public class OperatorService {
             OperatorDetail operatorDetail = operatorDetail(companyCode,operatorCode).orElseThrow(()->new IOException("为从数据库找到"));
             operatorDetail.setName(operatorRequest.getName());
             operatorDetail.setBirthday(operatorRequest.getBirthday()==null?null:LocalDate.parse(operatorRequest.getBirthday()));
-            operatorDetail.setSex(operatorRequest.getSex());
+            operatorDetail.setSex(operatorRequest.getSex()!=null?operatorRequest.getSex().trim():null);
             operatorDetail.setAreaCode(operatorRequest.getAreaCode());
             operatorDetail.setPhone(operatorRequest.getPhone());
             if(operatorRequest.getAreaCode()!=null){
@@ -188,12 +189,11 @@ public class OperatorService {
         ,
         @CacheEvict(value = "Operator_scene_statistics;1800", key = "#companyCode")
     })
-
     @Transactional
     public String addOperator(String companyCode,VOperatorRequest operatorRequest){
         try{
             String maxCode = operatorDetailRepository.findMaxCode(companyCode).orElse("001");
-           String  password = RNGUtil.getLowerLetter(3) + RNGUtil.getNumber(3);
+            String  password = RNGUtil.getLowerLetter(3) + RNGUtil.getNumber(3);
             OperatorDetail operatorDetail = OperatorDetail.builder()
                 .identity(OperatorId.builder()
                     .companyCode(companyCode)
@@ -201,7 +201,7 @@ public class OperatorService {
                     .build())
                 .name(operatorRequest.getName())
                 .phone(operatorRequest.getPhone())
-                .sex(operatorRequest.getSex())
+                .sex(operatorRequest.getSex()!=null?operatorRequest.getSex().trim():null)
                 .admin(Whether.NO)
                 .birthday(operatorRequest.getBirthday()==null?null:LocalDate.parse(operatorRequest.getBirthday()))
                 .entryAt(operatorRequest.getEntryAt()==null?null:LocalDate.parse(operatorRequest.getEntryAt()))
@@ -251,7 +251,6 @@ public class OperatorService {
                               .build()
                       )
                       .build()) );
-
               });
               operatorSceneRepository.deleteByOperatorSceneId_DcCompIdAndOperatorSceneId_OperatorCodeIn(companyCode,operators);
               operatorSceneRepository.saveAll(operatorSceneList);
@@ -329,5 +328,31 @@ public class OperatorService {
                 .build())
         );
         operatorSceneRepository.saveAll(operatorSceneList);
+    }
+
+    /**
+     * 启用和禁用人员
+     * @param code 操作员编码
+     * @param companyCode 公司编码
+     * @param state 状态
+     * @return 返回是与否
+     */
+    @Caching(evict = {
+        @CacheEvict(value = "Operator_detail;1800", key = "#companyCode+'-'+#code"),
+        @CacheEvict(value = "Operator_Login;1800", key = "T(String).valueOf(#companyCode).concat(#code)"),
+        @CacheEvict(value = "Operator_List;1800", key = "#companyCode+'-0'"),
+        @CacheEvict(value = "Operator_List;1800", key = "#companyCode+'-1'")
+    })
+    @Transactional
+    public boolean modifyOperatorState(String code,String companyCode,String state){
+       try{
+           OperatorDetail operator = operatorDetail(companyCode,code).orElseThrow(()->new IOException("没有从数据库中找到"));
+           operator.setState(state.equals("0")?Availability.DISABLED:Availability.ENABLED);
+           operatorDetailRepository.save(operator);
+           return true;
+       }catch (Exception e){
+           e.printStackTrace();
+           return false;
+       }
     }
 }

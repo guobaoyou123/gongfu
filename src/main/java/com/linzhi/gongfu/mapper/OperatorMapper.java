@@ -33,6 +33,7 @@ public interface OperatorMapper {
     @Mapping(target = "birthday",expression = "java(operator.getBirthday()==null?null:com.linzhi.gongfu.util.DateConverter.dateFormat(operator.getBirthday()))")
     @Mapping(target = "entryAt",expression = "java(operator.getEntryAt()==null?null:com.linzhi.gongfu.util.DateConverter.dateFormat(operator.getEntryAt()))")
     @Mapping(target = "resignationAt",expression = "java(operator.getResignationAt()==null?null:com.linzhi.gongfu.util.DateConverter.dateFormat(operator.getResignationAt()))")
+    @Mapping(target = "sex",expression = "java(operator.getSex()!=null?operator.getSex().trim():null)")
     TOperatorInfo toOperatorDetailDTO(OperatorDetail operator);
 
     @Mapping(target = "state", expression = "java(String.valueOf(operator.getState().getState()))")
