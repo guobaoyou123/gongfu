@@ -17,6 +17,14 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @Data
 public class TCompareDetail {
+
+    /**
+     * 编码
+     */
     private String code;
+
+    /**
+     * 名称
+     */
     private String name;
 }

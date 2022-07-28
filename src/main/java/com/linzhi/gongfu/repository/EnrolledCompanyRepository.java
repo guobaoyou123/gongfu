@@ -23,9 +23,7 @@ public interface EnrolledCompanyRepository
     Optional<EnrolledCompany> findBySubdomainName(String subdomainName);
     Optional<EnrolledCompany> findByUSCI(String usci);
 
-
-    @Query(value="select  (cast(max(id) as int)+1) from dc_comp " ,
-        nativeQuery = true)
+    @Query(value="select  (cast(max(id) as int)+1) from dc_comp " , nativeQuery = true)
     String findMaxCode();
 
     @Cacheable(value = "companyDetail;1800", unless = "#result == null ",key = "#companyCode")

@@ -14,7 +14,17 @@ import java.io.Serializable;
 @Jacksonized
 @NoArgsConstructor
 public class VTradeApplyRequest  implements Serializable {
+
+    /**
+     * 备注
+     */
     private String remark;
+    /**
+     * 邀请码
+     */
     private String invitationCode;
+    /**
+     * 格友编码
+     */
     private String applyCompCode;
 }

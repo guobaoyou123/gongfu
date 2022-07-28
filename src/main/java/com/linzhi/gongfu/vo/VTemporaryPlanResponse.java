@@ -8,6 +8,9 @@ import lombok.extern.jackson.Jacksonized;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 用于响应根据操作员编码、单位id查询该操作员的临时计划表的请求
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized

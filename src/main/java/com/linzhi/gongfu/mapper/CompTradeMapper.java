@@ -3,7 +3,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
 import com.linzhi.gongfu.entity.CompTrad;
-import com.linzhi.gongfu.vo.VSuppliersIncludeBrandsResponse;
+import com.linzhi.gongfu.vo.VSuppliersPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -26,7 +26,7 @@ public interface CompTradeMapper {
     @Mapping(target = "name", source = "name")
     @Mapping(target = "brands", source = "selfSupportBrands")
     @Mapping(target = "sort",constant = "1")
-    VSuppliersIncludeBrandsResponse.VSupplier toPreloadSuppliersIncludeBrandDTOs(TCompanyIncludeBrand tCompanyIncludeBrand);
+    VSuppliersPageResponse.VSupplier toPreloadSuppliersIncludeBrandDTOs(TCompanyIncludeBrand tCompanyIncludeBrand);
     /**
      * 将获取到的入格公司信息，转换成可供使用的公司基础信息
      *

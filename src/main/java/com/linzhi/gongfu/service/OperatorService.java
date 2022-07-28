@@ -139,9 +139,13 @@ public class OperatorService {
      */
     @Cacheable(value = "Operator_scene_statistics;1800", key = "#companyCode")
     public List<TOperatorInfo> findOperatorList(String companyCode){
-        return   operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(Availability.ENABLED,companyCode,"000")
-            .stream().map(operatorMapper::toDTO).toList();
-
+        return   operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(
+                   Availability.ENABLED,
+                   companyCode,
+                  "000"
+                ).stream()
+                 .map(operatorMapper::toDTO)
+                 .toList();
     }
 
     /**
@@ -159,7 +163,8 @@ public class OperatorService {
     @Transactional
     public boolean modifyOperator(String companyCode, String operatorCode, VOperatorRequest operatorRequest){
         try {
-            OperatorDetail operatorDetail = operatorDetail(companyCode,operatorCode).orElseThrow(()->new IOException("为从数据库找到"));
+            OperatorDetail operatorDetail = operatorDetail(companyCode,operatorCode)
+                .orElseThrow(()->new IOException("为从数据库找到"));
             operatorDetail.setName(operatorRequest.getName());
             operatorDetail.setBirthday(operatorRequest.getBirthday()==null?null:LocalDate.parse(operatorRequest.getBirthday()));
             operatorDetail.setSex(operatorRequest.getSex()!=null?operatorRequest.getSex().trim():null);

@@ -19,18 +19,42 @@ import java.util.List;
 @SuperBuilder(toBuilder = true)
 public class VTradeApplyPageResponse extends VBaseResponse  {
 
+    /**
+     * 当前页
+     */
     private int current;
+
+    /**
+     * 总条数
+     */
     private int total;
+
+    /**
+     * 待处理申请采购列表
+     */
     List<VTradeApply> applies;
 
     @Data
     public  static  class  VTradeApply{
+
+        /**
+         * 申请记录编码
+         */
         private String code;
 
+        /**
+         * 公司编码
+         */
         private String companyCode;
 
+        /**
+         * 公司名称
+         */
         private String companyName;
 
+        /**
+         * 公司简称
+         */
         private String companyShortName;
     }
 }

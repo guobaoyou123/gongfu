@@ -6,6 +6,9 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
+/**
+ * 用于接生成采购计划请求参数
+ */
 @Data
 @Jacksonized
 @NoArgsConstructor

@@ -6,7 +6,9 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
-
+/**
+ * 用于响应查询价单历史列表的请求
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized

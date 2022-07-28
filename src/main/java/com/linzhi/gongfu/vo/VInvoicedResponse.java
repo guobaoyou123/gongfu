@@ -19,15 +19,42 @@ import java.util.List;
 @Jacksonized
 @SuperBuilder(toBuilder = true)
 public class VInvoicedResponse extends VBaseResponse{
+    /**
+     * 产品列表
+     */
     List<VProduct> products;
 
     @Data
     public static class VProduct{
+
+        /**
+         * 产品主键
+         */
         private String id;
+
+        /**
+         * 产品编码
+         */
         private String code;
+
+        /**
+         * 描述
+         */
         private String describe;
+
+        /**
+         * 计价单位
+         */
         private String chargeUnit;
+
+        /**
+         * 数量
+         */
         private BigDecimal amount;
+
+        /**
+         * 已开票数量
+         */
         private BigDecimal invoiceAmount;
     }
 }

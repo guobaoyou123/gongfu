@@ -13,6 +13,14 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class VOperatorSceneRequest {
+
+    /**
+     * 人员编码
+     */
     private String code;
+
+    /**
+     * 场景编码列表
+     */
     private List<String> scenes;
 }

@@ -14,17 +14,33 @@ import java.util.List;
 @NoArgsConstructor
 public class VCompanyRequest {
 
+    /**
+     * 公司简称
+     */
     private String companyShortName;
 
+    /**
+     * 联系人姓名
+     */
     private String contactName;
 
+    /**
+     * 联系人电话
+     */
     private String contactPhone;
 
+    /**
+     * 区域编码
+     */
     private String areaCode;
 
-    private String areaName;
-
+    /**
+     * 详细地址
+     */
     private String address;
 
+    /**
+     * 公司简介
+     */
     private String introduction;
 }

@@ -8,7 +8,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于响应前端对于产品品牌的预加载请求
+ * 用于响应前端对于查询本公司停用的区域的预加载请求
  *
  * @author zgh
  * @create_at 2022-02-08

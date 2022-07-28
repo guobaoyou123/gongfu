@@ -6,7 +6,12 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
-
+/**
+ * 用于响应前端对于查询产品详情的预加载请求
+ *
+ * @author zgh
+ * @create_at 2022-02-09
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized

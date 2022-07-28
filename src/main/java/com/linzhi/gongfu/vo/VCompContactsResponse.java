@@ -10,7 +10,7 @@ import java.util.List;
 /**
  *用于响应前端对于联系人列表的请求
  *
- * @author xutao
+ * @author zgh
  * @create_at 2021-12-24
  */
 @EqualsAndHashCode(callSuper = true)
@@ -19,16 +19,44 @@ import java.util.List;
 @SuperBuilder(toBuilder = true)
 public class VCompContactsResponse extends VBaseResponse{
 
+    /**
+     * 联系人列表
+     */
      private List<Contacts> contacts;
 
      @Data
      public static class  Contacts{
+
+         /**
+          * 编码
+          */
          private String code;
+
+         /**
+          * 公司名称
+          */
          private String companyName;
+
+         /**
+          *姓名
+          */
          private String name ;
+
+         /**
+          * 电话
+          */
          private String phone ;
+
+         /**
+          *地址编码
+          */
          private String addressCode ;
+
+         /**
+          * 状态
+          */
          private String state;
+
          /**
           *是否可编辑(0,停用;1,启用)
           */

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 用于响应前端对于购计划的预加载请求
+ * 用于响应前端对于购计划的加载请求
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

@@ -19,10 +19,29 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TProductClass {
+
+    /**
+     * 编码
+     */
     private String code;
+    /**
+     * 类型
+     */
     private String type;
+    /**
+     * 名称
+     */
     private String name;
+    /**
+     * 父级编码
+     */
     private String parentCode;
+    /**
+     * 等级
+     */
     private String lev;
+    /**
+     * 子分类列表
+     */
     private List<TProductClass> children;
 }

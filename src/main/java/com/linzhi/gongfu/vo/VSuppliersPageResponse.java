@@ -20,9 +20,15 @@ import java.util.Set;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VSuppliersIncludeBrandsResponse extends VBaseResponse  {
+public class VSuppliersPageResponse extends VBaseResponse  {
 
+    /**
+     * 当前页
+     */
     private int current;
+    /**
+     * 总条数
+     */
     private int total;
     List<VSupplier> suppliers;
     /**

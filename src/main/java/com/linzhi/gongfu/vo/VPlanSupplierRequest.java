@@ -6,6 +6,9 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.io.Serializable;
 
+/**
+ * 用于接前端更换供应商的请求参数
+ */
 @Jacksonized
 @Data
 @NoArgsConstructor

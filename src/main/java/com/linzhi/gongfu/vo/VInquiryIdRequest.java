@@ -10,6 +10,6 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @NoArgsConstructor
-public class VEmptyInquiryRequest {
+public class VInquiryIdRequest {
     private String supplierCode;
 }

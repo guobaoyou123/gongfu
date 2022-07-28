@@ -25,7 +25,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TTaxRates implements Serializable {
 
-
+    /**
+     * 主键
+     */
     private  String id;
     /**
      * 使用国家

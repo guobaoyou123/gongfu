@@ -13,7 +13,19 @@ import java.math.BigDecimal;
 @Jacksonized
 @NoArgsConstructor
 public class VInquiryProductRequest {
+
+    /**
+     * 产品id
+     */
     private String productId;
+
+    /**
+     * 价格
+     */
     private BigDecimal price;
+
+    /**
+     * 数量
+     */
     private BigDecimal amount;
 }

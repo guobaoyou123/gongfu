@@ -21,6 +21,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TPurchasePlan implements Serializable {
+    /**
+     * 计划编码
+     */
     private String planCode;
     /**
      * 对应销售合同号
@@ -28,5 +31,8 @@ public class TPurchasePlan implements Serializable {
     private String salesCode;
 
 
+    /**
+     * 计划产品列表
+     */
     private List<TPurchasePlanProduct> products;
 }

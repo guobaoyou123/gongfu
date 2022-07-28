@@ -8,11 +8,14 @@ import lombok.extern.jackson.Jacksonized;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 用于前端根据条件查询采购合同列表的响应体组建
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VPurchaseContractPageResponse extends VBaseResponse{
+public class VPContractPageResponse extends VBaseResponse{
 
     private int current;
     private int total;

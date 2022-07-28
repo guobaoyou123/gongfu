@@ -15,9 +15,18 @@ import java.util.List;
 @NoArgsConstructor
 public class VTradeApplyConsentRequest implements Serializable {
 
+    /**
+     * 品牌编码列表
+     */
     private List<String> brandCodes;
 
+    /**
+     * 税模式
+     */
     private String taxModel;
 
+    /**
+     * 授权操作员编码列表
+     */
     private List<String> authorizedOperator;
 }

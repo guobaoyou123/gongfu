@@ -15,6 +15,13 @@ import java.util.List;
 @NoArgsConstructor
 public class VTradeApplyRefuseRequest implements Serializable {
 
+    /**
+     * 备注
+     */
     private String remark;
+
+    /**
+     * 状态
+     */
     private String state;
 }

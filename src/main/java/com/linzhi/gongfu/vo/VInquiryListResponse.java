@@ -7,6 +7,9 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
+/**
+ * 用于响应查询询价单列表的请求
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized

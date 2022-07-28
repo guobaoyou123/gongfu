@@ -7,7 +7,9 @@ import lombok.extern.jackson.Jacksonized;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-
+/**
+ * 用于接前端修改采购计划中的需求的请求参数
+ */
 @Jacksonized
 @Data
 @NoArgsConstructor

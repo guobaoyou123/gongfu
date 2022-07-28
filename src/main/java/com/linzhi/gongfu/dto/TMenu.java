@@ -18,11 +18,39 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TMenu {
+
+    /**
+     * 编码
+     */
     private String code;
+
+    /**
+     * 名称
+     */
     private String name;
+
+    /**
+     * 父级id
+     */
     private String parent;
+
+    /**
+     * url
+     */
     private String location;
+
+    /**
+     * 排序
+     */
     private Integer sort;
+
+    /**
+     * 场景列表
+     */
     private Set<TScene> scenes;
+
+    /**
+     *子菜单列表
+     */
     private Set<TMenu> children;
 }

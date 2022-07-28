@@ -21,6 +21,9 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class TArea {
 
+    /**
+     * 编码
+     */
     private String code;
 
     /**

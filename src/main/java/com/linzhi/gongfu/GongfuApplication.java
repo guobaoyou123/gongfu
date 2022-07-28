@@ -20,5 +20,4 @@ public class GongfuApplication {
         SpringApplication.run(GongfuApplication.class, args);
     }
 
-
 }

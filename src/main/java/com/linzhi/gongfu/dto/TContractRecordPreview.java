@@ -13,9 +13,15 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TContractRecordPreview {
+
+    /**
+     * 产品主键
+     */
     private String productId;
 
-
+    /**
+     * 产品编码
+     */
     private String productCode;
     /**
      * 已收货

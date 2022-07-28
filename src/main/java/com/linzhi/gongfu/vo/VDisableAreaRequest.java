@@ -11,5 +11,8 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @NoArgsConstructor
 public class VDisableAreaRequest {
+    /**
+     * 区域编码
+     */
     private String code;
 }

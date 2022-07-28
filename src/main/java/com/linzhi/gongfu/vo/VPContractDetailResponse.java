@@ -18,8 +18,11 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VPurchaseContractDetailResponse extends VBaseResponse{
+public class VPContractDetailResponse extends VBaseResponse{
     private VContract contract;
+    /**
+     * 是否与上一版合同一致
+     */
     private Boolean repetitive;
     @Data
     public static class VContract{
@@ -172,58 +175,71 @@ public class VPurchaseContractDetailResponse extends VBaseResponse{
     @Data
     public static class  VProduct{
 
-
-
         /**
          * 序号
          */
         private Integer itemNo ;
+
+        /**
+         * 序号
+         */
         private String createdAt;
 
         /**
          * 产品id
          */
         private String id;
+
         /**
          * 产品编码
          */
         private String code;
+
         /**
          * 客户自定义产品编码
          */
         private String customerPCode;
+
         /**
          * 本单位自定义产品编码
          */
         private String localPCode;
+
         /**
          * 描述
          */
         private String describe;
+
         /**
          * 品牌编码
          */
         private String brandCode;
+
         /**
          *品牌名称
          */
         private String brandName;
+
         /**
          * 数量
          */
         private BigDecimal amount;
+
         /**
          * 价格
          */
         private BigDecimal price;
+
         /**
          * 含税价格
          */
         private BigDecimal priceVat;
+
         /**
          * 未税总价
          */
         private BigDecimal totalPrice;
+
         /**
          * 含税总价
          */
@@ -238,38 +254,47 @@ public class VPurchaseContractDetailResponse extends VBaseResponse{
          *上一版未税价格
          */
         private BigDecimal previousPrice;
+
         /**
          *上一版未税小计
          */
         private BigDecimal previousTotalPrice;
+
         /**
          *上一版含税价格
          */
         private BigDecimal previousPriceVat;
+
         /**
          *上一版含税小计
          */
         private BigDecimal previousTotalPriceVat;
+
         /**
          * 税率
          */
         private BigDecimal vatRate;
+
         /**
          * 上一版税率
          */
         private BigDecimal previousVatRate;
+
         /**
          * 备货期
          */
         private int stockTime;
+
         /**
          * 计价单位
          */
         private String chargeUnit;
+
         /**
          * 上一版计价单位
          */
         private String previousChargeUnit;
+
         /**
          * 类型（1-货物 2-服务）
          */
@@ -283,7 +308,15 @@ public class VPurchaseContractDetailResponse extends VBaseResponse{
 
     @Data
     public static class VRevision{
+
+        /**
+         * 创建时间
+         */
        private String createdAt;
+
+        /**
+         * 版本号
+         */
        private int revision;
     }
 }

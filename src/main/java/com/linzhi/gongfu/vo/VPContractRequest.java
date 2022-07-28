@@ -13,8 +13,13 @@ import java.util.List;
 @Data
 @Jacksonized
 @NoArgsConstructor
-public class VGenerateContractRequest {
+public class VPContractRequest {
+
+    /**
+     * 询价单主键
+     */
     private String inquiryId;
+
     /**
      * 本单位合同号
      */
@@ -24,22 +29,27 @@ public class VGenerateContractRequest {
      *对应供应商合同号
      */
     private String supplierNo;
+
     /**
      * 总的价税合计值
      */
     private BigDecimal sum;
+
     /**
      * 地址编码
      */
     private String addressCode;
+
     /**
      * 联系人编码
      */
     private String contactCode;
+
     /**
      * 供应商联系人姓名
      */
     private String supplierContactName;
+
     /**
      * 供应商联系人电话
      */
@@ -50,6 +60,9 @@ public class VGenerateContractRequest {
      */
     private boolean enforce;
 
+    /**
+     * 退回产品列表
+     */
     private List<DeliveryRecord>   deliveryRecords;
 
     @Data
@@ -58,6 +71,7 @@ public class VGenerateContractRequest {
          * 产品主键
          */
         private String productId;
+
         /**
          * 退回数量
          */

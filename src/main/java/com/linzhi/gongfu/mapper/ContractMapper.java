@@ -4,8 +4,8 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TContract;
 import com.linzhi.gongfu.dto.TContractReceived;
 import com.linzhi.gongfu.entity.*;
-import com.linzhi.gongfu.vo.VPurchaseContractDetailResponse;
-import com.linzhi.gongfu.vo.VPurchaseContractPageResponse;
+import com.linzhi.gongfu.vo.VPContractDetailResponse;
+import com.linzhi.gongfu.vo.VPContractPageResponse;
 import com.linzhi.gongfu.vo.VReceivedResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -46,7 +46,7 @@ public interface ContractMapper {
     @Mapping(target = "contractNo",source = "orderCode")
     @Mapping(target = "taxedTotal",source = "taxedTotal")
     @Mapping(target = "confirmTaxedTotal",source = "confirmTaxedTotal")
-    VPurchaseContractPageResponse.VContract toContractPage(TContract tContract);
+    VPContractPageResponse.VContract toContractPage(TContract tContract);
 
     @Mapping(target = "id",source = "contractRevisionId.id")
     @Mapping(target = "revision",source = "contractRevisionId.revision")
@@ -95,7 +95,7 @@ public interface ContractMapper {
     @Mapping(target = "supplierName",source = "salerCompName")
     @Mapping(target = "products",source = "records")
     @Mapping(target = "consigneeCode",source = "contactCode")
-    VPurchaseContractDetailResponse.VContract toContractDetail(TContract tContract);
+    VPContractDetailResponse.VContract toContractDetail(TContract tContract);
 
     ContractRevision toContractRevision(ContractRevisionDetail contractRevisionDetail);
 

@@ -26,6 +26,9 @@ public class TCompanyBaseInformation implements Serializable {
      */
     private String code;
 
+    /**
+     * 用于外客或者外供前端显示的编码
+     */
     private String encode;
 
     /**

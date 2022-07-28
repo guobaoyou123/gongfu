@@ -6,7 +6,7 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * 用于响应前端对于修改合同的请求
+ * 用于前端修改采购合同返回版本号响应体组建
  *
  * @author zgh
  * @create_at 2022-02-09
@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VModifyContractResponse extends VBaseResponse{
+public class VPContractRevisionResponse extends  VBaseResponse{
 
-    private Boolean state;
+    private int revision;
 }

@@ -24,16 +24,34 @@ public class VForeignSuppliersResponse extends VBaseResponse{
     @Data
     public static class VForeignSupplier{
 
+        /**
+         * 系统编码
+         */
         private String code;
 
+        /**
+         * 编码
+         */
         private String encode;
 
+        /**
+         * 公司名称
+         */
         private String companyName;
 
+        /**
+         * 公司简称
+         */
         private String companyShortName;
 
+        /**
+         * 社会统一信用代码
+         */
         private String usci;
 
+        /**
+         * 状态
+         */
         private String state;
 
     }

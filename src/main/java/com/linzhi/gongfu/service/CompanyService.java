@@ -50,6 +50,7 @@ public class CompanyService {
     private final CompVisibleRepository compVisibleRepository;
     private final CompInvitationCodeRepository compInvitationCodeRepository;
     private final CompTradeApplyRepository compTradeApplyRepository;
+
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -68,9 +69,9 @@ public class CompanyService {
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 供应商信息列表
      */
-    public Page<VSuppliersIncludeBrandsResponse.VSupplier> CompanyIncludeBrandById(String id,
-                                                                                   Optional<String> pageNum,
-                                                                                   Optional<String> pageSize
+    public Page<VSuppliersPageResponse.VSupplier> suppliersPage(String id,
+                                                                          Optional<String> pageNum,
+                                                                          Optional<String> pageSize
     ) {
 
         List<CompTrad> compTradList=findSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
@@ -182,7 +183,7 @@ public class CompanyService {
      * @return 返回详细信息
      */
     @Cacheable(value = "supplierDetail;1800", unless = "#result == null ",key = "#companyCode+'-'+#code")
-   public VSupplierDetailResponse.VSupplier findForeignSupplierDetail(String code,String companyCode){
+   public VForeignSupplierResponse.VSupplier findForeignSupplierDetail(String code, String companyCode){
 
        var trade =compTradeRepository.findById(CompTradId.builder()
               .compSaler(code)
@@ -193,7 +194,7 @@ public class CompanyService {
            .map(brandMapper::toBrand)
            .map(brandMapper::toSupplierBrandPreload)
            .toList();
-       VSupplierDetailResponse.VSupplier vSupplier=trade.map(CompTrad::getCompanys)
+       VForeignSupplierResponse.VSupplier vSupplier=trade.map(CompTrad::getCompanys)
            .map(companyMapper::toBaseInformation)
            .map(companyMapper::toSupplierDetail).get();
        vSupplier.setBrands(brands);
@@ -401,7 +402,7 @@ public class CompanyService {
      * @param companyCode 单位编码
      * @return 返回详细信息
      */
-    public VCompanyDetailResponse.VCompany findCompanyDetail(String companyCode) throws Exception {
+    public VCompanyResponse.VCompany findCompanyDetail(String companyCode) throws Exception {
         return  enrolledCompanyRepository.findById(companyCode).map(companyMapper::toCompDetail)
            .map(companyMapper::toCompanyDetail).orElseThrow(()->new IOException("未找到公司信息"));
     }
@@ -533,8 +534,8 @@ public class CompanyService {
      *  @param companyCode 公司编码
      * @return 格友公司可见详情
      */
-    public Optional<VEnrolledCompanyDetailResponse.VCompany> findEnrolledCompany(String enrolledCode,
-                                                                                 String companyCode
+    public Optional<VEnrolledCompanyResponse.VCompany> findEnrolledCompany(String enrolledCode,
+                                                                           String companyCode
     )
         throws IOException {
       var company = findEnrolledCompany(enrolledCode)
@@ -573,7 +574,7 @@ public class CompanyService {
      * @param enrolledCode 公司编码
      * @return 公司可见详情
      */
-    public  Optional<VEnrolledCompanyDetailResponse.VCompany>  findEnrolledCompany(String enrolledCode) {
+    public  Optional<VEnrolledCompanyResponse.VCompany>  findEnrolledCompany(String enrolledCode) {
         return     enrolledCompanyRepository.findById(enrolledCode).map(companyMapper::toEnrolledCompanyDetail)
             .map(companyMapper::toEnrolledCompanyDetail);
     }
@@ -584,7 +585,7 @@ public class CompanyService {
      *  @param companyCode 公司编码
      * @return 格友公司可见详情
      */
-    public Optional<VEnrolledCompanyDetailResponse.VCompany> findRefuseEnrolledCompanyDetail(
+    public Optional<VEnrolledCompanyResponse.VCompany> findRefuseEnrolledCompanyDetail(
         String enrolledCode,
         String companyCode
     ) throws IOException {
@@ -609,11 +610,14 @@ public class CompanyService {
     @Transactional
     public  String getInvitationCode(String companyCode){
         try {
+            //查询是否有申请码
             Optional<CompInvitationCode> compInvitationCode=compInvitationCodeRepository.
                 findCompInvitationCodeByCompInvitationCodeId_DcCompId(companyCode);
-            if(compInvitationCode.isPresent())
-                compInvitationCodeRepository.deleteById(compInvitationCode.get().getCompInvitationCodeId());
+            //如何不为空，将原来的邀请码删除
+            compInvitationCode.ifPresent(invitationCode -> compInvitationCodeRepository.deleteById(invitationCode.getCompInvitationCodeId()));
+            //邀请码的格式（单位编码——uuid随机编码）
             String InvitationCode = companyCode+"-"+UUID.randomUUID();
+            //保存数据
             compInvitationCodeRepository.save(
                 CompInvitationCode.builder()
                     .compInvitationCodeId(

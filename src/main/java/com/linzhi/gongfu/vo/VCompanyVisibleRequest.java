@@ -13,7 +13,13 @@ import lombok.extern.jackson.Jacksonized;
 public class VCompanyVisibleRequest {
 
 
+    /**
+     * 是否对可以可见
+     */
     private  Boolean visible;
 
+    /**
+     * 可见内容
+     */
     private  String content;
 }

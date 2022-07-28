@@ -124,7 +124,7 @@ public interface CompanyMapper {
     @Mapping(target = "companyName", source = "name")
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "usci", source = "USCI")
-    VSupplierDetailResponse.VSupplier toSupplierDetail(TCompanyBaseInformation company);
+    VForeignSupplierResponse.VSupplier toSupplierDetail(TCompanyBaseInformation company);
 
     /**
      * 将获取到的本公司信息，转换成可供使用的公司基础信息
@@ -136,7 +136,7 @@ public interface CompanyMapper {
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "usci", source = "USCI")
     @Mapping(target = "visible",expression = "java(company.getVisible().equals(\"1\")?true:false)")
-    VCompanyDetailResponse.VCompany toCompanyDetail(TCompanyBaseInformation company);
+    VCompanyResponse.VCompany toCompanyDetail(TCompanyBaseInformation company);
 
 
     @Mapping(target = "companyName", source = "name")
@@ -154,5 +154,5 @@ public interface CompanyMapper {
     @Mapping(target = "isSupplier",constant = "false")
     @Mapping(target = "isCustomer",constant = "false")
     @Mapping(target = "state",constant = "0")
-    VEnrolledCompanyDetailResponse.VCompany toEnrolledCompanyDetail(TCompanyBaseInformation company);
+    VEnrolledCompanyResponse.VCompany toEnrolledCompanyDetail(TCompanyBaseInformation company);
 }

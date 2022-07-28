@@ -48,12 +48,12 @@ public class ContractController {
     public VTemporaryPlanResponse  temporaryPlans(){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var temporaryPlans = planService.findTemporaryPlanByOperator
-            (TemporaryPlanId.builder()
-                .createdBy(session.getSession().getOperatorCode())
-                .dcCompId(session.getSession().getCompanyCode())
-                .build()
-            );
+        var temporaryPlans = planService.findTemporaryPlanByOperator(
+               TemporaryPlanId.builder()
+                 .createdBy(session.getSession().getOperatorCode())
+                 .dcCompId(session.getSession().getCompanyCode())
+               .build()
+        );
         return VTemporaryPlanResponse.builder()
             .message("获取采购临时计划表成功")
             .code(200)
@@ -112,14 +112,9 @@ public class ContractController {
             products,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode());
-        if(flag)
-            return VBaseResponse.builder()
-                .message("删除计划成功")
-                .code(200)
-                .build();
         return VBaseResponse.builder()
-            .message("删除计划失败")
-            .code(500)
+            .message(flag?"删除计划成功":"删除计划失败")
+            .code(flag?200:500)
             .build();
     }
 
@@ -216,14 +211,9 @@ public class ContractController {
             session.getSession().getCompanyCode(),
             forSeveral.orElseGet(VPlanDemandRequest::new)
         );
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("修改采购计划需求成功！")
-                .build();
         return VBaseResponse.builder()
-            .code(500)
-            .message("修改失败！")
+            .code(flag?200:500)
+            .message(flag?"修改采购计划需求成功！":"修改失败！")
             .build();
     }
 
@@ -239,14 +229,9 @@ public class ContractController {
             session.getSession().getCompanyCode(),
             demand.orElseGet(VPlanDemandRequest::new)
         );
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("修改采购计划需求成功！")
-                .build();
         return VBaseResponse.builder()
-            .code(500)
-            .message("修改失败！")
+            .code(flag?200:500)
+            .message(flag?"修改采购计划需求成功！":"修改失败！")
             .build();
     }
 
@@ -267,14 +252,9 @@ public class ContractController {
             request.getPlanCode(),
             request.getDemand()
         );
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("添加产品成功！")
-                .build();
         return VBaseResponse.builder()
-            .code(500)
-            .message("添加产品失败！")
+            .code(flag?200:500)
+            .message(flag?"添加产品成功！":"添加产品失败！")
             .build();
     }
 
@@ -292,14 +272,9 @@ public class ContractController {
             session.getSession().getCompanyCode(),
             productId,planCode
         );
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("删除产品成功！")
-                .build();
         return VBaseResponse.builder()
-            .code(500)
-            .message("删除产品失败！")
+            .code(flag?200:500)
+            .message(flag?"删除产品成功！":"删除产品失败！")
             .build();
     }
 
@@ -316,14 +291,9 @@ public class ContractController {
             session.getSession().getCompanyCode(),
             planCode.orElseGet(String::new)
         );
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("删除采购计划成功！")
-                .build();
         return VBaseResponse.builder()
-            .code(500)
-            .message("删除采购计划失败！")
+            .code(flag?200:500)
+            .message(flag?"删除采购计划成功！":"删除采购计划失败！")
             .build();
     }
 
@@ -496,7 +466,7 @@ public class ContractController {
      * @return 询价单编码
      */
     @PostMapping("/contract/purchase/inquiry/empty")
-    public VEmptyInquiryResponse emptyInquiry(@RequestBody VEmptyInquiryRequest vEmptyInquiryRequest){
+    public VInquiryResponse emptyInquiry(@RequestBody VInquiryIdRequest vEmptyInquiryRequest){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var code = inquiryService.emptyInquiry(
@@ -506,12 +476,12 @@ public class ContractController {
             vEmptyInquiryRequest.getSupplierCode()
         );
         if(code==null)
-            return VEmptyInquiryResponse.builder()
+            return VInquiryResponse.builder()
                 .code(500)
                 .message("新建空的询价单失败")
                 .inquiryId("UNKNOWN")
                 .build();
-        return  VEmptyInquiryResponse.builder()
+        return  VInquiryResponse.builder()
             .code(200)
             .message("新建询价单成功")
             .inquiryId(code)
@@ -534,15 +504,9 @@ public class ContractController {
             vInquiryProductRequest.getPrice(),
             vInquiryProductRequest.getAmount()
         );
-        if(flag) {
-            return VBaseResponse.builder()
-                .code(200)
-                .message("添加产品成功")
-                .build();
-        }
         return  VBaseResponse.builder()
-            .code(500)
-            .message("添加产品失败")
+            .code(flag?200:500)
+            .message(flag?"添加产品成功":"添加产品失败")
             .build();
     }
 
@@ -555,7 +519,7 @@ public class ContractController {
     @GetMapping("/contract/purchase/inquiry/{id}/products/export")
     public  void  exportProduct(@PathVariable String id, HttpServletResponse response ){
         List<LinkedHashMap<String,Object>> database=inquiryService.exportProduct(id);
-        ExcelUtil.exportToExcel(response,"询价单明细表",database);
+        ExcelUtil.exportToExcel(response,id+"询价单明细表",database);
     }
 
     /**
@@ -567,15 +531,9 @@ public class ContractController {
     @DeleteMapping("/contract/purchase/inquiry/{id}/product")
     public VBaseResponse deleteInquiryProduct(@RequestParam("codes")List<Integer> codes,@PathVariable("id")String id){
         var flag =  inquiryService.deleteInquiryProduct(id,codes);
-        if(flag) {
-            return VBaseResponse.builder()
-                .code(200)
-                .message("删除产品成功")
-                .build();
-        }
         return  VBaseResponse.builder()
-            .code(500)
-            .message("删除产品失败")
+            .code(flag?200:500)
+            .message(flag?"删除产品成功":"删除产品失败")
             .build();
     }
 
@@ -587,19 +545,14 @@ public class ContractController {
      */
     @PutMapping("/contract/purchase/inquiry/{id}")
     public VBaseResponse modifyInquiry(
-        @RequestBody VModifyInquiryRequest modifyInquiryRequest,
+        @RequestBody VInquiryRequest modifyInquiryRequest,
         @PathVariable String id){
         var flag = inquiryService.modifyInquiry(
             modifyInquiryRequest,
             id);
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("修改成功")
-                .build();
         return VBaseResponse.builder()
-            .code(500)
-            .message("修改失败")
+            .code(flag?200:500)
+            .message(flag?"修改成功":"修改失败")
             .build();
     }
 
@@ -616,44 +569,35 @@ public class ContractController {
             id,
             session.getSession().getCompanyCode()
         );
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("撤销成功")
-                .build();
         return VBaseResponse.builder()
-            .code(500)
-            .message("撤销失败")
+            .code(flag?200:500)
+            .message(flag?"撤销成功":"撤销失败")
             .build();
     }
 
     /**
      * 生成采购合同
-     * @param generateContractRequest 生成采购合同需要的参数实体
+     * @param contractRequest 生成采购合同需要的参数实体
      * @return 返回成功或者失败
      */
     @PostMapping("/contract/purchase")
-    public VBaseResponse saveContract(@RequestBody VGenerateContractRequest generateContractRequest) throws Exception {
+    public VBaseResponse saveContract(@RequestBody VPContractRequest contractRequest) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = true;
         String  contractCodes = "";
-        if(!generateContractRequest.isEnforce())
-            contractCodes =contractService.findContractProductRepeat(generateContractRequest.getInquiryId()).orElse("");
+        //判断是否需要进行判断是否有重复的合同
+        if(!contractRequest.isEnforce())
+            contractCodes =contractService.findContractProductRepeat(contractRequest.getInquiryId()).orElse("");
         if(!contractCodes.equals(""))
             return  VBaseResponse.builder()
                 .code(201)
                 .message("可能重复的合同有："+contractCodes)
                 .build();
-        flag =  contractService.saveContract(generateContractRequest,session.getSession().getCompanyCode(),session.getSession().getOperatorName(),session.getSession().getOperatorCode());
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("成功采购合同")
-                .build();
+        flag =  contractService.saveContract(contractRequest,session.getSession().getCompanyCode(),session.getSession().getOperatorName(),session.getSession().getOperatorCode());
         return  VBaseResponse.builder()
-            .code(500)
-            .message("生成采购合同失败")
+            .code(flag?200:500)
+            .message(flag?"成功采购合同":"生成采购合同失败")
             .build();
     }
 
@@ -682,9 +626,10 @@ public class ContractController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.changeContractNoRepeated(contractNo.orElse(""),session.getSession().getCompanyCode(),"");
-        if(flag)
-            return VBaseResponse.builder().code(200).message("数据不重复").build();
-        return VBaseResponse.builder().code(201).message("数据重复").build();
+        return VBaseResponse.builder()
+            .code(flag?200:201)
+            .message(flag?"数据不重复":"数据重复")
+            .build();
     }
 
     /**
@@ -699,9 +644,10 @@ public class ContractController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.changeContractNoRepeated(contractNo.orElse(""),session.getSession().getCompanyCode(),id);
-        if(flag)
-            return VBaseResponse.builder().code(200).message("数据不重复").build();
-        return VBaseResponse.builder().code(201).message("数据重复").build();
+        return VBaseResponse.builder()
+            .code(flag?200:201)
+            .message(flag?"数据不重复":"数据重复")
+            .build();
     }
 
     /**
@@ -715,12 +661,12 @@ public class ContractController {
      * @return 采购合同列表分页
      */
     @GetMapping("/contract/purchase")
-    public VPurchaseContractPageResponse contractPage(@RequestParam("supplierCode") Optional<String> supplierCode,
-                                                      @RequestParam("startTime") Optional<String> startTime,
-                                                      @RequestParam("endTime") Optional<String> endTime,
-                                                      @RequestParam("state") Optional<String> state,
-                                                      @RequestParam("pageNum") Optional<String> pageNum,
-                                                      @RequestParam("pageSize") Optional<String> pageSize
+    public VPContractPageResponse contractPage(@RequestParam("supplierCode") Optional<String> supplierCode,
+                                               @RequestParam("startTime") Optional<String> startTime,
+                                               @RequestParam("endTime") Optional<String> endTime,
+                                               @RequestParam("state") Optional<String> state,
+                                               @RequestParam("pageNum") Optional<String> pageNum,
+                                               @RequestParam("pageSize") Optional<String> pageSize
     ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
@@ -738,7 +684,7 @@ public class ContractController {
             session.getSession().getOperatorCode(),
             pageable
         );
-        return  VPurchaseContractPageResponse.builder()
+        return  VPContractPageResponse.builder()
             .code(200)
             .message("查询成功")
             .current(page.getNumber()+1)
@@ -756,15 +702,17 @@ public class ContractController {
      * @throws IOException 异常
      */
     @GetMapping("/contract/purchase/{id}/{revision}")
-    public VPurchaseContractDetailResponse purchaseContractDetail(
+    public VPContractDetailResponse purchaseContractDetail(
         @PathVariable("id")String id,
         @PathVariable("revision")Integer revision
     ) throws IOException {
         boolean repetitive =false;
+        //查询采购合同
          var contract= contractService.purchaseContractDetail(id,revision);
+         //如果合同版本号大于1且状态为未完成，需要判断是否已上一版内容一致
         if(revision >1&&contract.getState().equals(ContractState.UN_FINISHED.getState()+""))
             repetitive = contractService.judgeContractRev(id, revision);
-        return VPurchaseContractDetailResponse.builder()
+        return VPContractDetailResponse.builder()
             .code(200)
             .message("获取数据成功")
             .contract(contract)
@@ -778,22 +726,22 @@ public class ContractController {
      * @return 返回成功信息
      */
     @PostMapping("/contract/purchase/empty")
-    public VEmptyContractResponse savePurchaseContractEmpty(@RequestBody Optional<VEmptyInquiryRequest> supplierCode){
+    public VPContractResponse savePurchaseContractEmpty(@RequestBody Optional<VInquiryIdRequest> supplierCode){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var id = contractService.savePurchaseContractEmpty(
-            supplierCode.orElse(new VEmptyInquiryRequest()).getSupplierCode(),
+            supplierCode.orElse(new VInquiryIdRequest()).getSupplierCode(),
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
             session.getSession().getOperatorCode(),
             session.getSession().getOperatorName())
             .orElse("");
         if(id.isEmpty())
-            return VEmptyContractResponse.builder()
+            return VPContractResponse.builder()
                 .code(500)
                 .message("保存失败")
                 .build();
-        return  VEmptyContractResponse.builder()
+        return  VPContractResponse.builder()
             .code(200)
             .message("保存成功")
             .contractId(id)
@@ -808,14 +756,14 @@ public class ContractController {
      * @return 返回未确认的采购合同数量
      */
     @GetMapping("/contract/purchase/unconfirmed")
-    public VUnFinishedAmountResponse findUnfinishedAmount(
+    public VPContractAmountResponse findUnfinishedAmount(
         @RequestParam("supplierCode") Optional<String> supplierCode,
         @RequestParam("startTime") Optional<String> startTime,
         @RequestParam("endTime") Optional<String> endTime
     ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        return VUnFinishedAmountResponse.builder()
+        return VPContractAmountResponse.builder()
             .code(200)
             .message("获取数据成功")
             .amount(contractService.getUnFinished(
@@ -850,15 +798,10 @@ public class ContractController {
             revision,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
-            );
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("添加产品成功")
-                .build();
+        );
         return VBaseResponse.builder()
-            .code(500)
-            .message("添加产品失败")
+            .code(flag?200:500)
+            .message(flag?"添加产品成功":"添加产品失败")
             .build();
     }
 
@@ -884,14 +827,9 @@ public class ContractController {
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
         );
-        if(flag)
-            return VBaseResponse.builder()
-                .code(200)
-                .message("删除产品成功")
-                .build();
         return VBaseResponse.builder()
-            .code(500)
-            .message("删除产品失败")
+            .code(flag?200:500)
+            .message(flag?"删除产品成功":"删除产品失败")
             .build();
     }
 
@@ -901,7 +839,7 @@ public class ContractController {
      * @return 返回合同版本号
      */
     @PutMapping("/contract/purchase/{id}")
-    public VContractRevisionResponse modifyContractState(@PathVariable String id) throws IOException {
+    public VPContractRevisionResponse modifyContractState(@PathVariable String id) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var revision = contractService.modifyContractState(id,
@@ -909,16 +847,10 @@ public class ContractController {
             session.getSession().getOperatorCode(),
             contractService.findMaxRevision(id)
         );
-        if(revision ==0)
-            return VContractRevisionResponse.builder()
-                .code(500)
-                .revision(revision)
-                .message("修改合同失败")
-                .build();
-        return VContractRevisionResponse.builder()
-            .code(200)
+        return VPContractRevisionResponse.builder()
+            .code(revision ==0?500:200)
             .revision(revision)
-            .message("修改合同成功")
+            .message(revision ==0?"修改合同失败":"修改合同成功")
             .build();
     }
 
@@ -931,27 +863,22 @@ public class ContractController {
      */
     @PutMapping("/contract/purchase/{id}/{revision}")
     public VBaseResponse  modifyPurchaseContract(
-        @RequestBody Optional<VModifyInquiryRequest> vModifyInquiryRequest,
+        @RequestBody Optional<VInquiryRequest> vModifyInquiryRequest,
         @PathVariable("id")String id,
         @PathVariable("revision")Integer revision
     ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.modifyPurchaseContract(
-             vModifyInquiryRequest.orElse(new VModifyInquiryRequest()),
+             vModifyInquiryRequest.orElse(new VInquiryRequest()),
              id,
              revision,
              session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
         );
-        if(!flag)
-            return VBaseResponse.builder()
-                .code(500)
-                .message("修改合同失败")
-                .build();
         return VBaseResponse.builder()
-            .code(200)
-            .message("修改合同成功")
+            .code(flag?200:500)
+            .message(flag?"修改合同成功":"修改合同失败")
             .build();
     }
 
@@ -967,7 +894,7 @@ public class ContractController {
         HttpServletResponse response
     ){
         List<LinkedHashMap<String,Object>> database=contractService.exportProductTemplate(id,revision);
-        ExcelUtil.exportToExcel(response,"采购合同明细表",database);
+        ExcelUtil.exportToExcel(response,id+"采购合同明细表",database);
     }
 
     /**
@@ -982,7 +909,7 @@ public class ContractController {
         HttpServletResponse response
     ){
         List<LinkedHashMap<String,Object>> database=contractService.exportProduct(id,revision);
-        ExcelUtil.exportToExcel(response,"采购合同明细表",database);
+        ExcelUtil.exportToExcel(response,id+"采购合同明细表",database);
     }
 
     /**
@@ -1043,7 +970,7 @@ public class ContractController {
     public VBaseResponse saveContractRevision(
         @PathVariable String id,
         @PathVariable Integer revision,
-        @RequestBody VGenerateContractRequest generateContractRequest
+        @RequestBody VPContractRequest generateContractRequest
     ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
@@ -1127,12 +1054,12 @@ public class ContractController {
      * @return 返回采购合同预览列表
      */
     @GetMapping("/contract/purchase/{id}/{revision}/preview")
-    public VModifyContractPreviewResponse modifyContractPreview(
+    public VPContractPreviewResponse modifyContractPreview(
         @PathVariable("id") String id,
         @PathVariable("revision") Integer revision
     ){
          var list=contractService.modifyContractPreview(id,revision);
-         return VModifyContractPreviewResponse.builder()
+         return VPContractPreviewResponse.builder()
              .code(200)
              .message("获取数据成功")
              .products(list)
@@ -1146,7 +1073,7 @@ public class ContractController {
      * @return 返回新合同主键
      */
     @PostMapping("/contract/purchase/{id}/{revision}/copy")
-    public VEmptyContractResponse copyContract(@PathVariable String id,@PathVariable Integer revision){
+    public VPContractResponse copyContract(@PathVariable String id, @PathVariable Integer revision){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         String contractId = contractService.copyContract(
@@ -1156,7 +1083,7 @@ public class ContractController {
             session.getSession().getOperatorCode()
         );
 
-        return VEmptyContractResponse.builder()
+        return VPContractResponse.builder()
             .code(contractId==null?500:200)
             .message(contractId==null?"操作失败":"操作成功")
             .contractId(contractId)

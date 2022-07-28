@@ -8,6 +8,9 @@ import lombok.extern.jackson.Jacksonized;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 用于响应查询价单详情的请求
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized

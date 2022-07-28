@@ -18,16 +18,43 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VModifyContractPreviewResponse extends  VBaseResponse{
+public class VPContractPreviewResponse extends  VBaseResponse{
 
+    /**
+     * 产品列表
+     */
     List<VProduct> products;
     @Data
     public static class  VProduct{
+
+        /**
+         * 产品主键
+         */
         private String productId;
+
+        /**
+         * 产品编码
+         */
         private String productCode;
+
+        /**
+         * 数量
+         */
         private BigDecimal amount;
+
+        /**
+         * 修改后数量
+         */
         private BigDecimal modifiedAmount;
+
+        /**
+         * 已开票数量
+         */
         private BigDecimal invoicedAmount;
+
+        /**
+         * 已收货数量
+         */
         private BigDecimal receivedAmount;
     }
 }

@@ -18,15 +18,37 @@ import java.util.List;
 @Jacksonized
 @SuperBuilder(toBuilder = true)
 public class VOperatorPageResponse extends VBaseResponse{
+
+    /**
+     * 当前页面
+     */
     private int current;
+
+    /**
+     * 总条数
+     */
     private int total;
+
+    /**
+     * 人员列表
+     */
     List<VOperator> operators;
 
     @Data
     public  static  class  VOperator{
-
+        /**
+         * 编码
+         */
         private String code;
+
+        /**
+         * 姓名
+         */
         private String name;
+
+        /**
+         * 电话
+         */
         private String phone;
     }
 }

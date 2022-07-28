@@ -6,7 +6,7 @@ import com.linzhi.gongfu.entity.Brand;
 import com.linzhi.gongfu.entity.ViewBrand;
 import com.linzhi.gongfu.vo.VBrandPageResponse;
 import com.linzhi.gongfu.vo.VDcBrandResponse;
-import com.linzhi.gongfu.vo.VSupplierDetailResponse;
+import com.linzhi.gongfu.vo.VForeignSupplierResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -20,6 +20,8 @@ import java.util.Set;
  */
 @Mapper(componentModel = "spring")
 public interface BrandMapper {
+
+
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "chiShort")
     @Mapping(target = "sort", source = "sort")
@@ -81,13 +83,7 @@ public interface BrandMapper {
 
     TBrand toViewBrand(ViewBrand viewBrand);
 
-    /**
-     * 将获取到的品牌信息，转换成可供使用的品牌信息
-     *
-     * @param brand 品牌信息
-     * @return 品牌简要基础信息
-     */
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "name")
-    VSupplierDetailResponse.VBrand toSupplierBrandPreload(TBrand brand);
+    VForeignSupplierResponse.VBrand toSupplierBrandPreload(TBrand brand);
 }

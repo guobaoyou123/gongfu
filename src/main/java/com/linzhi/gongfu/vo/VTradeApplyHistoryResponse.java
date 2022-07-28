@@ -18,8 +18,20 @@ import java.util.List;
 @Jacksonized
 @SuperBuilder(toBuilder = true)
 public class VTradeApplyHistoryResponse extends  VBaseResponse{
+
+    /**
+     * 当前页
+     */
     private int current;
+
+    /**
+     * 总条数
+     */
     private int total;
+
+    /**
+     * 历史申请记录
+     */
     List<VApply> applies;
     /**
      * 用于表示一个申请记录
@@ -49,16 +61,10 @@ public class VTradeApplyHistoryResponse extends  VBaseResponse{
          * 类型1-我申请的 2-格单位申请的
          */
         private String type;
-        /**
-         * 申请人
-         * 当type为1时 有值
-         */
-        private String  createdBy;
-        /**
-         * 处理人
-         * 当type为2时显示有值
-         */
-        private String  handledBy;
+
+        private String state;
+
+        private String createdAt;
     }
 
 }

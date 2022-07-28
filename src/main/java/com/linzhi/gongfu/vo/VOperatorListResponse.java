@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 用于响应前端对于人员（包括权限）列表的请求
+ * 用于响应前端权限统计列表的请求
  *
  * @author zgh
  * @create_at 2022-07-15
@@ -23,9 +23,19 @@ public class VOperatorListResponse extends VBaseResponse{
 
     @Data
     public  static  class  VOperator{
-
+        /**
+         * 人员编码
+         */
         private String code;
+
+        /**
+         * 姓名
+         */
         private String name;
+
+        /**
+         * 拥有权限编码
+         */
         private Set<String> scenes;
     }
 }

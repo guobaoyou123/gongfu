@@ -22,6 +22,10 @@ public class TContractRecord {
      * 序号
      */
     private Integer itemNo ;
+
+    /**
+     * 创建时间
+     */
     private String createdAt;
 
     /**

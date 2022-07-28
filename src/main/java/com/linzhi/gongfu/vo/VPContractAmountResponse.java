@@ -6,16 +6,16 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * 用于响应前端修改采购合同返回版本号加载
- *
- * @author zgh
- * @create_at 2022-02-09
+ * 用于响应查询未完成的采购合同数量的预加载请求
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VContractRevisionResponse  extends  VBaseResponse{
+public class VPContractAmountResponse extends VBaseResponse{
 
-    private int revision;
+    /**
+     * 数量
+     */
+    private int amount;
 }

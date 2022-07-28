@@ -18,6 +18,11 @@ import java.util.List;
 @Jacksonized
 @SuperBuilder(toBuilder = true)
 public class VImportProductTempResponse extends VBaseResponse{
+
+    /**
+     * 是否可以确认
+     * 用于前端是否可以点击保存
+     */
     private boolean confirmable;
     /**
      * 询价单/合同编码

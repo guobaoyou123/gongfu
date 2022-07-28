@@ -14,9 +14,23 @@ import org.mapstruct.Mapping;
  */
 @Mapper(componentModel = "spring")
 public interface AdministrativeAreaMapper {
+
+    /**
+     * 将获取到的三级行政区划信息，转换成可供使用的三级行政区划基础信息
+     *
+     * @param area 三级行政区划信息
+     * @return 三级行政区划基础信息
+     */
     @Mapping(target = "disabled", constant = "false")
     @Mapping(target = "lev",  expression = "java(Long.parseLong(area.getLev()))")
     TArea toDo(AdministrativeArea area);
+
+    /**
+     * 明确可以成功获取到三级行政区划基础信息时，向预获取响应转换
+     *
+     * @param area 三级行政区划基础信息
+     * @return 三级行政区划基本信息预获取响应
+     */
     @Mapping(target = "parent",source = "parentCode")
     VAreaResponse.Area toAreaDo(TArea area);
 

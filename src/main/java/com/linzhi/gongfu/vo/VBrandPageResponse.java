@@ -18,8 +18,19 @@ import java.util.List;
 @Jacksonized
 @SuperBuilder(toBuilder = true)
 public class VBrandPageResponse extends  VBaseResponse{
+    /**
+     * 当前页
+     */
     private int current;
+
+    /**
+     * 总条数
+     */
     private int total;
+
+    /**
+     * 品牌列表
+     */
     List<VBrand> brands;
     /**
      * 用于表示一个首页展示供应商品牌

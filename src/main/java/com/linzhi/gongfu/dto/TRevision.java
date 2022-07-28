@@ -19,7 +19,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TRevision {
 
+    /**
+     * 创建时间
+     */
     private String createdAt;
 
+    /**
+     * 版本号
+     */
     private int revision;
 }

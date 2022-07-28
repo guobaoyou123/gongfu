@@ -9,7 +9,7 @@ import com.linzhi.gongfu.mapper.InquiryMapper;
 import com.linzhi.gongfu.mapper.InquiryRecordMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
-import com.linzhi.gongfu.vo.VModifyInquiryRequest;
+import com.linzhi.gongfu.vo.VInquiryRequest;
 import com.linzhi.gongfu.vo.VUnfinishedInquiryListResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -191,6 +191,7 @@ public class InquiryService {
     @Cacheable(value="inquiry_List;1800", key="#companyCode+'_'+#operator+'_'+#state")
     public List<TInquiry> inquiryList(String companyCode, String operator,String state){
         try{
+            //查询操作员信息
             Operator operator1= operatorRepository.findById(
                 OperatorId.builder()
                     .operatorCode(operator)
@@ -198,6 +199,7 @@ public class InquiryService {
                     .build()
                 )
                 .orElseThrow(()-> new IOException("请求的操作员找不到"));
+            //判断是否为管理员
             if(operator1.getAdmin().equals(Whether.YES))
                 return inquiryRepository.findInquiryList(companyCode, InquiryType.INQUIRY_LIST.getType()+"", state)
                     .stream()
@@ -240,10 +242,13 @@ public class InquiryService {
      */
     public Page<TInquiry> inquiryHistoryPage(String companyCode, String operator,String supplierCode,
                                              String startTime,String endTime,String state,Pageable pageable)  {
+        //询价单列表
         List<TInquiry> tInquiryList = inquiryList(companyCode,operator,state);
+        //筛选供应商
         if(StringUtils.isNotBlank(supplierCode)){
             tInquiryList = tInquiryList.stream().filter(tInquiry -> tInquiry.getSalerComp().equals(supplierCode)).toList();
         }
+        //根据开始时间和结束时间进行筛选
         if(StringUtils.isNotBlank(startTime)&&StringUtils.isNotBlank(endTime)){
             DateTimeFormatter dateTimeFormatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             DateTimeFormatter dateTimeFormatters = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -266,8 +271,9 @@ public class InquiryService {
      * @return 返回询价单详情
      */
     public TInquiry inquiryDetail(String id) {
-      TInquiry tInquiry= findInquiry(id).map(inquiryMapper::toInquiryDetail).get();
-
+        //询价单详情
+        TInquiry tInquiry= findInquiry(id).map(inquiryMapper::toInquiryDetail).get();
+       //询价单明细
         List<InquiryRecord>  records  = findInquiryRecords(id);
         List<TInquiryRecord>  tRecords = findInquiryRecords(id).stream().map(inquiryRecordMapper::toTInquiryRecordDo).toList();
         tInquiry.setRecords(tRecords);
@@ -492,12 +498,13 @@ public class InquiryService {
         @CacheEvict(value="inquiry_record_List;1800", key="#id")
     })
     @Transactional
-    public  Boolean  modifyInquiry(VModifyInquiryRequest vModifyInquiryRequest,String id){
+    public  Boolean  modifyInquiry(VInquiryRequest vModifyInquiryRequest, String id){
         try{
             Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<InquiryRecord> records = findInquiryRecords(id);
             if(StringUtils.isNotBlank(vModifyInquiryRequest.getTaxModel()))
                 inquiry.setOfferMode(vModifyInquiryRequest.getTaxModel().equals("0")?TaxMode.UNTAXED:TaxMode.INCLUDED);
+            //判断服务税率是否为空
             if(vModifyInquiryRequest.getServiceVat()!=null) {
                 inquiry.setVatServiceRate(vModifyInquiryRequest.getServiceVat());
                 records.forEach(
@@ -507,6 +514,7 @@ public class InquiryService {
                     }
                 );
             }
+            //判断货物税率是否为空
             if(vModifyInquiryRequest.getGoodsVat()!=null) {
                 inquiry.setVatProductRate(vModifyInquiryRequest.getGoodsVat());
                 records.forEach(
@@ -516,7 +524,7 @@ public class InquiryService {
                     }
                 );
             }
-
+            //判断产品列表是否为空
             if(vModifyInquiryRequest.getProducts()!=null){
                 vModifyInquiryRequest.getProducts().forEach(vProduct -> records.forEach(record -> {
                     if(record.getInquiryRecordId().getCode()==vProduct.getCode()){

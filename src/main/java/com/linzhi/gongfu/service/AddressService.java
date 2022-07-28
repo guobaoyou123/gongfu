@@ -27,8 +27,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
 
-import static java.util.stream.Collectors.groupingBy;
-
 /**
  * 地址信息及处理业务服务
  *
@@ -361,7 +359,7 @@ public class AddressService {
      */
     public  String  findByCode(String name ,String code){
         Optional<AdministrativeArea> area= administrativeAreaRepository.findById(code);
-        if(!area.isEmpty()) {
+        if(area.isPresent()) {
             if (!name.contains(area.get().getName()))
                 name = area.get().getName() + name;
             if (area.get().getLev().equals("1")) {

@@ -63,8 +63,8 @@ public class EnrolledCompanyController {
      * @throws IOException 异常
      */
     @GetMapping("/enrolled/company/detail")
-    public VEnrolledCompanyDetailResponse findEnrolledCompanyDetail(@RequestParam("invitationCode") Optional<String> invitationCode,
-                                                                    @RequestParam("code")Optional<String> code) throws IOException {
+    public VEnrolledCompanyResponse findEnrolledCompanyDetail(@RequestParam("invitationCode") Optional<String> invitationCode,
+                                                              @RequestParam("code")Optional<String> code) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -73,7 +73,7 @@ public class EnrolledCompanyController {
             code =   companyService.findInvitationCode(invitationCode.get());
         }
         if(code.orElse("").equals(""))
-            return VEnrolledCompanyDetailResponse.builder()
+            return VEnrolledCompanyResponse.builder()
                 .code(404)
                 .message("邀请码已过期或邀请码错误")
                 .build();
@@ -81,7 +81,7 @@ public class EnrolledCompanyController {
         var company = companyService.findEnrolledCompany(
                 code.get(),session.getSession().getCompanyCode())
             .orElseThrow(()->new IOException("未从数据库找到"));
-        return VEnrolledCompanyDetailResponse.builder()
+        return VEnrolledCompanyResponse.builder()
             .code(200)
             .message("获取数据成功")
             .company(company)
@@ -95,7 +95,7 @@ public class EnrolledCompanyController {
      * @throws IOException 异常
      */
     @GetMapping("/enrolled/company/apply/refused/detail/{code}")
-    public VEnrolledCompanyDetailResponse findRefuseEnrolledCompanyDetail(@PathVariable String code) throws IOException {
+    public VEnrolledCompanyResponse findRefuseEnrolledCompanyDetail(@PathVariable String code) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -103,7 +103,7 @@ public class EnrolledCompanyController {
         var company = companyService.findRefuseEnrolledCompanyDetail(
                 code,session.getSession().getCompanyCode())
             .orElseThrow(()->new IOException("未从数据库找到"));
-        return VEnrolledCompanyDetailResponse.builder()
+        return VEnrolledCompanyResponse.builder()
             .code(200)
             .message("获取数据成功")
             .company(company)
@@ -244,7 +244,7 @@ public class EnrolledCompanyController {
      * @param pageSize 每页几条
      * @param name 公司名称
      * @param startTime 开始时间
-     * @param emdTime  结束时间
+     * @param endTime  结束时间
      * @return 申请采购历史记录
      */
     @GetMapping("/enrolled/company/apply/history")
@@ -252,10 +252,23 @@ public class EnrolledCompanyController {
                                                        @RequestParam("pageSize") Optional<String> pageSize ,
                                                        @RequestParam("name") Optional<String> name,
                                                        @RequestParam("startTime") Optional<String> startTime,
-                                                       @RequestParam("emdTime") Optional<String> emdTime){
+                                                       @RequestParam("endTime") Optional<String> endTime){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        return VTradeApplyHistoryResponse.builder().build();
+        var page = compTradeApplyService.findApplyHistory(
+            startTime.orElse(""),
+            endTime.orElse(""),
+            name.orElse(""),
+            PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),
+                pageSize.map(PageTools::verificationPageSize).orElse(10)),
+            session.getSession().getCompanyCode());
+        return VTradeApplyHistoryResponse.builder()
+            .code(200)
+            .message("操作成功")
+            .current(page.getNumber()+1)
+            .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
+            .applies(page.getContent())
+            .build();
     }
 }

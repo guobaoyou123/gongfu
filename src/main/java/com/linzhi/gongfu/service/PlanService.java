@@ -46,7 +46,9 @@ public class PlanService {
      * @return 临时采购计划列表信息
      */
     public List<TTemporaryPlan>  findTemporaryPlanByOperator(TemporaryPlanId temporaryPlanId){
-        return  temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByOrderByCreatedAt(temporaryPlanId.getDcCompId(),temporaryPlanId.getCreatedBy()).stream()
+        return  temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByOrderByCreatedAt(
+                temporaryPlanId.getDcCompId(),
+                temporaryPlanId.getCreatedBy()).stream()
             .map(temporaryPlanMapper::toTemporaryPlan)
             .collect(Collectors.toList());
     }
@@ -65,13 +67,9 @@ public class PlanService {
         List<String> proCodeList = new ArrayList<>();
         Map<String, Product> productMap = new HashMap<>();
         try{
-            product.forEach(p ->
-                proCodeList.add(p.getProductId())
-            );
+            product.forEach(p -> proCodeList.add(p.getProductId()));
             List<Product> products=productRepository.findProductByIdIn(proCodeList);
-            products.forEach(product1 ->
-                productMap.put(product1.getId(),product1)
-            );
+            products.forEach(product1 ->productMap.put(product1.getId(),product1));
             //判断是否有已存在于计划列表中的产品
             var list = temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByOrderByCreatedAt(id, operatorCode).stream()
                 .filter(temporaryPlan -> proCodeList.contains(
@@ -169,7 +167,11 @@ public class PlanService {
      * @return 返回采购计划号
      */
     @Transactional
-    public Map<String, Object> savePurchasePlan(List<String> products, List<String> suppliers, String id, String operatorCode){
+    public Map<String, Object> savePurchasePlan(List<String> products,
+                                                List<String> suppliers,
+                                                String id,
+                                                String operatorCode
+    ){
            Map<String, Object> result = new HashMap<>();
         try{
             //查出所选计划
@@ -252,6 +254,7 @@ public class PlanService {
                 .product(purchasePlanProducts)
                 .build();
             purchasePlanRepository.save(purchasePlan);
+            //删除临时计划
             temporaryPlanRepository.deleteAll(temporaryPlans);
             result.put("code", 200);
             result.put("message","开始计划成功！");

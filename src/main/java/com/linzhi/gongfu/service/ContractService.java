@@ -77,8 +77,11 @@ public class ContractService {
      * @return 返回 true 或者 false
      */
     public Optional<String>  findContractProductRepeat(String inquiryId) throws IOException {
+            //查询询价单详情
             Inquiry inquiry = inquiryService.findInquiry(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
+            //询价单名称
             List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecord(inquiryId);
+            //形成指纹
             String str = createSequenceCode(
                 records.stream().map(inquiryRecord-> {
                     {
@@ -111,7 +114,7 @@ public class ContractService {
         @CacheEvict(value="purchase_contract_List;1800", key="#companyCode+'_'",allEntries=true)
     })
     @Transactional
-    public Boolean saveContract(VGenerateContractRequest generateContractRequest,String companyCode,String operatorName,String operator){
+    public Boolean saveContract(VPContractRequest generateContractRequest, String companyCode, String operatorName, String operator){
         try{
             //查询询价单详情
             InquiryDetail inquiry = inquiryDetailRepository.findById(generateContractRequest.getInquiryId()).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
@@ -120,6 +123,7 @@ public class ContractService {
             //合同编号
             String id = inquiry.getId().replaceAll("XJ","HT");
             String code = inquiry.getCode().replaceAll("XJ","HT");
+            //生成合同实体
             ContractDetail contract = createdContract(
                 id,
                 code,
@@ -133,6 +137,7 @@ public class ContractService {
                 InquiryType.INQUIRY_LIST,
                 ContractState.FINISHED
             );
+            //生成带版本的合同实体
             ContractRevision contractRevision =  createContractRevision(
                 id,
                 operatorName,
@@ -146,6 +151,7 @@ public class ContractService {
                 contractRevision.setVatProductRate(inquiry.getVatProductRate());
             if(inquiry.getVatServiceRate()!=null)
                 contractRevision.setVatServiceRate(inquiry.getVatServiceRate());
+            //
             contractRevision = modifyContractRevisionDetail(contractRevision,generateContractRequest,companyCode);
             inquiry.setConfirmTotalPriceVat(generateContractRequest.getSum());
             //判断产品单价是否为空
@@ -467,7 +473,7 @@ public class ContractService {
      * @return 返回合同详情
      * @throws IOException 异常
      */
-    public VPurchaseContractDetailResponse.VContract purchaseContractDetail(String id, int revision) throws IOException {
+    public VPContractDetailResponse.VContract purchaseContractDetail(String id, int revision) throws IOException {
         TContract contractRevision =getContractRevisionDetail(id, revision)
             .map(contractMapper::toTContractDetail)
             .orElseThrow(()->new IOException("数据库中未查询到该数据"));
@@ -778,7 +784,7 @@ public class ContractService {
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public  Boolean  modifyPurchaseContract(VModifyInquiryRequest vModifyInquiryRequest, String id, int revision,String companyCode,String operator){
+    public  Boolean  modifyPurchaseContract(VInquiryRequest vModifyInquiryRequest, String id, int revision, String companyCode, String operator){
         try{
             ContractRevision contractRevision =contractRevisionRepository.findById(ContractRevisionId.builder()
                     .revision(revision)
@@ -1144,7 +1150,7 @@ public class ContractService {
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public void saveContractRevision(String id, int revision, VGenerateContractRequest generateContractRequest, String companyCode, String operator) {
+    public void saveContractRevision(String id, int revision, VPContractRequest generateContractRequest, String companyCode, String operator) {
       try{
           //合同明细
           List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
@@ -1158,6 +1164,7 @@ public class ContractService {
           if(!contractDetail.getState().equals(ContractState.UN_FINISHED)){
               throw new Exception("合同已确认");
           }
+          //修改数据set到版本合同中
           contractRevision = modifyContractRevisionDetail(contractRevision,generateContractRequest,companyCode);
           //判断产品单价是否为空
           List<ContractRecordTemp> list = contractRecordTemps
@@ -1196,7 +1203,7 @@ public class ContractService {
           }
           contractRecordRepository.saveAll(records);
             /*
-              获取序列编码
+              获取指纹
              */
           String str = createSequenceCode(
               recordSort(records),
@@ -1230,7 +1237,7 @@ public class ContractService {
      * @return 合同详情
      * @throws IOException 异常
      */
-   public ContractRevision modifyContractRevisionDetail(ContractRevision contractRevision,VGenerateContractRequest generateContractRequest,String companyCode) throws IOException {
+   public ContractRevision modifyContractRevisionDetail(ContractRevision contractRevision, VPContractRequest generateContractRequest, String companyCode) throws IOException {
        contractRevision.setOrderCode(generateContractRequest.getContactNo());
        contractRevision.setSalerOrderCode(generateContractRequest.getSupplierNo());
        //供应商联系人
@@ -1315,7 +1322,7 @@ public class ContractService {
      * @param operator 操作员编码
      * @param list 退回产品列表
      */
-    public void saveDelivery(String id,Integer revision, String companyCode, String operator,List<VGenerateContractRequest.DeliveryRecord> list){
+    public void saveDelivery(String id,Integer revision, String companyCode, String operator,List<VPContractRequest.DeliveryRecord> list){
         // TODO: 2022/6/1 需要完善货运记录 库存等问题
         List<ContractRecord> contractRecords = contractRecordRepository.findContractRecordsByContractRecordId_ContractIdAndContractRecordId_Revision(id,revision);
         Map<String,ContractRecord> map = new HashMap<>();
@@ -1333,7 +1340,7 @@ public class ContractService {
             .createdByComp(companyCode)
             .state(DeliverState.PENDING)
             .build();
-        for (VGenerateContractRequest.DeliveryRecord v : list) {
+        for (VPContractRequest.DeliveryRecord v : list) {
             ContractRecord temp = map.get(v.getProductId());
             if(v.getReturnAmount().floatValue()>0){
                 if(temp.getProductId().equals(v.getProductId())){
@@ -1417,9 +1424,12 @@ public class ContractService {
     @Transactional
     public void cancelPurchaseContract(String id, String companyCode, String operator){
         try{
+            //查询合同（不包括合同明细）
             ContractDetail contractDetail = contractDetailRepository.findById(id)
                 .orElseThrow(()->new IOException("请求的合同不存在"));
+            //获取最大版本号
             int revision = findMaxRevision(id);
+            //入格合同状态为未完成并且大于1，删除临时合同记录以及版本号为revision的合同
             if(contractDetail.getState().equals(ContractState.UN_FINISHED)&& revision>1){
                 contractRecordTempRepository.deleteProducts(id);
                 contractRevisionRepository.deleteById(ContractRevisionId.builder()
@@ -1427,6 +1437,7 @@ public class ContractService {
                     .revision(revision)
                     .build());
             }else if(contractDetail.getState().equals(ContractState.UN_FINISHED)&& revision==1){
+                //入格合同状态为未完成并且等于1，将临时合同记录存入合同记录中
                 List<ContractRecord> records = new ArrayList<>();
                 List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id);
                 for (int i  =0;i< contractRecordTemps.size();i++){
@@ -1440,7 +1451,9 @@ public class ContractService {
             }else  if(contractDetail.getState().equals(ContractState.CANCELLATION)){
                 throw  new Exception("合同已撤销");
             }
+            //将合同状态设置为撤销
             contractDetail.setState(ContractState.CANCELLATION);
+            //保存退回记录
             saveDelivery(id, companyCode, operator);
         }catch (Exception e){
             e.printStackTrace();
@@ -1454,7 +1467,7 @@ public class ContractService {
      * @param revision 版本号
      * @return 采购合同预览列表
      */
-    public List<VModifyContractPreviewResponse.VProduct> modifyContractPreview(String id,Integer revision){
+    public List<VPContractPreviewResponse.VProduct> modifyContractPreview(String id, Integer revision){
         return  contractRecordPreviewRepository.findContractRecordPreviewRepositories(id)
             .stream().map(contractRecordMapper::toTContractRecordPreview)
             .map(contractRecordMapper::toVProduct)
@@ -1477,11 +1490,12 @@ public class ContractService {
                 .stream()
                 .filter(contractRecordTemp -> contractRecordTemp.getPrice()==null)
                 .toList();
-            //是 重新计算价格
+
             BigDecimal totalPrice=new BigDecimal("0");
             BigDecimal totalPriceVat=new BigDecimal("0");
             BigDecimal vat;
             if(lists.size()==0){
+                //是 重新计算价格
                 for (ContractRecordTemp contractRecordTemp:contractRecordTemps){
                     totalPrice=totalPrice.add(contractRecordTemp.getTotalPrice());
                     totalPriceVat=totalPriceVat.add(contractRecordTemp.getTotalPriceVat());
@@ -1521,7 +1535,9 @@ public class ContractService {
     @Transactional
     public String copyContract(String contractId,Integer revision,String companyCode,String operator){
         try {
+            //查询合同详情
             ContractDetail contractDetail = Optional.of(getContractDetail(contractId)).map(contractMapper::toContractDetail).orElseThrow();
+            //版本合同详情
             ContractRevision contractRevision = contractRevisionRepository.findById(
                 ContractRevisionId
                 .builder()
@@ -1530,12 +1546,14 @@ public class ContractService {
                     .build()
             ).map(contractMapper::toContractRevision).orElseThrow();
             List<ContractRecordTemp> contractRecordTemps ;
+            //合同明细
             if(contractDetail.getState().equals(ContractState.UN_FINISHED)){
                 contractRecordTemps=contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(contractId);
             }else{
                 contractRecordTemps=contractRecordRepository.findContractRecordsByContractRecordId_ContractIdAndContractRecordId_Revision(contractId,revision)
                     .stream().map(contractRecordMapper::toContractRecordTemp).toList();
             }
+            //合同编码最大号
             String maxCode = contractDetailRepository.findMaxCode(companyCode,operator).orElse("01");
             Map<String,String> map = getContractCode(maxCode,operator,companyCode,contractDetail.getSalerComp());
             contractRecordTemps.forEach(contractRecordTemp -> {

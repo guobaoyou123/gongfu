@@ -105,6 +105,6 @@ public class CompTradeApply implements Serializable {
      * 处理单位公司
      */
     @OneToOne
-    @JoinColumn(name = "handled_by", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "handled_comp_by", referencedColumnName = "id", insertable = false, updatable = false)
     private EnrolledCompany handledCompany;
 }

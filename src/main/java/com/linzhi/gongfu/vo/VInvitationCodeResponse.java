@@ -13,5 +13,9 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @SuperBuilder(toBuilder = true)
 public class VInvitationCodeResponse extends VBaseResponse{
+
+    /**
+     * 邀请码
+     */
     private String invitationCode;
 }

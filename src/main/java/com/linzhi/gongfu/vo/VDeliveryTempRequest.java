@@ -13,6 +13,14 @@ import java.math.BigDecimal;
 @Jacksonized
 @NoArgsConstructor
 public class VDeliveryTempRequest {
+
+    /**
+     * 产品主键
+     */
     private String productId;
+
+    /**
+     * 退回数量
+     */
     private BigDecimal returnAmount;
 }

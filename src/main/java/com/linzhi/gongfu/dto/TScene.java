@@ -20,8 +20,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TScene implements Serializable {
+
+    /**
+     * 编码
+     */
     private String code;
+    /**
+     * 角色
+     */
     private CompanyRole role;
+    /**
+     * 名称
+     */
     private String name;
+
+    /**
+     * 授权建议
+     */
     private String authorizationSuggestion;
 }

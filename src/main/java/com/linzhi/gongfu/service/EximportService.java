@@ -13,6 +13,7 @@ import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
 import com.linzhi.gongfu.vo.VImportProductTempResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,7 +46,6 @@ public class EximportService {
      * @param operator 操作员编码
      * @return 返回成功或者失败信息
      */
-    // @CacheEvict(value="inquiry_record_List;1800", key="#id")
     @Transactional
     public Map<String,Object> importProduct(MultipartFile file, String id, String companyCode, String operator, TaxMode taxMode){
         Map<String,Object> resultMap = new HashMap<>();
@@ -79,7 +79,6 @@ public class EximportService {
                     String amount = map.get("数量").toString();
                     importProductTemp.setAmount(amount);
                 }
-
                 if(map.get("单价（未税）")!=null){
                     String price = map.get("单价（未税）").toString();
                     importProductTemp.setPrice(price);
@@ -91,7 +90,6 @@ public class EximportService {
                 }else{
                     importProductTemp.setFlag(taxMode);
                 }
-
                 importProductTemps.add(importProductTemp);
             }
             importProductTempRepository.saveAll(importProductTemps);

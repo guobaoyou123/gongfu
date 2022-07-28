@@ -15,6 +15,6 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VEmptyInquiryResponse  extends VBaseResponse{
+public class VInquiryResponse extends VBaseResponse{
     private String inquiryId;
 }

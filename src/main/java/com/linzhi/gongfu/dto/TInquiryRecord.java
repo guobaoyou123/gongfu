@@ -28,7 +28,9 @@ public class TInquiryRecord {
      * 序号
      */
     private Integer code ;
-
+    /**
+     * 创建时间
+     */
     private String createdAt;
     /**
      * 产品id

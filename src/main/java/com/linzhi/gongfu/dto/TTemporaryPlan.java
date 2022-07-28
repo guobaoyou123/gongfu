@@ -14,9 +14,24 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TTemporaryPlan implements Serializable {
+
+    /**
+     * 公司主键
+     */
     private String dcCompId;
+
+    /**
+     * 创建者
+     */
     private String createdBy;
+
+    /**
+     * 产品id
+     */
     private String productId;
+    /**
+     * 产品编码
+     */
     private String productCode;
     /**
      * 品牌代码

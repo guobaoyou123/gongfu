@@ -11,6 +11,13 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @NoArgsConstructor
 public class VImportProductTempRequest {
+    /**
+     * 品牌编码
+     */
     private String brandCode;
+
+    /**
+     * 条目号
+     */
     private int itemNo;
 }

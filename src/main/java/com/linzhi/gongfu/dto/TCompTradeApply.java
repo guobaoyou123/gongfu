@@ -24,7 +24,18 @@ public class TCompTradeApply {
 
     private String companyShortName;
 
+    private String handledCompanyCode;
+
+
+    private String handledCompanyName;
+
+    private String handledCompanyShortName;
+
     private String type;
 
     private String state;
+
+    private String dcCompId;
+
+    private String createdAt;
 }

@@ -8,6 +8,7 @@ import com.linzhi.gongfu.mapper.CompTradeApplyMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VTradeApplyConsentRequest;
+import com.linzhi.gongfu.vo.VTradeApplyHistoryResponse;
 import com.linzhi.gongfu.vo.VTradeApplyPageResponse;
 import com.linzhi.gongfu.vo.VTradeApplyRequest;
 import lombok.RequiredArgsConstructor;
@@ -315,16 +316,18 @@ public class CompTradeApplyService {
      * @param pageable 分页
      * @return 返回申请历史记录列表
      */
-    public Page<CompTradeApply> findApplyHistory(String startTime,String endTime,
-                                                 String name,Pageable pageable,
-                                                 String companyCode
+    public Page<VTradeApplyHistoryResponse.VApply> findApplyHistory(String startTime, String endTime,
+                                                             String name, Pageable pageable,
+                                                             String companyCode
     ){
+       List<CompTradeApply> compTradeApplies1= compTradeApplyRepository.findApplyHistory(companyCode);
         List<TCompTradeApply> compTradeApplies=compTradeApplyRepository.findApplyHistory(companyCode).stream()
             .filter(compTradeApply -> {
                 if(compTradeApply.getCreatedCompBy().equals(companyCode)){
-                    return compTradeApply.getHandledCompany().getNameInCN().equals(name);
+
+                    return compTradeApply.getHandledCompany().getNameInCN().contains(name);
                 }else {
-                    return compTradeApply.getCreatedCompany().getNameInCN().equals(name);
+                    return compTradeApply.getCreatedCompany().getNameInCN().contains(name);
                 }
             }).filter(compTradeApply -> {
                 if(StringUtils.isNotBlank(startTime)&&StringUtils.isNotBlank(endTime)){
@@ -336,9 +339,11 @@ public class CompTradeApplyService {
                         compTradeApply.getCreatedAt().isBefore(endTimes);
                 }
                 return true;
-            }).map(compTradeApplyMapper::toTComTradeApply)
+            }).map(compTradeApplyMapper::toTComTradeApplyHistory)
             .toList();
-
-        return null;
+        compTradeApplies.forEach(tradeApply -> {
+            tradeApply.setDcCompId(companyCode);
+        });
+        return PageTools.listConvertToPage(compTradeApplies.stream().map(compTradeApplyMapper::toVApplyHistory).toList(),pageable);
     }
 }

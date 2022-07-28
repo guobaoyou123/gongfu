@@ -25,8 +25,6 @@ public interface MenuMapper {
     @Mapping(target = "scenes",source = "scenes")
     TMenu toDTO(SubMenu menu);
 
-    Set<TMenu> toMainMenuDTOs(Set<MainMenu> menus);
-
     Set<TMenu> toSubMenuDTOs(Set<SubMenu> menus);
 
     @Mapping(target = "scene",expression = "java(menu.getScenes().stream().map(tScene -> tScene.getCode()).toList())")

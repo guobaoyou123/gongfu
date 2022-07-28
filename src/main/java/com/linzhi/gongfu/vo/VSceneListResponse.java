@@ -22,8 +22,18 @@ public class VSceneListResponse extends VBaseResponse{
     List<VScene> scenes;
     @Data
     public static class VScene{
+        /**
+         * 场景编码
+         */
         private String code;
+        /**
+         * 名称
+         */
         private String name;
+
+        /**
+         * 授权建议
+         */
         private String suggestion;
     }
 }
