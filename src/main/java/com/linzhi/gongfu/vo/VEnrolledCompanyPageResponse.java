@@ -45,9 +45,5 @@ public class VEnrolledCompanyPageResponse extends VBaseResponse  {
          *公司名称
          */
         private String companyName;
-        /**
-         * 公司简称
-         */
-        private String companyShortName;
     }
 }

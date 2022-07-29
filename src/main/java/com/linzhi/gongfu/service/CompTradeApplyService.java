@@ -7,14 +7,10 @@ import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.CompTradeApplyMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
-import com.linzhi.gongfu.vo.VTradeApplyConsentRequest;
-import com.linzhi.gongfu.vo.VTradeApplyHistoryResponse;
-import com.linzhi.gongfu.vo.VTradeApplyPageResponse;
-import com.linzhi.gongfu.vo.VTradeApplyRequest;
+import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +40,7 @@ public class CompTradeApplyService {
     private final CompTradDetailRepository compTradDetailRepository;
     private final CompTradBrandRepository compTradBrandRepository;
     private final BlacklistRepository blacklistRepository;
-
+    private final EnrolledCompanyRepository enrolledCompanyRepository;
     /**
      * 申请采购
      * @param vTradeApplyRequest 申请信息
@@ -62,6 +58,7 @@ public class CompTradeApplyService {
           Map<String,String> map = new HashMap<>();
           map.put("flag","0");
         try{
+
             //查询是否有正在申请中的
            CompTradeApply compTradeApply =  compTradeApplyRepository.findByCreatedCompByAndHandledCompByAndStateAndType(
                 companyCode,
@@ -79,7 +76,8 @@ public class CompTradeApplyService {
                     .dcCompId(vTradeApplyRequest.getApplyCompCode())
                 .build()
            ).orElse(null);
-
+           //查询本单位基础信息
+           EnrolledCompany enrolledCompany =  enrolledCompanyRepository.findById(companyCode).orElseThrow(()->new IOException("未从数据库找到公司信息"));
            //申请记录编码 SQCG-申请单位-被申请单位-时间-随机数
            // 生成申请采购记录
            CompTradeApply compTradeApply1 = CompTradeApply.builder()
@@ -92,7 +90,14 @@ public class CompTradeApplyService {
                .handledBy(blacklist==null?null:blacklist.getCreatedBy())
               .type("1")
               .state(blacklist==null?TradeApply.APPLYING:TradeApply.REFUSE)
-              .build();
+               .shortNameInCN(enrolledCompany.getDetails().getShortNameInCN())
+               .contactName(enrolledCompany.getCompVisible()!=null&&enrolledCompany.getCompVisible().getVisibleContent().contains("contactPhone")?enrolledCompany.getDetails().getContactName():null)
+               .contactPhone(enrolledCompany.getCompVisible()!=null&&enrolledCompany.getCompVisible().getVisibleContent().contains("contactPhone")?enrolledCompany.getDetails().getContactPhone():null)
+               .areaCode(enrolledCompany.getCompVisible()!=null&&enrolledCompany.getCompVisible().getVisibleContent().contains("address")?enrolledCompany.getDetails().getAreaCode():null)
+               .areaName(enrolledCompany.getCompVisible()!=null&&enrolledCompany.getCompVisible().getVisibleContent().contains("address")?enrolledCompany.getDetails().getAreaName():null)
+               .address(enrolledCompany.getCompVisible()!=null&&enrolledCompany.getCompVisible().getVisibleContent().contains("address")?enrolledCompany.getDetails().getAddress():null)
+               .introduction(enrolledCompany.getCompVisible()!=null&&enrolledCompany.getCompVisible().getVisibleContent().contains("introduction")?enrolledCompany.getIntroduction():null)
+               .build();
            compTradeApplyRepository.save(compTradeApply1);
            if(blacklist!=null){
                map.put("flag","2");
@@ -316,34 +321,64 @@ public class CompTradeApplyService {
      * @param pageable 分页
      * @return 返回申请历史记录列表
      */
-    public Page<VTradeApplyHistoryResponse.VApply> findApplyHistory(String startTime, String endTime,
-                                                             String name, Pageable pageable,
-                                                             String companyCode
+    public Page<VTradeApplyHistoryResponse.VApply> findApplyHistory(
+        String startTime,
+        String endTime,
+        String type,
+        String name,
+        Pageable pageable,
+        String companyCode
     ){
-       List<CompTradeApply> compTradeApplies1= compTradeApplyRepository.findApplyHistory(companyCode);
         List<TCompTradeApply> compTradeApplies=compTradeApplyRepository.findApplyHistory(companyCode).stream()
             .filter(compTradeApply -> {
                 if(compTradeApply.getCreatedCompBy().equals(companyCode)){
-
+                    
                     return compTradeApply.getHandledCompany().getNameInCN().contains(name);
                 }else {
                     return compTradeApply.getCreatedCompany().getNameInCN().contains(name);
                 }
-            }).filter(compTradeApply -> {
+            })
+            .filter(compTradeApply -> {
                 if(StringUtils.isNotBlank(startTime)&&StringUtils.isNotBlank(endTime)){
                     DateTimeFormatter dateTimeFormatterDay = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                     DateTimeFormatter dateTimeFormatters = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                     LocalDateTime startTimes = LocalDate.parse(startTime, dateTimeFormatterDay).atStartOfDay();
                     LocalDateTime endTimes = LocalDateTime.parse(endTime+" 23:59:59", dateTimeFormatters);
-                    return compTradeApply.getCreatedAt().isAfter(startTimes) &&
-                        compTradeApply.getCreatedAt().isBefore(endTimes);
+                    return compTradeApply.getCreatedAt().isAfter(startTimes) && compTradeApply.getCreatedAt().isBefore(endTimes);
                 }
                 return true;
-            }).map(compTradeApplyMapper::toTComTradeApplyHistory)
+            })
+            .filter(compTradeApply -> {
+                if(type.equals("1")){
+                    return  !compTradeApply.getCreatedCompBy().equals(companyCode);
+                }else if(type.equals("2")){
+                    return  compTradeApply.getCreatedCompBy().equals(companyCode);
+                }
+                return true;
+            })
+            .map(compTradeApplyMapper::toTComTradeApplyHistory)
             .toList();
-        compTradeApplies.forEach(tradeApply -> {
-            tradeApply.setDcCompId(companyCode);
-        });
+        compTradeApplies.forEach(tradeApply -> tradeApply.setDcCompId(companyCode));
         return PageTools.listConvertToPage(compTradeApplies.stream().map(compTradeApplyMapper::toVApplyHistory).toList(),pageable);
+    }
+
+    /**
+     * 拒绝名单中格友公司可见详情
+     * @param enrolledCode 格友编码
+     *  @param companyCode 公司编码
+     * @return 格友公司可见详情
+     */
+    public Optional<VEnrolledCompanyResponse.VCompany> findRefuseEnrolledCompanyDetail(
+        String enrolledCode,
+        String companyCode
+    ) throws IOException {
+        //最后一次申请记录
+        CompTradeApply compTradeApply = compTradeApplyRepository.findTopByCreatedCompByAndHandledCompByAndTypeOrderByCreatedAtDesc(
+            companyCode,
+            enrolledCode,
+            "1"
+        ).orElseThrow(()->new IOException("未从数据库找到"));
+        TCompTradeApply tradeApply=  compTradeApplyMapper.toEnrolledCompanyDetail(compTradeApply,companyCode);
+        return  Optional.of(tradeApply).map(compTradeApplyMapper::toTCompTradeApplyDetail);
     }
 }

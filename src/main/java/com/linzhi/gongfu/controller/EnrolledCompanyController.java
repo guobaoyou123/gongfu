@@ -42,8 +42,7 @@ public class EnrolledCompanyController {
             .getAuthentication();
         var page = companyService.findEnrolledCompanyPage(
             name.orElse(""),
-            PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),
-                pageSize.map(PageTools::verificationPageSize).orElse(10)),
+            PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),pageSize.map(PageTools::verificationPageSize).orElse(10)),
             session.getSession().getCompanyCode()
         );
         return VEnrolledCompanyPageResponse.builder()
@@ -64,7 +63,8 @@ public class EnrolledCompanyController {
      */
     @GetMapping("/enrolled/company/detail")
     public VEnrolledCompanyResponse findEnrolledCompanyDetail(@RequestParam("invitationCode") Optional<String> invitationCode,
-                                                              @RequestParam("code")Optional<String> code) throws IOException {
+                                                              @RequestParam("code")Optional<String> code
+    ) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -95,12 +95,13 @@ public class EnrolledCompanyController {
      * @throws IOException 异常
      */
     @GetMapping("/enrolled/company/apply/refused/detail/{code}")
-    public VEnrolledCompanyResponse findRefuseEnrolledCompanyDetail(@PathVariable String code) throws IOException {
+    public VEnrolledCompanyResponse findRefuseEnrolledCompanyDetail(@PathVariable String code)
+        throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
         //查询格友单位详情
-        var company = companyService.findRefuseEnrolledCompanyDetail(
+        var company = compTradeApplyService.findRefuseEnrolledCompanyDetail(
                 code,session.getSession().getCompanyCode())
             .orElseThrow(()->new IOException("未从数据库找到"));
         return VEnrolledCompanyResponse.builder()
@@ -120,10 +121,12 @@ public class EnrolledCompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var map = compTradeApplyService.tradeApply(vTradeApplyRequest.orElseThrow(()->new NullPointerException("数据为空")),
+        var map = compTradeApplyService.tradeApply(
+            vTradeApplyRequest.orElseThrow(()->new NullPointerException("数据为空")),
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
-            session.getSession().getCompanyName());
+            session.getSession().getCompanyName()
+        );
         return VTradeApplyResponse.builder()
             .code(map.get("flag").equals("0")?500:map.get("flag").equals("1")?200:202)
             .message(map.get("flag").equals("0")?"操作失败":map.get("flag").equals("1")?"操作成功":"该格友已拒绝申请")
@@ -195,8 +198,9 @@ public class EnrolledCompanyController {
      * @return  返回成功或者失败信息
      */
     @PostMapping("/enrolled/company/apply/{code}/refuse")
-    public VBaseResponse tradeApplyRefuse(@PathVariable String code,
-                                          @RequestBody Optional<VTradeApplyRefuseRequest> vTradeApplyRefuseRequest
+    public VBaseResponse tradeApplyRefuse(
+        @PathVariable String code,
+        @RequestBody Optional<VTradeApplyRefuseRequest> vTradeApplyRefuseRequest
     ) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
@@ -252,17 +256,19 @@ public class EnrolledCompanyController {
                                                        @RequestParam("pageSize") Optional<String> pageSize ,
                                                        @RequestParam("name") Optional<String> name,
                                                        @RequestParam("startTime") Optional<String> startTime,
-                                                       @RequestParam("endTime") Optional<String> endTime){
+                                                       @RequestParam("endTime") Optional<String> endTime,
+                                                       @RequestParam("type") Optional<String> type){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
         var page = compTradeApplyService.findApplyHistory(
             startTime.orElse(""),
             endTime.orElse(""),
+            type.orElse(""),
             name.orElse(""),
-            PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),
-                pageSize.map(PageTools::verificationPageSize).orElse(10)),
-            session.getSession().getCompanyCode());
+            PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),pageSize.map(PageTools::verificationPageSize).orElse(10)),
+            session.getSession().getCompanyCode()
+        );
         return VTradeApplyHistoryResponse.builder()
             .code(200)
             .message("操作成功")

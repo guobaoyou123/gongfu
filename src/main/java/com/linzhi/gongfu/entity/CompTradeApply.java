@@ -89,7 +89,7 @@ public class CompTradeApply implements Serializable {
     private LocalDateTime handledAt;
 
     /**
-     * 创建时间
+     * 状态
      */
     @Column(name = "state")
     private TradeApply state;
@@ -107,4 +107,48 @@ public class CompTradeApply implements Serializable {
     @OneToOne
     @JoinColumn(name = "handled_comp_by", referencedColumnName = "id", insertable = false, updatable = false)
     private EnrolledCompany handledCompany;
+
+    /**
+     * 公司简称
+     */
+    @Column(name = "chi_short", length = 20)
+    @NotNull
+    @NotBlank
+    private String shortNameInCN;
+
+    /**
+     * 区域编号，区级行政区划编号
+     */
+    @Column(name = "area_code", length = 6)
+    private String areaCode;
+
+    /**
+     * 区域名称，区级行政区划全称
+     */
+    @Column(name = "area_name", length = 60)
+    private String areaName;
+
+    /**
+     * 公司地址
+     */
+    @Column(length = 100)
+    private String address;
+
+    /**
+     * 公司联系人
+     */
+    @Column(name = "cont_name", length = 40)
+    private String contactName;
+
+    /**
+     * 公司联系人电话
+     */
+    @Column(name = "cont_phone", length = 20)
+    private String contactPhone;
+
+    /**
+     * 公司简介
+     */
+    @Column
+    private String  introduction;
 }

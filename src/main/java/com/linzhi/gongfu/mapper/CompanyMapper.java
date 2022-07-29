@@ -140,8 +140,8 @@ public interface CompanyMapper {
 
 
     @Mapping(target = "companyName", source = "name")
-    @Mapping(target = "companyShortName", source = "shortName")
     VEnrolledCompanyPageResponse.VCompany toEnrolledCompany(TCompanyBaseInformation company);
+
 
     @Mapping(target = "companyName", source = "name")
     @Mapping(target = "companyShortName", source = "shortName")

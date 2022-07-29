@@ -46,6 +46,7 @@ public class ContractController {
      */
     @GetMapping("/contract/temporary/purchase/plan")
     public VTemporaryPlanResponse  temporaryPlans(){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var temporaryPlans = planService.findTemporaryPlanByOperator(
@@ -69,6 +70,7 @@ public class ContractController {
      */
     @PostMapping("/contract/temporary/purchase/plan")
     public VBaseResponse  saveTemporaryPlan(@RequestBody Optional<List<VTemporaryPlanRequest>> products){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var map=planService.saveTemporaryPlan(
@@ -88,6 +90,7 @@ public class ContractController {
      */
     @PutMapping("/contract/temporary/purchase/plan")
     public VBaseResponse  modifyTemporaryPlan(@RequestBody Optional<List<VTemporaryPlanRequest>> products){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         planService.modifyTemporaryPlan(products.orElseGet(ArrayList::new),
@@ -106,6 +109,7 @@ public class ContractController {
      */
     @DeleteMapping("/contract/temporary/purchase/plan")
     public VBaseResponse  deleteTemporaryPlan(@RequestParam("products") List<String> products){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = planService.deleteTemporaryPlan(
@@ -124,6 +128,7 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase/plan")
     public VBaseResponse savePlan(@RequestBody VPurchasePlanRequest products){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var map =planService.savePurchasePlan(
@@ -144,6 +149,7 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/plan/verification")
     public VBaseResponse verification(){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         return  planService.verification(
@@ -158,6 +164,7 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/plan")
     public VPurchasePlanResponse purchasePlan(){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         return  planService.findPurchasePlanByCode(
@@ -182,6 +189,7 @@ public class ContractController {
     public VBaseResponse modifyPlanSupplier(
         @RequestBody VPlanSupplierRequest request
     ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var map = planService.modifyPlanSupplier(
@@ -205,6 +213,7 @@ public class ContractController {
     public VBaseResponse modifyPurchasePlanForSeveral(
         @RequestBody Optional<VPlanDemandRequest> forSeveral
     ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = planService.modifyPurchasePlanForSeveral(
@@ -223,6 +232,7 @@ public class ContractController {
      */
     @PutMapping("/contract/purchase/plan/demand")
     public VBaseResponse modifyPurchasePlanDemand(@RequestBody Optional<VPlanDemandRequest> demand){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = planService.modifyPurchasePlanDemand(
@@ -244,6 +254,7 @@ public class ContractController {
     public VBaseResponse  savePlanProduct(
         @RequestBody VPlanDemandRequest request
     ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = planService.savePlanProduct(
@@ -266,6 +277,7 @@ public class ContractController {
         @RequestParam String planCode,
         @RequestParam List<String> productId
     ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = planService.deletePlanProduct(
@@ -285,6 +297,7 @@ public class ContractController {
      */
     @DeleteMapping("/contract/purchase/plan")
     public VBaseResponse deletePurchasePlan(@RequestParam("planCode") Optional<String> planCode){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = planService.deletePurchasePlan(
@@ -303,6 +316,7 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/inquiry/preview/suppliers")
     public VSuppliersResponse suppliersByPlanCode(@RequestParam("planCode") Optional<String> planCode) {
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var supplier = planService.findSuppliersByPlanCode(
@@ -327,6 +341,7 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase/inquiry")
     public VBaseResponse savePurchaseInquiry(@RequestBody VPurchasePlanRequest request){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var map = inquiryService.savePurchaseInquiry(
@@ -347,6 +362,7 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase/plan/empty")
     public VBaseResponse saveEmptyPlan(){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var map =planService.savaEmptyPurchasePlan(
@@ -365,6 +381,7 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/inquiry")
     public VInquiryListResponse inquiryList(){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var list = inquiryService.inquiryList(
@@ -388,6 +405,7 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/inquiry/unfinished")
     public VUnfinishedInquiryListResponse unfinishedInquiries(@RequestParam("supplierCode") String supplierCode){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var list = inquiryService.unfinishedInquiry(session.getSession().getCompanyCode(),
@@ -418,6 +436,7 @@ public class ContractController {
                                                @RequestParam("pageNum") Optional<String> pageNum,
                                                @RequestParam("pageSize") Optional<String> pageSize
                                                ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         //分页
@@ -445,6 +464,7 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/inquiry/{id}")
     public VInquiryDetailResponse inquiryDetail(@PathVariable("id") Optional<String> id){
+
         var inquiry =id.map(inquiryService::inquiryDetail)
             .map(inquiryMapper::toVInquiryDetail);
         if(inquiry.isPresent())
@@ -467,6 +487,7 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase/inquiry/empty")
     public VInquiryResponse emptyInquiry(@RequestBody VInquiryIdRequest vEmptyInquiryRequest){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var code = inquiryService.emptyInquiry(
@@ -498,6 +519,7 @@ public class ContractController {
     public  VBaseResponse saveInquiryProduct(
         @PathVariable("id") String id,
         @RequestBody VInquiryProductRequest vInquiryProductRequest){
+
         var flag = inquiryService.saveInquiryProduct(
             id,
             vInquiryProductRequest.getProductId(),
@@ -518,6 +540,7 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/inquiry/{id}/products/export")
     public  void  exportProduct(@PathVariable String id, HttpServletResponse response ){
+
         List<LinkedHashMap<String,Object>> database=inquiryService.exportProduct(id);
         ExcelUtil.exportToExcel(response,id+"询价单明细表",database);
     }
@@ -530,6 +553,7 @@ public class ContractController {
      */
     @DeleteMapping("/contract/purchase/inquiry/{id}/product")
     public VBaseResponse deleteInquiryProduct(@RequestParam("codes")List<Integer> codes,@PathVariable("id")String id){
+
         var flag =  inquiryService.deleteInquiryProduct(id,codes);
         return  VBaseResponse.builder()
             .code(flag?200:500)
@@ -547,6 +571,7 @@ public class ContractController {
     public VBaseResponse modifyInquiry(
         @RequestBody VInquiryRequest modifyInquiryRequest,
         @PathVariable String id){
+
         var flag = inquiryService.modifyInquiry(
             modifyInquiryRequest,
             id);
@@ -563,6 +588,7 @@ public class ContractController {
      */
     @DeleteMapping("/contract/purchase/inquiry/{id}")
     public  VBaseResponse deleteInquiry(@PathVariable String id ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = inquiryService.deleteInquiry(
@@ -582,6 +608,7 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase")
     public VBaseResponse saveContract(@RequestBody VPContractRequest contractRequest) throws Exception {
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = true;
@@ -608,6 +635,7 @@ public class ContractController {
      */
     @GetMapping("/contract/taxRate")
     public VTaxRateResponse findTaxRate(@RequestParam("type")String type){
+
         var list = contractService.findTaxRates(type);
         return VTaxRateResponse.builder()
             .code(200)
@@ -623,6 +651,7 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/contractNo")
     public VBaseResponse changeContractNoRepeated(@RequestParam("contractNo") Optional<String> contractNo){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.changeContractNoRepeated(contractNo.orElse(""),session.getSession().getCompanyCode(),"");
@@ -641,6 +670,7 @@ public class ContractController {
     @GetMapping("/contract/purchase/{id}/contractNo")
     public VBaseResponse changeContractNoRepeated(@RequestParam("contractNo") Optional<String> contractNo,
                                                   @PathVariable String id){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.changeContractNoRepeated(contractNo.orElse(""),session.getSession().getCompanyCode(),id);
@@ -668,6 +698,7 @@ public class ContractController {
                                                @RequestParam("pageNum") Optional<String> pageNum,
                                                @RequestParam("pageSize") Optional<String> pageSize
     ) throws Exception {
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         //分页
@@ -706,6 +737,7 @@ public class ContractController {
         @PathVariable("id")String id,
         @PathVariable("revision")Integer revision
     ) throws IOException {
+
         boolean repetitive =false;
         //查询采购合同
          var contract= contractService.purchaseContractDetail(id,revision);
@@ -727,6 +759,7 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase/empty")
     public VPContractResponse savePurchaseContractEmpty(@RequestBody Optional<VInquiryIdRequest> supplierCode){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var id = contractService.savePurchaseContractEmpty(
@@ -761,6 +794,7 @@ public class ContractController {
         @RequestParam("startTime") Optional<String> startTime,
         @RequestParam("endTime") Optional<String> endTime
     ) throws Exception {
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         return VPContractAmountResponse.builder()
@@ -789,6 +823,7 @@ public class ContractController {
         @PathVariable("id")String id,
         @PathVariable("revision") Integer revision
     ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag=contractService.saveProduct(product.orElseThrow().getProductId(),
@@ -818,6 +853,7 @@ public class ContractController {
         @PathVariable("id")String id,
         @PathVariable("revision") Integer revision
     ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.deleteContractProduct(
@@ -840,6 +876,7 @@ public class ContractController {
      */
     @PutMapping("/contract/purchase/{id}")
     public VPContractRevisionResponse modifyContractState(@PathVariable String id) throws IOException {
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var revision = contractService.modifyContractState(id,
@@ -867,6 +904,7 @@ public class ContractController {
         @PathVariable("id")String id,
         @PathVariable("revision")Integer revision
     ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = contractService.modifyPurchaseContract(
@@ -893,6 +931,7 @@ public class ContractController {
         @PathVariable Integer revision,
         HttpServletResponse response
     ){
+
         List<LinkedHashMap<String,Object>> database=contractService.exportProductTemplate(id,revision);
         ExcelUtil.exportToExcel(response,id+"采购合同明细表",database);
     }
@@ -908,6 +947,7 @@ public class ContractController {
         @PathVariable Integer revision,
         HttpServletResponse response
     ){
+
         List<LinkedHashMap<String,Object>> database=contractService.exportProduct(id,revision);
         ExcelUtil.exportToExcel(response,id+"采购合同明细表",database);
     }
@@ -920,6 +960,7 @@ public class ContractController {
      */
     @DeleteMapping("/contract/purchase/{id}/revision")
     public VBaseResponse cancelCurrentRevision(@PathVariable String id) throws Exception {
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var contract = contractService.getContractDetail(id);
@@ -953,6 +994,7 @@ public class ContractController {
         @PathVariable("id") String id,
         @PathVariable("revision") Integer revision
     ){
+
         contractService.saveDeliveryTemp(deliveryTempRequests,id,revision);
         return VBaseResponse.builder()
             .code(200)
@@ -972,6 +1014,7 @@ public class ContractController {
         @PathVariable Integer revision,
         @RequestBody VPContractRequest generateContractRequest
     ) throws Exception {
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         String  contractCodes = "";
@@ -1034,6 +1077,7 @@ public class ContractController {
      */
     @DeleteMapping("/contract/purchase/{id}")
     public VBaseResponse cancelPurchaseContract(@PathVariable String id ){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         contractService.cancelPurchaseContract(
@@ -1058,6 +1102,7 @@ public class ContractController {
         @PathVariable("id") String id,
         @PathVariable("revision") Integer revision
     ){
+
          var list=contractService.modifyContractPreview(id,revision);
          return VPContractPreviewResponse.builder()
              .code(200)
@@ -1074,6 +1119,7 @@ public class ContractController {
      */
     @PostMapping("/contract/purchase/{id}/{revision}/copy")
     public VPContractResponse copyContract(@PathVariable String id, @PathVariable Integer revision){
+
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         String contractId = contractService.copyContract(

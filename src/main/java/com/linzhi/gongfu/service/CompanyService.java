@@ -579,28 +579,7 @@ public class CompanyService {
             .map(companyMapper::toEnrolledCompanyDetail);
     }
 
-    /**
-     * 拒绝名单中格友公司可见详情
-     * @param enrolledCode 格友编码
-     *  @param companyCode 公司编码
-     * @return 格友公司可见详情
-     */
-    public Optional<VEnrolledCompanyResponse.VCompany> findRefuseEnrolledCompanyDetail(
-        String enrolledCode,
-        String companyCode
-    ) throws IOException {
-        var company = findEnrolledCompany(enrolledCode)
-            .orElseThrow(()->new IOException("未从数据库找到"));
 
-        //是否有申请记录
-       compTradeApplyRepository.findTopByCreatedCompByAndHandledCompByAndTypeOrderByCreatedAtDesc(
-            companyCode,
-            enrolledCode,
-            "1"
-        ).ifPresent(compTradeApply -> company.setRemark(compTradeApply.getCreatedRemark()));
-
-        return  Optional.of(company);
-    }
 
     /**
      * 生成邀请码

@@ -1,8 +1,12 @@
 package com.linzhi.gongfu.mapper;
 
 
+import com.linzhi.gongfu.dto.TCompTradeApply;
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
 import com.linzhi.gongfu.entity.CompTrad;
+import com.linzhi.gongfu.entity.CompTradeApply;
+import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.vo.VSuppliersPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

@@ -70,7 +70,6 @@ public class AddressController {
             .build();
     }
 
-
     /**
      * 添加禁用地址
      * @param disableArea 禁用区域编码
