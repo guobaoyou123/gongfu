@@ -122,6 +122,7 @@ public class CompTradeApplyService {
            if(vTradeApplyRequest.getInvitationCode()!=null)
                   compInvitationCodeRepository.deleteByCompInvitationCodeId_InvitationCode(vTradeApplyRequest.getInvitationCode());
            map.put("flag","1");
+           map.put("code",compTradeApply1.getCode());
            return map ;
         }catch (Exception e){
             e.printStackTrace();
@@ -332,7 +333,7 @@ public class CompTradeApplyService {
         List<TCompTradeApply> compTradeApplies=compTradeApplyRepository.findApplyHistory(companyCode).stream()
             .filter(compTradeApply -> {
                 if(compTradeApply.getCreatedCompBy().equals(companyCode)){
-                    
+
                     return compTradeApply.getHandledCompany().getNameInCN().contains(name);
                 }else {
                     return compTradeApply.getCreatedCompany().getNameInCN().contains(name);
