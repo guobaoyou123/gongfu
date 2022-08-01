@@ -2,10 +2,7 @@ package com.linzhi.gongfu.entity;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -39,4 +36,11 @@ public class Blacklist implements Serializable {
      */
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    /**
+     * 黑名单公司详情
+     */
+    @OneToOne
+    @JoinColumn(name = "berefuse_comp_id", referencedColumnName = "id", insertable = false, updatable = false)
+    private EnrolledCompany company;
 }

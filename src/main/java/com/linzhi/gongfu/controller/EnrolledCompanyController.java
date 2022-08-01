@@ -2,6 +2,7 @@ package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.entity.CompTradeApply;
 import com.linzhi.gongfu.enumeration.TradeApply;
+import com.linzhi.gongfu.mapper.BlacklistMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompTradeApplyService;
 import com.linzhi.gongfu.service.CompanyService;
@@ -26,6 +27,7 @@ import java.util.Optional;
 public class EnrolledCompanyController {
     private final CompanyService companyService;
     private final CompTradeApplyService compTradeApplyService;
+    private final BlacklistMapper blacklistMapper;
     /**
      * 查询入格单位信息列表分页
      * @param name 公司名称
@@ -305,6 +307,20 @@ public class EnrolledCompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        return null;
+        var list= compTradeApplyService.listRefused(session.getSession().getCompanyCode());
+
+        return VRefusedListResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .companies(list.stream()
+                .map(blacklistMapper::toRefusedCompany)
+                .toList()
+            )
+            .build();
+    }
+
+    @PostMapping("/enrolled/company/apply/refused/{code}")
+    public VBaseResponse removeRefused(@PathVariable String code){
+        return VBaseResponse.builder().build();
     }
 }

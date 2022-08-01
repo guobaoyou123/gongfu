@@ -3,11 +3,12 @@ package com.linzhi.gongfu.service;
 
 import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TCompTradeApply;
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
+import com.linzhi.gongfu.mapper.BlacklistMapper;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.mapper.CompTradeApplyMapper;
-import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
@@ -46,6 +47,7 @@ public class CompTradeApplyService {
     private final EnrolledCompanyRepository enrolledCompanyRepository;
     private final CompTradeRepository compTradeRepository;
     private final BrandMapper brandMapper;
+    private final BlacklistMapper blacklistMapper;
     /**
      * 申请采购
      * @param vTradeApplyRequest 申请信息
@@ -276,7 +278,8 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_history_List;1800", key="#companyCode"),
         @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
         @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
-        @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code")
+        @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code"),
+        @CacheEvict(value="Black_list;1800", key="#companyCode")
     })
     @Transactional
     public boolean refuseApply(String companyCode,String companyName,
@@ -413,7 +416,16 @@ public class CompTradeApplyService {
          return  Optional.of(tradeApply).map(compTradeApplyMapper::toApplyDetail);
     }
 
-    public void  listRefused(){
+    /**
+     * 查询黑名单列表
+     * @param companyCode 公司编码
+     * @return 返回黑名单列表
+     */
+    public List<TCompanyBaseInformation>  listRefused(String companyCode){
 
+        return  blacklistRepository.findBlacklistsByBlacklistId_DcCompId(companyCode).stream()
+            .map(blacklistMapper::toTCompanyDetail)
+            .toList();
     }
+    
 }

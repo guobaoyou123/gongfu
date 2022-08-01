@@ -94,10 +94,10 @@ public interface CompanyMapper {
     TCompanyBaseInformation toCompDetail(EnrolledCompany company);
 
     /**
-     * 明确可以成功获取到公司基础信息时，向预获取响应转换
+     * 明确可以成功获取到供应商公司基础信息时，向预获取响应转换
      *
      * @param info 公司基础信息
-     * @return 公司基本信息预获取响应
+     * @return 供应商公司基本信息预获取响应
      */
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "shortName")
@@ -138,11 +138,21 @@ public interface CompanyMapper {
     @Mapping(target = "visible",expression = "java(company.getVisible().equals(\"1\")?true:false)")
     VCompanyResponse.VCompany toCompanyDetail(TCompanyBaseInformation company);
 
-
+    /**
+     * 明确可以成功获取到入格单位公司基础信息时，向预获取响应转换
+     *
+     * @param company 入格单位公司基础信息
+     * @return 入格单位公司基本信息预获取响应
+     */
     @Mapping(target = "companyName", source = "name")
     VEnrolledCompanyPageResponse.VCompany toEnrolledCompany(TCompanyBaseInformation company);
 
-
+    /**
+     * 明确可以成功获取到入格单位公司基础信息时，向预获取响应转换
+     *
+     * @param company 入格单位公司基础信息
+     * @return 入格单位公司基本信息预获取响应
+     */
     @Mapping(target = "companyName", source = "name")
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "usci", source = "USCI")
