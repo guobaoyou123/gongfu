@@ -101,7 +101,7 @@ public class EnrolledCompanyController {
             .getContext()
             .getAuthentication();
         //查询格友单位详情
-        var company = compTradeApplyService.findRefuseEnrolledCompanyDetail(
+        var company = compTradeApplyService.refuseEnrolledCompanyDetail(
                 code,session.getSession().getCompanyCode())
             .orElseThrow(()->new IOException("未从数据库找到"));
         return VEnrolledCompanyResponse.builder()
@@ -121,7 +121,7 @@ public class EnrolledCompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var map = compTradeApplyService.tradeApply(
+        var map = compTradeApplyService.saveTradeApply(
             vTradeApplyRequest.orElseThrow(()->new NullPointerException("数据为空")),
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
@@ -148,7 +148,7 @@ public class EnrolledCompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var page = compTradeApplyService.findTradeApply(
+        var page = compTradeApplyService.tradeApplyPage(
             session.getSession().getCompanyCode(),
             PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),
                 pageSize.map(PageTools::verificationPageSize).orElse(10)),
@@ -261,10 +261,10 @@ public class EnrolledCompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var page = compTradeApplyService.findApplyHistory(
+        var page = compTradeApplyService.applyHistoryPage(
             startTime.orElse(""),
             endTime.orElse(""),
-            type.orElse(""),
+            type.orElse("1"),
             name.orElse(""),
             PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),pageSize.map(PageTools::verificationPageSize).orElse(10)),
             session.getSession().getCompanyCode()
@@ -277,4 +277,24 @@ public class EnrolledCompanyController {
             .applies(page.getContent())
             .build();
     }
+
+    /**
+     * 查找待处理申请或者历史申请记录详情
+     * @param code 申请记录编码
+     * @return 申请记录详情
+     */
+    @GetMapping("/enrolled/company/apply/{code}/detail")
+    public  VTradeApplyDetailResponse findApplyDetail(@PathVariable String code) throws IOException {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var detail = compTradeApplyService.tradeApplyDetail(code,session.getSession().getCompanyCode());
+        return VTradeApplyDetailResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .record(detail.orElseThrow(()->new NullPointerException("数据为空")))
+            .build();
+    }
+
+
 }

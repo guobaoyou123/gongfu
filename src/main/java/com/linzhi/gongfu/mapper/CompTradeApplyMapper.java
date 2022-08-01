@@ -3,6 +3,7 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TCompTradeApply;
 import com.linzhi.gongfu.entity.CompTradeApply;
 import com.linzhi.gongfu.vo.VEnrolledCompanyResponse;
+import com.linzhi.gongfu.vo.VTradeApplyDetailResponse;
 import com.linzhi.gongfu.vo.VTradeApplyHistoryResponse;
 import com.linzhi.gongfu.vo.VTradeApplyPageResponse;
 import org.mapstruct.Mapper;
@@ -60,7 +61,6 @@ public interface CompTradeApplyMapper {
     @Mapping(target = "companyCode",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompanyCode():tradeApply.getCreatedCompBy())")
     @Mapping(target = "companyName",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompanyName():tradeApply.getCreatedCompanyName())")
     @Mapping(target = "companyShortName",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompanyShortName():tradeApply.getCreatedCompanyShortName())")
-    @Mapping(target = "type",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?\"2\":\"1\")")
     VTradeApplyHistoryResponse.VApply toVApplyHistory(TCompTradeApply tradeApply);
 
     /**
@@ -78,12 +78,12 @@ public interface CompTradeApplyMapper {
     @Mapping(target = "companyShortName",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getDetails().getShortNameInCN():tradeApply.getShortNameInCN())")
     @Mapping(target = "type",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?\"2\":\"1\")")
     @Mapping(target = "usci",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getUSCI():tradeApply.getCreatedCompany().getUSCI() )")
-    @Mapping(target = "contactName",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getDetails().getContactName():tradeApply.getContactName())")
-    @Mapping(target = "contactPhone",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getDetails().getContactPhone():tradeApply.getContactPhone())")
-    @Mapping(target = "areaCode",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getDetails().getAreaCode():tradeApply.getAreaCode())")
-    @Mapping(target = "areaName",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getDetails().getAreaName():tradeApply.getAreaName())")
-    @Mapping(target = "address",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getDetails().getAddress():tradeApply.getAddress())")
-    @Mapping(target = "introduction",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getIntroduction():tradeApply.getCreatedCompany().getIntroduction())")
+    @Mapping(target = "contactName",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getCompVisible()!=null&&tradeApply.getHandledCompany().getCompVisible().getVisibleContent().contains(\"contactPhone\")?tradeApply.getHandledCompany().getDetails().getContactName():null:tradeApply.getContactName())")
+    @Mapping(target = "contactPhone",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getCompVisible()!=null&&tradeApply.getHandledCompany().getCompVisible().getVisibleContent().contains(\"contactPhone\")?tradeApply.getHandledCompany().getDetails().getContactPhone():null:tradeApply.getContactPhone())")
+    @Mapping(target = "areaCode",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getCompVisible()!=null&&tradeApply.getHandledCompany().getCompVisible().getVisibleContent().contains(\"address\")?tradeApply.getHandledCompany().getDetails().getAreaCode():null:tradeApply.getAreaCode())")
+    @Mapping(target = "areaName",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getCompVisible()!=null&&tradeApply.getHandledCompany().getCompVisible().getVisibleContent().contains(\"address\")?tradeApply.getHandledCompany().getDetails().getAreaName():null:tradeApply.getAreaName())")
+    @Mapping(target = "address",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getCompVisible()!=null&&tradeApply.getHandledCompany().getCompVisible().getVisibleContent().contains(\"address\")?tradeApply.getHandledCompany().getDetails().getAddress():null:tradeApply.getAddress())")
+    @Mapping(target = "introduction",expression = "java(dcCompId.equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompany().getCompVisible()!=null&&tradeApply.getHandledCompany().getCompVisible().getVisibleContent().contains(\"introduction\")?tradeApply.getHandledCompany().getIntroduction():null:tradeApply.getCreatedCompany().getIntroduction())")
     TCompTradeApply toEnrolledCompanyDetail(CompTradeApply tradeApply,String dcCompId) ;
 
     /**
@@ -103,4 +103,7 @@ public interface CompTradeApplyMapper {
     @Mapping(target = "isSupplier",constant = "false")
     @Mapping(target = "isCustomer",constant = "false")
     VEnrolledCompanyResponse.VCompany toTCompTradeApplyDetail(TCompTradeApply compTradeApply);
+
+
+    VTradeApplyDetailResponse.VApply toApplyDetail(TCompTradeApply compTradeApply);
 }

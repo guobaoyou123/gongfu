@@ -1,10 +1,13 @@
 package com.linzhi.gongfu.service;
 
 
+import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TCompTradeApply;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
+import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.mapper.CompTradeApplyMapper;
+import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
@@ -41,6 +44,8 @@ public class CompTradeApplyService {
     private final CompTradBrandRepository compTradBrandRepository;
     private final BlacklistRepository blacklistRepository;
     private final EnrolledCompanyRepository enrolledCompanyRepository;
+    private final CompTradeRepository compTradeRepository;
+    private final BrandMapper brandMapper;
     /**
      * 申请采购
      * @param vTradeApplyRequest 申请信息
@@ -54,7 +59,7 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_List;1800", key="#vTradeApplyRequest.applyCompCode+'-'+1")
     })
     @Transactional
-    public Map<String,String> tradeApply(VTradeApplyRequest vTradeApplyRequest,String companyCode,String operatorCode,String companyName){
+    public Map<String,String> saveTradeApply(VTradeApplyRequest vTradeApplyRequest,String companyCode,String operatorCode,String companyName){
           Map<String,String> map = new HashMap<>();
           map.put("flag","0");
         try{
@@ -128,7 +133,6 @@ public class CompTradeApplyService {
             e.printStackTrace();
             return map;
         }
-
     }
 
     /**
@@ -138,7 +142,7 @@ public class CompTradeApplyService {
      * @param name 公司名称
      * @return 返回待处理列表
      */
-    public Page<VTradeApplyPageResponse.VTradeApply> findTradeApply(String companyCode, Pageable pageable, String name){
+    public Page<VTradeApplyPageResponse.VTradeApply> tradeApplyPage(String companyCode, Pageable pageable, String name){
          List<VTradeApplyPageResponse.VTradeApply> compTradeApplies=  compTradeApplyRepository.findByHandledCompByAndStateAndTypeOrderByCreatedAtDesc(companyCode,TradeApply.APPLYING,"1")
              .stream().filter(compTradeApply -> compTradeApply.getCreatedCompany().getNameInCN().contains(name))
              .map(compTradeApplyMapper::toTComTradeApply)
@@ -160,7 +164,9 @@ public class CompTradeApplyService {
     @Caching(evict = {
         @CacheEvict(value="trade_apply_history_List;1800", key="#companyCode"),
         @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
-        @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy")
+        @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
+        @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code")
+
     })
     public boolean consentApply(CompTradeApply compTradeApply, String companyCode,String companyName, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
         try{
@@ -269,7 +275,8 @@ public class CompTradeApplyService {
     @Caching(evict = {
         @CacheEvict(value="trade_apply_history_List;1800", key="#companyCode"),
         @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
-        @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy")
+        @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
+        @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code")
     })
     @Transactional
     public boolean refuseApply(String companyCode,String companyName,
@@ -322,7 +329,7 @@ public class CompTradeApplyService {
      * @param pageable 分页
      * @return 返回申请历史记录列表
      */
-    public Page<VTradeApplyHistoryResponse.VApply> findApplyHistory(
+    public Page<VTradeApplyHistoryResponse.VApply> applyHistoryPage(
         String startTime,
         String endTime,
         String type,
@@ -369,7 +376,7 @@ public class CompTradeApplyService {
      *  @param companyCode 公司编码
      * @return 格友公司可见详情
      */
-    public Optional<VEnrolledCompanyResponse.VCompany> findRefuseEnrolledCompanyDetail(
+    public Optional<VEnrolledCompanyResponse.VCompany> refuseEnrolledCompanyDetail(
         String enrolledCode,
         String companyCode
     ) throws IOException {
@@ -381,5 +388,28 @@ public class CompTradeApplyService {
         ).orElseThrow(()->new IOException("未从数据库找到"));
         TCompTradeApply tradeApply=  compTradeApplyMapper.toEnrolledCompanyDetail(compTradeApply,companyCode);
         return  Optional.of(tradeApply).map(compTradeApplyMapper::toTCompTradeApplyDetail);
+    }
+
+    /**
+     * 申请记录详情（待处理和历史）
+     * @param code 申请记录编码
+     * @param companyCode 本单位编码
+     */
+    public  Optional<VTradeApplyDetailResponse.VApply>  tradeApplyDetail(String code,String companyCode) throws IOException {
+
+         CompTradeApply compTradeApply = compTradeApplyRepository.findById(code).orElseThrow(()->new IOException("未查询到数据"));
+         TCompTradeApply tradeApply = compTradeApplyMapper.toEnrolledCompanyDetail(compTradeApply,companyCode);
+         //判断该申请记录是否通过
+         if(compTradeApply.getState().equals(TradeApply.AGREE)){
+             //查询交易品牌和税模式
+             CompTrad compTrad = compTradeRepository.findById(CompTradId.builder()
+                     .compBuyer(compTradeApply.getCreatedCompBy())
+                     .compSaler(compTradeApply.getHandledCompBy())
+                 .build()).orElseThrow(()->new IOException("未从数据库中找到交易信息"));
+             List<TBrand> tBrands=compTrad.getManageBrands().stream().map(brandMapper::toBrand).toList();
+             tradeApply.setBrands(tBrands);
+             tradeApply.setTaxModel(compTrad.getTaxModel().getTaxMode()+"");
+         }
+         return  Optional.of(tradeApply).map(compTradeApplyMapper::toApplyDetail);
     }
 }

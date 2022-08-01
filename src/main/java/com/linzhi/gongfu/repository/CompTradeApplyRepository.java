@@ -36,8 +36,21 @@ public interface CompTradeApplyRepository extends CrudRepository<CompTradeApply,
     @Cacheable(value="trade_apply_List;1800", key="#companyCode+'-'+#type")
     List<CompTradeApply> findByHandledCompByAndStateAndTypeOrderByCreatedAtDesc(String companyCode,TradeApply tradeApply,String type);
 
+    /**
+     * 查询历史记录
+     * @param companyCode 单位编码
+     * @return 历史记录列表
+     */
     @Cacheable(value="trade_apply_history_List;1800", key="#companyCode")
     @Query(value = "select * from comp_trade_apply\n" +
         "where created_comp_by=?1 or(handled_comp_by=?1 and state<>'0')",nativeQuery = true)
     List<CompTradeApply> findApplyHistory(String companyCode);
+
+    /**
+     * 查询申请记录详情
+     * @param id 申请记录编码
+     * @return 申请记录详情
+     */
+    @Cacheable(value="trade_apply_detail;1800", key="#id")
+    Optional<CompTradeApply> findById(String id);
 }

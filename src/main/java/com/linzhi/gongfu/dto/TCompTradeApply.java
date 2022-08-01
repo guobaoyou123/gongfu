@@ -11,6 +11,7 @@ import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 用于转申请采购表基本信息
@@ -151,5 +152,15 @@ public class TCompTradeApply {
      * 备注
      */
     private String remark;
+
+    /**
+     * 可见品牌
+     */
+    private List<TBrand> brands;
+
+    /**
+     * 税模式
+     */
+    private String taxModel;
 
 }

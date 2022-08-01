@@ -6,7 +6,7 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * 用于前端入格单位详情的响应体组建
+ * 用于前端入格单位详情或者始终拒绝名单中的格友详情的响应体组建
  *
  * @author zgh
  * @create_at 2022-07-19

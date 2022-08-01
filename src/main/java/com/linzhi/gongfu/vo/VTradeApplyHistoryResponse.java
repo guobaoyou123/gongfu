@@ -57,10 +57,6 @@ public class VTradeApplyHistoryResponse extends  VBaseResponse{
          * 申请单位或者被申请单位简称
          */
         private String companyShortName;
-        /**
-         * 类型1-我申请的 2-格单位申请的
-         */
-        private String type;
 
         private String state;
 
