@@ -22,7 +22,7 @@ public interface InquiryRecordRepository
 
     @Modifying
     @Query("delete from InquiryRecord as c  where c.inquiryRecordId.inquiryId=?1 and c.inquiryRecordId.code in ?2")
-    void  deleteProducts(String inquiryId, List<Integer> codes);
+    void  removeProducts(String inquiryId, List<Integer> codes);
 
     @Modifying
     @Query("delete from InquiryRecord as c  where c.inquiryRecordId.inquiryId=?1")

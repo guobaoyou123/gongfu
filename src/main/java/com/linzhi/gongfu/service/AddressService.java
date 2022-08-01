@@ -52,11 +52,11 @@ public class AddressService {
      * @param companyCode 单位id
      * @return 三级行政区划查找（包括禁用区域状态）列表
      */
-    public List<TArea> areas(String companyCode){
+    public List<TArea> listAreas(String companyCode){
         var list = findAllArea().stream()
             .map(administrativeAreaMapper::toDo)
             .toList();
-        List<DisabledArea> disabledAreaList = findDisabledAreaByCompanyCode(companyCode);
+        List<DisabledArea> disabledAreaList = listDisabledAreas(companyCode);
         Map<String,DisabledArea> disabledAreaMap = new HashMap<>();
         disabledAreaList.forEach(disabledArea ->
             disabledAreaMap.put(
@@ -89,7 +89,7 @@ public class AddressService {
      * @return 返回禁用区域列表
      */
     @Cacheable(value = "DisabledArea_compId;1800", key="#companyCode",unless = "#result == null")
-    public  List<DisabledArea> findDisabledAreaByCompanyCode(String companyCode){
+    public  List<DisabledArea> listDisabledAreas(String companyCode){
         return  disabledAreaRepository
             .findAllByDisabledAreaId_DcCompId(companyCode);
     }
@@ -137,7 +137,7 @@ public class AddressService {
      */
     @CacheEvict(value = "DisabledArea_compId;1800",key = "#companyCode",beforeInvocation=true)
     @Transactional
-    public Map<String,Object> deleteDisablesAreaByCode(String companyCode,List<String> code){
+    public Map<String,Object> removeDisablesArea(String companyCode,List<String> code){
         Map<String,Object> map = new HashMap<>();
         try {
             List<DisabledAreaId> ids = new ArrayList<>();
@@ -167,13 +167,13 @@ public class AddressService {
      * @param state 状态
      * @return 返回地址信息（包括禁用区域）
      */
-    public List<TAddress> findAddressesByCompId(String companyCode,String areaCode,String addresses,String state){
+    public List<TAddress> listTAddresses(String companyCode,String areaCode,String addresses,String state){
         //根据条件查询地址信息
-        List<TAddress> tAddresses =findAddresses(companyCode, areaCode, addresses, state).stream()
+        List<TAddress> tAddresses =listAddresses(companyCode, areaCode, addresses, state).stream()
             .map(addressMapper::toAddress)
             .toList();
 
-        List<DisabledArea> list = findDisabledAreaByCompanyCode(companyCode);
+        List<DisabledArea> list = listDisabledAreas(companyCode);
         Map<String,DisabledArea> map  = new HashMap<>();
         list.forEach(disabledArea -> map.put(disabledArea.getDisabledAreaId().getCode(),disabledArea));
         AtomicInteger i= new AtomicInteger(1);
@@ -201,7 +201,7 @@ public class AddressService {
      * @return 返回地址信息
      */
     @Cacheable(value = "Addresses_compId;1800", unless = "#result == null")
-    public List<Address> findAddresses(String companyCode,String areaCode,String addresses,String state){
+    public List<Address> listAddresses(String companyCode,String areaCode,String addresses,String state){
         //根据条件查询产品信息
         QAddress qAddress = QAddress.address1;
         JPAQuery<Address> query = queryFactory.select(qAddress).from(qAddress);
@@ -377,7 +377,7 @@ public class AddressService {
      * @param companyCode 公司id
      * @return 返回联系人列表
      */
-    public List<TCompContacts> findContactByAddrCode(String operator,String companyCode,String addressCode,String state){
+    public List<TCompContacts> listContacts(String operator,String companyCode,String addressCode,String state){
        List<CompContacts> list;
        Operator operator1= operatorRepository.findById(OperatorId.builder()
               .operatorCode(operator)

@@ -33,14 +33,14 @@ public class SuppliersController {
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
      */
     @GetMapping("/suppliers/paged")
-    public VSuppliersPageResponse suppliersPage(
+    public VSuppliersPageResponse pageSuppliers(
         @RequestParam("pageNum") Optional<String> pageNum,
         @RequestParam("pageSize") Optional<String> pageSize
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var supplier = companyService.suppliersPage(
+        var supplier = companyService.pageSuppliers(
             session.getSession().getCompanyCode(),
             pageNum,
             pageSize
@@ -60,11 +60,11 @@ public class SuppliersController {
      * @return 对应的本公司id查询所有供应商
      */
     @GetMapping("/suppliers/by/brand")
-    public VSuppliersResponse suppliersByBrands(
+    public VSuppliersResponse listSuppliersByBrands(
         @RequestParam("brand") Optional<List<String>> brands
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder.getContext().getAuthentication();
-        var supplier = companyService.findSuppliersByBrands(
+        var supplier = companyService.listSuppliersByBrands(
             brands.orElseGet(ArrayList::new),session.getSession().getCompanyCode()
         );
         return VSuppliersResponse.builder()
@@ -87,7 +87,7 @@ public class SuppliersController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var list = companyService.findForeignSuppliers(
+        var list = companyService.listForeignSuppliers(
             session.getSession().getCompanyCode()
         );
         return VForeignSuppliersResponse.builder()
@@ -110,7 +110,7 @@ public class SuppliersController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var supplier = companyService.findForeignSupplierDetail(code,session.getSession().getCompanyCode());
+        var supplier = companyService.getForeignSupplierDetail(code,session.getSession().getCompanyCode());
         return VForeignSupplierResponse.builder()
             .code(200)
             .message("获取供应商详情成功")

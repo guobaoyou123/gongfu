@@ -23,7 +23,7 @@ public interface InquiryRepository
 
         " where  b.created_by_comp=?1 and b.created_by=?2 and b.type=?3 and b.state=?4 order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<Inquiry> findInquiryList(String compId, String operator, String  type, String  state);
+    List<Inquiry> listInquiries(String compId, String operator, String  type, String  state);
 
 
     @Query(value="select  b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode from   inquiry_base b\n" +
@@ -34,7 +34,7 @@ public interface InquiryRepository
 
         " where   b.created_by_comp=?1 and b.type=?2 and b.state=?3 order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<Inquiry> findInquiryList(String compId, String type, String  state);
+    List<Inquiry> listInquiries(String compId, String type, String  state);
 
 
     @Modifying
@@ -55,7 +55,7 @@ public interface InquiryRepository
 
     @Modifying
     @Query(value="update   Inquiry i set i.deletedAt=?1,i.state=?2 where i.id=?3")
-    void  cancelInquiry(LocalDateTime deletedAt,InquiryState inquiryState, String id);
+    void  removeInquiry(LocalDateTime deletedAt,InquiryState inquiryState, String id);
 
 
 

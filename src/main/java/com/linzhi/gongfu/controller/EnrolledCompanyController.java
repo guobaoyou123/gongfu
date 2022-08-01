@@ -34,13 +34,13 @@ public class EnrolledCompanyController {
      * @return 入格单位信息列表
      */
     @GetMapping("/enrolled/companies")
-    public VEnrolledCompanyPageResponse findCompanyPage(@RequestParam("name") Optional<String> name,
+    public VEnrolledCompanyPageResponse pageCompanies(@RequestParam("name") Optional<String> name,
                                                         @RequestParam("pageNum") Optional<String> pageNum,
                                                         @RequestParam("pageSize") Optional<String> pageSize ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var page = companyService.findEnrolledCompanyPage(
+        var page = companyService.pageEnrolledCompanies(
             name.orElse(""),
             PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),pageSize.map(PageTools::verificationPageSize).orElse(10)),
             session.getSession().getCompanyCode()
@@ -62,7 +62,7 @@ public class EnrolledCompanyController {
      * @throws IOException 异常
      */
     @GetMapping("/enrolled/company/detail")
-    public VEnrolledCompanyResponse findEnrolledCompanyDetail(@RequestParam("invitationCode") Optional<String> invitationCode,
+    public VEnrolledCompanyResponse getEnrolledCompanyDetail(@RequestParam("invitationCode") Optional<String> invitationCode,
                                                               @RequestParam("code")Optional<String> code
     ) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
@@ -70,7 +70,7 @@ public class EnrolledCompanyController {
             .getAuthentication();
         //判断邀请码是否不为空，找到邀请单位详情
         if(!invitationCode.orElse("").equals("")){
-            code =   companyService.findInvitationCode(invitationCode.get());
+            code =   companyService.getECompanyCode(invitationCode.get());
         }
         if(code.orElse("").equals(""))
             return VEnrolledCompanyResponse.builder()
@@ -78,7 +78,7 @@ public class EnrolledCompanyController {
                 .message("邀请码已过期或邀请码错误")
                 .build();
         //查询格友单位详情
-        var company = companyService.findEnrolledCompany(
+        var company = companyService.getEnrolledCompany(
                 code.get(),session.getSession().getCompanyCode())
             .orElseThrow(()->new IOException("未从数据库找到"));
         return VEnrolledCompanyResponse.builder()
@@ -101,7 +101,7 @@ public class EnrolledCompanyController {
             .getContext()
             .getAuthentication();
         //查询格友单位详情
-        var company = compTradeApplyService.refuseEnrolledCompanyDetail(
+        var company = compTradeApplyService.getRefuseEnrolledCompanyDetail(
                 code,session.getSession().getCompanyCode())
             .orElseThrow(()->new IOException("未从数据库找到"));
         return VEnrolledCompanyResponse.builder()
@@ -142,13 +142,13 @@ public class EnrolledCompanyController {
      * @return 待处理申请列表
      */
     @GetMapping("/enrolled/company/apply")
-    public VTradeApplyPageResponse findTradeApply(@RequestParam("name") Optional<String> name,
+    public VTradeApplyPageResponse pageTradeApplies(@RequestParam("name") Optional<String> name,
                                                   @RequestParam("pageNum") Optional<String> pageNum,
                                                   @RequestParam("pageSize") Optional<String> pageSize ){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var page = compTradeApplyService.tradeApplyPage(
+        var page = compTradeApplyService.pageTradeApplies(
             session.getSession().getCompanyCode(),
             PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),
                 pageSize.map(PageTools::verificationPageSize).orElse(10)),
@@ -252,7 +252,7 @@ public class EnrolledCompanyController {
      * @return 申请采购历史记录
      */
     @GetMapping("/enrolled/company/apply/history")
-    public VTradeApplyHistoryResponse applyHistoryPage(@RequestParam("pageNum") Optional<String> pageNum ,
+    public VTradeApplyHistoryResponse pageApplyHistories(@RequestParam("pageNum") Optional<String> pageNum ,
                                                        @RequestParam("pageSize") Optional<String> pageSize ,
                                                        @RequestParam("name") Optional<String> name,
                                                        @RequestParam("startTime") Optional<String> startTime,
@@ -261,7 +261,7 @@ public class EnrolledCompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var page = compTradeApplyService.applyHistoryPage(
+        var page = compTradeApplyService.pageApplyHistories(
             startTime.orElse(""),
             endTime.orElse(""),
             type.orElse("1"),
@@ -284,11 +284,11 @@ public class EnrolledCompanyController {
      * @return 申请记录详情
      */
     @GetMapping("/enrolled/company/apply/{code}/detail")
-    public  VTradeApplyDetailResponse findApplyDetail(@PathVariable String code) throws IOException {
+    public  VTradeApplyDetailResponse getApplyDetail(@PathVariable String code) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var detail = compTradeApplyService.tradeApplyDetail(code,session.getSession().getCompanyCode());
+        var detail = compTradeApplyService.getTradeApplyDetail(code,session.getSession().getCompanyCode());
         return VTradeApplyDetailResponse.builder()
             .code(200)
             .message("获取数据成功")
@@ -296,5 +296,15 @@ public class EnrolledCompanyController {
             .build();
     }
 
-
+    /**
+     * 始终拒绝名单
+     * @return 返回始终拒绝名单
+     */
+    @GetMapping("/enrolled/company/apply/refused")
+    public VRefusedListResponse listRefused(){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        return null;
+    }
 }

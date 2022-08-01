@@ -50,7 +50,7 @@ public class ProductService {
      * @return 产品一级二级分类信息列表
      */
     @Cacheable(value = "product_class;1800", unless = "#result == null")
-    public List<TProductClass> productClassList(String type) {
+    public List<TProductClass> listProductClasses(String type) {
         return mainProductClassRepository.findMainProductClassByBaseProductClassId_Type(type).stream()
              .map(mainProductClassMapper::toDTO)
             .collect(Collectors.toList());
@@ -62,7 +62,7 @@ public class ProductService {
      * @return 产品对照表信息列表
      */
     @Cacheable(value = "product_compare;1800", unless = "#result == null")
-    public List<TCompareDetail> productDrivesList(String name) {
+    public List<TCompareDetail> listProductDrives(String name) {
         return sysCompareTableRepository.findSysCompareTableByName(name).getList().stream()
             .map(sysCompareDetailMapper::toCompareDetail)
             .collect(Collectors.toList());
@@ -79,16 +79,16 @@ public class ProductService {
      * @param pageable 分页
      * @return 产品列表信息
      */
-    public VProductPageResponse  productList(List<String> brands, String classes, String material
+    public VProductPageResponse  pageProducts(List<String> brands, String classes, String material
 
         , String drive, String connection1, String connection2,  Pageable pageable){
 
         //根据条件查询产品信息
-        List<TProduct> products = findProductAll(brands, classes, material, drive, connection1, connection2).stream()
+        List<TProduct> products = listProductsAll(brands, classes, material, drive, connection1, connection2).stream()
             .map(productMapper::toProduct)
             .collect(Collectors.toList());
         if(products.size()==0){
-            products = findProductAll(new ArrayList<>(), classes, material, drive, connection1, connection2).stream()
+            products = listProductsAll(new ArrayList<>(), classes, material, drive, connection1, connection2).stream()
                 .map(productMapper::toProduct)
                 .collect(Collectors.toList());
             Page<TProduct> otherProductPage = PageTools.listConvertToPage(products,pageable);
@@ -124,7 +124,7 @@ public class ProductService {
      * @return 产品列表
      */
     @Cacheable(value = "products;1800", unless = "#result == null")
-    public  List<Product>  findProductAll(List<String> brands, String classes, String material
+    public  List<Product>  listProductsAll(List<String> brands, String classes, String material
         , String drive, String connection1, String connection2){
         //根据条件查询产品信息
         QProduct qProduct = QProduct.product;
@@ -152,7 +152,7 @@ public class ProductService {
      * @return 产品详细信息
      */
     @Cacheable(value = "productDetail;1800", unless = "#result == null")
-    public Optional<TProduct> findProduct(String productId){
+    public Optional<TProduct> getProduct(String productId){
         return productRepository.findById(productId)
             .map(productMapper::toProduct)
             ;
@@ -164,7 +164,7 @@ public class ProductService {
      * @return 产品列表信息
      */
     @Cacheable(value = "productsByCode;1800",key = "T(String).valueOf(#productCode)", unless = "#result == null")
-    public List<TProduct> productsByCode(String productCode){
+    public List<TProduct> listProductsByCode(String productCode){
         return   productRepository.findProductByCode(productCode).stream()
             .map(productMapper::toProduct).collect(Collectors.toList());
     }

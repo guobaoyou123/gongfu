@@ -42,7 +42,7 @@ public class CompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var company = companyService.findCompanyDetail(session.getSession().getCompanyCode());
+        var company = companyService.getCompany(session.getSession().getCompanyCode());
         return VCompanyResponse.builder()
             .code(200)
             .message("获取供应商详情成功")
@@ -111,7 +111,7 @@ public class CompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var page=operatorService.getOperatorPage(
+        var page=operatorService.pageOperators(
             PageRequest.of(pageNum.map(PageTools::verificationPageNum).orElse(0),pageSize.map(PageTools::verificationPageSize).orElse(10)),
             session.getSession().getCompanyCode(),
             state.orElse("1"),
@@ -136,7 +136,7 @@ public class CompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var operator = operatorService.findOperatorDetail(session.getSession().getCompanyCode(),code)
+        var operator = operatorService.getOperatorDetail(session.getSession().getCompanyCode(),code)
             .map(operatorMapper::toOperatorDetailDTOs).orElseThrow();
         return VOperatorDetailResponse.builder()
              .code(200)
@@ -169,11 +169,11 @@ public class CompanyController {
      * @return 返回添加成功或者失败信息
      */
     @PostMapping("/company/operator/detail")
-    public VResetPasswordResponse addOperator(@RequestBody VOperatorRequest operator){
+    public VResetPasswordResponse saveOperator(@RequestBody VOperatorRequest operator){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var password = operatorService.addOperator(session.getSession().getCompanyCode(),operator);
+        var password = operatorService.saveOperator(session.getSession().getCompanyCode(),operator);
         return  VResetPasswordResponse.builder()
             .code(password!=null?200:500)
             .message(password!=null?"添加成功":"添加失败")
@@ -186,11 +186,11 @@ public class CompanyController {
      * @return 返回场景列表
      */
     @GetMapping("/company/scenes")
-    public VSceneListResponse findScenes() throws IOException {
+    public VSceneListResponse scenes() throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var scenes = sceneService.findScenes(session.getSession().getCompanyCode())
+        var scenes = sceneService.listScenes(session.getSession().getCompanyCode())
             .stream().map(sceneMapper::toDTO)
             .map(sceneMapper::toVScene).toList();
         return VSceneListResponse.builder()
@@ -247,7 +247,7 @@ public class CompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var list = operatorService.findOperatorList(session.getSession().getCompanyCode())
+        var list = operatorService.listOperators(session.getSession().getCompanyCode())
             .stream().map(operatorMapper::toOperatorDTOs)
             .toList();
         return VOperatorListResponse.builder()

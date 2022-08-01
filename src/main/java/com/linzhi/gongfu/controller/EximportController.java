@@ -169,7 +169,7 @@ public class EximportController {
     public Map<String,Object> findTaxModelAndEnCode(String id,String type) throws IOException {
         Map<String,Object> map = new HashMap<>();
         if(type.equals("1")){
-            var inquiry = inquiryService.findInquiry(id).orElseThrow(()->new IOException("没有从数据库中找到该询价单"));
+            var inquiry = inquiryService.getInquiry(id).orElseThrow(()->new IOException("没有从数据库中找到该询价单"));
             map.put("taxMode",inquiry.getOfferMode());
             map.put("encode",inquiry.getCode());
         }else{

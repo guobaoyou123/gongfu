@@ -29,10 +29,10 @@ public interface ContractRevisionDetailRepository
         "left join contract_rev re on re.id=b.id and re.revision = (select MAX(e.revision) from contract_rev e  where e.id = re.id)\n" +
         "left join contract_rev pre on pre.id=re.id and pre.revision = (re.revision-1) \n" +
         "where r.revision=?1 and r.id=?2",nativeQuery = true)
-    Optional<ContractRevisionDetail> findDetail(int revision,String id);
+    Optional<ContractRevisionDetail> getDetail(int revision,String id);
 
     @Query(value = "select d.contractRevisionId.revision as revision,d.createdAt as createdAt from ContractRevisionDetail d where d.contractRevisionId.id=?1")
-    List<Map<String,Object>> findRevisionList(String id );
+    List<Map<String,Object>> listRevision(String id );
 
     @Modifying
     @Query(value="update   contract_rev  set total_price=?1 ,total_price_vat=?2,vat=?3 ,modified_at=?4,modified_by=?5 where  id=?6 and revision=?7 ",
@@ -40,5 +40,5 @@ public interface ContractRevisionDetailRepository
     void  updateContract(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, LocalDateTime localDateTime,String operator, String id, int revision);
 
     @Query(value = "select max(c.contractRevisionId.revision)   from ContractRevisionDetail as c where c.contractRevisionId.id=?1")
-    Optional<String> findMaxRevision(String id);
+    Optional<String> getMaxRevision(String id);
 }

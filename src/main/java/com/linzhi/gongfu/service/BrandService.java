@@ -45,9 +45,9 @@ public class BrandService {
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 品牌信息列表
      */
-    public Page<TBrand> brandsPageById(String id, Optional<String> pageNum, Optional<String> pageSize) {
+    public Page<TBrand> pageBrands(String id, Optional<String> pageNum, Optional<String> pageSize) {
         //根据单位id查询全部品牌信息（包括自营、经营、授权等信息）
-         List<TBrand> list= findBrandsAllById(id);
+         List<TBrand> list= listBrandsAll(id);
         //分页
         Pageable pageable = PageRequest.of(
             pageNum.map(PageTools::verificationPageNum).orElse(0),
@@ -62,7 +62,7 @@ public class BrandService {
      * @return 品牌列表
      */
     @Cacheable(value = "brands_ID;1800" ,key = "#id", unless = "#result == null")
-    public  List<TBrand> findBrandsAllById(String id){
+    public  List<TBrand> listBrandsAll(String id){
        //查询系统所有品牌
        Iterable<Brand> brandsIterable =brandRepository.findAll();
        //查询经营品牌
@@ -113,7 +113,7 @@ public class BrandService {
      * @return 供应商信息列表
      */
     @Cacheable(value = "brands;1800", unless = "#result == null")
-    public Set<TBrand> brandList() {
+    public Set<TBrand> listBrands() {
         return StreamSupport.stream(dcBrandRepository.findAll().spliterator(), false)
              .sorted(Comparator.comparingInt(DcBrand::getSort))
              .map(brandMapper::toBrand)
@@ -126,7 +126,7 @@ public class BrandService {
      * @return 品牌列表
      */
     @Cacheable(value = "brands_class;1800",key="#classes", unless = "#result == null")
-    public Set<TBrand> brandListByClass(Optional<String>  classes){
+    public Set<TBrand> listBrandsByClass(Optional<String>  classes){
         return   viewBrandRepository.findViewBrandByClass2AndStateOrderBySortDescCodeAsc(classes.orElse(null),Availability.ENABLED).stream()
                      .map(brandMapper::toViewBrand)
                      .collect(Collectors.toSet());
@@ -139,7 +139,7 @@ public class BrandService {
      * @return 品牌列表
      */
     @Cacheable(value = "brands_company;1800", unless = "#result == null")
-    public List<TBrand> brandListBySuppliers(Optional<List<String>>  company,String id){
+    public List<TBrand> listBrandsBySuppliers(Optional<List<String>>  company,String id){
         QDcBrand qDcBrand = QDcBrand.dcBrand;
         QCompTradBrand compTradBrand = QCompTradBrand.compTradBrand;
         List<DcBrand> dcBrands= queryFactory.selectDistinct(qDcBrand).from(compTradBrand)

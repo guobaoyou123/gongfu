@@ -9,7 +9,7 @@ public interface InquiryDetailRepository extends CrudRepository<InquiryDetail,St
     @Query(value="select  right(('000'+cast((cast(max(right(code,3)) as int)+1) as varchar)),3) from inquiry_base  where  created_by_comp=?1 and created_by=?2\n" +
         "             and DateDiff(dd,created_at,GETDATE())=0 ",
         nativeQuery = true)
-    String findMaxCode(String dcCompId, String createdBy);
+    String getMaxCode(String dcCompId, String createdBy);
 
 
 

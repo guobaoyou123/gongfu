@@ -38,7 +38,7 @@ public class ProductController {
      */
     @GetMapping("/product/classes")
     public VProductClassResponse productClasses() {
-        var classList =   productService.productClassList("001")
+        var classList =   productService.listProductClasses("001")
             .stream()
             .map(mainProductClassMapper::toPreloadMainProductClass)
             .collect(Collectors.toList());
@@ -56,7 +56,7 @@ public class ProductController {
      */
     @GetMapping("/product/drives")
     public VDriversResponse productDrives() {
-        var drivers=productService.productDrivesList("驱动方式").stream()
+        var drivers=productService.listProductDrives("驱动方式").stream()
             .map(sysCompareDetailMapper::toPreloadDriver)
             .collect(Collectors.toList());
         return VDriversResponse.builder()
@@ -72,7 +72,7 @@ public class ProductController {
      */
     @GetMapping("/product/materials")
     public VMaterialResponse productMaterials() {
-        var materials =   productService.productClassList("002").stream()
+        var materials =   productService.listProductClasses("002").stream()
             .map(mainProductClassMapper::toPreloadMainMaterial)
             .collect(Collectors.toList());
         return VMaterialResponse.builder()
@@ -88,7 +88,7 @@ public class ProductController {
      */
     @GetMapping("/product/connections")
     public VConnectionsResponse productConnections() {
-        var connections=productService.productDrivesList("连接方式")
+        var connections=productService.listProductDrives("连接方式")
             .stream()
             .map(sysCompareDetailMapper::toPreloadConnection)
             .collect(Collectors.toList());
@@ -114,7 +114,7 @@ public class ProductController {
         @RequestParam("pageSize")Optional<String> pageSize,
         @RequestParam("pageNum")Optional<String> pageNum){
 
-        return productService.productList(
+        return productService.pageProducts(
             brands.orElse(new ArrayList<>()),
             classes.orElse(""),
             material.orElse(""),
@@ -135,7 +135,7 @@ public class ProductController {
     @GetMapping("/product/{productCode}")
     public VProductListResponse productsByCode(
         @PathVariable Optional<String> productCode){
-        var productList = productService.productsByCode(productCode.orElse(""));
+        var productList = productService.listProductsByCode(productCode.orElse(""));
         if(productList.size()==0)
             return VProductListResponse.builder()
                 .code(404)
@@ -157,7 +157,7 @@ public class ProductController {
    @GetMapping("/product/detail")
     public  VProductDetailResponse     productDetail(@RequestParam("productId")Optional<String> productId){
         var productDetail = productId
-            .flatMap(productService::findProduct)
+            .flatMap(productService::getProduct)
             .map(productMapper::tProductDetail);
         if(productDetail.isEmpty())
             return  VProductDetailResponse.builder()

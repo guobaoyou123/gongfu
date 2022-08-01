@@ -49,7 +49,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var temporaryPlans = planService.findTemporaryPlanByOperator(
+        var temporaryPlans = planService.listTemporaryPlansByOperator(
                TemporaryPlanId.builder()
                  .createdBy(session.getSession().getOperatorCode())
                  .dcCompId(session.getSession().getCompanyCode())
@@ -108,11 +108,11 @@ public class ContractController {
      * @return 返回成功信息
      */
     @DeleteMapping("/contract/temporary/purchase/plan")
-    public VBaseResponse  deleteTemporaryPlan(@RequestParam("products") List<String> products){
+    public VBaseResponse  removeTemporaryPlan(@RequestParam("products") List<String> products){
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = planService.deleteTemporaryPlan(
+        var flag = planService.removeTemporaryPlan(
             products,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode());
@@ -167,7 +167,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        return  planService.findPurchasePlanByCode(
+        return  planService.getPurchasePlan(
             session.getSession().getCompanyCode(),
                 session.getSession().getOperatorCode()
             )
@@ -280,7 +280,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = planService.deletePlanProduct(
+        var flag = planService.removePlanProduct(
             session.getSession().getCompanyCode(),
             productId,planCode
         );
@@ -300,7 +300,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = planService.deletePurchasePlan(
+        var flag = planService.removePurchasePlan(
             session.getSession().getCompanyCode(),
             planCode.orElseGet(String::new)
         );
@@ -319,7 +319,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var supplier = planService.findSuppliersByPlanCode(
+        var supplier = planService.listSuppliersByPlanCode(
             planCode.orElseGet(String::new),
             session.getSession().getCompanyCode()
         );
@@ -384,7 +384,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var list = inquiryService.inquiryList(
+        var list = inquiryService.listInquiries(
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),"0"
         );
@@ -408,7 +408,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var list = inquiryService.unfinishedInquiry(session.getSession().getCompanyCode(),
+        var list = inquiryService.listUnfinishedInquiries(session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
             supplierCode);
         return VUnfinishedInquiryListResponse.builder()
@@ -444,7 +444,7 @@ public class ContractController {
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10)
         );
-        var page = inquiryService.inquiryHistoryPage(session.getSession().getCompanyCode(),
+        var page = inquiryService.pageInquiryHistories(session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),supplierCode.orElse(""),startTime.orElse(""),endTime.orElse(""),
             state.orElse("1"),pageable);
         return  VInquiryPageResponse.builder()
@@ -465,7 +465,7 @@ public class ContractController {
     @GetMapping("/contract/purchase/inquiry/{id}")
     public VInquiryDetailResponse inquiryDetail(@PathVariable("id") Optional<String> id){
 
-        var inquiry =id.map(inquiryService::inquiryDetail)
+        var inquiry =id.map(inquiryService::getInquiryDetail)
             .map(inquiryMapper::toVInquiryDetail);
         if(inquiry.isPresent())
             return VInquiryDetailResponse.builder()
@@ -490,7 +490,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var code = inquiryService.emptyInquiry(
+        var code = inquiryService.saveEmptyInquiry(
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),
             session.getSession().getOperatorCode(),
@@ -552,9 +552,9 @@ public class ContractController {
      * @return 返回成功或者失败信息
      */
     @DeleteMapping("/contract/purchase/inquiry/{id}/product")
-    public VBaseResponse deleteInquiryProduct(@RequestParam("codes")List<Integer> codes,@PathVariable("id")String id){
+    public VBaseResponse removeInquiryProduct(@RequestParam("codes")List<Integer> codes,@PathVariable("id")String id){
 
-        var flag =  inquiryService.deleteInquiryProduct(id,codes);
+        var flag =  inquiryService.removeInquiryProduct(id,codes);
         return  VBaseResponse.builder()
             .code(flag?200:500)
             .message(flag?"删除产品成功":"删除产品失败")
@@ -591,7 +591,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = inquiryService.deleteInquiry(
+        var flag = inquiryService.removeInquiry(
             id,
             session.getSession().getCompanyCode()
         );
@@ -615,7 +615,7 @@ public class ContractController {
         String  contractCodes = "";
         //判断是否需要进行判断是否有重复的合同
         if(!contractRequest.isEnforce())
-            contractCodes =contractService.findContractProductRepeat(contractRequest.getInquiryId()).orElse("");
+            contractCodes =contractService.getContractProductRepeat(contractRequest.getInquiryId()).orElse("");
         if(!contractCodes.equals(""))
             return  VBaseResponse.builder()
                 .code(201)
@@ -634,9 +634,9 @@ public class ContractController {
      * @return 返回税率列表信息
      */
     @GetMapping("/contract/taxRate")
-    public VTaxRateResponse findTaxRate(@RequestParam("type")String type){
+    public VTaxRateResponse listTaxRates(@RequestParam("type")String type){
 
-        var list = contractService.findTaxRates(type);
+        var list = contractService.listTaxRates(type);
         return VTaxRateResponse.builder()
             .code(200)
             .message("获取税率列表成功")
@@ -691,7 +691,7 @@ public class ContractController {
      * @return 采购合同列表分页
      */
     @GetMapping("/contract/purchase")
-    public VPContractPageResponse contractPage(@RequestParam("supplierCode") Optional<String> supplierCode,
+    public VPContractPageResponse pageContracts(@RequestParam("supplierCode") Optional<String> supplierCode,
                                                @RequestParam("startTime") Optional<String> startTime,
                                                @RequestParam("endTime") Optional<String> endTime,
                                                @RequestParam("state") Optional<String> state,
@@ -706,7 +706,7 @@ public class ContractController {
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10)
         );
-        var page = contractService.findContractPage(
+        var page = contractService.pageContracts(
             state.orElse("0"),
             supplierCode.orElse(""),
             startTime.orElse(""),
@@ -740,7 +740,7 @@ public class ContractController {
 
         boolean repetitive =false;
         //查询采购合同
-         var contract= contractService.purchaseContractDetail(id,revision);
+         var contract= contractService.getPurchaseContractDetail(id,revision);
          //如果合同版本号大于1且状态为未完成，需要判断是否已上一版内容一致
         if(revision >1&&contract.getState().equals(ContractState.UN_FINISHED.getState()+""))
             repetitive = contractService.judgeContractRev(id, revision);
@@ -856,7 +856,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = contractService.deleteContractProduct(
+        var flag = contractService.removeContractProduct(
             codes,
             id,
             revision,
@@ -882,7 +882,7 @@ public class ContractController {
         var revision = contractService.modifyContractState(id,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
-            contractService.findMaxRevision(id)
+            contractService.getMaxRevision(id)
         );
         return VPContractRevisionResponse.builder()
             .code(revision ==0?500:200)
@@ -969,9 +969,9 @@ public class ContractController {
                 .code(500)
                 .message("该版本已撤销")
                 .build();
-        contractService.cancelCurrentRevision(
+        contractService.removeCurrentRevision(
             id,
-            contractService.findMaxRevision(id),
+            contractService.getMaxRevision(id),
             contract,session.getSession().getCompanyCode()
         );
 
@@ -1076,11 +1076,11 @@ public class ContractController {
      * @return 返回成功或者失败
      */
     @DeleteMapping("/contract/purchase/{id}")
-    public VBaseResponse cancelPurchaseContract(@PathVariable String id ){
+    public VBaseResponse removePurchaseContract(@PathVariable String id ){
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        contractService.cancelPurchaseContract(
+        contractService.removePurchaseContract(
             id,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()

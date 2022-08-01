@@ -44,7 +44,7 @@ public interface CompTradeApplyRepository extends CrudRepository<CompTradeApply,
     @Cacheable(value="trade_apply_history_List;1800", key="#companyCode")
     @Query(value = "select * from comp_trade_apply\n" +
         "where created_comp_by=?1 or(handled_comp_by=?1 and state<>'0')",nativeQuery = true)
-    List<CompTradeApply> findApplyHistory(String companyCode);
+    List<CompTradeApply> listApplyHistories(String companyCode);
 
     /**
      * 查询申请记录详情

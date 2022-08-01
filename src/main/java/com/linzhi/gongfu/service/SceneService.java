@@ -33,7 +33,7 @@ public class SceneService {
      * @throws IOException 异常
      */
     @Cacheable(value = "scene_List;1800", unless = "#result == null",key = "#companyCode")
-    public List<Scene> findScenes(String companyCode) throws IOException {
+    public List<Scene> listScenes(String companyCode) throws IOException {
         EnrolledCompany enrolledCompany = enrolledCompanyRepository.findById(companyCode).orElseThrow(()->new IOException("未从数据库中找到"));
         List<CompanyRole> companyRoles =new ArrayList<>();
         Arrays.stream(enrolledCompany.getDetails().getRole().split(",")).toList().forEach(s -> companyRoles.add(CompanyRole.valueBySign(s).get()));

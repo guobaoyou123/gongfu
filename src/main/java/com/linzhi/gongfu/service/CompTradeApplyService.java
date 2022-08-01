@@ -142,7 +142,7 @@ public class CompTradeApplyService {
      * @param name 公司名称
      * @return 返回待处理列表
      */
-    public Page<VTradeApplyPageResponse.VTradeApply> tradeApplyPage(String companyCode, Pageable pageable, String name){
+    public Page<VTradeApplyPageResponse.VTradeApply> pageTradeApplies(String companyCode, Pageable pageable, String name){
          List<VTradeApplyPageResponse.VTradeApply> compTradeApplies=  compTradeApplyRepository.findByHandledCompByAndStateAndTypeOrderByCreatedAtDesc(companyCode,TradeApply.APPLYING,"1")
              .stream().filter(compTradeApply -> compTradeApply.getCreatedCompany().getNameInCN().contains(name))
              .map(compTradeApplyMapper::toTComTradeApply)
@@ -329,7 +329,7 @@ public class CompTradeApplyService {
      * @param pageable 分页
      * @return 返回申请历史记录列表
      */
-    public Page<VTradeApplyHistoryResponse.VApply> applyHistoryPage(
+    public Page<VTradeApplyHistoryResponse.VApply> pageApplyHistories(
         String startTime,
         String endTime,
         String type,
@@ -337,7 +337,7 @@ public class CompTradeApplyService {
         Pageable pageable,
         String companyCode
     ){
-        List<TCompTradeApply> compTradeApplies=compTradeApplyRepository.findApplyHistory(companyCode).stream()
+        List<TCompTradeApply> compTradeApplies=compTradeApplyRepository.listApplyHistories(companyCode).stream()
             .filter(compTradeApply -> {
                 if(compTradeApply.getCreatedCompBy().equals(companyCode)){
 
@@ -376,7 +376,7 @@ public class CompTradeApplyService {
      *  @param companyCode 公司编码
      * @return 格友公司可见详情
      */
-    public Optional<VEnrolledCompanyResponse.VCompany> refuseEnrolledCompanyDetail(
+    public Optional<VEnrolledCompanyResponse.VCompany> getRefuseEnrolledCompanyDetail(
         String enrolledCode,
         String companyCode
     ) throws IOException {
@@ -395,7 +395,7 @@ public class CompTradeApplyService {
      * @param code 申请记录编码
      * @param companyCode 本单位编码
      */
-    public  Optional<VTradeApplyDetailResponse.VApply>  tradeApplyDetail(String code,String companyCode) throws IOException {
+    public  Optional<VTradeApplyDetailResponse.VApply>  getTradeApplyDetail(String code,String companyCode) throws IOException {
 
          CompTradeApply compTradeApply = compTradeApplyRepository.findById(code).orElseThrow(()->new IOException("未查询到数据"));
          TCompTradeApply tradeApply = compTradeApplyMapper.toEnrolledCompanyDetail(compTradeApply,companyCode);
@@ -411,5 +411,9 @@ public class CompTradeApplyService {
              tradeApply.setTaxModel(compTrad.getTaxModel().getTaxMode()+"");
          }
          return  Optional.of(tradeApply).map(compTradeApplyMapper::toApplyDetail);
+    }
+
+    public void  listRefused(){
+
     }
 }

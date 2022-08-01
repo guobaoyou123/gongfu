@@ -34,13 +34,13 @@ public class BrandController {
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
      */
     @GetMapping("/brands/paged")
-    public VBrandPageResponse brandsPage(
+    public VBrandPageResponse pageBrands(
         @RequestParam("pageNum") Optional<String> pageNum,
         @RequestParam("pageSize") Optional<String> pageSize
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var brandPage = brandService.brandsPageById(
+        var brandPage = brandService.pageBrands(
            session.getSession().getCompanyCode(),
            pageNum,
            pageSize
@@ -62,8 +62,8 @@ public class BrandController {
      * @return 对系统所有的品牌信息
      */
     @GetMapping("/brands")
-    public VDcBrandResponse brandsList() {
-        var brandList = brandService.brandList();
+    public VDcBrandResponse listBrands() {
+        var brandList = brandService.listBrands();
         return VDcBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
@@ -79,8 +79,8 @@ public class BrandController {
      * @return 对系统所有的品牌信息
      */
     @GetMapping("/brands/by/class")
-    public VDcBrandResponse brandsByClass(@RequestParam("class") Optional<String> classes) {
-        var brandList = brandService.brandListByClass(classes);
+    public VDcBrandResponse listBrandsByClass(@RequestParam("class") Optional<String> classes) {
+        var brandList = brandService.listBrandsByClass(classes);
         return VDcBrandResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
@@ -96,10 +96,10 @@ public class BrandController {
      * @return 对系统所有的品牌信息
      */
     @GetMapping("/brands/by/company")
-    public VDcBrandResponse brandsByCompany(@RequestParam("company") Optional<List<String>> company) {
+    public VDcBrandResponse listBrandsBySuppliers(@RequestParam("company") Optional<List<String>> company) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var brandList = brandService.brandListBySuppliers(
+        var brandList = brandService.listBrandsBySuppliers(
             company,
             session.getSession().getCompanyCode()
         );

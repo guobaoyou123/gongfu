@@ -67,8 +67,8 @@ public class OperatorService {
      *  @param state 状态
      * @return 公司人员列表
      */
-    public Page<VOperatorPageResponse.VOperator> getOperatorPage(Pageable pageable, String companyCode, String state,String keyWord){
-        List<VOperatorPageResponse.VOperator> operatorList= operatorList(companyCode,state).stream()
+    public Page<VOperatorPageResponse.VOperator> pageOperators(Pageable pageable, String companyCode, String state,String keyWord){
+        List<VOperatorPageResponse.VOperator> operatorList= listOperators(companyCode,state).stream()
             .map(operatorMapper::toOperatorDetailDTO)
             .map(operatorMapper::toVOperatorDTO)
             .toList();
@@ -87,7 +87,7 @@ public class OperatorService {
      * @return 人员列表
      */
     @Cacheable(value = "Operator_List;1800", key = "#companyCode+'-'+#state")
-    public List<OperatorDetail>  operatorList(String companyCode,String state){
+    public List<OperatorDetail>  listOperators(String companyCode,String state){
         return operatorDetailRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(state.equals("0")? Availability.DISABLED:Availability.ENABLED,
             companyCode,
             "000");
@@ -100,7 +100,7 @@ public class OperatorService {
      * @return 人员详情
      */
     @Cacheable(value = "Operator_detail;1800", key = "#companyCode+'-'+#operatorCode")
-    public Optional<OperatorDetail> operatorDetail(String companyCode, String operatorCode){
+    public Optional<OperatorDetail> getOperator(String companyCode, String operatorCode){
              return  operatorDetailRepository.findById(OperatorId.builder()
                      .companyCode(companyCode)
                      .operatorCode(operatorCode)
@@ -124,8 +124,8 @@ public class OperatorService {
      * @param operatorCode 操作员编码
      * @return 操作员详情
      */
-    public  Optional<TOperatorInfo> findOperatorDetail(String companyCode, String operatorCode) throws IOException {
-       Optional<TOperatorInfo> operator =  operatorDetail( companyCode, operatorCode)
+    public  Optional<TOperatorInfo> getOperatorDetail(String companyCode, String operatorCode) throws IOException {
+       Optional<TOperatorInfo> operator =  getOperator( companyCode, operatorCode)
             .map(operatorMapper::toOperatorDetailDTO);
        Set<TScene> tScenes=findScene( companyCode, operatorCode).stream().map(sceneMapper::toDTO).collect(Collectors.toSet());
        operator.orElseThrow(()->new IOException("未查询到数据")).setScenes(tScenes);
@@ -138,7 +138,7 @@ public class OperatorService {
      * @return 返回人员权限列表
      */
     @Cacheable(value = "Operator_scene_statistics;1800", key = "#companyCode")
-    public List<TOperatorInfo> findOperatorList(String companyCode){
+    public List<TOperatorInfo> listOperators(String companyCode){
         return   operatorRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(
                    Availability.ENABLED,
                    companyCode,
@@ -163,7 +163,7 @@ public class OperatorService {
     @Transactional
     public boolean modifyOperator(String companyCode, String operatorCode, VOperatorRequest operatorRequest){
         try {
-            OperatorDetail operatorDetail = operatorDetail(companyCode,operatorCode)
+            OperatorDetail operatorDetail = getOperator(companyCode,operatorCode)
                 .orElseThrow(()->new IOException("为从数据库找到"));
             operatorDetail.setName(operatorRequest.getName());
             operatorDetail.setBirthday(operatorRequest.getBirthday()==null?null:LocalDate.parse(operatorRequest.getBirthday()));
@@ -195,7 +195,7 @@ public class OperatorService {
         @CacheEvict(value = "Operator_scene_statistics;1800", key = "#companyCode")
     })
     @Transactional
-    public String addOperator(String companyCode,VOperatorRequest operatorRequest){
+    public String saveOperator(String companyCode,VOperatorRequest operatorRequest){
         try{
             String maxCode = operatorDetailRepository.findMaxCode(companyCode).orElse("001");
             String  password = RNGUtil.getLowerLetter(3) + RNGUtil.getNumber(3);
@@ -351,7 +351,7 @@ public class OperatorService {
     @Transactional
     public boolean modifyOperatorState(String code,String companyCode,String state){
        try{
-           OperatorDetail operator = operatorDetail(companyCode,code).orElseThrow(()->new IOException("没有从数据库中找到"));
+           OperatorDetail operator = getOperator(companyCode,code).orElseThrow(()->new IOException("没有从数据库中找到"));
            operator.setState(state.equals("0")?Availability.DISABLED:Availability.ENABLED);
            operatorDetailRepository.save(operator);
            return true;

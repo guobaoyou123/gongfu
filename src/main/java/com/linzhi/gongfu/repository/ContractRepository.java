@@ -60,7 +60,7 @@ public interface ContractRepository
         "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<ContractList> findContractList(String compId, String operator, String  type, String  state);
+    List<ContractList> listContracts(String compId, String operator, String  type, String  state);
 
     @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code,d.revision as revision ,d.saler_order_code as supplierContractNo ," +
         "case b.state when '0' then count(distinct t.product_id)\n" +
@@ -93,5 +93,5 @@ public interface ContractRepository
         "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<ContractList> findContractList(String compId, String  type, String  state);
+    List<ContractList> listContracts(String compId, String  type, String  state);
 }

@@ -69,12 +69,12 @@ public class CompanyService {
      * @param id 本单位id，页码 pageNum,页数 pageSize
      * @return 供应商信息列表
      */
-    public Page<VSuppliersPageResponse.VSupplier> suppliersPage(String id,
+    public Page<VSuppliersPageResponse.VSupplier> pageSuppliers(String id,
                                                                           Optional<String> pageNum,
                                                                           Optional<String> pageSize
     ) {
 
-        List<CompTrad> compTradList=findSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
+        List<CompTrad> compTradList=listSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
         List<TCompanyIncludeBrand>  tCompanyIncludeBrandList=compTradList.stream()
             .map(compTradeMapper::toSuppliersIncludeBrand)
             .filter(t -> t.getState().equals("1"))
@@ -125,7 +125,7 @@ public class CompanyService {
      * @return 供应商税模式列表
      */
     @Cacheable(value = "SupplierAndBrand;1800", unless = "#result == null",key = "#compBuyer")
-    public  List<CompTrad> findSuppliersByCompTradIdCompBuyerAndState(String compBuyer, Trade state){
+    public  List<CompTrad> listSuppliersByCompTradIdCompBuyerAndState(String compBuyer, Trade state){
         return  compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(compBuyer,state);
     }
 
@@ -136,7 +136,7 @@ public class CompanyService {
      * @return 返回供应商列表
      */
     @Cacheable(value = "suppliers_brands;1800", unless = "#result == null",key = "T(String).valueOf(#brands)")
-    public List<TCompanyBaseInformation> findSuppliersByBrands(List<String> brands,String id){
+    public List<TCompanyBaseInformation> listSuppliersByBrands(List<String> brands,String id){
         QCompany qCompany = QCompany.company;
         QCompTradBrand qCompTradBrand = QCompTradBrand.compTradBrand;
 
@@ -161,7 +161,7 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回外供应商列表
      */
-   public List<TCompanyBaseInformation> findForeignSuppliers(String companyCode){
+   public List<TCompanyBaseInformation> listForeignSuppliers(String companyCode){
        QCompany qCompany = QCompany.company;
        QCompTrad qCompTrad = QCompTrad.compTrad;
        JPAQuery<Company> query =  queryFactory.selectDistinct(qCompany).from(qCompany).leftJoin(qCompTrad)
@@ -183,7 +183,7 @@ public class CompanyService {
      * @return 返回详细信息
      */
     @Cacheable(value = "supplierDetail;1800", unless = "#result == null ",key = "#companyCode+'-'+#code")
-   public VForeignSupplierResponse.VSupplier findForeignSupplierDetail(String code, String companyCode){
+   public VForeignSupplierResponse.VSupplier getForeignSupplierDetail(String code, String companyCode){
 
        var trade =compTradeRepository.findById(CompTradId.builder()
               .compSaler(code)
@@ -402,7 +402,7 @@ public class CompanyService {
      * @param companyCode 单位编码
      * @return 返回详细信息
      */
-    public VCompanyResponse.VCompany findCompanyDetail(String companyCode) throws Exception {
+    public VCompanyResponse.VCompany getCompany(String companyCode) throws Exception {
         return  enrolledCompanyRepository.findById(companyCode).map(companyMapper::toCompDetail)
            .map(companyMapper::toCompanyDetail).orElseThrow(()->new IOException("未找到公司信息"));
     }
@@ -490,7 +490,7 @@ public class CompanyService {
      * @param pageable 分页
      * @return 入格单位信息列表
      */
-    public Page<VEnrolledCompanyPageResponse.VCompany> findEnrolledCompanyPage(String name,Pageable pageable,
+    public Page<VEnrolledCompanyPageResponse.VCompany> pageEnrolledCompanies(String name,Pageable pageable,
                                                                                String companyCode
     ){
          var list =  enrolledCompanyRepository.
@@ -514,7 +514,7 @@ public class CompanyService {
      * @param invitationCode 邀请码
      * @return 入格单位编码
      */
-    public Optional<String> findInvitationCode(String invitationCode){
+    public Optional<String> getECompanyCode(String invitationCode){
         Optional<CompInvitationCode> compInvitationCode=compInvitationCodeRepository.
             findCompInvitationCodeByCompInvitationCodeId_InvitationCode(invitationCode);
          if(compInvitationCode.isPresent()){
@@ -534,11 +534,11 @@ public class CompanyService {
      *  @param companyCode 公司编码
      * @return 格友公司可见详情
      */
-    public Optional<VEnrolledCompanyResponse.VCompany> findEnrolledCompany(String enrolledCode,
+    public Optional<VEnrolledCompanyResponse.VCompany> getEnrolledCompany(String enrolledCode,
                                                                            String companyCode
     )
         throws IOException {
-      var company = findEnrolledCompany(enrolledCode)
+      var company = getEnrolledCompanyDetail(enrolledCode)
           .orElseThrow(()->new IOException("未从数据库找到"));
         //是否为供应商
         var compTrad1 =   compTradeRepository.findById(CompTradId.builder()
@@ -574,7 +574,7 @@ public class CompanyService {
      * @param enrolledCode 公司编码
      * @return 公司可见详情
      */
-    public  Optional<VEnrolledCompanyResponse.VCompany>  findEnrolledCompany(String enrolledCode) {
+    public  Optional<VEnrolledCompanyResponse.VCompany>  getEnrolledCompanyDetail(String enrolledCode) {
         return     enrolledCompanyRepository.findById(enrolledCode).map(companyMapper::toEnrolledCompanyDetail)
             .map(companyMapper::toEnrolledCompanyDetail);
     }

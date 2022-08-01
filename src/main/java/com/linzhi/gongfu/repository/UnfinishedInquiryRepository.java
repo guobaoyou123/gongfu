@@ -14,5 +14,5 @@ public interface UnfinishedInquiryRepository
         "left join inquiry_record r on r.inquiry_id=b.id\n" +
         "where b.created_by_comp=?1 and b.created_by =?2 and b.saler_comp=?3 and b.state='0' \n" +
         "group by b.id,b.code ,b.total_price_vat",nativeQuery = true)
-    List<UnfinishedInquiry> findUnfinishedInquiry(String companyCode, String operator, String supplierCode);
+    List<UnfinishedInquiry> listUnfinishedInquiries(String companyCode, String operator, String supplierCode);
 }

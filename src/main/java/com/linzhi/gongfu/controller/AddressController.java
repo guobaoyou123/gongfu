@@ -42,7 +42,7 @@ public class AddressController {
         return VAreaResponse.builder()
             .code(200)
             .message("获取三级行政区划列表成功")
-            .areas(addressService.areas(session.getSession().getCompanyCode())
+            .areas(addressService.listAreas(session.getSession().getCompanyCode())
                 .stream().map(administrativeAreaMapper::toAreaDo)
                 .toList()
             )
@@ -58,7 +58,7 @@ public class AddressController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var list = addressService.findDisabledAreaByCompanyCode(session.getSession().getCompanyCode());
+        var list = addressService.listDisabledAreas(session.getSession().getCompanyCode());
         return  VDisableAreaResponse.builder()
             .code(200)
             .areas(list.stream()
@@ -101,11 +101,11 @@ public class AddressController {
      * @return 成功或者失败信息
      */
     @DeleteMapping("/area/disabled")
-    public  VBaseResponse deleteDisableArea(@RequestParam List<String> code){
+    public  VBaseResponse removeDisableArea(@RequestParam List<String> code){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var map = addressService.deleteDisablesAreaByCode(session.getSession().getCompanyCode(),code);
+        var map = addressService.removeDisablesArea(session.getSession().getCompanyCode(),code);
         return VBaseResponse.builder()
             .code((Integer) map.get("code"))
             .message((String) map.get("message"))
@@ -125,7 +125,7 @@ public class AddressController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var addresses = addressService.findAddressesByCompId(
+        var addresses = addressService.listTAddresses(
            session.getSession().getCompanyCode(),
            areaCode.orElseGet(String::new),
            address.orElseGet(String::new),
@@ -255,11 +255,11 @@ public class AddressController {
      * @return 联系人列表
      */
     @GetMapping("/contact")
-    public VCompContactsResponse contacts(@RequestParam("code") String code,@RequestParam("state") String state){
+    public VCompContactsResponse listContacts(@RequestParam("code") String code,@RequestParam("state") String state){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var list = addressService.findContactByAddrCode(
+        var list = addressService.listContacts(
             session.getSession().getOperatorCode(),
             session.getSession().getCompanyCode(),
             code,state

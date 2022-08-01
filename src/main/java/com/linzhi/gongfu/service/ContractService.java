@@ -76,9 +76,9 @@ public class ContractService {
      * @param inquiryId 询价单id
      * @return 返回 true 或者 false
      */
-    public Optional<String>  findContractProductRepeat(String inquiryId) throws IOException {
+    public Optional<String>  getContractProductRepeat(String inquiryId) throws IOException {
             //查询询价单详情
-            Inquiry inquiry = inquiryService.findInquiry(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
+            Inquiry inquiry = inquiryService.getInquiry(inquiryId).orElseThrow(()-> new IOException("数据库中找不到该询价单"));
             //询价单名称
             List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecord(inquiryId);
             //形成指纹
@@ -332,7 +332,7 @@ public class ContractService {
      * @param type 类型
      * @return 返回税率列表信息
      */
-    public  List<VTaxRateResponse.VTaxRates> findTaxRates(String type){
+    public  List<VTaxRateResponse.VTaxRates> listTaxRates(String type){
         return taxRatesRepository.findTaxRatesByUseCountryAndTypeAndState(
             "001",
             type.equals("1")?VatRateType.GOODS:VatRateType.SERVICE,
@@ -374,12 +374,12 @@ public class ContractService {
      * @param pageable 分页
      * @return 返回合同列表
      */
-    public Page<TContract>  findContractPage(String state, String supplierCode,
+    public Page<TContract>  pageContracts(String state, String supplierCode,
                                              String startTime, String endTime,
                                              String companyCode, String operator,
                                              Pageable pageable) throws Exception {
 
-        List<TContract> tContractList = findContractList(companyCode,operator,state);
+        List<TContract> tContractList = listContracts(companyCode,operator,state);
         if(!supplierCode.equals("")){
             tContractList = tContractList.stream().filter(tContract -> tContract.getSalerComp().equals(supplierCode)).toList();
         }
@@ -404,7 +404,7 @@ public class ContractService {
      * @return 返回合同列表
      */
    @Cacheable(value="purchase_contract_List;1800", key="#companyCode+'_'+#operator+'_'+#state")
-    public List<TContract> findContractList(String companyCode,String operator,String state) throws Exception{
+    public List<TContract> listContracts(String companyCode,String operator,String state) throws Exception{
 
             Operator operator1= operatorRepository.findById(
                     OperatorId.builder()
@@ -414,11 +414,11 @@ public class ContractService {
                 )
                 .orElseThrow(()-> new IOException("请求的操作员找不到"));
             if(operator1.getAdmin().equals(Whether.YES))
-                return contractRepository.findContractList(companyCode, InquiryType.INQUIRY_LIST.getType()+"", state)
+                return contractRepository.listContracts(companyCode, InquiryType.INQUIRY_LIST.getType()+"", state)
                     .stream()
                     .map(contractMapper::toContractList)
                     .toList();
-            return contractRepository.findContractList(companyCode,operator, InquiryType.INQUIRY_LIST.getType()+"", state)
+            return contractRepository.listContracts(companyCode,operator, InquiryType.INQUIRY_LIST.getType()+"", state)
                 .stream()
                 .map(contractMapper::toContractList)
                 .toList();
@@ -473,7 +473,7 @@ public class ContractService {
      * @return 返回合同详情
      * @throws IOException 异常
      */
-    public VPContractDetailResponse.VContract purchaseContractDetail(String id, int revision) throws IOException {
+    public VPContractDetailResponse.VContract getPurchaseContractDetail(String id, int revision) throws IOException {
         TContract contractRevision =getContractRevisionDetail(id, revision)
             .map(contractMapper::toTContractDetail)
             .orElseThrow(()->new IOException("数据库中未查询到该数据"));
@@ -500,7 +500,7 @@ public class ContractService {
      */
     @Cacheable(value = "contract_revision_detail;1800",key = "#id+'-'+#revision")
     public Optional<ContractRevisionDetail> getContractRevisionDetail(String id ,int revision){
-        return  contractRevisionDetailRepository.findDetail(revision, id);
+        return  contractRevisionDetailRepository.getDetail(revision, id);
     }
 
     /**
@@ -510,7 +510,7 @@ public class ContractService {
      */
     @Cacheable(value = "contract_revisions;1800",key="#id")
     public List<TRevision> revisionList(String id){
-        List<Map<String,Object>> list= contractRevisionDetailRepository.findRevisionList(id);
+        List<Map<String,Object>> list= contractRevisionDetailRepository.listRevision(id);
         List<TRevision> tRevisions = new ArrayList<>();
         list.forEach(map -> tRevisions.add(TRevision.builder()
                 .revision((int)map.get("revision"))
@@ -593,7 +593,7 @@ public class ContractService {
      */
     public int getUnFinished(String companyCode,String operator,String startTime, String endTime,String supplierCode) throws Exception {
 
-        var page =findContractPage(ContractState.UN_FINISHED.getState()+"",supplierCode,startTime,endTime,companyCode,operator, PageRequest.of(
+        var page =pageContracts(ContractState.UN_FINISHED.getState()+"",supplierCode,startTime,endTime,companyCode,operator, PageRequest.of(
            1,
            10
         ));
@@ -708,7 +708,7 @@ public class ContractService {
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public Boolean deleteContractProduct(List<Integer> codes,String id,int revision,String companyCode,String operator){
+    public Boolean removeContractProduct(List<Integer> codes,String id,int revision,String companyCode,String operator){
         try{
             List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.findContractRecordTempsByContractRecordTempId_ContractId(id).stream().filter(contractRecordTemp -> !codes.contains(contractRecordTemp.getContractRecordTempId().getCode()))
                 .toList();
@@ -733,8 +733,8 @@ public class ContractService {
      * @return 版本号
      * @throws IOException 异常
      */
-    public Integer findMaxRevision(String id) throws IOException {
-        return   Integer.parseInt(contractRevisionDetailRepository.findMaxRevision(id).orElseThrow(()->new IOException("不存在该合同")));
+    public Integer getMaxRevision(String id) throws IOException {
+        return   Integer.parseInt(contractRevisionDetailRepository.getMaxRevision(id).orElseThrow(()->new IOException("不存在该合同")));
     }
 
     /**
@@ -845,8 +845,8 @@ public class ContractService {
      * @return 返回是或者否
      */
     public boolean judgeContractRev(String id,Integer revision){
-        ContractRevisionDetail contractRevision = contractRevisionDetailRepository.findDetail(revision,id).orElseThrow();
-        ContractRevisionDetail perContractRevision = contractRevisionDetailRepository.findDetail(revision-1,id).orElseThrow();
+        ContractRevisionDetail contractRevision = contractRevisionDetailRepository.getDetail(revision,id).orElseThrow();
+        ContractRevisionDetail perContractRevision = contractRevisionDetailRepository.getDetail(revision-1,id).orElseThrow();
         List<ContractRecordTemp> contractRecordTemps = contractRecordTempRepository.
             findContractRecordTempsByContractRecordTempId_ContractId(id);
         StringBuilder fingerprint = new StringBuilder(contractRevision.getOfferMode() + "-");
@@ -891,7 +891,7 @@ public class ContractService {
     public List<LinkedHashMap<String,Object>> exportProductTemplate(String id,Integer revision){
         List<LinkedHashMap<String,Object>> list = new ArrayList<>();
         try{
-            var contract = purchaseContractDetail(id,revision);
+            var contract = getPurchaseContractDetail(id,revision);
             contract.getProducts().forEach(record -> {
                 LinkedHashMap<String,Object> m = new LinkedHashMap<>();
                 m.put("产品代码",record.getCode());
@@ -929,7 +929,7 @@ public class ContractService {
     public List<LinkedHashMap<String,Object>> exportProduct(String id,Integer revision){
         List<LinkedHashMap<String,Object>> list = new ArrayList<>();
         try{
-            var contract = purchaseContractDetail(id,revision);
+            var contract = getPurchaseContractDetail(id,revision);
             contract.getProducts().forEach(record -> {
                 LinkedHashMap<String,Object> m = new LinkedHashMap<>();
                 m.put("产品代码",record.getCode());
@@ -1032,7 +1032,7 @@ public class ContractService {
         @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     })
     @Transactional
-    public void cancelCurrentRevision(String id, int revision, ContractDetail contractDetail, String companyCode) {
+    public void removeCurrentRevision(String id, int revision, ContractDetail contractDetail, String companyCode) {
 
             contractDetail.setState(ContractState.FINISHED);
             if(revision==1){
@@ -1110,7 +1110,7 @@ public class ContractService {
      */
     public Optional<String>  findContractProductRepeat(String id, Integer revision) throws Exception {
         ContractRevisionDetail contractRevisionDetail = contractRevisionDetailRepository
-            .findDetail(revision,id)
+            .getDetail(revision,id)
             .orElseThrow(()->new IOException("请求的合同不存在"));
 
         if(!contractRevisionDetail.getState().equals(ContractState.UN_FINISHED.getState()+""))
@@ -1422,13 +1422,13 @@ public class ContractService {
      */
     @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'",allEntries=true)
     @Transactional
-    public void cancelPurchaseContract(String id, String companyCode, String operator){
+    public void removePurchaseContract(String id, String companyCode, String operator){
         try{
             //查询合同（不包括合同明细）
             ContractDetail contractDetail = contractDetailRepository.findById(id)
                 .orElseThrow(()->new IOException("请求的合同不存在"));
             //获取最大版本号
-            int revision = findMaxRevision(id);
+            int revision = getMaxRevision(id);
             //入格合同状态为未完成并且大于1，删除临时合同记录以及版本号为revision的合同
             if(contractDetail.getState().equals(ContractState.UN_FINISHED)&& revision>1){
                 contractRecordTempRepository.deleteProducts(id);

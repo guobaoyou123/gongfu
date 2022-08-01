@@ -45,7 +45,7 @@ public class PlanService {
      * @param temporaryPlanId 单位id 操作员编码
      * @return 临时采购计划列表信息
      */
-    public List<TTemporaryPlan>  findTemporaryPlanByOperator(TemporaryPlanId temporaryPlanId){
+    public List<TTemporaryPlan>  listTemporaryPlansByOperator(TemporaryPlanId temporaryPlanId){
         return  temporaryPlanRepository.findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByOrderByCreatedAt(
                 temporaryPlanId.getDcCompId(),
                 temporaryPlanId.getCreatedBy()).stream()
@@ -137,7 +137,7 @@ public class PlanService {
      * @param operatorCode 操作员编码
      */
     @Transactional
-    public boolean deleteTemporaryPlan( List<String> product, String id, String operatorCode){
+    public boolean removeTemporaryPlan( List<String> product, String id, String operatorCode){
         try{
             List<TemporaryPlanId> list = new ArrayList<>();
             product.forEach(pr ->
@@ -365,7 +365,7 @@ public class PlanService {
      * @return 返回采购计划信息
      */
     public VBaseResponse verification(String id, String operatorCode){
-        var purchasePlan = findPurchasePlanByCode(id, operatorCode);
+        var purchasePlan = getPurchasePlan(id, operatorCode);
         if(purchasePlan.isEmpty())
             return
                 VBaseResponse.builder()
@@ -386,7 +386,7 @@ public class PlanService {
      * @param operatorCode 操作员编号 id 单位id
      * @return 返回采购计划信息
      */
-    public Optional<PurchasePlan> findPurchasePlanByCode(String id, String operatorCode){
+    public Optional<PurchasePlan> getPurchasePlan(String id, String operatorCode){
         return  purchasePlanRepository.findFirstByPurchasePlanId_DcCompIdAndCreatedBy(id, operatorCode);
     }
 
@@ -584,9 +584,9 @@ public class PlanService {
      * @return 返回布尔值（true表示删除成功）
      */
     @Transactional
-    public  boolean deletePlanProduct(String id,List<String> productId,String planCode){
+    public  boolean removePlanProduct(String id,List<String> productId,String planCode){
         try{
-            purchasePlanProductSupplierRepository.deleteSupplier(id,planCode,productId);
+            purchasePlanProductSupplierRepository.removeSupplier(id,planCode,productId);
             List<PurchasePlanProductId> list = new ArrayList<>();
             productId.forEach(s ->
                 list.add(PurchasePlanProductId.builder()
@@ -611,10 +611,10 @@ public class PlanService {
      * @return 返回布尔值（true表示删除成功）
      */
     @Transactional
-    public  boolean deletePurchasePlan(String id,String planCode){
+    public  boolean removePurchasePlan(String id,String planCode){
         try{
-            purchasePlanProductSupplierRepository.deleteSupplier(id,planCode);
-            purchasePlanProductRepository.deleteProduct(id, planCode);
+            purchasePlanProductSupplierRepository.removeSupplier(id,planCode);
+            purchasePlanProductRepository.removeProduct(id, planCode);
             purchasePlanRepository.deletePurchasePlan(PurchasePlanId.builder()
                 .dcCompId(id)
                 .planCode(planCode)
@@ -632,8 +632,8 @@ public class PlanService {
      * @param id 单位id
      * @return 供应商列表
      */
-    public List<TCompanyBaseInformation> findSuppliersByPlanCode(String planCode, String id){
-        return purchasePlanProductSupplierRepository.findDistinctSuppliers(id,planCode)
+    public List<TCompanyBaseInformation> listSuppliersByPlanCode(String planCode, String id){
+        return purchasePlanProductSupplierRepository.listDistinctSuppliers(id,planCode)
             .stream().map(stringStringMap -> TCompanyBaseInformation.builder()
                  .code(stringStringMap.get("saler_code"))
                  .shortName(stringStringMap.get("saler_name"))

@@ -127,7 +127,7 @@ public class InquiryService {
             }));
 
             //查询询价单最大编号
-            String maxCode = inquiryDetailRepository.findMaxCode(companyCode, operatorCode);
+            String maxCode = inquiryDetailRepository.getMaxCode(companyCode, operatorCode);
             if(maxCode ==null)
                 maxCode ="01";
             AtomicInteger max = new AtomicInteger(Integer.parseInt(maxCode));
@@ -162,8 +162,8 @@ public class InquiryService {
             //保存询价单
             inquiryDetailRepository.saveAll(inquiries);
             //删除计划
-            purchasePlanProductSupplierRepository.deleteSupplier(companyCode,planCode);
-            purchasePlanProductRepository.deleteProduct(companyCode, planCode);
+            purchasePlanProductSupplierRepository.removeSupplier(companyCode,planCode);
+            purchasePlanProductRepository.removeProduct(companyCode, planCode);
             purchasePlanRepository.deletePurchasePlan(
                 PurchasePlanId.builder()
                 .dcCompId(companyCode)
@@ -189,7 +189,7 @@ public class InquiryService {
      * @return 返回询价列表
      */
     @Cacheable(value="inquiry_List;1800", key="#companyCode+'_'+#operator+'_'+#state")
-    public List<TInquiry> inquiryList(String companyCode, String operator,String state){
+    public List<TInquiry> listInquiries(String companyCode, String operator,String state){
         try{
             //查询操作员信息
             Operator operator1= operatorRepository.findById(
@@ -201,11 +201,11 @@ public class InquiryService {
                 .orElseThrow(()-> new IOException("请求的操作员找不到"));
             //判断是否为管理员
             if(operator1.getAdmin().equals(Whether.YES))
-                return inquiryRepository.findInquiryList(companyCode, InquiryType.INQUIRY_LIST.getType()+"", state)
+                return inquiryRepository.listInquiries(companyCode, InquiryType.INQUIRY_LIST.getType()+"", state)
                     .stream()
                     .map(inquiryMapper::toInquiryList)
                     .toList();
-            return inquiryRepository.findInquiryList(companyCode,operator, InquiryType.INQUIRY_LIST.getType()+"", state)
+            return inquiryRepository.listInquiries(companyCode,operator, InquiryType.INQUIRY_LIST.getType()+"", state)
                 .stream()
                 .map(inquiryMapper::toInquiryList)
                 .toList();
@@ -222,9 +222,9 @@ public class InquiryService {
      * @param supplierCode 供应商编码
      * @return 返回未完成的询价单列表
      */
-    public List<VUnfinishedInquiryListResponse.VInquiry> unfinishedInquiry(String companyCode,String operator,String supplierCode){
+    public List<VUnfinishedInquiryListResponse.VInquiry> listUnfinishedInquiries(String companyCode,String operator,String supplierCode){
 
-        return  unfinishedInquiryRepository.findUnfinishedInquiry(companyCode,operator,supplierCode).stream()
+        return  unfinishedInquiryRepository.listUnfinishedInquiries(companyCode,operator,supplierCode).stream()
             .map(inquiryMapper::toUnfinishedTInquiry)
             .map(inquiryMapper::toUnfinishedInquiry).toList();
     }
@@ -240,10 +240,10 @@ public class InquiryService {
      * @param pageable 页码
      * @return 返回询价单信息列表
      */
-    public Page<TInquiry> inquiryHistoryPage(String companyCode, String operator,String supplierCode,
+    public Page<TInquiry> pageInquiryHistories(String companyCode, String operator,String supplierCode,
                                              String startTime,String endTime,String state,Pageable pageable)  {
         //询价单列表
-        List<TInquiry> tInquiryList = inquiryList(companyCode,operator,state);
+        List<TInquiry> tInquiryList = listInquiries(companyCode,operator,state);
         //筛选供应商
         if(StringUtils.isNotBlank(supplierCode)){
             tInquiryList = tInquiryList.stream().filter(tInquiry -> tInquiry.getSalerComp().equals(supplierCode)).toList();
@@ -270,12 +270,12 @@ public class InquiryService {
      * @param id 询价单主键
      * @return 返回询价单详情
      */
-    public TInquiry inquiryDetail(String id) {
+    public TInquiry getInquiryDetail(String id) {
         //询价单详情
-        TInquiry tInquiry= findInquiry(id).map(inquiryMapper::toInquiryDetail).get();
+        TInquiry tInquiry= getInquiry(id).map(inquiryMapper::toInquiryDetail).get();
        //询价单明细
-        List<InquiryRecord>  records  = findInquiryRecords(id);
-        List<TInquiryRecord>  tRecords = findInquiryRecords(id).stream().map(inquiryRecordMapper::toTInquiryRecordDo).toList();
+        List<InquiryRecord>  records  = listInquiryRecords(id);
+        List<TInquiryRecord>  tRecords = records.stream().map(inquiryRecordMapper::toTInquiryRecordDo).toList();
         tInquiry.setRecords(tRecords);
         tInquiry.setVat(judgeInquiryMoney(tInquiry.getVat(),records));
         tInquiry.setTotalPrice(judgeInquiryMoney(tInquiry.getTotalPrice(),records));
@@ -289,7 +289,7 @@ public class InquiryService {
      * @return 询价单信息
      */
     @Cacheable(value="inquiry_detail;1800",key = "#id")
-    public Optional<Inquiry> findInquiry(String id ){
+    public Optional<Inquiry> getInquiry(String id ){
         return  inquiryRepository.findInquiryById(id);
     }
 
@@ -299,7 +299,7 @@ public class InquiryService {
      * @return 询价单明细列表
      */
     @Cacheable(value="inquiry_record_List;1800",key = "#id")
-    public List<InquiryRecord> findInquiryRecords(String id){return  inquiryRecordRepository.findInquiryRecord(id);}
+    public List<InquiryRecord> listInquiryRecords(String id){return  inquiryRecordRepository.findInquiryRecord(id);}
 
     /**
      * 建立新的空询价单
@@ -310,10 +310,10 @@ public class InquiryService {
      * @return 询价单编码
      */
     @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
-    public String  emptyInquiry(String companyCode,String companyName,String operator,String supplierCode){
+    public String  saveEmptyInquiry(String companyCode,String companyName,String operator,String supplierCode){
         try {
             //查询询价单最大编号
-            String maxCode = inquiryDetailRepository.findMaxCode(companyCode, operator);
+            String maxCode = inquiryDetailRepository.getMaxCode(companyCode, operator);
             if(maxCode ==null)
                 maxCode ="01";
             //查询供应商信息
@@ -362,8 +362,8 @@ public class InquiryService {
         try{
             //查询询价单
             //InquiryDetail inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
-            Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
-            List<InquiryRecord> inquiryRecordList = findInquiryRecords(id);
+            Inquiry inquiry = getInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            List<InquiryRecord> inquiryRecordList = listInquiryRecords(id);
             //查询明细最大顺序号
             String maxCode = inquiryRecordRepository.findMaxCode(id);
             if(maxCode==null)
@@ -470,10 +470,10 @@ public class InquiryService {
         @CacheEvict(value="inquiry_record_List;1800", key="#id")
     })
     @Transactional
-    public Boolean deleteInquiryProduct(String id,List<Integer> codes){
+    public Boolean removeInquiryProduct(String id,List<Integer> codes){
         try {
-            List<InquiryRecord> records = findInquiryRecords(id);
-            inquiryRecordRepository.deleteProducts(id,codes);
+            List<InquiryRecord> records = listInquiryRecords(id);
+            inquiryRecordRepository.removeProducts(id,codes);
             return countSum(
                 records.stream()
                     .filter(
@@ -500,8 +500,8 @@ public class InquiryService {
     @Transactional
     public  Boolean  modifyInquiry(VInquiryRequest vModifyInquiryRequest, String id){
         try{
-            Inquiry inquiry = findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
-            List<InquiryRecord> records = findInquiryRecords(id);
+            Inquiry inquiry = getInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            List<InquiryRecord> records = listInquiryRecords(id);
             if(StringUtils.isNotBlank(vModifyInquiryRequest.getTaxModel()))
                 inquiry.setOfferMode(vModifyInquiryRequest.getTaxModel().equals("0")?TaxMode.UNTAXED:TaxMode.INCLUDED);
             //判断服务税率是否为空
@@ -566,9 +566,9 @@ public class InquiryService {
         @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
     })
     @Transactional
-    public  Boolean deleteInquiry(String id,String companyCode){
+    public  Boolean removeInquiry(String id,String companyCode){
         try {
-            inquiryRepository.cancelInquiry(LocalDateTime.now(),InquiryState.CANCELLATION,id);
+            inquiryRepository.removeInquiry(LocalDateTime.now(),InquiryState.CANCELLATION,id);
             return  true;
         }catch (Exception e){
             e.printStackTrace();
@@ -584,8 +584,8 @@ public class InquiryService {
     public List<LinkedHashMap<String,Object>> exportProduct(String id){
         List<LinkedHashMap<String,Object>> list = new ArrayList<>();
         try{
-            Inquiry inquiry =findInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
-            List<InquiryRecord> records = findInquiryRecords(id);
+            Inquiry inquiry =getInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
+            List<InquiryRecord> records = listInquiryRecords(id);
             records.forEach(record -> {
                 LinkedHashMap<String,Object> m = new LinkedHashMap<>();
                 m.put("产品代码",record.getProductCode());
@@ -639,7 +639,7 @@ public class InquiryService {
             TaxRates goods= vatRatesRepository.findByTypeAndDeFlagAndUseCountry(VatRateType.GOODS,Whether.YES,"001")
                 .orElseThrow(() -> new IOException("请求的货物税率不存在"));
             //查询询价单
-            Inquiry inquiry =findInquiry(id)  .orElseThrow(() -> new IOException("请求的询价单不存在"));
+            Inquiry inquiry =getInquiry(id)  .orElseThrow(() -> new IOException("请求的询价单不存在"));
             int maxCode =0;
             for (ImportProductTemp importProductTemp : list) {
                 //验证产品编码是否正确
