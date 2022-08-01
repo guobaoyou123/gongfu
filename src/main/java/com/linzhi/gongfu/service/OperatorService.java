@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -157,8 +158,7 @@ public class OperatorService {
      */
     @Caching(evict = {
         @CacheEvict(value = "Operator_detail;1800",key = "#companyCode+'-'+#operatorCode"),
-        @CacheEvict(value="Operator_List;1800",key = "#companyCode+'-1'"),
-        @CacheEvict(value = "Operator_scene_statistics;1800", key = "#companyCode")
+        @CacheEvict(value="Operator_List;1800",key = "#companyCode+'-1'")
     })
     @Transactional
     public boolean modifyOperator(String companyCode, String operatorCode, VOperatorRequest operatorRequest){
@@ -238,7 +238,7 @@ public class OperatorService {
     @Transactional
     @Caching(evict = {
         @CacheEvict(value = "Operator_Login;1800",allEntries = true),
-        @CacheEvict(value = "Operator_detail;1800",allEntries = true) ,
+        @CacheEvict(value = "Scene_List;1800",allEntries = true),
         @CacheEvict(value = "Operator_scene_statistics;1800", key = "#companyCode")
     })
     public boolean modifyOperatorScene(String companyCode, List<VOperatorSceneRequest> operatorRequests){
@@ -319,6 +319,8 @@ public class OperatorService {
      * @param companyCode 公司编码
      * @param operatorCode 操作员编码
      */
+
+    @Transactional
     public void saveOperatorScene(List<String> scene ,String companyCode,String operatorCode){
         List<OperatorScene> operatorSceneList = new ArrayList<>();
         scene.forEach(
@@ -343,7 +345,6 @@ public class OperatorService {
      * @return 返回是与否
      */
     @Caching(evict = {
-        @CacheEvict(value = "Operator_detail;1800", key = "#companyCode+'-'+#code"),
         @CacheEvict(value = "Operator_Login;1800", key = "T(String).valueOf(#companyCode).concat(#code)"),
         @CacheEvict(value = "Operator_List;1800", key = "#companyCode+'-0'"),
         @CacheEvict(value = "Operator_List;1800", key = "#companyCode+'-1'")
@@ -359,5 +360,29 @@ public class OperatorService {
            e.printStackTrace();
            return false;
        }
+    }
+
+    /**
+     * 根据权限查找操作员列表
+     * @param companyCode 本单位公司编码
+     * @param privilege  权限
+     * @return 操作员列表
+     */
+    public List<TOperatorInfo>  listOperatorsByPrivilege(String companyCode,String privilege){
+        List<TOperatorInfo> tOperatorInfos = listOperators(companyCode);
+        switch (privilege){
+            case "1": return  tOperatorInfos.stream().filter(operatorInfo -> {
+                AtomicBoolean flag = new AtomicBoolean(false);
+                operatorInfo.getScenes().forEach(t->{
+                    if(t.getName().contains("采购")){
+                        flag.set(true);
+                        return;
+                    }
+                });
+                return  flag.get();
+            }).toList();
+            case "2" : return null;
+        }
+        return  null;
     }
 }

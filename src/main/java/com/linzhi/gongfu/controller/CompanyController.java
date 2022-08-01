@@ -278,5 +278,28 @@ public class CompanyController {
             .message(flag?"操作成功":"操作失败")
             .build();
     }
+
+    /**
+     * 查询有采购权限的操作员列表
+     * @param privilege 权限类型 1-采购
+     * @return 操作员列表
+     */
+    @GetMapping("/company/operators/{privilege}")
+    public VOperatorListResponse listOperatorsByPrivilege(@PathVariable Optional<String> privilege){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var list = operatorService.listOperatorsByPrivilege(
+                session.getSession().getCompanyCode(),
+                privilege.orElseThrow(()->new NullPointerException("数据为空")))
+            .stream().map(operatorMapper::toOperatorDTOs)
+            .toList();
+        return  VOperatorListResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .operators(list)
+            .build();
+    }
+
 }
 
