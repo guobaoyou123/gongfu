@@ -319,8 +319,20 @@ public class EnrolledCompanyController {
             .build();
     }
 
+    /**
+     * 取消始终拒绝
+     * @param code 格友编码
+     * @return 操作成功或失败信息
+     */
     @PostMapping("/enrolled/company/apply/refused/{code}")
     public VBaseResponse removeRefused(@PathVariable String code){
-        return VBaseResponse.builder().build();
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = compTradeApplyService.removeRefused(session.getSession().getCompanyCode(),code,"1");
+        return VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"操作成功":"操作失败")
+            .build();
     }
 }

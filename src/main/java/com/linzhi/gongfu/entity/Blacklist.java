@@ -28,7 +28,7 @@ public class Blacklist implements Serializable {
     /**
      * 创建人
      */
-    @Column(name = "created_by",length = 40, nullable = false)
+    @Column(name = "created_by",length = 40)
     private String createdBy;
 
     /**

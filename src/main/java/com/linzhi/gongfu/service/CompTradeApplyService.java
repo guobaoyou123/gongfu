@@ -427,5 +427,27 @@ public class CompTradeApplyService {
             .map(blacklistMapper::toTCompanyDetail)
             .toList();
     }
-    
+
+    /**
+     * 取消始终决绝
+     * @param companyCode 本单位编码
+     * @param beRefusedCode 被拒绝格友单位编码
+     * @param type 类型1-申请采购 2-
+     * @return 返回是或者否
+     */
+    @CacheEvict(value = "Black_list;1800",key = "#companyCode")
+    @Transactional
+    public boolean removeRefused(String companyCode,String beRefusedCode,String type){
+        try {
+            blacklistRepository.deleteById(BlacklistId.builder()
+                    .dcCompId(companyCode)
+                    .type(type)
+                    .beRefuseCompId(beRefusedCode)
+                .build());
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
