@@ -1,9 +1,11 @@
 package com.linzhi.gongfu.controller;
 
 
+import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.mapper.SceneMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
+import com.linzhi.gongfu.service.BrandService;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.OperatorService;
 import com.linzhi.gongfu.service.SceneService;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 用于处理单位信息以及供应商、客户等信息
@@ -32,6 +35,8 @@ public class CompanyController {
     private final OperatorMapper operatorMapper;
     private final SceneService sceneService;
     private final SceneMapper sceneMapper;
+    private final BrandService brandService;
+    private final BrandMapper brandMapper;
 
     /**
      * 本单位的公司详情
@@ -301,5 +306,23 @@ public class CompanyController {
             .build();
     }
 
+    /**
+     * 根据单位编码查找本单位经营品牌
+     * @return 返回经营品牌列表
+     */
+    @GetMapping("/company/brands")
+    public VDcBrandResponse listBrandsByCompanyCode(){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var brands = brandService.listBrandsByCompanyCode(session.getSession().getCompanyCode()).stream()
+            .map(brandMapper::toProductBrandPreload)
+            .collect(Collectors.toSet());
+        return VDcBrandResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .brands(brands)
+            .build();
+    }
 }
 

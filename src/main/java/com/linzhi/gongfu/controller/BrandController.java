@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -100,7 +101,7 @@ public class BrandController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var brandList = brandService.listBrandsBySuppliers(
-            company,
+            company.orElse(new ArrayList<>()),
             session.getSession().getCompanyCode()
         );
         return VDcBrandResponse.builder()

@@ -226,7 +226,8 @@ public class InquiryService {
 
         return  unfinishedInquiryRepository.listUnfinishedInquiries(companyCode,operator,supplierCode).stream()
             .map(inquiryMapper::toUnfinishedTInquiry)
-            .map(inquiryMapper::toUnfinishedInquiry).toList();
+            .map(inquiryMapper::toUnfinishedInquiry)
+            .toList();
     }
 
     /**

@@ -6,6 +6,7 @@ import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -139,18 +140,32 @@ public class BrandService {
      * @return 品牌列表
      */
     @Cacheable(value = "brands_company;1800", unless = "#result == null")
-    public List<TBrand> listBrandsBySuppliers(Optional<List<String>>  company,String id){
+    public List<TBrand> listBrandsBySuppliers(List<String>  company,String id){
         QDcBrand qDcBrand = QDcBrand.dcBrand;
         QCompTradBrand compTradBrand = QCompTradBrand.compTradBrand;
-        List<DcBrand> dcBrands= queryFactory.selectDistinct(qDcBrand).from(compTradBrand)
-            .leftJoin(qDcBrand).on(qDcBrand.code.eq(compTradBrand.compTradBrandId.brandCode))
-            .where(compTradBrand.compTradBrandId.compSaler.in(company.get()).and(compTradBrand.compTradBrandId.compBuyer.eq(id)))
-            .orderBy(qDcBrand.sort.desc())
-            .fetch();
+        JPAQuery<DcBrand> query = queryFactory.selectDistinct(qDcBrand).from(compTradBrand)
+            .leftJoin(qDcBrand).on(qDcBrand.code.eq(compTradBrand.compTradBrandId.brandCode));
+        query.where(compTradBrand.compTradBrandId.compBuyer.eq(id));
+        if(company.size()>0)
+            query.where(compTradBrand.compTradBrandId.compSaler.in(company));
+        query.orderBy(qDcBrand.sort.desc());
+        List<DcBrand> dcBrands =    query.fetch();
 
         return   dcBrands.stream()
             .map(brandMapper::toBrand)
-            .collect(Collectors.toList());
+            .toList();
 
     }
+
+    /**
+     * 根据单位编码查找本单位经营品牌列表
+     * @param companyCode 本单位编码
+     * @return 返回经营品牌列表
+     */
+    public List<TBrand> listBrandsByCompanyCode(String companyCode){
+        return compAllowedBrandRepository.findBrandsByCompAllowedBrandIdCompCode(companyCode)
+           .stream().map(brandMapper::toCompAllowedBrandDTO)
+           .toList();
+    }
+
 }

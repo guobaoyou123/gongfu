@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TBrand;
+import com.linzhi.gongfu.entity.CompAllowedBrand;
 import com.linzhi.gongfu.entity.DcBrand;
 import com.linzhi.gongfu.entity.Brand;
 import com.linzhi.gongfu.entity.ViewBrand;
@@ -86,4 +87,15 @@ public interface BrandMapper {
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "name")
     VForeignSupplierResponse.VBrand toSupplierBrandPreload(TBrand brand);
+
+
+    /**
+     * 将获取到的公司经营品牌转化成可供使用的公司经营品牌详细信息
+     * @param allowedBrand  公司经营品牌
+     * @return 可供使用的公司经营品牌
+     */
+    @Mapping(target = "code", source = "dcBrand.code")
+    @Mapping(target = "name", source = "dcBrand.chiShort")
+    @Mapping(target = "sort", source = "dcBrand.sort")
+    TBrand  toCompAllowedBrandDTO(CompAllowedBrand allowedBrand);
 }

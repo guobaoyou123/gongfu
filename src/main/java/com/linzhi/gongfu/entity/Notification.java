@@ -87,11 +87,13 @@ public class Notification {
      */
     @Column(name = "push_scene",length = 50)
     private String pushScene;
+
     /**
      * 推送人
      */
     @Column(name = "push_operator",length = 50)
     private String pushOperator;
+
     /**
      * 是否已读
      */
