@@ -5,12 +5,14 @@ import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.NotificationService;
 import com.linzhi.gongfu.vo.VBaseResponse;
+import com.linzhi.gongfu.vo.VNotificationsRequest;
 import com.linzhi.gongfu.vo.VNotificationsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 /**
  * 用于消息类通知等
@@ -29,13 +31,18 @@ public class MessageController {
      * @return 返回消息通知列表
      */
     @GetMapping("/message/notification")
-    public VNotificationsResponse listNotifications(){
+    public VNotificationsResponse listNotifications(@RequestParam("state") Optional<String> state){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var scenes = session.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .toList();
-        var list= notificationService.listNotification(session.getSession().getCompanyCode(), Whether.NO,session.getSession().getOperatorCode(),scenes);
+        var list= notificationService.listNotification(
+            session.getSession().getCompanyCode(),
+            state.orElseThrow(()-> new NullPointerException("数据为空")).equals("0")?Whether.NO:Whether.YES,
+            session.getSession().getOperatorCode(),
+            scenes
+        );
         return VNotificationsResponse.builder()
             .code(200)
             .message("获取数据成功")
@@ -46,6 +53,24 @@ public class MessageController {
             .build();
     }
 
+    /**
+     * 修改消息通知状态
+     * @param notifications 消息通知编码列表
+     * @return 返回成功或者失败信息
+     */
+    @PostMapping("/message/notification/state")
+    public VBaseResponse  modifyNotificationState(@RequestBody Optional<VNotificationsRequest> notifications){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = notificationService.modifyNotification(
+            session.getSession().getCompanyCode(),
+            notifications.orElseThrow(()-> new NullPointerException("数据为空")).getCodes()
+        );
+        return VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"操作成功":"操作失败")
+            .build();
+    }
 
 }
 

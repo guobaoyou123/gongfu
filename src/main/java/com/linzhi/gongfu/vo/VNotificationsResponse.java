@@ -24,7 +24,7 @@ public class VNotificationsResponse extends VBaseResponse{
       public static class VNotification{
 
           /**
-           * 通知消息编码
+           * 消息通知编码
            */
           private String code;
 
