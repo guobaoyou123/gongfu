@@ -48,6 +48,7 @@ public class CompTradeApplyService {
     private final CompTradeRepository compTradeRepository;
     private final BrandMapper brandMapper;
     private final BlacklistMapper blacklistMapper;
+
     /**
      * 申请采购
      * @param vTradeApplyRequest 申请信息
@@ -58,14 +59,14 @@ public class CompTradeApplyService {
      */
     @Caching(evict = {
         @CacheEvict(value="trade_apply_history_List;1800", key="#companyCode"),
-        @CacheEvict(value="trade_apply_List;1800", key="#vTradeApplyRequest.applyCompCode+'-'+1")
+        @CacheEvict(value="trade_apply_List;1800", key="#vTradeApplyRequest.applyCompCode+'-'+1"),
+        @CacheEvict(value = "Notification_List;1800", key = "#vTradeApplyRequest.applyCompCode+ '-' + '*'", beforeInvocation = true)
     })
     @Transactional
     public Map<String,String> saveTradeApply(VTradeApplyRequest vTradeApplyRequest,String companyCode,String operatorCode,String companyName){
           Map<String,String> map = new HashMap<>();
           map.put("flag","0");
         try{
-
             //查询是否有正在申请中的
            CompTradeApply compTradeApply =  compTradeApplyRepository.findByCreatedCompByAndHandledCompByAndStateAndType(
                 companyCode,
@@ -167,7 +168,8 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_history_List;1800", key="#companyCode"),
         @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
         @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
-        @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code")
+        @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code"),
+        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'", beforeInvocation = true)
 
     })
     public boolean consentApply(CompTradeApply compTradeApply, String companyCode,String companyName, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
@@ -279,7 +281,9 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
         @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
         @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code"),
-        @CacheEvict(value="Black_list;1800", key="#companyCode")
+        @CacheEvict(value="Black_list;1800", key="#companyCode"),
+        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'", beforeInvocation = true)
+
     })
     @Transactional
     public boolean refuseApply(String companyCode,String companyName,

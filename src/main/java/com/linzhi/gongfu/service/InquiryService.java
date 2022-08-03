@@ -67,7 +67,7 @@ public class InquiryService {
      * @return 返回成功信息
      */
     @Caching(evict = {
-        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
+        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'+'*'",beforeInvocation = true)
     })
     @Transactional
     public Map<String,Object> savePurchaseInquiry(String planCode, String companyCode,String compName, String operatorCode){
@@ -310,7 +310,7 @@ public class InquiryService {
      * @param supplierCode 供应商名称
      * @return 询价单编码
      */
-    @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
+    @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'+'*'",beforeInvocation = true)
     public String  saveEmptyInquiry(String companyCode,String companyName,String operator,String supplierCode){
         try {
             //查询询价单最大编号
@@ -564,7 +564,7 @@ public class InquiryService {
 
     @Caching(evict = {@CacheEvict(value="inquiry_detail;1800",key = "#id"),
         @CacheEvict(value="inquiry_record_List;1800", key="#id"),
-        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'",allEntries=true)
+        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'+'*'",beforeInvocation = true)
     })
     @Transactional
     public  Boolean removeInquiry(String id,String companyCode){

@@ -377,6 +377,7 @@ public class AddressService {
      * @param companyCode 公司id
      * @return 返回联系人列表
      */
+   @Cacheable(value = "Contacts_List;1800", key = "#companyCode+'-'+#operator")
     public List<TCompContacts> listContacts(String operator,String companyCode,String addressCode,String state){
        List<CompContacts> list;
        Operator operator1= operatorRepository.findById(OperatorId.builder()
@@ -416,6 +417,7 @@ public class AddressService {
      * @param companyCode 公司编码
      * @return 返回联系人信息
      */
+    @CacheEvict(value = "Contacts_List;1800", key = "#companyCode+'-'+'*'", beforeInvocation = true)
     @Transactional
     public CompContacts saveCompContacts(VCompContactsRequest compContacts,String operator,String companyCode){
          try{
@@ -451,6 +453,7 @@ public class AddressService {
      * @param companyCode 公司编码
      * @return 返回联系人信息
      */
+    @CacheEvict(value = "Contacts_List;1800", key = "#companyCode+'-'+'*'", beforeInvocation = true)
     @Transactional
     public CompContacts modifyCompContacts(VCompContactsRequest compContacts,String code,String operator,String companyCode){
         try{
@@ -490,6 +493,7 @@ public class AddressService {
      * @param addressCode 地址编码
      * @return 修改成功或者失败
      */
+    @CacheEvict(value = "Contacts_List;1800", key = "#companyCode+'-'+'*'", beforeInvocation = true)
     @Transactional
     public Boolean modifyCompContactState(List<String> code,String operator,String companyCode,String state,String addressCode){
         try{

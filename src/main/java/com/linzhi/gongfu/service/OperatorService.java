@@ -237,8 +237,8 @@ public class OperatorService {
      */
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "Operator_Login;1800",allEntries = true),
-        @CacheEvict(value = "Scene_List;1800",allEntries = true),
+        @CacheEvict(value = "Operator_Login;1800",key = "T(String).valueOf(#companyCode).concat('*')",beforeInvocation = true),
+        @CacheEvict(value = "Scene_List;1800", key="#companyCode+'_'+'*'",beforeInvocation = true),
         @CacheEvict(value = "Operator_scene_statistics;1800", key = "#companyCode")
     })
     public boolean modifyOperatorScene(String companyCode, List<VOperatorSceneRequest> operatorRequests){

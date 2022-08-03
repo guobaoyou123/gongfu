@@ -135,7 +135,7 @@ public class CompanyService {
      * @param id 单位id
      * @return 返回供应商列表
      */
-    @Cacheable(value = "suppliers_brands;1800", unless = "#result == null",key = "T(String).valueOf(#brands)")
+    @Cacheable(value = "suppliers_brands;1800", unless = "#result == null")
     public List<TCompanyBaseInformation> listSuppliersByBrands(List<String> brands,String id){
         QCompany qCompany = QCompany.company;
         QCompTradBrand qCompTradBrand = QCompTradBrand.compTradBrand;
