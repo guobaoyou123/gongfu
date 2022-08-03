@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +107,7 @@ public class SuppliersController {
      * @return 外供应商列表
      */
     @GetMapping("/supplier/{code}")
-    public VForeignSupplierResponse foreignSupplierDetail(@PathVariable String code){
+    public VForeignSupplierResponse foreignSupplierDetail(@PathVariable String code) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -169,7 +170,10 @@ public class SuppliersController {
      */
     @PutMapping("/supplier/disable")
     public VBaseResponse foreignSupplierDisable(@RequestBody VForeignSupplierRequest supplier){
-        var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.DISABLED);
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.DISABLED,session.getSession().getCompanyCode());
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -188,7 +192,10 @@ public class SuppliersController {
      */
     @PutMapping("/supplier/enable")
     public VBaseResponse foreignSupplierEnable(@RequestBody VForeignSupplierRequest supplier){
-        var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.ENABLED);
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.ENABLED,session.getSession().getCompanyCode());
         if(flag)
             return VBaseResponse.builder()
                 .code(200)

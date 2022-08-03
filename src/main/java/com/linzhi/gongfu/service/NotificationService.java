@@ -55,7 +55,7 @@ public class NotificationService {
      * @param codes 消息通知编码
      * @return 返回 成功或者失败
      */
-    @CacheEvict(value = "Notification_List;1800", key="#companyCode+'-'+'*'",beforeInvocation = true)
+    @CacheEvict(value = "Notification_List;1800", key="#companyCode+'-'+'*'")
     @Transactional
     public boolean  modifyNotification(String companyCode, List<String> codes){
         try{

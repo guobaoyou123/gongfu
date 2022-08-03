@@ -183,22 +183,22 @@ public class CompanyService {
      * @return 返回详细信息
      */
     @Cacheable(value = "supplierDetail;1800", unless = "#result == null ",key = "#companyCode+'-'+#code")
-   public VForeignSupplierResponse.VSupplier getForeignSupplierDetail(String code, String companyCode){
+   public VForeignSupplierResponse.VSupplier getForeignSupplierDetail(String code, String companyCode) throws IOException {
 
        var trade =compTradeRepository.findById(CompTradId.builder()
               .compSaler(code)
               .compBuyer(companyCode)
           .build()
-           );
-       var brands = trade.get().getManageBrands().stream()
+           ).orElseThrow(()->new IOException("没用从数据库中查到数据"));
+       var brands = trade.getManageBrands().stream()
            .map(brandMapper::toBrand)
            .map(brandMapper::toSupplierBrandPreload)
            .toList();
-       VForeignSupplierResponse.VSupplier vSupplier=trade.map(CompTrad::getCompanys)
+       VForeignSupplierResponse.VSupplier vSupplier=Optional.of(trade).map(CompTrad::getCompanys)
            .map(companyMapper::toBaseInformation)
-           .map(companyMapper::toSupplierDetail).get();
+           .map(companyMapper::toSupplierDetail).orElseThrow();
        vSupplier.setBrands(brands);
-       vSupplier.setTaxMode(String.valueOf(trade.get().getTaxModel().getTaxMode()));
+       vSupplier.setTaxMode(String.valueOf(trade.getTaxModel().getTaxMode()));
       return  vSupplier;
    }
 
@@ -208,8 +208,9 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回成功或者是吧消息
      */
-   @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",allEntries = true),
-       @CacheEvict(value = "brands_company;1800",allEntries = true),
+   @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",key = "'*'+#companyCode"),
+
+       @CacheEvict(value = "brands_company;1800",key = "'*'+#companyCode"),
        @CacheEvict(value = "SupplierAndBrand;1800",key = "#companyCode"),
        @CacheEvict(value = "supplierDetail;1800",key = "#companyCode+'-'+#code" ,condition = "#code != null"),
    })
@@ -339,13 +340,12 @@ public class CompanyService {
      * @param state 状态
      * @return 返回成功或则失败
      */
-    @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",allEntries = true),
-        @CacheEvict(value = "brands_company;1800",allEntries = true),
-        @CacheEvict(value = "SupplierAndBrand;1800",allEntries = true),
-        @CacheEvict(value = "supplierDetail;1800",condition = "#code != null"),
+    @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",key = "'*'+#companyCode"),
+        @CacheEvict(value = "brands_company;1800",key = "'*'+#companyCode"),
+        @CacheEvict(value = "SupplierAndBrand;1800",key = "#companyCode")
     })
     @Transactional
-   public Boolean modifySupplierState(List<String> code,Availability state){
+   public Boolean modifySupplierState(List<String> code,Availability state,String companyCode){
        try {
            companyRepository.updateCompanyState(state,code);
            return  true;
@@ -353,7 +353,6 @@ public class CompanyService {
            e.printStackTrace();
            return  false;
        }
-
    }
 
     /**
@@ -425,13 +424,14 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回成功或者失败消息
      */
-    @Caching(evict =  {
-        @CacheEvict(value = "Company_Host;1800",key = "#result"),
-        @CacheEvict(value = "companyDetail;1800",key = "#companyCode")
-    }
+    @Caching(
+        evict =  {
+           @CacheEvict(value = "Company_Host;1800",key = "#result"),
+           @CacheEvict(value = "companyDetail;1800",key = "#companyCode")
+        }
     )
     @Transactional
-    public String  saveCompanyDetail(VCompanyRequest companyRequest, String companyCode,String operator){
+    public String  saveCompanyDetail(VCompanyRequest companyRequest, String companyCode){
         try{
             EnrolledCompany company = enrolledCompanyRepository.findById(companyCode)
                 .orElseThrow(()->new IOException("未找到公司信息"));
@@ -454,7 +454,6 @@ public class CompanyService {
             return null;
         }
     }
-
 
     /**
      * 设置可见

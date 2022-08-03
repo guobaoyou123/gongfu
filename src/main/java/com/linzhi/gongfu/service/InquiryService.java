@@ -222,6 +222,7 @@ public class InquiryService {
      * @param supplierCode 供应商编码
      * @return 返回未完成的询价单列表
      */
+    @Cacheable(value="inquiry_List;1800", key="#companyCode+'_'+#operator+'_'+#supplierCode")
     public List<VUnfinishedInquiryListResponse.VInquiry> listUnfinishedInquiries(String companyCode,String operator,String supplierCode){
 
         return  unfinishedInquiryRepository.listUnfinishedInquiries(companyCode,operator,supplierCode).stream()
@@ -362,7 +363,6 @@ public class InquiryService {
     public Boolean saveInquiryProduct(String id, String productId, BigDecimal price,BigDecimal amount){
         try{
             //查询询价单
-            //InquiryDetail inquiry = inquiryDetail(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             Inquiry inquiry = getInquiry(id).orElseThrow(() -> new IOException("请求的询价单不存在"));
             List<InquiryRecord> inquiryRecordList = listInquiryRecords(id);
             //查询明细最大顺序号
@@ -377,10 +377,8 @@ public class InquiryService {
                     Whether.YES,
                     "001"
                 ).orElseThrow(() -> new IOException("请求的货物税率不存在"));
-            //保存产品inquiry = {InquiryDetail@17473}
+            //保存产品
             InquiryRecord record = getInquiryRecord(product,id,maxCode,amount,goods.getRate(),price,inquiry.getOfferMode());
-
-
             inquiryRecordRepository.save(record);
             inquiryRecordList.add(record);
             return  countSum(inquiryRecordList,id);

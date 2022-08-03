@@ -108,10 +108,10 @@ public class ContractService {
      * @return 返回成功或者失败
      */
     @Caching(evict = {
-        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'+'*'",beforeInvocation = true),
+        @CacheEvict(value="inquiry_List;1800", key="#companyCode+'_'+'*'"),
         @CacheEvict(value="inquiry_detail;1800",key = "#generateContractRequest.inquiryId"),
         @CacheEvict(value="inquiry_record_List;1800", key="#generateContractRequest.inquiryId"),
-        @CacheEvict(value="purchase_contract_List;1800", key="#companyCode+'_'+'*'",beforeInvocation = true)
+        @CacheEvict(value="purchase_contract_List;1800", key="#companyCode+'_'+'*'")
     })
     @Transactional
     public Boolean saveContract(VPContractRequest generateContractRequest, String companyCode, String operatorName, String operator){
@@ -528,7 +528,7 @@ public class ContractService {
      * @param operatorName 操作员姓名
      * @return 返回成功信息
      */
-    @CacheEvict(value="purchase_contract_List;1800", key="#companyCode+'_'+'*'",beforeInvocation = true)
+    @CacheEvict(value="purchase_contract_List;1800", key="#companyCode+'_'+'*'")
     @Transactional
     public Optional<String> savePurchaseContractEmpty(String supplierCode,String companyCode,String companyName,String operator,String operatorName) {
         try {
@@ -612,7 +612,7 @@ public class ContractService {
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
         @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
-        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'",beforeInvocation = true)
+        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'")
     })
     @Transactional
     public boolean saveProduct(String productId, BigDecimal price, BigDecimal amount, String id, int revision,String companyCode,String operator){
@@ -705,7 +705,7 @@ public class ContractService {
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
         @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
-        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'",beforeInvocation = true)
+        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'")
     })
     @Transactional
     public Boolean removeContractProduct(List<Integer> codes,String id,int revision,String companyCode,String operator){
@@ -744,7 +744,7 @@ public class ContractService {
      * @param operator 操作员编码
      * @return  返回版本号
      */
-    @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'",beforeInvocation = true)
+    @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'")
     @Transactional
     public Integer modifyContractState(String id, String companyCode, String operator, Integer revision){
         try{
@@ -781,7 +781,7 @@ public class ContractService {
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
         @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
-        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'",beforeInvocation = true)
+        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'")
     })
     @Transactional
     public  Boolean  modifyPurchaseContract(VInquiryRequest vModifyInquiryRequest, String id, int revision, String companyCode, String operator){
@@ -1029,7 +1029,7 @@ public class ContractService {
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
         @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
-        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'",beforeInvocation = true)
+        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'")
     })
     @Transactional
     public void removeCurrentRevision(String id, int revision, ContractDetail contractDetail, String companyCode) {
@@ -1147,7 +1147,7 @@ public class ContractService {
      */
     @Caching(evict = {@CacheEvict(value="contract_revision_detail;1800",key = "#id+'-'+#revision"),
         @CacheEvict(value="contract_revision_recordTemp_detail;1800",key = "#id"),
-        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'",beforeInvocation = true)
+        @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'")
     })
     @Transactional
     public void saveContractRevision(String id, int revision, VPContractRequest generateContractRequest, String companyCode, String operator) {
@@ -1420,7 +1420,7 @@ public class ContractService {
      * @param companyCode 本单位编码
      * @param operator 操作员编码
      */
-    @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'",beforeInvocation = true)
+    @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'")
     @Transactional
     public void removePurchaseContract(String id, String companyCode, String operator){
         try{
@@ -1531,7 +1531,7 @@ public class ContractService {
      * @param operator 操作员编码
      * @return 返回新建合同主键
      */
-    @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'",beforeInvocation = true)
+    @CacheEvict(value="purchase_contract_List;1800",key = "#companyCode+'-'+'*'")
     @Transactional
     public String copyContract(String contractId,Integer revision,String companyCode,String operator){
         try {

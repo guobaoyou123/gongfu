@@ -60,7 +60,7 @@ public class CompTradeApplyService {
     @Caching(evict = {
         @CacheEvict(value="trade_apply_history_List;1800", key="#companyCode"),
         @CacheEvict(value="trade_apply_List;1800", key="#vTradeApplyRequest.applyCompCode+'-'+1"),
-        @CacheEvict(value = "Notification_List;1800", key = "#vTradeApplyRequest.applyCompCode+ '-' + '*'", beforeInvocation = true)
+        @CacheEvict(value = "Notification_List;1800", key = "#vTradeApplyRequest.applyCompCode+ '-' + '*'")
     })
     @Transactional
     public Map<String,String> saveTradeApply(VTradeApplyRequest vTradeApplyRequest,String companyCode,String operatorCode,String companyName){
@@ -169,7 +169,7 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
         @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
         @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code"),
-        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'", beforeInvocation = true)
+        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'")
 
     })
     public boolean consentApply(CompTradeApply compTradeApply, String companyCode,String companyName, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
@@ -282,7 +282,7 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
         @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code"),
         @CacheEvict(value="Black_list;1800", key="#companyCode"),
-        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'", beforeInvocation = true)
+        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'")
 
     })
     @Transactional

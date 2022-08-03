@@ -75,8 +75,7 @@ public class CompanyController {
                 .build();
         var str = companyService.saveCompanyDetail(
             company,
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode()
+            session.getSession().getCompanyCode()
         );
         return VBaseResponse.builder()
             .code(str!=null?200:500)
