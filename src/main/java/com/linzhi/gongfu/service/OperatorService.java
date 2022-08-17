@@ -370,19 +370,17 @@ public class OperatorService {
      */
     public List<TOperatorInfo>  listOperatorsByPrivilege(String companyCode,String privilege){
         List<TOperatorInfo> tOperatorInfos = listOperators(companyCode);
-        switch (privilege){
-            case "1": return  tOperatorInfos.stream().filter(operatorInfo -> {
+        return switch (privilege) {
+            case "1" -> tOperatorInfos.stream().filter(operatorInfo -> {
                 AtomicBoolean flag = new AtomicBoolean(false);
-                operatorInfo.getScenes().forEach(t->{
-                    if(t.getName().contains("采购")){
+                operatorInfo.getScenes().forEach(t -> {
+                    if (t.getName().contains("采购")) {
                         flag.set(true);
-                        return;
                     }
                 });
-                return  flag.get();
+                return flag.get();
             }).toList();
-            case "2" : return null;
-        }
-        return  null;
+            default -> null;
+        };
     }
 }
