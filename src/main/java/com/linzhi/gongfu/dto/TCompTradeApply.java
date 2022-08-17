@@ -86,7 +86,7 @@ public class TCompTradeApply {
     private String handledAt;
 
     /**
-     * 状态
+     * 状态 0-申请中 1-同意 2-拒绝 3-始终拒绝
      */
     private String state;
 
