@@ -496,7 +496,7 @@ public class CompanyService {
              findAllByVisibleAndState(Whether.YES,Enrollment.ENROLLED)
             .stream().filter(enrolledCompany -> {
                 if(enrolledCompany.getDetails()!=null&&enrolledCompany.getDetails().getShortNameInCN()!=null){
-                    return enrolledCompany.getDetails().getShortNameInCN().contains(name);
+                    return enrolledCompany.getDetails().getNameInCN().contains(name);
                 }else {
                     return false;
                 }
@@ -514,7 +514,7 @@ public class CompanyService {
      * @return 入格单位编码
      */
     public Optional<String> getECompanyCode(String invitationCode){
-        Optional<CompInvitationCode> compInvitationCode=compInvitationCodeRepository.
+         Optional<CompInvitationCode> compInvitationCode=compInvitationCodeRepository.
             findCompInvitationCodeByCompInvitationCodeId_InvitationCode(invitationCode);
          if(compInvitationCode.isPresent()){
              //判断是否超时
@@ -594,7 +594,7 @@ public class CompanyService {
             //如何不为空，将原来的邀请码删除
             compInvitationCode.ifPresent(invitationCode -> compInvitationCodeRepository.deleteById(invitationCode.getCompInvitationCodeId()));
             //邀请码的格式（单位编码——uuid随机编码）
-            String InvitationCode = companyCode+"-"+UUID.randomUUID();
+            String InvitationCode = companyCode+"-"+UUID.randomUUID().toString().substring(0,8);
             //保存数据
             compInvitationCodeRepository.save(
                 CompInvitationCode.builder()
