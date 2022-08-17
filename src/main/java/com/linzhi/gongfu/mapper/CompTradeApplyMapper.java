@@ -43,6 +43,7 @@ public interface CompTradeApplyMapper {
     @Mapping(target = "handledCompanyName",source = "handledCompany.nameInCN")
     @Mapping(target = "handledCompanyShortName",source = "handledCompany.details.shortNameInCN")
     @Mapping(target = "type",source = "type")
+    @Mapping(target = "remark",source = "createdRemark")
     @Mapping(target = "state",expression = "java(String.valueOf(compTradeApply.getState().getState()))")
     @Mapping(target = "createdAt",expression ="java(com.linzhi.gongfu.util.DateConverter.dateFormat(compTradeApply.getCreatedAt()))" )
     TCompTradeApply toTComTradeApplyHistory(CompTradeApply compTradeApply);
@@ -51,6 +52,9 @@ public interface CompTradeApplyMapper {
      * @param tradeApply 待处理申请
      * @return 待处理申请信息
      */
+    @Mapping(target = "companyShortName",source = "createdCompanyShortName")
+    @Mapping(target = "companyCode",source = "createdCompBy")
+    @Mapping(target = "companyName",source = "createdCompanyName")
     VTradeApplyPageResponse.VTradeApply toVTradeApply(TCompTradeApply tradeApply);
 
     /**
@@ -61,6 +65,7 @@ public interface CompTradeApplyMapper {
     @Mapping(target = "companyCode",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompanyCode():tradeApply.getCreatedCompBy())")
     @Mapping(target = "companyName",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompanyName():tradeApply.getCreatedCompanyName())")
     @Mapping(target = "companyShortName",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompanyShortName():tradeApply.getCreatedCompanyShortName())")
+
     VTradeApplyHistoryResponse.VApply toVApplyHistory(TCompTradeApply tradeApply);
 
     /**

@@ -58,9 +58,20 @@ public class VTradeApplyHistoryResponse extends  VBaseResponse{
          */
         private String companyShortName;
 
+        /**
+         * 状态 0-申请中 1-同意 2-拒绝 3-始终拒绝
+         */
         private String state;
 
+        /**
+         * 申请时间
+         */
         private String createdAt;
+
+        /**
+         * 申请备注
+         */
+        private String remark;
     }
 
 }
