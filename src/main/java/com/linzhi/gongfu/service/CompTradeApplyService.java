@@ -174,8 +174,6 @@ public class CompTradeApplyService {
     })
     public boolean consentApply(CompTradeApply compTradeApply, String companyCode,String companyName, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
         try{
-
-
            compTradeApply.setHandledBy(operatorCode);
            compTradeApply.setHandledAt(LocalDateTime.now());
            compTradeApply.setState(TradeApply.AGREE);
@@ -290,11 +288,19 @@ public class CompTradeApplyService {
                                String operatorCode,String remark,
                                String state,CompTradeApply compTradeApply){
         try {
+            //拒绝申请的
+            if(!compTradeApply.getState().equals(TradeApply.APPLYING)&& state.equals("1"))
+                return false;
+            //始终拒绝申请的
+            if(state.equals("2")&&(compTradeApply.getState().equals(TradeApply.ALWAYS_REFUSE)||compTradeApply.getState().equals(TradeApply.AGREE))){
+                return false;
+            }
             compTradeApply.setHandledBy(operatorCode);
             compTradeApply.setRefuseRemark(remark);
             compTradeApply.setState(TradeApply.REFUSE);
             compTradeApply.setHandledAt(LocalDateTime.now());
             if(state.equals("2")){
+                compTradeApply.setState(TradeApply.ALWAYS_REFUSE);
                 blacklistRepository.save(
                     Blacklist.builder()
                        .blacklistId(
@@ -309,6 +315,7 @@ public class CompTradeApplyService {
                     .build()
                 );
             }
+            compTradeApplyRepository.save(compTradeApply);
             //存入消息通知表
             Notification notification = createdNotification(
                 companyCode,
@@ -373,7 +380,12 @@ public class CompTradeApplyService {
             })
             .map(compTradeApplyMapper::toTComTradeApplyHistory)
             .toList();
-        compTradeApplies.forEach(tradeApply -> tradeApply.setDcCompId(companyCode));
+        compTradeApplies.forEach(tradeApply ->{
+            if(tradeApply.getCreatedCompBy().equals(companyCode)&& tradeApply.getState().equals("3")){
+                tradeApply.setState("2");
+            }
+            tradeApply.setDcCompId(companyCode);
+        } );
         return PageTools.listConvertToPage(compTradeApplies.stream().map(compTradeApplyMapper::toVApplyHistory).toList(),pageable);
     }
 
@@ -389,8 +401,8 @@ public class CompTradeApplyService {
     ) throws IOException {
         //最后一次申请记录
         CompTradeApply compTradeApply = compTradeApplyRepository.findTopByCreatedCompByAndHandledCompByAndTypeOrderByCreatedAtDesc(
-            companyCode,
             enrolledCode,
+            companyCode,
             "1"
         ).orElseThrow(()->new IOException("未从数据库找到"));
         TCompTradeApply tradeApply=  compTradeApplyMapper.toEnrolledCompanyDetail(compTradeApply,companyCode);

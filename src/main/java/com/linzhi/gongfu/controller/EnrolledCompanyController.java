@@ -208,11 +208,7 @@ public class EnrolledCompanyController {
             .getContext()
             .getAuthentication();
         CompTradeApply compTradeApply = compTradeApplyService.getCompInvitationCode(code);
-        if(!compTradeApply.getState().equals(TradeApply.APPLYING))
-            return VBaseResponse.builder()
-                .code(500)
-                .message("操作失败")
-                .build();
+
         var flag = compTradeApplyService.refuseApply(
             session.getSession().getCompanyCode(),
             session.getSession().getCompanyName(),

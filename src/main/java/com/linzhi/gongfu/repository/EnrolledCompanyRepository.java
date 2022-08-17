@@ -21,6 +21,7 @@ import org.springframework.data.repository.CrudRepository;
 public interface EnrolledCompanyRepository
         extends CrudRepository<EnrolledCompany, String>, QuerydslPredicateExecutor<EnrolledCompany> {
     Optional<EnrolledCompany> findBySubdomainName(String subdomainName);
+
     Optional<EnrolledCompany> findByUSCI(String usci);
 
     @Query(value="select  (cast(max(id) as int)+1) from dc_comp " , nativeQuery = true)
