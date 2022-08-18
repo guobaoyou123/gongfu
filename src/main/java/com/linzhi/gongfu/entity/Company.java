@@ -78,8 +78,6 @@ public class Company implements Serializable {
     @Column(length = 100)
     private String address;
 
-
-
     /**
      * 公司启停用状态
      */
@@ -107,7 +105,6 @@ public class Company implements Serializable {
     @Column(name = "eng_short", length = 40)
     private String shortNameInEN;
 
-
     /**
      * 区域编号，区级行政区划编号
      */
@@ -119,8 +116,6 @@ public class Company implements Serializable {
      */
     @Column(name = "area_name", length = 60)
     private String areaName;
-
-
 
     /**
      * 公司联系人
@@ -157,6 +152,4 @@ public class Company implements Serializable {
      */
     @Column(length = 40)
     private String email;
-
-
 }

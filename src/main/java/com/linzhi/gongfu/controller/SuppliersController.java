@@ -4,6 +4,7 @@ import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -225,6 +226,38 @@ public class SuppliersController {
             .code((int)map.get("code"))
             .message((String)map.get("message"))
             .companyname((String) map.get("companyName"))
+            .build();
+    }
+
+    /**
+     *查询入格的供应商列表
+     * @param state 状态 0-禁用 1-启用
+     * @param name 入格的供应商单位名称
+     * @param pageNum 页数
+     * @param pageSize 每页展示几条
+     * @return 返回入格的供应商列表
+     */
+    @GetMapping("/suppliers/enrolled")
+    public VEnrolledSuppliersResponse enrolledSupplierPage(@RequestParam("state") Optional<String> state,
+                                                           @RequestParam("name") Optional<String> name,
+                                                           @RequestParam("pageNum") Optional<String> pageNum,
+                                                           @RequestParam("pageSize") Optional<String> pageSize){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var page = companyService.pageEnrolledSuppliers(
+            state.orElse("1"),
+            name.orElse(""),
+            pageNum.map(PageTools::verificationPageNum).orElse(0),
+            pageSize.map(PageTools::verificationPageSize).orElse(10),
+            session.getSession().getCompanyCode()
+        );
+        return VEnrolledSuppliersResponse.builder()
+            .code(200)
+            .message("数据获取成功")
+            .current(page.getNumber()+1)
+            .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
+            .suppliers(page.getContent().stream().map(companyMapper::toVEnrolledSupplier).toList())
             .build();
     }
 

@@ -8,6 +8,8 @@ import com.linzhi.gongfu.vo.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.Map;
+
 /**
  * 用于转换公司相关信息
  *
@@ -165,4 +167,20 @@ public interface CompanyMapper {
     @Mapping(target = "isCustomer",constant = "false")
     @Mapping(target = "state",constant = "0")
     VEnrolledCompanyResponse.VCompany toEnrolledCompanyDetail(TCompanyBaseInformation company);
+
+    /**
+     * 将从数据库中查询到的内供应商信息转换为可用的供应商信息
+     * @param map 内供应商信息
+     * @return 可用的供应商信息
+     */
+    @Mapping(target = "code", expression = "java(map.get(\"code\"))")
+    @Mapping(target = "name", expression = "java(map.get(\"chi_name\"))")
+    @Mapping(target = "shortName", expression = "java(map.get(\"chi_short\"))")
+    @Mapping(target = "USCI", expression = "java(map.get(\"credit_code\"))")
+    TCompanyBaseInformation toEnrolledSuppliers(Map<String,String> map);
+
+    @Mapping(target = "companyName",source = "name")
+    @Mapping(target = "companyShortName",source = "shortName")
+    @Mapping(target = "usci",source = "USCI")
+    VEnrolledSuppliersResponse.VEnrolledSupplier toVEnrolledSupplier(TCompanyBaseInformation tCompanyBaseInformation);
 }

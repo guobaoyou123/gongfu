@@ -70,8 +70,8 @@ public class CompanyService {
      * @return 供应商信息列表
      */
     public Page<VSuppliersPageResponse.VSupplier> pageSuppliers(String id,
-                                                                          Optional<String> pageNum,
-                                                                          Optional<String> pageSize
+                                                                Optional<String> pageNum,
+                                                                Optional<String> pageSize
     ) {
 
         List<CompTrad> compTradList=listSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
@@ -161,6 +161,7 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回外供应商列表
      */
+    @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ",key = "#companyCode")
    public List<TCompanyBaseInformation> listForeignSuppliers(String companyCode){
        QCompany qCompany = QCompany.company;
        QCompTrad qCompTrad = QCompTrad.compTrad;
@@ -209,7 +210,7 @@ public class CompanyService {
      * @return 返回成功或者是吧消息
      */
    @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",key = "'*'+#companyCode"),
-
+       @CacheEvict(value = "Foreign_Supplier_List;1800",key="#companyCode"),
        @CacheEvict(value = "brands_company;1800",key = "'*'+#companyCode"),
        @CacheEvict(value = "SupplierAndBrand;1800",key = "#companyCode"),
        @CacheEvict(value = "supplierDetail;1800",key = "#companyCode+'-'+#code" ,condition = "#code != null"),
@@ -342,7 +343,8 @@ public class CompanyService {
      */
     @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",key = "'*'+#companyCode"),
         @CacheEvict(value = "brands_company;1800",key = "'*'+#companyCode"),
-        @CacheEvict(value = "SupplierAndBrand;1800",key = "#companyCode")
+        @CacheEvict(value = "SupplierAndBrand;1800",key = "#companyCode"),
+        @CacheEvict(value = "Foreign_Supplier_List;1800",key="#companyCode")
     })
     @Transactional
    public Boolean modifySupplierState(List<String> code,Availability state,String companyCode){
@@ -612,5 +614,23 @@ public class CompanyService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * 查找本单位内供应商列表
+     * @param state 状态 0-禁用 1-启用
+     * @param name 供应商公司名称
+     * @param pageNum 页数
+     * @param pageSize 每页展示几条
+     * @param companyCode 本单位编码
+     * @return 内供应商列表
+     */
+    public Page<TCompanyBaseInformation>  pageEnrolledSuppliers(String state,String name ,int pageNum,int pageSize,String companyCode){
+
+        List<TCompanyBaseInformation> list =   enrolledCompanyRepository.findEnrolledSupplierList(companyCode,state).stream()
+            .filter(map -> map.get("chi_name").contains(name))
+            .map(companyMapper::toEnrolledSuppliers)
+            .toList();
+        return PageTools.listConvertToPage(list,PageRequest.of(pageNum,pageSize)) ;
     }
 }

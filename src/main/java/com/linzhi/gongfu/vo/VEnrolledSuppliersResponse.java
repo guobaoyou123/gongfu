@@ -8,31 +8,38 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于响应前端外供应商列表的请求
+ * 用于响应前端内供应商列表的请求
  *
  * @author zgh
- * @create_at 2022-02-09
+ * @create_at 2022-08-18
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VForeignSuppliersResponse extends VBaseResponse{
+public class VEnrolledSuppliersResponse extends VBaseResponse{
 
-    List<VForeignSupplier> suppliers;
+    /**
+     * 当前页
+     */
+    private int current;
+    /**
+     * 总条数
+     */
+    private int total;
+
+    /**
+     * 内供应商列表
+     */
+    List<VEnrolledSupplier> suppliers;
 
     @Data
-    public static class VForeignSupplier{
+    public static class VEnrolledSupplier{
 
         /**
          * 系统编码
          */
         private String code;
-
-        /**
-         * 编码
-         */
-        private String encode;
 
         /**
          * 公司名称
@@ -48,11 +55,6 @@ public class VForeignSuppliersResponse extends VBaseResponse{
          * 社会统一信用代码
          */
         private String usci;
-
-        /**
-         * 状态
-         */
-        private String state;
 
     }
 }

@@ -172,7 +172,8 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
         @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
         @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code"),
-        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'")
+        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'"),
+        @CacheEvict(value = "Enrolled_Supplier_List;1800",key="#compTradeApply.handledCompBy+'-1")
     })
     public boolean consentApply(CompTradeApply compTradeApply, String companyCode,String companyName, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
         try{
@@ -283,7 +284,6 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code"),
         @CacheEvict(value="Black_list;1800", key="#companyCode"),
         @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'")
-
     })
     @Transactional
     public boolean refuseApply(String companyCode,String companyName,

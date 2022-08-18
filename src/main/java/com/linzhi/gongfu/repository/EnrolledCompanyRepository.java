@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.linzhi.gongfu.entity.EnrolledCompany;
@@ -32,4 +33,16 @@ public interface EnrolledCompanyRepository
 
     @Cacheable(value = "EnrolledCompany_List;1800", unless = "#result == null ")
     List<EnrolledCompany> findAllByVisibleAndState(Whether visible, Enrollment enrollment);
+
+    /**
+     * 查找本单位内供应商列表
+     * @param companyCode 单位编码
+     * @return 内供应商列表
+     */
+    @Cacheable(value = "Enrolled_Supplier_List;1800",key="#companyCode+'-'+#state", unless = "#result == null ")
+    @Query(nativeQuery = true,value = "select  c.credit_code, b.code,b.chi_name,b.chi_short from comp_base b\n" +
+        "left join comp_trade t on  t.comp_saler = b.code\n" +
+        "left join dc_comp c on c.id = b.code\n" +
+        "where t.comp_buyer=?1 and b.role='1' and t.state =?2")
+    List<Map<String,String>> findEnrolledSupplierList(String companyCode, String state);
 }

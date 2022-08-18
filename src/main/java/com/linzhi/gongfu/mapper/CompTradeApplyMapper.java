@@ -47,6 +47,7 @@ public interface CompTradeApplyMapper {
     @Mapping(target = "state",expression = "java(String.valueOf(compTradeApply.getState().getState()))")
     @Mapping(target = "createdAt",expression ="java(com.linzhi.gongfu.util.DateConverter.dateFormat(compTradeApply.getCreatedAt()))" )
     TCompTradeApply toTComTradeApplyHistory(CompTradeApply compTradeApply);
+
     /**
      * 待处理的申请信息
      * @param tradeApply 待处理申请
@@ -65,7 +66,6 @@ public interface CompTradeApplyMapper {
     @Mapping(target = "companyCode",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompanyCode():tradeApply.getCreatedCompBy())")
     @Mapping(target = "companyName",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompanyName():tradeApply.getCreatedCompanyName())")
     @Mapping(target = "companyShortName",expression = "java(tradeApply.getDcCompId().equals(tradeApply.getCreatedCompBy())?tradeApply.getHandledCompanyShortName():tradeApply.getCreatedCompanyShortName())")
-
     VTradeApplyHistoryResponse.VApply toVApplyHistory(TCompTradeApply tradeApply);
 
     /**
