@@ -4,7 +4,6 @@ package com.linzhi.gongfu.service;
 import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TCompTradeApply;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
-import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.BlacklistMapper;
@@ -436,10 +435,10 @@ public class CompTradeApplyService {
              //查询本单位负责人
              List<Operator> operatorList = operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
                      companyCode,
-                     Arrays.asList(
-                         compTradeApply.getState().equals(TradeApply.AGREE) && compTradeApply.getHandledCompany().equals(companyCode)?
-                         compTrad.getSalerBelongTo().split(","):compTrad.getBuyerBelongTo().split(",")
-                     )
+
+                         compTradeApply.getState().equals(TradeApply.AGREE) && compTradeApply.getHandledCompBy().equals(companyCode)?
+                             compTrad.getSalerBelongTo()!=null? Arrays.asList(compTrad.getSalerBelongTo().split(",")):new ArrayList<>():compTrad.getBuyerBelongTo()!=null? Arrays.asList(compTrad.getBuyerBelongTo().split(",")):new ArrayList<>()
+
                  );
              tradeApply.setOperators(operatorList.stream().map(operatorMapper::toDTO)
                  .toList());
@@ -452,7 +451,7 @@ public class CompTradeApplyService {
      * @param companyCode 公司编码
      * @return 返回黑名单列表
      */
-    @Cacheable(value="Black_list;1800", key="#dcCompId")
+    @Cacheable(value="Black_list;1800", key="#companyCode")
     public List<TCompanyBaseInformation>  listRefused(String companyCode){
         return  blacklistRepository.findBlacklistsByBlacklistId_DcCompId(companyCode).stream()
             .map(blacklistMapper::toTCompanyDetail)
