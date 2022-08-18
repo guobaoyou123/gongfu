@@ -163,4 +163,6 @@ public class TCompTradeApply {
      */
     private String taxModel;
 
+    private List<TOperatorInfo> operators;
+
 }

@@ -51,6 +51,6 @@ public interface CompTradeApplyRepository extends CrudRepository<CompTradeApply,
      * @param id 申请记录编码
      * @return 申请记录详情
      */
-    @Cacheable(value="trade_apply_detail;1800", key="#id")
+
     Optional<CompTradeApply> findById(String id);
 }

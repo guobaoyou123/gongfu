@@ -4,17 +4,20 @@ package com.linzhi.gongfu.service;
 import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TCompTradeApply;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
+import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.BlacklistMapper;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.mapper.CompTradeApplyMapper;
+import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,7 +51,8 @@ public class CompTradeApplyService {
     private final CompTradeRepository compTradeRepository;
     private final BrandMapper brandMapper;
     private final BlacklistMapper blacklistMapper;
-
+    private final OperatorRepository operatorRepository;
+    private final OperatorMapper operatorMapper;
     /**
      * 申请采购
      * @param vTradeApplyRequest 申请信息
@@ -170,7 +174,6 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
         @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code"),
         @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'")
-
     })
     public boolean consentApply(CompTradeApply compTradeApply, String companyCode,String companyName, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
         try{
@@ -395,6 +398,7 @@ public class CompTradeApplyService {
      *  @param companyCode 公司编码
      * @return 格友公司可见详情
      */
+    @Cacheable(value = "Refused_Enrolled_Company",key = "#companyCode+'-'+#enrolledCode")
     public Optional<VEnrolledCompanyResponse.VCompany> getRefuseEnrolledCompanyDetail(
         String enrolledCode,
         String companyCode
@@ -414,6 +418,7 @@ public class CompTradeApplyService {
      * @param code 申请记录编码
      * @param companyCode 本单位编码
      */
+    @Cacheable(value="trade_apply_detail;1800", key="#code")
     public  Optional<VTradeApplyDetailResponse.VApply>  getTradeApplyDetail(String code,String companyCode) throws IOException {
 
          CompTradeApply compTradeApply = compTradeApplyRepository.findById(code).orElseThrow(()->new IOException("未查询到数据"));
@@ -428,6 +433,16 @@ public class CompTradeApplyService {
              List<TBrand> tBrands=compTrad.getManageBrands().stream().map(brandMapper::toBrand).toList();
              tradeApply.setBrands(tBrands);
              tradeApply.setTaxModel(compTrad.getTaxModel().getTaxMode()+"");
+             //查询本单位负责人
+             List<Operator> operatorList = operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
+                     companyCode,
+                     Arrays.asList(
+                         compTradeApply.getState().equals(TradeApply.AGREE) && compTradeApply.getHandledCompany().equals(companyCode)?
+                         compTrad.getSalerBelongTo().split(","):compTrad.getBuyerBelongTo().split(",")
+                     )
+                 );
+             tradeApply.setOperators(operatorList.stream().map(operatorMapper::toDTO)
+                 .toList());
          }
          return  Optional.of(tradeApply).map(compTradeApplyMapper::toApplyDetail);
     }
@@ -437,21 +452,24 @@ public class CompTradeApplyService {
      * @param companyCode 公司编码
      * @return 返回黑名单列表
      */
+    @Cacheable(value="Black_list;1800", key="#dcCompId")
     public List<TCompanyBaseInformation>  listRefused(String companyCode){
-
         return  blacklistRepository.findBlacklistsByBlacklistId_DcCompId(companyCode).stream()
             .map(blacklistMapper::toTCompanyDetail)
             .toList();
     }
 
     /**
-     * 取消始终决绝
+     * 取消始终拒绝
      * @param companyCode 本单位编码
      * @param beRefusedCode 被拒绝格友单位编码
      * @param type 类型1-申请采购 2-
      * @return 返回是或者否
      */
-    @CacheEvict(value = "Black_list;1800",key = "#companyCode")
+    @Caching(evict = {
+        @CacheEvict(value = "Black_list;1800",key = "#companyCode"),
+        @CacheEvict(value = "Refused_Enrolled_Company",key = "#companyCode+'-'+#beRefusedCode")
+    })
     @Transactional
     public boolean removeRefused(String companyCode,String beRefusedCode,String type){
         try {

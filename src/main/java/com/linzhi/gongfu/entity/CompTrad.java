@@ -84,6 +84,15 @@ public class CompTrad implements Serializable {
     })
     private Set<DcBrand> selfSupportBrands;
 
-
+    /**
+     * 卖方所属操作员
+     */
+    @Column(name = "saler_belong_to")
+    private String salerBelongTo;
+    /**
+     * 买方所属操作员
+     */
+    @Column(name = "buyer_belong_to")
+    private String buyerBelongTo;
 
 }

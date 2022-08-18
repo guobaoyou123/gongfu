@@ -110,7 +110,15 @@ public class VTradeApplyDetailResponse extends VBaseResponse{
          */
         private String taxModel;
 
+        /**
+         * 品牌列表
+         */
         private List<VBrand> brands;
+
+        /**
+         * 分配操作员
+         */
+        private List<VOperator> operators;
     }
 
     @Data
@@ -123,6 +131,20 @@ public class VTradeApplyDetailResponse extends VBaseResponse{
 
         /**
          * 品牌名称
+         */
+        private String name;
+    }
+
+    @Data
+    public static class VOperator{
+
+        /**
+         * 人员编码
+         */
+        private String code;
+
+        /**
+         * 姓名
          */
         private String name;
     }

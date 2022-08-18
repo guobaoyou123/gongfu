@@ -401,6 +401,7 @@ public class CompanyService {
      * @param companyCode 单位编码
      * @return 返回详细信息
      */
+
     public VCompanyResponse.VCompany getCompany(String companyCode) throws Exception {
         return  enrolledCompanyRepository.findById(companyCode).map(companyMapper::toCompDetail)
            .map(companyMapper::toCompanyDetail).orElseThrow(()->new IOException("未找到公司信息"));

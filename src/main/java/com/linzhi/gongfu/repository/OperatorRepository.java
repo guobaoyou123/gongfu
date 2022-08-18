@@ -27,4 +27,12 @@ public interface OperatorRepository extends CrudRepository<Operator, OperatorId>
         String operator
     );
 
+    /**
+     * 根据操作员编码列表，查询操作员列表
+     * @param companyCode 单位编码
+     * @param operators 操作员编码列表
+     * @return 操作员列表
+     */
+    List<Operator> findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(String companyCode,List<String> operators);
+
 }
