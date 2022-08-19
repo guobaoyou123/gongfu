@@ -261,4 +261,16 @@ public class SuppliersController {
             .build();
     }
 
+    /**
+     * 入格供应商详细信息
+     * @param code 入格单位编码
+     * @return 供应商详细信息
+     */
+    @GetMapping("/supplier/enrolled/{code}")
+    public VEnrolledSupplierResponse supplierDetail(@PathVariable String code){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        return VEnrolledSupplierResponse.builder().build();
+    }
 }

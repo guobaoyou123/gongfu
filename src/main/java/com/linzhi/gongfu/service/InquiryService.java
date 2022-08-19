@@ -98,7 +98,7 @@ public class InquiryService {
                  salesContract = contractRepository.findById(purchasePlan.get().getSalesId()).orElseThrow(()-> new IOException("数据库中找不到该销售合同"));
             }
             //查询每个供应商税模式对本单位设置的税模式
-            List<CompTrad>compTades=compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(companyCode, Trade.TRANSACTION);
+            List<CompTrad>compTades=compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(companyCode, Availability.ENABLED);
             Map<String,CompTrad> compTradMap = new HashMap<>();
             compTades.forEach(compTrad -> compTradMap.put(compTrad.getCompTradId().getCompSaler(),compTrad));
             //查出向每个供应商询价商品且询价数量>0的有哪些

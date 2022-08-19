@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
+import com.linzhi.gongfu.dto.TEnrolledSuppliers;
 import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.vo.*;
@@ -168,19 +169,8 @@ public interface CompanyMapper {
     @Mapping(target = "state",constant = "0")
     VEnrolledCompanyResponse.VCompany toEnrolledCompanyDetail(TCompanyBaseInformation company);
 
-    /**
-     * 将从数据库中查询到的内供应商信息转换为可用的供应商信息
-     * @param map 内供应商信息
-     * @return 可用的供应商信息
-     */
-    @Mapping(target = "code", expression = "java(map.get(\"code\"))")
-    @Mapping(target = "name", expression = "java(map.get(\"chi_name\"))")
-    @Mapping(target = "shortName", expression = "java(map.get(\"chi_short\"))")
-    @Mapping(target = "USCI", expression = "java(map.get(\"credit_code\"))")
-    TCompanyBaseInformation toEnrolledSuppliers(Map<String,String> map);
-
-    @Mapping(target = "companyName",source = "name")
-    @Mapping(target = "companyShortName",source = "shortName")
+    @Mapping(target = "companyName",source = "nameInCN")
+    @Mapping(target = "companyShortName",source = "shortNameInCN")
     @Mapping(target = "usci",source = "USCI")
-    VEnrolledSuppliersResponse.VEnrolledSupplier toVEnrolledSupplier(TCompanyBaseInformation tCompanyBaseInformation);
+    VEnrolledSuppliersResponse.VEnrolledSupplier toVEnrolledSupplier(TEnrolledSuppliers tEnrolledSuppliers);
 }

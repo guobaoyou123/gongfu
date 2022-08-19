@@ -3,6 +3,7 @@ package com.linzhi.gongfu.service;
 import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
+import com.linzhi.gongfu.dto.TEnrolledSuppliers;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.BrandMapper;
@@ -74,7 +75,7 @@ public class CompanyService {
                                                                 Optional<String> pageSize
     ) {
 
-        List<CompTrad> compTradList=listSuppliersByCompTradIdCompBuyerAndState(id,Trade.TRANSACTION);
+        List<CompTrad> compTradList=listSuppliersByCompTradIdCompBuyerAndState(id,Availability.ENABLED);
         List<TCompanyIncludeBrand>  tCompanyIncludeBrandList=compTradList.stream()
             .map(compTradeMapper::toSuppliersIncludeBrand)
             .filter(t -> t.getState().equals("1"))
@@ -125,7 +126,7 @@ public class CompanyService {
      * @return 供应商税模式列表
      */
     @Cacheable(value = "SupplierAndBrand;1800", unless = "#result == null",key = "#compBuyer")
-    public  List<CompTrad> listSuppliersByCompTradIdCompBuyerAndState(String compBuyer, Trade state){
+    public  List<CompTrad> listSuppliersByCompTradIdCompBuyerAndState(String compBuyer, Availability state){
         return  compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(compBuyer,state);
     }
 
@@ -304,7 +305,7 @@ public class CompanyService {
                            .build()
                    )
                    .taxModel(foreignSupplier.getTaxMode().equals("0")? TaxMode.UNTAXED: TaxMode.INCLUDED)
-                   .state(Trade.TRANSACTION)
+                   .state(Availability.ENABLED)
                    .build()
            );
            List<CompTradBrand> compTradBrands = new ArrayList<>();
@@ -625,12 +626,18 @@ public class CompanyService {
      * @param companyCode 本单位编码
      * @return 内供应商列表
      */
-    public Page<TCompanyBaseInformation>  pageEnrolledSuppliers(String state,String name ,int pageNum,int pageSize,String companyCode){
+    public Page<TEnrolledSuppliers>  pageEnrolledSuppliers(String state,String name ,int pageNum,int pageSize,String companyCode){
 
-        List<TCompanyBaseInformation> list =   enrolledCompanyRepository.findEnrolledSupplierList(companyCode,state).stream()
-            .filter(map -> map.get("chi_name").contains(name))
-            .map(companyMapper::toEnrolledSuppliers)
+        List<TEnrolledSuppliers> list =  enrolledCompanyRepository.findEnrolledSupplierList(companyCode,state.equals("1")?Availability.ENABLED:Availability.DISABLED)
+            .stream().filter(tEnrolledSuppliers -> tEnrolledSuppliers.getNameInCN().contains(name))
             .toList();
         return PageTools.listConvertToPage(list,PageRequest.of(pageNum,pageSize)) ;
+    }
+
+    public TCompanyBaseInformation  enrolledSupplier(String code,String companyCode){
+
+       Optional<CompTrad> compTrad =  compTradeRepository.findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSaler(companyCode,code);
+
+        return  null;
     }
 }

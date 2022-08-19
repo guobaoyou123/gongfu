@@ -190,7 +190,7 @@ public class CompTradeApplyService {
                     .build()
                 )
                 .taxModel(vTradeApplyConsentRequest.getTaxModel().equals("0")? TaxMode.UNTAXED:TaxMode.INCLUDED)
-                .state(Trade.TRANSACTION)
+                .state(Availability.ENABLED)
                 .salerBelongTo(StringUtils.join(vTradeApplyConsentRequest.getAuthorizedOperator(),","))
                 .build();
             compTradDetailRepository.save(compTrad);

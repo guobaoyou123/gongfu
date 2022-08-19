@@ -1,7 +1,7 @@
 package com.linzhi.gongfu.entity;
 
+import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.TaxMode;
-import com.linzhi.gongfu.enumeration.Trade;
 import lombok.*;
 
 import javax.persistence.*;
@@ -35,10 +35,10 @@ public class CompTradDetail implements Serializable {
     private TaxMode taxModel;
 
     /**
-     * 状态（0不可交易，2申请交易，1可交易）
+     * 状态（0禁用，1启用）
      */
     @Column(name = "state")
-    private Trade state;
+    private Availability state;
 
     /**
      *所属买方操作员
@@ -51,9 +51,5 @@ public class CompTradDetail implements Serializable {
      */
     @Column(name = "saler_belong_to")
     private String  salerBelongTo;
-
-
-
-
 
 }
