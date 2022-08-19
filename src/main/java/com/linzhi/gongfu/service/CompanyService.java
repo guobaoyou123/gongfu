@@ -1,14 +1,12 @@
 package com.linzhi.gongfu.service;
 
-import com.linzhi.gongfu.dto.TBrand;
-import com.linzhi.gongfu.dto.TCompanyBaseInformation;
-import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
-import com.linzhi.gongfu.dto.TEnrolledSuppliers;
+import com.linzhi.gongfu.dto.*;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.mapper.CompTradeMapper;
 import com.linzhi.gongfu.mapper.CompanyMapper;
+import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
@@ -51,6 +49,9 @@ public class CompanyService {
     private final CompVisibleRepository compVisibleRepository;
     private final CompInvitationCodeRepository compInvitationCodeRepository;
     private final CompTradeApplyRepository compTradeApplyRepository;
+    private final EnrolledSupplierRepository enrolledSupplierRepository;
+    private final OperatorRepository operatorRepository;
+    private final OperatorMapper operatorMapper;
 
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
@@ -628,16 +629,34 @@ public class CompanyService {
      */
     public Page<TEnrolledSuppliers>  pageEnrolledSuppliers(String state,String name ,int pageNum,int pageSize,String companyCode){
 
-        List<TEnrolledSuppliers> list =  enrolledCompanyRepository.findEnrolledSupplierList(companyCode,state.equals("1")?Availability.ENABLED:Availability.DISABLED)
+        List<TEnrolledSuppliers> list =  enrolledSupplierRepository.findEnrolledSupplierList(companyCode,state.equals("1")?Availability.ENABLED:Availability.DISABLED)
             .stream().filter(tEnrolledSuppliers -> tEnrolledSuppliers.getNameInCN().contains(name))
             .toList();
         return PageTools.listConvertToPage(list,PageRequest.of(pageNum,pageSize)) ;
     }
 
-    public TCompanyBaseInformation  enrolledSupplier(String code,String companyCode){
+    /**
+     * 入格供应商查询
+     * @param code 入格供应商编码
+     * @param companyCode 本单位编码
+     * @return 入格供应商查询
+     */
+    public Optional<TEnrolledSupplier>  enrolledSupplier(String code,String companyCode){
+        Optional<EnrolledSupplier>  enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
+                 .compSaler(code)
+                 .compBuyer(companyCode)
+             .build());
+        Optional<TEnrolledSupplier>  tEnrolledSupplier = enrolledSupplier.map(companyMapper::toTEnrolledSupplierDetail);
 
-       Optional<CompTrad> compTrad =  compTradeRepository.findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSaler(companyCode,code);
-
-        return  null;
+        if(enrolledSupplier.get().getBuyerBelongTo()!=null){
+            //查询本单位负责人
+            List<TOperatorInfo> operatorList = operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
+                    companyCode,
+                    Arrays.asList(enrolledSupplier.get().getBuyerBelongTo().split(","))
+                ).stream().map(operatorMapper::toDTO)
+                .toList();
+            tEnrolledSupplier.get().setOperators(operatorList);
+        }
+        return  tEnrolledSupplier;
     }
 }

@@ -1,9 +1,11 @@
 package com.linzhi.gongfu.repository;
 
 
+import com.linzhi.gongfu.dto.TEnrolledSupplier;
 import com.linzhi.gongfu.entity.CompTrad;
 import com.linzhi.gongfu.entity.CompTradId;
 import com.linzhi.gongfu.enumeration.Availability;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -26,5 +28,6 @@ public interface CompTradeRepository
 
 
     Optional<CompTrad> findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSaler(String comBuyer,String compSaler);
+
 
 }

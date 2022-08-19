@@ -267,10 +267,17 @@ public class SuppliersController {
      * @return 供应商详细信息
      */
     @GetMapping("/supplier/enrolled/{code}")
-    public VEnrolledSupplierResponse supplierDetail(@PathVariable String code){
+    public VEnrolledSupplierResponse supplierDetail(@PathVariable String code) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        return VEnrolledSupplierResponse.builder().build();
+        var supplier = companyService.enrolledSupplier(code,session.getSession().getCompanyCode())
+            .map(companyMapper::toVTEnrolledSupplierDetail)
+            .orElseThrow(()->new IOException("数据为空"));
+        return VEnrolledSupplierResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .supplier(supplier)
+            .build();
     }
 }

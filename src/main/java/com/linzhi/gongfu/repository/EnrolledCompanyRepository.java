@@ -9,6 +9,7 @@ import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Enrollment;
 import com.linzhi.gongfu.enumeration.Whether;
+import lombok.NonNull;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -30,19 +31,12 @@ public interface EnrolledCompanyRepository
     String findMaxCode();
 
     @Cacheable(value = "companyDetail;1800", unless = "#result == null ",key = "#companyCode")
-    Optional<EnrolledCompany> findById(String companyCode);
+    @NonNull
+    Optional<EnrolledCompany> findById(@NonNull String companyCode);
 
     @Cacheable(value = "EnrolledCompany_List;1800", unless = "#result == null ")
     List<EnrolledCompany> findAllByVisibleAndState(Whether visible, Enrollment enrollment);
 
-    /**
-     * 查找本单位内供应商列表
-     * @param companyCode 单位编码
-     * @return 内供应商列表
-     */
-    @Cacheable(value = "Enrolled_Supplier_List;1800",key="#companyCode+'-'+#state", unless = "#result == null ")
-    @Query(value = "select new  com.linzhi.gongfu.dto.TEnrolledSuppliers(b.code,b.nameInCN  ,b.shortNameInCN  ,c.USCI)  from Company b " +
-        "INNER JOIN  EnrolledCompany c on c.id=b.code LEFT JOIN CompTrad t on t.compTradId.compSaler=b.code" +
-        " where t.compTradId.compBuyer=?1 and  b.role='1' and t.state=?2")
-    List<TEnrolledSuppliers> findEnrolledSupplierList(String companyCode, Availability state);
+
+
 }

@@ -38,4 +38,6 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
         "  where chi_short=?1 and code <>?2  and role='1' "
         ,nativeQuery = true)
     int checkRepeat(String shortName,String companyCode);
+
+
 }
