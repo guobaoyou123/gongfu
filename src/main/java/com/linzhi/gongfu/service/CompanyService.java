@@ -52,7 +52,7 @@ public class CompanyService {
     private final EnrolledSupplierRepository enrolledSupplierRepository;
     private final OperatorRepository operatorRepository;
     private final OperatorMapper operatorMapper;
-
+    private final CompTradDetailRepository compTradDetailRepository;
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -641,6 +641,7 @@ public class CompanyService {
      * @param companyCode 本单位编码
      * @return 入格供应商查询
      */
+    @Cacheable(value = "Enrolled_Supplier_detail;1800",key="#companyCode+'-'+#code", unless = "#result == null ")
     public Optional<TEnrolledSupplier>  enrolledSupplier(String code,String companyCode){
         Optional<EnrolledSupplier>  enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
                  .compSaler(code)
@@ -658,5 +659,19 @@ public class CompanyService {
             tEnrolledSupplier.get().setOperators(operatorList);
         }
         return  tEnrolledSupplier;
+    }
+    @CacheEvict(value = "Enrolled_Supplier_detail;1800",key="#compBuyer+'-'+#compSaler")
+    @Transactional
+    public void   authorizedOperator(String compSaler,String compBuyer,String operators){
+        try {
+            compTradeRepository.updateCompTrade(operators,
+                CompTradId.builder()
+                    .compBuyer(compBuyer)
+                    .compSaler(compSaler)
+                    .build());
+        }catch (Exception e){
+            e.printStackTrace();
+
+        }
     }
 }

@@ -280,4 +280,16 @@ public class SuppliersController {
             .supplier(supplier)
             .build();
     }
+
+    @PostMapping("/supplier/{code}/operators")
+    public VBaseResponse authorizedOperator(@PathVariable String code,@RequestBody Optional<VAuthorizedOperatorRequest> operators){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        companyService.authorizedOperator(code,session.getSession().getCompanyCode(),operators.orElseThrow(()->new NullPointerException("数据未空")).getOperators());
+        return VBaseResponse.builder()
+            .code(200)
+            .message("保存数据成功")
+            .build();
+    }
 }
