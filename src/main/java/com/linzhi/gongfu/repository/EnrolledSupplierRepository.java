@@ -10,7 +10,6 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface EnrolledSupplierRepository
     extends CrudRepository<EnrolledSupplier, CompTradId>, QuerydslPredicateExecutor<EnrolledSupplier> {

@@ -11,10 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -174,7 +171,7 @@ public class SuppliersController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.DISABLED,session.getSession().getCompanyCode());
+        var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.DISABLED,session.getSession().getCompanyCode(),"1");
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -196,7 +193,7 @@ public class SuppliersController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.ENABLED,session.getSession().getCompanyCode());
+        var flag = companyService.modifySupplierState(supplier.getCodes(), Availability.ENABLED,session.getSession().getCompanyCode(),"1");
         if(flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -281,6 +278,12 @@ public class SuppliersController {
             .build();
     }
 
+    /**
+     * 格友供应商授权操作员
+     * @param code 供应商编码
+     * @param operators 授权操作员编码（以逗号隔开）
+     * @return 返回成功或者失败信息
+     */
     @PostMapping("/supplier/{code}/operators")
     public VBaseResponse authorizedOperator(@PathVariable String code,@RequestBody Optional<VAuthorizedOperatorRequest> operators){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
@@ -290,6 +293,29 @@ public class SuppliersController {
         return VBaseResponse.builder()
             .code(200)
             .message("保存数据成功")
+            .build();
+    }
+
+    /**
+     * 启用禁用入格供应商
+     * @param code 入格供应商编码
+     * @param state 状态 0-禁用 1-启用
+     * @return 返回成功或者失败信息
+     */
+    @PostMapping("/suppliers/enrolled/{code}")
+    public VBaseResponse modifySupplierState(@PathVariable String code,@RequestBody Optional<VStateRequest> state){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = companyService.modifySupplierState(
+            List.of(code),
+            state.orElseThrow(()->new NullPointerException("数据为空")).getState().equals("1")?Availability.ENABLED:Availability.DISABLED,
+            session.getSession().getCompanyCode(),
+            "2"
+        );
+        return VBaseResponse.builder()
+            .code(flag?200:500)
+            .message(flag?"操作成功":"操作失败")
             .build();
     }
 }

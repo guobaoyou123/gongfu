@@ -52,7 +52,6 @@ public class CompanyService {
     private final EnrolledSupplierRepository enrolledSupplierRepository;
     private final OperatorRepository operatorRepository;
     private final OperatorMapper operatorMapper;
-    private final CompTradDetailRepository compTradDetailRepository;
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -341,17 +340,22 @@ public class CompanyService {
      * 修改供应商状态
      * @param code 供应商编码
      * @param state 状态
-     * @return 返回成功或则失败
+     * @param type 类型1-外供供应商 2-内供应商
+     * @return 返回成功或者失败
      */
     @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800",key = "'*'+#companyCode"),
         @CacheEvict(value = "brands_company;1800",key = "'*'+#companyCode"),
         @CacheEvict(value = "SupplierAndBrand;1800",key = "#companyCode"),
-        @CacheEvict(value = "Foreign_Supplier_List;1800",key="#companyCode")
+        @CacheEvict(value = "Foreign_Supplier_List;1800",key="#companyCode",condition = "#type=='1'"),
+        @CacheEvict(value = "Enrolled_Supplier_List;1800",key="#companyCode+'*'",condition = "#type=='2'")
     })
     @Transactional
-   public Boolean modifySupplierState(List<String> code,Availability state,String companyCode){
+   public Boolean modifySupplierState(List<String> code,Availability state,String companyCode,String type){
        try {
-           companyRepository.updateCompanyState(state,code);
+           if(type.equals("1")){
+               companyRepository.updateCompanyState(state,code);
+           }
+           compTradeRepository.updateCompTradeState(state,companyCode,code);
            return  true;
        }catch (Exception e){
            e.printStackTrace();
@@ -642,36 +646,43 @@ public class CompanyService {
      * @return 入格供应商查询
      */
     @Cacheable(value = "Enrolled_Supplier_detail;1800",key="#companyCode+'-'+#code", unless = "#result == null ")
-    public Optional<TEnrolledSupplier>  enrolledSupplier(String code,String companyCode){
-        Optional<EnrolledSupplier>  enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
+    public Optional<TEnrolledSupplier>  enrolledSupplier(String code,String companyCode) throws IOException {
+        EnrolledSupplier enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
                  .compSaler(code)
                  .compBuyer(companyCode)
-             .build());
-        Optional<TEnrolledSupplier>  tEnrolledSupplier = enrolledSupplier.map(companyMapper::toTEnrolledSupplierDetail);
-
-        if(enrolledSupplier.get().getBuyerBelongTo()!=null){
+             .build()).orElseThrow(()->new IOException("未从数据库找到"));
+        Optional<TEnrolledSupplier>  tEnrolledSupplier = Optional.of(enrolledSupplier).map(companyMapper::toTEnrolledSupplierDetail);
+        if(enrolledSupplier.getBuyerBelongTo()!=null){
             //查询本单位负责人
             List<TOperatorInfo> operatorList = operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
                     companyCode,
-                    Arrays.asList(enrolledSupplier.get().getBuyerBelongTo().split(","))
+                    Arrays.asList(enrolledSupplier.getBuyerBelongTo().split(","))
                 ).stream().map(operatorMapper::toDTO)
                 .toList();
             tEnrolledSupplier.get().setOperators(operatorList);
         }
         return  tEnrolledSupplier;
     }
+
+    /**
+     * 授权操作员
+     * @param compSaler 卖方编码
+     * @param compBuyer 买方编码
+     * @param operators 操作员编码（以逗号隔开）
+     */
     @CacheEvict(value = "Enrolled_Supplier_detail;1800",key="#compBuyer+'-'+#compSaler")
     @Transactional
     public void   authorizedOperator(String compSaler,String compBuyer,String operators){
         try {
-            compTradeRepository.updateCompTrade(operators,
+            compTradeRepository.updateCompTrade(
+                operators,
                 CompTradId.builder()
                     .compBuyer(compBuyer)
                     .compSaler(compSaler)
-                    .build());
+                    .build()
+            );
         }catch (Exception e){
             e.printStackTrace();
-
         }
     }
 }
