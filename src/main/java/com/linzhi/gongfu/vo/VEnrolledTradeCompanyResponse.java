@@ -8,7 +8,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于前端入格供应商详情的响应体组建
+ * 用于前端入格供应商或者内客户详情的响应体组建
  *
  * @author zgh
  * @create_at 2022-08-18
@@ -17,11 +17,11 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VEnrolledSupplierResponse extends VBaseResponse  {
+public class VEnrolledTradeCompanyResponse extends VBaseResponse  {
 
-    private VSupplier supplier;
+    private VCompany company;
     @Data
-    public  static  class  VSupplier{
+    public  static  class  VCompany{
         /**
          * 系统编码
          */

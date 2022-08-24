@@ -4,7 +4,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
-import java.util.List;
+/**
+ * 用于接前端授权操作员的请求
+ */
 @Data
 @Jacksonized
 @NoArgsConstructor

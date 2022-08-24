@@ -1,17 +1,15 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
-import com.linzhi.gongfu.dto.TEnrolledSupplier;
-import com.linzhi.gongfu.dto.TEnrolledSuppliers;
+import com.linzhi.gongfu.dto.TEnrolledTradeCompany;
+import com.linzhi.gongfu.dto.TEnrolledTradeCompanies;
 import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.EnrolledCompany;
-import com.linzhi.gongfu.entity.EnrolledSupplier;
+import com.linzhi.gongfu.entity.EnrolledTrade;
 import com.linzhi.gongfu.vo.*;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.util.Map;
 
 /**
  * 用于转换公司相关信息
@@ -172,15 +170,15 @@ public interface CompanyMapper {
     VEnrolledCompanyResponse.VCompany toEnrolledCompanyDetail(TCompanyBaseInformation company);
 
     /**
-     * 明确可以成功获取到入格供应商公司基础信息时，向预获取响应转换
+     * 明确可以成功获取到入格供应商或者客户公司基础信息时，向预获取响应转换
      *
-     * @param tEnrolledSuppliers 入格供应商单位公司基础信息
-     * @return 入格供应商公司基本信息预获取响应
+     * @param tEnrolledTradeCompanies 入格供应商或者客户单位公司基础信息
+     * @return 入格供应商或者客户公司基本信息预获取响应
      */
     @Mapping(target = "companyName",source = "nameInCN")
     @Mapping(target = "companyShortName",source = "shortNameInCN")
     @Mapping(target = "usci",source = "USCI")
-    VEnrolledSuppliersResponse.VEnrolledSupplier toVEnrolledSupplier(TEnrolledSuppliers tEnrolledSuppliers);
+    VEnrolledTradeCompaniesResponse.VEnrolledTradeCompany toVEnrolledTradeCompanies(TEnrolledTradeCompanies tEnrolledTradeCompanies);
 
 
     /**
@@ -200,12 +198,31 @@ public interface CompanyMapper {
     @Mapping(target = "areaName",expression = "java(enrolledSupplier.getCompany().getCompVisible()!=null&&enrolledSupplier.getCompany().getCompVisible().getVisibleContent()!=null&&enrolledSupplier.getCompany().getCompVisible().getVisibleContent().contains(\"address\")?enrolledSupplier.getCompany().getDetails().getAreaName():null)")
     @Mapping(target = "address",expression = "java(enrolledSupplier.getCompany().getCompVisible()!=null&&enrolledSupplier.getCompany().getCompVisible().getVisibleContent()!=null&&enrolledSupplier.getCompany().getCompVisible().getVisibleContent().contains(\"address\")?enrolledSupplier.getCompany().getDetails().getAddress():null)")
     @Mapping(target = "introduction",expression = "java(enrolledSupplier.getCompany().getCompVisible()!=null&&enrolledSupplier.getCompany().getCompVisible().getVisibleContent()!=null&&enrolledSupplier.getCompany().getCompVisible().getVisibleContent().contains(\"introduction\")?enrolledSupplier.getCompany().getIntroduction():null)")
-    TEnrolledSupplier toTEnrolledSupplierDetail(EnrolledSupplier enrolledSupplier);
+    TEnrolledTradeCompany toTEnrolledSupplierDetail(EnrolledTrade enrolledSupplier);
 
     /**
-     * 明确可以成功获取入格供应商详细信息时，向预响应转换
-     * @param tEnrolledSupplier 入格供应商公司详细信息
-     * @return 入格供应商公司详细信息预获取响应
+     * 明确可以成功获取入格供应商或者客户详细信息时，向预响应转换
+     * @param tEnrolledTradeCompany 入格供应商者客户公司详细信息
+     * @return 入格供应商者客户公司详细信息预获取响应
      */
-    VEnrolledSupplierResponse.VSupplier toVTEnrolledSupplierDetail(TEnrolledSupplier tEnrolledSupplier);
+    VEnrolledTradeCompanyResponse.VCompany toTEnrolledTradeCompany(TEnrolledTradeCompany tEnrolledTradeCompany);
+
+    /**
+     * 将获取到的入格客户详细信息，转换为可供使用的对我可见的入格客户详细信息
+     * @param enrolledCustomer 入格客户详细信息
+     * @return 对我可见的入格客户详细信息
+     */
+    @Mapping(target = "code",source = "buyerCompany.details.code")
+    @Mapping(target = "companyName",source = "buyerCompany.nameInCN")
+    @Mapping(target = "companyShortName",source = "buyerCompany.details.shortNameInCN")
+    @Mapping(target = "usci",source = "buyerCompany.USCI")
+    @Mapping(target = "taxMode",expression = "java(String.valueOf(enrolledCustomer.getTaxModel().getTaxMode()))")
+    @Mapping(target = "brands",source = "brands")
+    @Mapping(target = "contactName",expression = "java(enrolledCustomer.getBuyerCompany().getCompVisible()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent().contains(\"contactPhone\")?enrolledCustomer.getBuyerCompany().getDetails().getContactName():null)")
+    @Mapping(target = "contactPhone",expression = "java(enrolledCustomer.getBuyerCompany().getCompVisible()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent().contains(\"contactPhone\")?enrolledCustomer.getBuyerCompany().getDetails().getContactPhone():null)")
+    @Mapping(target = "areaCode",expression = "java(enrolledCustomer.getBuyerCompany().getCompVisible()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent().contains(\"address\")?enrolledCustomer.getBuyerCompany().getDetails().getAreaCode():null)")
+    @Mapping(target = "areaName",expression = "java(enrolledCustomer.getBuyerCompany().getCompVisible()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent().contains(\"address\")?enrolledCustomer.getBuyerCompany().getDetails().getAreaName():null)")
+    @Mapping(target = "address",expression = "java(enrolledCustomer.getBuyerCompany().getCompVisible()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent().contains(\"address\")?enrolledCustomer.getBuyerCompany().getDetails().getAddress():null)")
+    @Mapping(target = "introduction",expression = "java(enrolledCustomer.getBuyerCompany().getCompVisible()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent()!=null&&enrolledCustomer.getBuyerCompany().getCompVisible().getVisibleContent().contains(\"introduction\")?enrolledCustomer.getBuyerCompany().getIntroduction():null)")
+    TEnrolledTradeCompany toTEnrolledCustomerDetail(EnrolledTrade enrolledCustomer);
 }

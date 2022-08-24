@@ -3,10 +3,8 @@ package com.linzhi.gongfu.repository;
 import java.util.List;
 import java.util.Optional;
 
-import com.linzhi.gongfu.dto.TEnrolledSuppliers;
 import com.linzhi.gongfu.entity.EnrolledCompany;
 
-import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Enrollment;
 import com.linzhi.gongfu.enumeration.Whether;
 import lombok.NonNull;

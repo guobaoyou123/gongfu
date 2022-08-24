@@ -2,12 +2,15 @@ package com.linzhi.gongfu.dto;
 
 import lombok.*;
 
+/**
+ * 入格供应商或者客户简易信息
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
 @Getter
-public class TEnrolledSuppliers {
+public class TEnrolledTradeCompanies {
 
     /**
      * 系统编码

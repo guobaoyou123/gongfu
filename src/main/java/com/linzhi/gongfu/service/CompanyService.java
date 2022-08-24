@@ -623,20 +623,26 @@ public class CompanyService {
     }
 
     /**
-     * 查找本单位内供应商列表
-     * @param state 状态 0-禁用 1-启用
+     * 查找本单位内供应商或者内客户列表
      * @param name 供应商公司名称
      * @param pageNum 页数
      * @param pageSize 每页展示几条
      * @param companyCode 本单位编码
+     * @param type 类型 1-内供应商 2-内客户
      * @return 内供应商列表
      */
-    public Page<TEnrolledSuppliers>  pageEnrolledSuppliers(String state,String name ,int pageNum,int pageSize,String companyCode){
-
-        List<TEnrolledSuppliers> list =  enrolledSupplierRepository.findEnrolledSupplierList(companyCode,state.equals("1")?Availability.ENABLED:Availability.DISABLED)
-            .stream().filter(tEnrolledSuppliers -> tEnrolledSuppliers.getNameInCN().contains(name))
-            .toList();
-        return PageTools.listConvertToPage(list,PageRequest.of(pageNum,pageSize)) ;
+    public Page<TEnrolledTradeCompanies>  pageEnrolledTradeCompanies(String name , int pageNum, int pageSize, String companyCode, String type){
+        List<TEnrolledTradeCompanies> list;
+        if(type.equals("1")){
+             list =  enrolledSupplierRepository.findEnrolledSupplierList(companyCode);
+        }else {
+            list =  enrolledSupplierRepository.findEnrolledCustomerList(companyCode);
+        }
+        return PageTools.listConvertToPage(
+            list.stream().filter(tEnrolledSuppliers -> tEnrolledSuppliers.getNameInCN().contains(name))
+            .toList(),
+            PageRequest.of(pageNum,pageSize)
+        ) ;
     }
 
     /**
@@ -646,12 +652,12 @@ public class CompanyService {
      * @return 入格供应商查询
      */
     @Cacheable(value = "Enrolled_Supplier_detail;1800",key="#companyCode+'-'+#code", unless = "#result == null ")
-    public Optional<TEnrolledSupplier>  enrolledSupplier(String code,String companyCode) throws IOException {
-        EnrolledSupplier enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
+    public Optional<TEnrolledTradeCompany>  enrolledSupplier(String code, String companyCode) throws IOException {
+        EnrolledTrade enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
                  .compSaler(code)
                  .compBuyer(companyCode)
              .build()).orElseThrow(()->new IOException("未从数据库找到"));
-        Optional<TEnrolledSupplier>  tEnrolledSupplier = Optional.of(enrolledSupplier).map(companyMapper::toTEnrolledSupplierDetail);
+        Optional<TEnrolledTradeCompany>  tEnrolledSupplier = Optional.of(enrolledSupplier).map(companyMapper::toTEnrolledSupplierDetail);
         if(enrolledSupplier.getBuyerBelongTo()!=null){
             //查询本单位负责人
             List<TOperatorInfo> operatorList = operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
@@ -670,17 +676,127 @@ public class CompanyService {
      * @param compBuyer 买方编码
      * @param operators 操作员编码（以逗号隔开）
      */
-    @CacheEvict(value = "Enrolled_Supplier_detail;1800",key="#compBuyer+'-'+#compSaler")
     @Transactional
-    public void   authorizedOperator(String compSaler,String compBuyer,String operators){
+    public void   authorizedOperator(String compSaler,String compBuyer,String operators,String type){
         try {
-            compTradeRepository.updateCompTrade(
-                operators,
-                CompTradId.builder()
-                    .compBuyer(compBuyer)
-                    .compSaler(compSaler)
-                    .build()
-            );
+            if(type.equals("1")){
+                compTradeRepository.updateCompTradeBuyer(
+                    operators,
+                    CompTradId.builder()
+                        .compBuyer(compBuyer)
+                        .compSaler(compSaler)
+                        .build()
+                );
+            }else {
+                compTradeRepository.updateCompTradeSaler(
+                    operators,
+                    CompTradId.builder()
+                        .compBuyer(compBuyer)
+                        .compSaler(compSaler)
+                        .build()
+                );
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 入格客户查询
+     * @param code 入格客户编码
+     * @param companyCode 本单位编码
+     * @return 入格客户查询
+     */
+    @Cacheable(value = "Enrolled_Customer_detail;1800",key="#companyCode+'-'+#code", unless = "#result == null ")
+    public Optional<TEnrolledTradeCompany>  enrolledCustomer(String code, String companyCode) throws IOException {
+        EnrolledTrade enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
+            .compSaler(companyCode)
+            .compBuyer(code)
+            .build()).orElseThrow(()->new IOException("未从数据库找到"));
+        Optional<TEnrolledTradeCompany>  tEnrolledCustomer = Optional.of(enrolledSupplier).map(companyMapper::toTEnrolledCustomerDetail);
+        if(enrolledSupplier.getSalerBelongTo()!=null){
+            //查询本单位负责人
+            List<TOperatorInfo> operatorList = operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
+                    companyCode,
+                    Arrays.asList(enrolledSupplier.getSalerBelongTo().split(","))
+                ).stream().map(operatorMapper::toDTO)
+                .toList();
+            tEnrolledCustomer.get().setOperators(operatorList);
+        }
+        return  tEnrolledCustomer;
+    }
+
+
+    /**
+     * 修改客户状态
+     * @param code 客户编码
+     * @param state 状态
+     * @return 返回成功或者失败
+     */
+    @CacheEvict(value = "Enrolled_Customer_List;1800",key="#companyCode+'*'")
+    @Transactional
+    public Boolean modifySupplierState(List<String> code,Availability state,String companyCode){
+        try {
+            compTradeRepository.updateCompTradeState(state,companyCode,code);
+            return  true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return  false;
+        }
+    }
+
+    /**
+     * 修改交易品牌
+     * @param compSaler 卖方编码
+     * @param compBuyer 买方编码
+     * @param brands 品牌列表
+     */
+    @Caching(evict = {
+        @CacheEvict(value = "Enrolled_Customer_detail;1800",key="#compSaler+'-'+#compBuyer"),
+        @CacheEvict(value = "Enrolled_Supplier_detail;1800",key="#compBuyer+'-'+#compSaler"),
+        @CacheEvict(value = "suppliers_brands;1800",key = "'*'+#compBuyer"),
+        @CacheEvict(value = "brands_company;1800",key = "'*'+#compBuyer"),
+        @CacheEvict(value = "SupplierAndBrand;1800",key = "#compBuyer"),
+    })
+    @Transactional
+    public void   modifyTradeBrands(String compSaler,String compBuyer,List<String> brands){
+        try {
+            compTradBrandRepository.deleteCompTradBrand(compBuyer,compSaler);
+            List<CompTradBrand> compTradBrands = new ArrayList<>();
+            brands.forEach(s -> compTradBrands.add(CompTradBrand.builder()
+                    .compTradBrandId(CompTradBrandId.builder()
+                        .brandCode(s)
+                        .compSaler(compSaler)
+                        .compBuyer(compBuyer)
+                        .build())
+                .build()));
+            if(compTradBrands.size()>0)
+                 compTradBrandRepository.saveAll(compTradBrands);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 修改交易报价模式
+     * @param compSaler 卖方编码
+     * @param compBuyer 买方编码
+     * @param taxModel 报价模式
+     */
+    @Caching(evict = {
+        @CacheEvict(value = "Enrolled_Customer_detail;1800",key="#compSaler+'-'+#compBuyer"),
+        @CacheEvict(value = "Enrolled_Supplier_detail;1800",key="#compBuyer+'-'+#compSaler")
+    })
+    @Transactional
+    public void   modifyTradeTaxModel(String compSaler,String compBuyer,String taxModel){
+        try {
+             compTradeRepository.updateTaxModel(
+                 taxModel.equals("0")?TaxMode.UNTAXED:TaxMode.INCLUDED,
+                 CompTradId.builder()
+                     .compBuyer(compBuyer)
+                     .compSaler(compSaler)
+                     .build());
         }catch (Exception e){
             e.printStackTrace();
         }

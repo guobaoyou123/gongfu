@@ -8,7 +8,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于响应前端内供应商列表的请求
+ * 用于响应前端内供应商或者内客户列表的请求
  *
  * @author zgh
  * @create_at 2022-08-18
@@ -17,7 +17,7 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VEnrolledSuppliersResponse extends VBaseResponse{
+public class VEnrolledTradeCompaniesResponse extends VBaseResponse{
 
     /**
      * 当前页
@@ -31,10 +31,10 @@ public class VEnrolledSuppliersResponse extends VBaseResponse{
     /**
      * 内供应商列表
      */
-    List<VEnrolledSupplier> suppliers;
+    List<VEnrolledTradeCompany> companies;
 
     @Data
-    public static class VEnrolledSupplier{
+    public static class VEnrolledTradeCompany{
 
         /**
          * 系统编码

@@ -3,14 +3,13 @@ package com.linzhi.gongfu.entity;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
-import org.springframework.data.jpa.repository.Query;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
 /**
- * 入格供应商实体
+ * 入格供应商客户交易信息实体
  *
  * @author zgh
  * @create_at 2022-08-19
@@ -23,7 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "comp_trade")
-public class EnrolledSupplier implements Serializable {
+public class EnrolledTrade implements Serializable {
 
     /**
      * 主键：卖方编号+买方编号
@@ -50,6 +49,12 @@ public class EnrolledSupplier implements Serializable {
     @JoinColumn(name = "comp_saler", referencedColumnName = "id", insertable = false, updatable = false)
     private  EnrolledCompany  company;
 
+    /**
+     * 客户信息
+     */
+    @OneToOne
+    @JoinColumn(name = "comp_buyer", referencedColumnName = "id", insertable = false, updatable = false)
+    private  EnrolledCompany  buyerCompany;
     /**
      * 交易品牌
      */

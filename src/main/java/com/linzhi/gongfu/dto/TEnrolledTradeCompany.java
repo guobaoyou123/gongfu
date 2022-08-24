@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @Setter
 @Getter
-public class TEnrolledSupplier {
+public class TEnrolledTradeCompany {
 
     /**
      * 入格供应商编码

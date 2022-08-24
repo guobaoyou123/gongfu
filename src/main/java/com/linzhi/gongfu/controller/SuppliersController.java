@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 用于处理单位信息以及供应商、客户等信息
+ * 用于处理供应商信息
  *
  * @author zgh
  * @create_at 2022-01-28
@@ -235,26 +235,25 @@ public class SuppliersController {
      * @return 返回入格的供应商列表
      */
     @GetMapping("/suppliers/enrolled")
-    public VEnrolledSuppliersResponse enrolledSupplierPage(@RequestParam("state") Optional<String> state,
-                                                           @RequestParam("name") Optional<String> name,
-                                                           @RequestParam("pageNum") Optional<String> pageNum,
-                                                           @RequestParam("pageSize") Optional<String> pageSize){
+    public VEnrolledTradeCompaniesResponse enrolledSupplierPage(
+                                                                @RequestParam("name") Optional<String> name,
+                                                                @RequestParam("pageNum") Optional<String> pageNum,
+                                                                @RequestParam("pageSize") Optional<String> pageSize){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var page = companyService.pageEnrolledSuppliers(
-            state.orElse("1"),
+        var page = companyService.pageEnrolledTradeCompanies(
             name.orElse(""),
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10),
-            session.getSession().getCompanyCode()
+            session.getSession().getCompanyCode(),"1"
         );
-        return VEnrolledSuppliersResponse.builder()
+        return VEnrolledTradeCompaniesResponse.builder()
             .code(200)
             .message("数据获取成功")
             .current(page.getNumber()+1)
             .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
-            .suppliers(page.getContent().stream().map(companyMapper::toVEnrolledSupplier).toList())
+            .companies(page.getContent().stream().map(companyMapper::toVEnrolledTradeCompanies).toList())
             .build();
     }
 
@@ -264,17 +263,17 @@ public class SuppliersController {
      * @return 供应商详细信息
      */
     @GetMapping("/supplier/enrolled/{code}")
-    public VEnrolledSupplierResponse supplierDetail(@PathVariable String code) throws IOException {
+    public VEnrolledTradeCompanyResponse supplierDetail(@PathVariable String code) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
         var supplier = companyService.enrolledSupplier(code,session.getSession().getCompanyCode())
-            .map(companyMapper::toVTEnrolledSupplierDetail)
+            .map(companyMapper::toTEnrolledTradeCompany)
             .orElseThrow(()->new IOException("数据为空"));
-        return VEnrolledSupplierResponse.builder()
+        return VEnrolledTradeCompanyResponse.builder()
             .code(200)
             .message("获取数据成功")
-            .supplier(supplier)
+            .company(supplier)
             .build();
     }
 
@@ -289,7 +288,7 @@ public class SuppliersController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        companyService.authorizedOperator(code,session.getSession().getCompanyCode(),operators.orElseThrow(()->new NullPointerException("数据未空")).getOperators());
+        companyService.authorizedOperator(code,session.getSession().getCompanyCode(),operators.orElseThrow(()->new NullPointerException("数据未空")).getOperators(),"1");
         return VBaseResponse.builder()
             .code(200)
             .message("保存数据成功")

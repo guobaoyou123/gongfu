@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * 用于处理单位信息以及供应商、客户等信息
+ * 用于处理单位信息
  *
  * @author zgh
  * @create_at 2022-01-28
