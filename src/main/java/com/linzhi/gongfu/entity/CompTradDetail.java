@@ -44,7 +44,7 @@ public class CompTradDetail implements Serializable {
      *所属买方操作员
      */
     @Column(name = "buyer_belong_to")
-    private TaxMode buyerBelongTo;
+    private String buyerBelongTo;
 
     /**
      * 所属卖方单位操作员

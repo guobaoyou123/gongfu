@@ -39,9 +39,8 @@ import java.util.*;
 @Service
 public class CompTradeApplyService {
     private final CompTradeApplyRepository compTradeApplyRepository;
-    private final NotificationRepository notificationRepository;
     private final CompInvitationCodeRepository compInvitationCodeRepository;
-    private final SceneMenuRepository sceneMenuRepository;
+
     private final CompTradeApplyMapper compTradeApplyMapper;
     private final CompTradDetailRepository compTradDetailRepository;
     private final CompTradBrandRepository compTradBrandRepository;
@@ -57,7 +56,6 @@ public class CompTradeApplyService {
      * @param vTradeApplyRequest 申请信息
      * @param companyCode 单位编码
      * @param operatorCode 操作员编码
-     * @param companyName 单位名称
      * @return 返回是或否
      */
     @Caching(evict = {
@@ -66,7 +64,7 @@ public class CompTradeApplyService {
         @CacheEvict(value = "Notification_List;1800", key = "#vTradeApplyRequest.applyCompCode+ '-' + '*'")
     })
     @Transactional
-    public Map<String,String> saveTradeApply(VTradeApplyRequest vTradeApplyRequest,String companyCode,String operatorCode,String companyName){
+    public Map<String,String> saveTradeApply(VTradeApplyRequest vTradeApplyRequest,String companyCode,String operatorCode){
           Map<String,String> map = new HashMap<>();
           map.put("flag","0");
         try{
@@ -115,19 +113,6 @@ public class CompTradeApplyService {
                map.put("code",compTradeApply1.getCode());
                return map;
            }
-           //查找有格友综合管理权限的场景
-           List<String> sceneList= sceneMenuRepository.findList("格友管理").stream()
-                   .map(sceneMenu -> sceneMenu.getSceneMenuId().getSceneCode())
-                   .toList();
-           //存入消息通知表
-           List<Notification> notifications = new ArrayList<>();
-               sceneList.forEach(s -> {
-                   //消息通知编码  XXTZ-类型-申请单位-操作员-时间戳-随机数
-                   Notification notification = createdNotification(companyCode,companyName+"公司申请采购",operatorCode,NotificationType.ENROLLED_APPLY,compTradeApply1.getCode(),
-                       vTradeApplyRequest.getApplyCompCode(),s,null);
-                   notifications.add(notification);
-               });
-           notificationRepository.saveAll(notifications);
 
             //销毁邀请码
            if(vTradeApplyRequest.getInvitationCode()!=null)
@@ -175,7 +160,7 @@ public class CompTradeApplyService {
         @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'"),
         @CacheEvict(value = "Enrolled_Supplier_List;1800",key="#compTradeApply.handledCompBy+'-1")
     })
-    public boolean consentApply(CompTradeApply compTradeApply, String companyCode,String companyName, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
+    public boolean consentApply(CompTradeApply compTradeApply, String companyCode,String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest){
         try{
            compTradeApply.setHandledBy(operatorCode);
            compTradeApply.setHandledAt(LocalDateTime.now());
@@ -207,19 +192,7 @@ public class CompTradeApplyService {
                 compTradBrands.add(compTradBrand);
             });
             compTradBrandRepository.saveAll(compTradBrands);
-            //存入消息通知表
-            //消息通知编码  XXTZ-类型-申请单位-操作员-时间戳-随机数
-            Notification notification = createdNotification(
-                companyCode,
-                companyName+"公司同意了您的申请采购的请求",
-                operatorCode,
-                NotificationType.ENROLLED_APPLY_HISTORY,
-                compTradeApply.getCode(),
-                compTradeApply.getCreatedCompBy(),
-                null,
-                compTradeApply.getCreatedBy()
-            );
-            notificationRepository.save(notification);
+
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -237,40 +210,11 @@ public class CompTradeApplyService {
         return  compTradeApplyRepository.findById(code).orElseThrow(()->new IOException("从数据中未找到该申请"));
     }
 
-    /**
-     * 创建消息通知实体
-     * @param companyCode 单位编码
-     * @param message 消息内容
-     * @param operatorCode 操作员
-     * @param type 类型
-     * @param id 关联表主键
-     * @param pushComp 推送单位
-     * @param scene 推送场景
-     * @param pushOperatorCode 推送人
-     * @return 返回消息实体
-     */
-    public Notification createdNotification(String companyCode,String message,String operatorCode,NotificationType type,String id,String pushComp,String scene,String pushOperatorCode){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyMMdd");
-        LocalDate data=LocalDate.now();
-        return  Notification.builder()
-            .code("XXTZ-"+type.getType()+"-"+companyCode+"-"+operatorCode+"-"+dtf.format(data)+"-"+UUID.randomUUID().toString().substring(0,8))
-            .createdAt(LocalDateTime.now())
-            .id(id)
-            .createdBy(operatorCode)
-            .createdCompBy(companyCode)
-            .pushComp(pushComp)
-            .type(type)
-            .message(message)
-            .pushScene(scene)
-            .pushOperator(pushOperatorCode)
-            .readed(Whether.NO)
-            .build();
-    }
+
 
     /**
      * 拒绝申请和始终拒绝申请
      * @param companyCode 单位编码
-     * @param companyName 单位名称
      * @param operatorCode 操作员编码
      * @param remark 拒绝原因
      * @param state 状态 1-拒绝 2-始终拒绝
@@ -282,11 +226,10 @@ public class CompTradeApplyService {
         @CacheEvict(value="trade_apply_List;1800", key="#companyCode+'-'+1"),
         @CacheEvict(value="trade_apply_history_List;1800", key="#compTradeApply.handledCompBy"),
         @CacheEvict(value="trade_apply_detail;1800", key="#compTradeApply.code"),
-        @CacheEvict(value="Black_list;1800", key="#companyCode"),
-        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'")
+        @CacheEvict(value="Black_list;1800", key="#companyCode")
     })
     @Transactional
-    public boolean refuseApply(String companyCode,String companyName,
+    public boolean refuseApply(String companyCode,
                                String operatorCode,String remark,
                                String state,CompTradeApply compTradeApply){
         try {
@@ -318,18 +261,7 @@ public class CompTradeApplyService {
                 );
             }
             compTradeApplyRepository.save(compTradeApply);
-            //存入消息通知表
-            Notification notification = createdNotification(
-                companyCode,
-                companyName+"公司拒绝了您的申请采购的请求",
-                operatorCode,
-                NotificationType.ENROLLED_APPLY_HISTORY,
-                compTradeApply.getCode(),
-                compTradeApply.getCreatedCompBy(),
-                null,
-                compTradeApply.getCreatedBy()
-            );
-            notificationRepository.save(notification);
+
             return true;
         }catch (Exception e){
             e.printStackTrace();

@@ -24,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,7 @@ public class CompanyService {
     private final CompanyMapper companyMapper;
     private final CompanyRepository companyRepository;
     private final CompTradeRepository compTradeRepository;
+    private final CompTradDetailRepository compTradDetailRepository;
     private final CompTradeMapper compTradeMapper;
     private final JPAQueryFactory queryFactory;
     private final BrandMapper brandMapper;
@@ -770,16 +773,23 @@ public class CompanyService {
         @CacheEvict(value = "Enrolled_Supplier_detail;1800",key="#compBuyer+'-'+#compSaler")
     })
     @Transactional
-    public void   modifyTradeTaxModel(String compSaler,String compBuyer,String taxModel){
+    public String   modifyTradeTaxModel(String compSaler,String compBuyer,String taxModel){
         try {
-             compTradeRepository.updateTaxModel(
+            CompTradDetail compTradDetail = compTradDetailRepository.findById(CompTradId
+                .builder()
+                    .compSaler(compSaler)
+                    .compBuyer(compBuyer)
+                .build()).orElseThrow(()->new IOException("没有从数据库中找到该数据"));
+            compTradeRepository.updateTaxModel(
                  taxModel.equals("0")?TaxMode.UNTAXED:TaxMode.INCLUDED,
                  CompTradId.builder()
                      .compBuyer(compBuyer)
                      .compSaler(compSaler)
                      .build());
+            return compTradDetail.getBuyerBelongTo()==null?"000":compTradDetail.getBuyerBelongTo();
         }catch (Exception e){
             e.printStackTrace();
+            return null;
         }
     }
 }

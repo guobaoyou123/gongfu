@@ -1,11 +1,15 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.entity.CompTradeApply;
+import com.linzhi.gongfu.entity.Notification;
+import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.TradeApply;
 import com.linzhi.gongfu.mapper.BlacklistMapper;
+import com.linzhi.gongfu.repository.SceneMenuRepository;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompTradeApplyService;
 import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.service.NotificationService;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +18,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,6 +34,8 @@ public class EnrolledCompanyController {
     private final CompanyService companyService;
     private final CompTradeApplyService compTradeApplyService;
     private final BlacklistMapper blacklistMapper;
+    private final SceneMenuRepository sceneMenuRepository;
+    private final NotificationService notificationService;
     /**
      * 查询入格单位信息列表分页
      * @param name 公司名称
@@ -126,12 +134,31 @@ public class EnrolledCompanyController {
         var map = compTradeApplyService.saveTradeApply(
             vTradeApplyRequest.orElseThrow(()->new NullPointerException("数据为空")),
             session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),
-            session.getSession().getCompanyName()
+            session.getSession().getOperatorCode()
         );
+        if(!map.get("flag").equals("1"))
+            return VTradeApplyResponse.builder()
+                .code(map.get("flag").equals("0")?500:202)
+                .message(map.get("flag").equals("0")?"操作失败":"该格友已拒绝申请")
+                .applyCode(map.get("code"))
+                .build();
+        //查找有格友综合管理权限的场景
+        List<String> sceneList= sceneMenuRepository.findList("格友管理").stream()
+            .map(sceneMenu -> sceneMenu.getSceneMenuId().getSceneCode())
+            .toList();
+        //消息通知
+        notificationService.saveNotification(
+            session.getSession().getCompanyCode(),
+            session.getSession().getCompanyName()+"公司申请采购",
+            session.getSession().getOperatorCode(),
+            NotificationType.ENROLLED_APPLY,
+            map.get("code"),
+            vTradeApplyRequest.get().getApplyCompCode(),
+            sceneList,null);
+
         return VTradeApplyResponse.builder()
-            .code(map.get("flag").equals("0")?500:map.get("flag").equals("1")?200:202)
-            .message(map.get("flag").equals("0")?"操作失败":map.get("flag").equals("1")?"操作成功":"该格友已拒绝申请")
+            .code(200)
+            .message("操作成功")
             .applyCode(map.get("code"))
             .build();
     }
@@ -184,12 +211,24 @@ public class EnrolledCompanyController {
         var flag = compTradeApplyService.consentApply(
             compTradeApply,
             session.getSession().getCompanyCode(),
-            session.getSession().getCompanyName(),
             session.getSession().getOperatorCode(),
             vTradeApplyConsentRequest.orElseThrow(()->new NullPointerException("数据为空")));
+        if(!flag)
+            return VBaseResponse.builder()
+                .code(500)
+                .message("操作失败")
+                .build();
+        notificationService.saveNotification(session.getSession().getCompanyCode(),
+            session.getSession().getCompanyName()+"公司同意了您的申请采购的请求",
+            session.getSession().getOperatorCode(),
+            NotificationType.ENROLLED_APPLY_HISTORY,
+            compTradeApply.getCode(),
+            compTradeApply.getCreatedCompBy(),
+            null,
+            new String[]{compTradeApply.getCreatedBy()});
         return VBaseResponse.builder()
-            .code(flag?200:500)
-            .message(flag?"操作成功":"操作失败")
+            .code(200)
+            .message("操作成功")
             .build();
     }
 
@@ -208,18 +247,29 @@ public class EnrolledCompanyController {
             .getContext()
             .getAuthentication();
         CompTradeApply compTradeApply = compTradeApplyService.getCompInvitationCode(code);
-
         var flag = compTradeApplyService.refuseApply(
             session.getSession().getCompanyCode(),
-            session.getSession().getCompanyName(),
             session.getSession().getOperatorCode(),
             vTradeApplyRefuseRequest.orElseThrow().getRemark(),
             vTradeApplyRefuseRequest.orElseThrow().getState(),
             compTradeApply
         );
+        if(!flag)
+            return VBaseResponse.builder()
+                .code(500)
+                .message("操作失败")
+                .build();
+        notificationService.saveNotification(session.getSession().getCompanyCode(),
+            session.getSession().getCompanyName()+"拒绝了您的申请采购的请求",
+            session.getSession().getOperatorCode(),
+            NotificationType.ENROLLED_APPLY_HISTORY,
+            compTradeApply.getCode(),
+            compTradeApply.getCreatedCompBy(),
+            null,
+            new String[]{compTradeApply.getCreatedBy()});
         return VBaseResponse.builder()
-            .code(flag?200:500)
-            .message(flag?"操作成功":"操作失败")
+            .code(200)
+            .message("操作成功")
             .build();
     }
 

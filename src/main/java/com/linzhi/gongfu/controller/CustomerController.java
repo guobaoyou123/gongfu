@@ -1,9 +1,11 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.enumeration.Availability;
+import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
+import com.linzhi.gongfu.service.NotificationService;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import java.util.Optional;
 public class CustomerController {
     private final CompanyService companyService;
     private final CompanyMapper companyMapper;
+    private final NotificationService notificationService;
 
     /**
      * 入格客户列表
@@ -123,7 +126,26 @@ public class CustomerController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        companyService.modifyTradeTaxModel(session.getSession().getCompanyCode(),code,taxModel.orElseThrow(()->new NullPointerException("数据未空")).getTaxmodel());
+        var operators =  companyService.modifyTradeTaxModel(
+            session.getSession().getCompanyCode(),
+            code,
+            taxModel.orElseThrow(()->new NullPointerException("数据未空")).getTaxmodel()
+        );
+        if(operators==null)
+            return VBaseResponse.builder()
+                .code(500)
+                .message("保存数据失败")
+                .build();
+        notificationService.saveNotification(
+            session.getSession().getCompanyCode(),
+            session.getSession().getCompanyName()+"修改了你们之间的交易税模式，请前往入格供应商管理模块查看",
+            session.getSession().getOperatorCode(),
+            NotificationType.MODIFY_TRADE,
+            session.getSession().getCompanyCode(),
+            code,
+            null,
+            operators.split(",")
+            );
         return VBaseResponse.builder()
             .code(200)
             .message("保存数据成功")
