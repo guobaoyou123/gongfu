@@ -347,7 +347,7 @@ public class CompanyService {
         @CacheEvict(value = "brands_company;1800",key = "'*'+#companyCode"),
         @CacheEvict(value = "SupplierAndBrand;1800",key = "#companyCode"),
         @CacheEvict(value = "Foreign_Supplier_List;1800",key="#companyCode",condition = "#type=='1'"),
-        @CacheEvict(value = "Enrolled_Supplier_List;1800",key="#companyCode+'*'",condition = "#type=='2'")
+        @CacheEvict(value = "Enrolled_Supplier_List;1800",key="#companyCode")
     })
     @Transactional
    public Boolean modifySupplierState(List<String> code,Availability state,String companyCode,String type){
@@ -653,7 +653,7 @@ public class CompanyService {
      */
     @Cacheable(value = "Enrolled_Supplier_detail;1800",key="#companyCode+'-'+#code", unless = "#result == null ")
     public Optional<TEnrolledTradeCompany>  enrolledSupplier(String code, String companyCode) throws IOException {
-        EnrolledTrade enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
+            EnrolledTrade enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
                  .compSaler(code)
                  .compBuyer(companyCode)
              .build()).orElseThrow(()->new IOException("未从数据库找到"));
@@ -681,7 +681,7 @@ public class CompanyService {
         try {
             if(type.equals("1")){
                 compTradeRepository.updateCompTradeBuyer(
-                    operators,
+                    operators.equals("")?null:operators,
                     CompTradId.builder()
                         .compBuyer(compBuyer)
                         .compSaler(compSaler)
@@ -689,7 +689,7 @@ public class CompanyService {
                 );
             }else {
                 compTradeRepository.updateCompTradeSaler(
-                    operators,
+                    operators.equals("")?null:operators,
                     CompTradId.builder()
                         .compBuyer(compBuyer)
                         .compSaler(compSaler)
@@ -725,25 +725,6 @@ public class CompanyService {
             tEnrolledCustomer.get().setOperators(operatorList);
         }
         return  tEnrolledCustomer;
-    }
-
-
-    /**
-     * 修改客户状态
-     * @param code 客户编码
-     * @param state 状态
-     * @return 返回成功或者失败
-     */
-    @CacheEvict(value = "Enrolled_Customer_List;1800",key="#companyCode+'*'")
-    @Transactional
-    public Boolean modifySupplierState(List<String> code,Availability state,String companyCode){
-        try {
-            compTradeRepository.updateCompTradeState(state,companyCode,code);
-            return  true;
-        }catch (Exception e){
-            e.printStackTrace();
-            return  false;
-        }
     }
 
     /**

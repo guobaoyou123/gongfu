@@ -19,7 +19,7 @@ public interface EnrolledSupplierRepository
      * @param companyCode 单位编码
      * @return 内供应商列表
      */
-    @Cacheable(value = "Enrolled_Supplier_List;1800",key="#companyCode+'-'+#state", unless = "#result == null ")
+    @Cacheable(value = "Enrolled_Supplier_List;1800",key="#companyCode", unless = "#result == null ")
     @Query(value = "select new  com.linzhi.gongfu.dto.TEnrolledTradeCompanies(b.code,b.nameInCN  ,b.shortNameInCN  ,c.USCI)  from Company b " +
         "INNER JOIN  EnrolledCompany c on c.id=b.code LEFT JOIN CompTrad t on t.compTradId.compSaler=b.code" +
         " where t.compTradId.compBuyer=?1 and  b.role='1' ")
@@ -30,7 +30,7 @@ public interface EnrolledSupplierRepository
      * @param companyCode 单位编码
      * @return 内客户列表
      */
-    @Cacheable(value = "Enrolled_Customer_List;1800",key="#companyCode+'-'+#state", unless = "#result == null ")
+    @Cacheable(value = "Enrolled_Customer_List;1800",key="#companyCode", unless = "#result == null ")
     @Query(value = "select new  com.linzhi.gongfu.dto.TEnrolledTradeCompanies(b.code,b.nameInCN  ,b.shortNameInCN  ,c.USCI)  from Company b " +
         "INNER JOIN  EnrolledCompany c on c.id=b.code LEFT JOIN CompTrad t on t.compTradId.compBuyer=b.code" +
         " where t.compTradId.compSaler=?1 and  b.role='1' ")

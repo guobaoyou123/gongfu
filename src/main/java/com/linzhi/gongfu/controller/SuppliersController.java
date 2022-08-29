@@ -228,7 +228,6 @@ public class SuppliersController {
 
     /**
      *查询入格的供应商列表
-     * @param state 状态 0-禁用 1-启用
      * @param name 入格的供应商单位名称
      * @param pageNum 页数
      * @param pageSize 每页展示几条
@@ -295,26 +294,4 @@ public class SuppliersController {
             .build();
     }
 
-    /**
-     * 启用禁用入格供应商
-     * @param code 入格供应商编码
-     * @param state 状态 0-禁用 1-启用
-     * @return 返回成功或者失败信息
-     */
-    @PostMapping("/suppliers/enrolled/{code}")
-    public VBaseResponse modifySupplierState(@PathVariable String code,@RequestBody Optional<VStateRequest> state){
-        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
-            .getContext()
-            .getAuthentication();
-        var flag = companyService.modifySupplierState(
-            List.of(code),
-            state.orElseThrow(()->new NullPointerException("数据为空")).getState().equals("1")?Availability.ENABLED:Availability.DISABLED,
-            session.getSession().getCompanyCode(),
-            "2"
-        );
-        return VBaseResponse.builder()
-            .code(flag?200:500)
-            .message(flag?"操作成功":"操作失败")
-            .build();
-    }
 }

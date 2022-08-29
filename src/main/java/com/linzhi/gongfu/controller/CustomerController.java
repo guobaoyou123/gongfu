@@ -100,7 +100,7 @@ public class CustomerController {
      * @param brands 品牌列表
      * @return 返回成功或者失败信息
      */
-    @PostMapping("/customer/{code}/brands")
+    @PutMapping("/customer/{code}/brands")
     public VBaseResponse modifyTradeBrands(@PathVariable String code, @RequestBody Optional<VTradeInforRequest> brands){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
@@ -118,7 +118,7 @@ public class CustomerController {
      * @param taxModel 报价模式
      * @return 返回成功或者失败信息
      */
-    @PostMapping("/customer/{code}/taxmodel")
+    @PutMapping("/customer/{code}/taxmodel")
     public VBaseResponse modifyTradeTaxModel(@PathVariable String code, @RequestBody Optional<VTradeInforRequest> taxModel){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
