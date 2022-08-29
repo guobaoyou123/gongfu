@@ -37,14 +37,14 @@ public class BaseProductClass {
     /**
      * 名称
      */
-    @Column( length = 50, nullable = false)
+    @Column(length = 50, nullable = false)
     @NonNull
     private String name;
 
     /**
      * 父级菜单的编号
      */
-    @Column( name="parent_code",length = 10, nullable = false)
+    @Column(name = "parent_code", length = 10, nullable = false)
     private String parentCode;
 
     /**

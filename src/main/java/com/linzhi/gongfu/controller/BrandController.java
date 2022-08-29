@@ -32,6 +32,7 @@ public class BrandController {
 
     /**
      * 通过本公司id查询所有供应商以及经营，自营的品牌
+     *
      * @return 对应的本公司id查询所有供应商以及经营，自营的品牌信息
      */
     @GetMapping("/brands/paged")
@@ -42,15 +43,15 @@ public class BrandController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var brandPage = brandService.pageBrands(
-           session.getSession().getCompanyCode(),
-           pageNum,
-           pageSize
+            session.getSession().getCompanyCode(),
+            pageNum,
+            pageSize
         );
         return VBrandPageResponse.builder()
             .code(200)
             .message("获取品牌列表成功。")
             .total(Integer.parseInt(String.valueOf(brandPage.getTotalElements())))
-            .current(brandPage.getNumber()+1)
+            .current(brandPage.getNumber() + 1)
             .brands(brandPage.getContent().stream()
                 .map(brandMapper::toBrandPreload)
                 .collect(Collectors.toList())
@@ -60,6 +61,7 @@ public class BrandController {
 
     /**
      * 查询所有品牌
+     *
      * @return 对系统所有的品牌信息
      */
     @GetMapping("/brands")
@@ -77,6 +79,7 @@ public class BrandController {
 
     /**
      * 根据分类查询所有品牌
+     *
      * @return 对系统所有的品牌信息
      */
     @GetMapping("/brands/by/class")
@@ -94,6 +97,7 @@ public class BrandController {
 
     /**
      * 根据供应商查询所有品牌
+     *
      * @return 对系统所有的品牌信息
      */
     @GetMapping("/brands/by/company")
@@ -109,8 +113,8 @@ public class BrandController {
             .message("获取品牌列表成功。")
             .brands(
                 brandList.stream()
-                .map(brandMapper::toProductBrandPreload)
-                .collect(Collectors.toSet())
+                    .map(brandMapper::toProductBrandPreload)
+                    .collect(Collectors.toSet())
             )
             .build();
     }

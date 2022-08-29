@@ -16,10 +16,16 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class ContractReceived {
 
+    /**
+     * 主键
+     */
     @Id
     @Column(name = "id")
     private String id;
 
+    /**
+     *
+     */
     @Column(name = "code")
     private String code;
     @Column(name = "describe")

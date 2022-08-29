@@ -8,7 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface ContractRecordPreviewRepository  extends CrudRepository<ContractRecordPreview, String>, QuerydslPredicateExecutor<ContractRecordPreview> {
+public interface ContractRecordPreviewRepository extends CrudRepository<ContractRecordPreview, String>, QuerydslPredicateExecutor<ContractRecordPreview> {
 
     @Query(value = " select  c.product_id as product_id ,c.product_code as product_code,\n" +
         "sum(c.previous_my_quantity) as amount,sum(c.my_quantity) as modifiedAmount,\n" +
@@ -17,6 +17,6 @@ public interface ContractRecordPreviewRepository  extends CrudRepository<Contrac
         ",1 as invoicedAmount \n" +
         "from contract_record_temp c\n" +
         "where c.contract_id=?1 \n" +
-        "group by  c.product_id,c.product_code,c.contract_id",nativeQuery = true)
+        "group by  c.product_id,c.product_code,c.contract_id", nativeQuery = true)
     List<ContractRecordPreview> findContractRecordPreviewRepositories(String contractId);
 }

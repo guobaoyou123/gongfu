@@ -8,6 +8,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
+/**
+ * 禁用区域表主键
+ */
 @Builder
 @Embeddable
 @AllArgsConstructor

@@ -21,8 +21,10 @@ public class CompTradBrand implements Serializable {
 
     @EmbeddedId
     private CompTradBrandId compTradBrandId;
+
     @Column
     private Integer sort;
+
     /**
      * 供应商
      */

@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public interface InquiryRepository
     extends CrudRepository<Inquiry, String>, QuerydslPredicateExecutor<Inquiry> {
-    @Query(value="select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode  from   inquiry_base b\n" +
+    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode  from   inquiry_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join contract_base c on c.id = b.sales_contract_id\n" +
         "left join contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from contract_rev  where id = r.id)\n" +
@@ -23,10 +23,10 @@ public interface InquiryRepository
 
         " where  b.created_by_comp=?1 and b.created_by=?2 and b.type=?3 and b.state=?4 order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<Inquiry> listInquiries(String compId, String operator, String  type, String  state);
+    List<Inquiry> listInquiries(String compId, String operator, String type, String state);
 
 
-    @Query(value="select  b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode from   inquiry_base b\n" +
+    @Query(value = "select  b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode from   inquiry_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join contract_base c on c.id = b.sales_contract_id\n" +
         "left join contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from contract_rev  where id = r.id)\n" +
@@ -34,16 +34,16 @@ public interface InquiryRepository
 
         " where   b.created_by_comp=?1 and b.type=?2 and b.state=?3 order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<Inquiry> listInquiries(String compId, String type, String  state);
+    List<Inquiry> listInquiries(String compId, String type, String state);
 
 
     @Modifying
-    @Query(value="update   inquiry_base  set total_price=?1 ,total_price_vat=?2,vat=?3 ,discount_total_price=?4 where  id=?5 ",
+    @Query(value = "update   inquiry_base  set total_price=?1 ,total_price_vat=?2,vat=?3 ,discount_total_price=?4 where  id=?5 ",
         nativeQuery = true)
-    void  updateInquiry(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat,BigDecimal discountTotalPrice, String id);
+    void updateInquiry(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, BigDecimal discountTotalPrice, String id);
 
 
-    @Query(value="select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode from   inquiry_base b\n" +
+    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode from   inquiry_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join contract_base c on c.id = b.sales_contract_id\n" +
         "left join contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from contract_rev  where id = r.id)\n" +
@@ -54,9 +54,8 @@ public interface InquiryRepository
     Optional<Inquiry> findInquiryById(String id);
 
     @Modifying
-    @Query(value="update   Inquiry i set i.deletedAt=?1,i.state=?2 where i.id=?3")
-    void  removeInquiry(LocalDateTime deletedAt,InquiryState inquiryState, String id);
-
+    @Query(value = "update   Inquiry i set i.deletedAt=?1,i.state=?2 where i.id=?3")
+    void removeInquiry(LocalDateTime deletedAt, InquiryState inquiryState, String id);
 
 
 }

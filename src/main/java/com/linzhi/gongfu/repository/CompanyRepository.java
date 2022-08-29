@@ -1,7 +1,6 @@
 package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.Company;
-
 import com.linzhi.gongfu.enumeration.Availability;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,25 +18,24 @@ import java.util.List;
 public interface CompanyRepository extends CrudRepository<Company, String>, QuerydslPredicateExecutor<Company> {
 
 
-
     @Query(value = " SELECT  cast(max(b.encode) as int)+1 code  FROM    comp_base b,comp_trade t  where b.role=?1 and t.comp_saler=b.code and t.comp_buyer=?2  "
-       ,nativeQuery = true)
-   String findMaxCode(String role,String dcCompId);
+        , nativeQuery = true)
+    String findMaxCode(String role, String dcCompId);
 
 
     @Modifying
     @Query("update Company as a set a.state=?1 where a.code in ?2")
-    void  updateCompanyState(Availability availability, List<String> code);
+    void updateCompanyState(Availability availability, List<String> code);
 
     @Query(value = " SELECT  b.*  FROM    comp_base b,dc_comp t  where t.credit_code=? and t.id=b.id  "
-        ,nativeQuery = true)
+        , nativeQuery = true)
     List<Company> findCompanyByUSCI(String ucsi);
 
     @Query(value = " SELECT count(*)\n" +
         "  FROM comp_base\n" +
         "  where chi_short=?1 and code <>?2  and role='1' "
-        ,nativeQuery = true)
-    int checkRepeat(String shortName,String companyCode);
+        , nativeQuery = true)
+    int checkRepeat(String shortName, String companyCode);
 
 
 }

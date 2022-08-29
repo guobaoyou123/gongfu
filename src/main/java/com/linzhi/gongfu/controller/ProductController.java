@@ -34,11 +34,12 @@ public class ProductController {
 
     /**
      * 查询所有产品分类
+     *
      * @return 对系统所有的产品分类信息
      */
     @GetMapping("/product/classes")
     public VProductClassResponse productClasses() {
-        var classList =   productService.listProductClasses("001")
+        var classList = productService.listProductClasses("001")
             .stream()
             .map(mainProductClassMapper::toPreloadMainProductClass)
             .collect(Collectors.toList());
@@ -52,11 +53,12 @@ public class ProductController {
 
     /**
      * 查询所有产品驱动方式
+     *
      * @return 驱动方式列表
      */
     @GetMapping("/product/drives")
     public VDriversResponse productDrives() {
-        var drivers=productService.listProductDrives("驱动方式").stream()
+        var drivers = productService.listProductDrives("驱动方式").stream()
             .map(sysCompareDetailMapper::toPreloadDriver)
             .collect(Collectors.toList());
         return VDriversResponse.builder()
@@ -68,11 +70,12 @@ public class ProductController {
 
     /**
      * 查询所有产品主材质
+     *
      * @return 主材质列表
      */
     @GetMapping("/product/materials")
     public VMaterialResponse productMaterials() {
-        var materials =   productService.listProductClasses("002").stream()
+        var materials = productService.listProductClasses("002").stream()
             .map(mainProductClassMapper::toPreloadMainMaterial)
             .collect(Collectors.toList());
         return VMaterialResponse.builder()
@@ -84,11 +87,12 @@ public class ProductController {
 
     /**
      * 查询所有产品连接方式
+     *
      * @return 连接方式列表
      */
     @GetMapping("/product/connections")
     public VConnectionsResponse productConnections() {
-        var connections=productService.listProductDrives("连接方式")
+        var connections = productService.listProductDrives("连接方式")
             .stream()
             .map(sysCompareDetailMapper::toPreloadConnection)
             .collect(Collectors.toList());
@@ -101,18 +105,19 @@ public class ProductController {
 
     /**
      * 查询产品列表
+     *
      * @return 返回产品列表
      */
     @GetMapping("/products")
     public VProductPageResponse products(
-        @RequestParam("brand")Optional<List<String>> brands,
-        @RequestParam("class")Optional<String> classes,
-        @RequestParam("material")Optional<String> material,
-        @RequestParam("drive")Optional<String> drive,
-        @RequestParam("connection1")Optional<String> connection1,
-        @RequestParam("connection2")Optional<String> connection2,
-        @RequestParam("pageSize")Optional<String> pageSize,
-        @RequestParam("pageNum")Optional<String> pageNum){
+        @RequestParam("brand") Optional<List<String>> brands,
+        @RequestParam("class") Optional<String> classes,
+        @RequestParam("material") Optional<String> material,
+        @RequestParam("drive") Optional<String> drive,
+        @RequestParam("connection1") Optional<String> connection1,
+        @RequestParam("connection2") Optional<String> connection2,
+        @RequestParam("pageSize") Optional<String> pageSize,
+        @RequestParam("pageNum") Optional<String> pageNum) {
 
         return productService.pageProducts(
             brands.orElse(new ArrayList<>()),
@@ -130,13 +135,14 @@ public class ProductController {
 
     /**
      * 根据产品编码查询产品
+     *
      * @return 返回产品列表
      */
     @GetMapping("/product/{productCode}")
     public VProductListResponse productsByCode(
-        @PathVariable Optional<String> productCode){
+        @PathVariable Optional<String> productCode) {
         var productList = productService.listProductsByCode(productCode.orElse(""));
-        if(productList.size()==0)
+        if (productList.size() == 0)
             return VProductListResponse.builder()
                 .code(404)
                 .message("未找到")
@@ -151,16 +157,17 @@ public class ProductController {
 
     /**
      * 根据产品id查找产品详情
+     *
      * @param productId 产品id
      * @return 返回产品详情
      */
-   @GetMapping("/product/detail")
-    public  VProductDetailResponse     productDetail(@RequestParam("productId")Optional<String> productId){
+    @GetMapping("/product/detail")
+    public VProductDetailResponse productDetail(@RequestParam("productId") Optional<String> productId) {
         var productDetail = productId
             .flatMap(productService::getProduct)
             .map(productMapper::tProductDetail);
-        if(productDetail.isEmpty())
-            return  VProductDetailResponse.builder()
+        if (productDetail.isEmpty())
+            return VProductDetailResponse.builder()
                 .code(404)
                 .message("请求的产品信息没有找到")
                 .product(new VProductDetailResponse.VProduct())

@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface ContractRecordRepository
     extends CrudRepository<ContractRecord, ContractRecordId>, QuerydslPredicateExecutor<ContractRecord> {
-    @Cacheable(value = "contract_revision_record_detail;1800",key = "#id+'-'+#revision")
-    List<ContractRecord>  findContractRecordsByContractRecordId_ContractIdAndContractRecordId_Revision(String id ,int revision);
+    @Cacheable(value = "contract_revision_record_detail;1800", key = "#id+'-'+#revision")
+    List<ContractRecord> findContractRecordsByContractRecordId_ContractIdAndContractRecordId_Revision(String id, int revision);
 }

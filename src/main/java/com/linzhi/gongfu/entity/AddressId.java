@@ -12,22 +12,23 @@ import java.io.Serializable;
 @Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
-public class AddressId  implements Serializable {
+public class AddressId implements Serializable {
 
     /**
      * 编码
      */
-    @Column(name="code",length = 20,nullable = false)
+    @Column(name = "code", length = 20, nullable = false)
     @NonNull
     @NotNull
     @NotBlank
     @Getter
     @Setter
     private String code;
+
     /**
      * 单位主键
      */
-    @Column(name="dc_comp_id",length = 5,nullable = false)
+    @Column(name = "dc_comp_id", length = 5, nullable = false)
     @NonNull
     @NotNull
     @NotBlank

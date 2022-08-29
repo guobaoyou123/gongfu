@@ -53,7 +53,7 @@ public class CompContacts implements Serializable {
     private String contPhone;
 
     /**
-     *状态(0,停用;1,启用)
+     * 状态(0,停用;1,启用)
      */
     @Column(length = 1)
     private Availability state;

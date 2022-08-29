@@ -10,7 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface TaxRatesRepository extends CrudRepository<TaxRates,String>, QuerydslPredicateExecutor<TaxRates> {
+public interface TaxRatesRepository extends CrudRepository<TaxRates, String>, QuerydslPredicateExecutor<TaxRates> {
 
     Optional<TaxRates> findByTypeAndDeFlagAndUseCountry(VatRateType type, Whether deFlag, String userCountry);
 

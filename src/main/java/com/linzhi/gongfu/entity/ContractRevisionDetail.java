@@ -11,6 +11,9 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 合同版本详情表
+ */
 @Builder
 @Setter
 @Getter

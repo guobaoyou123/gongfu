@@ -11,23 +11,24 @@ import java.util.List;
 
 public interface InquiryRecordRepository
     extends CrudRepository<InquiryRecord, InquiryRecordId>, QuerydslPredicateExecutor<InquiryRecord> {
-    @Query(value="select  max(code)  from inquiry_record  where  inquiry_id=?1 ",
+    @Query(value = "select  max(code)  from inquiry_record  where  inquiry_id=?1 ",
         nativeQuery = true)
     String findMaxCode(String inquiryId);
 
 
     @Modifying
     @Query("delete from InquiryRecord as c  where c.inquiryRecordId.inquiryId=?1 ")
-    void  deleteProduct(String inquiryId);
+    void deleteProduct(String inquiryId);
 
     @Modifying
     @Query("delete from InquiryRecord as c  where c.inquiryRecordId.inquiryId=?1 and c.inquiryRecordId.code in ?2")
-    void  removeProducts(String inquiryId, List<Integer> codes);
+    void removeProducts(String inquiryId, List<Integer> codes);
 
     @Modifying
     @Query("delete from InquiryRecord as c  where c.inquiryRecordId.inquiryId=?1")
-    void  deleteProducts(String inquiryId);
-    @Query(value="select  *  from inquiry_record  where  inquiry_id=?1  order by product_id ,quantity  ",
+    void deleteProducts(String inquiryId);
+
+    @Query(value = "select  *  from inquiry_record  where  inquiry_id=?1  order by product_id ,quantity  ",
         nativeQuery = true)
     List<InquiryRecord> findInquiryRecord(String inquiryId);
 }

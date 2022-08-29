@@ -28,18 +28,19 @@ public class MessageController {
 
     /**
      * 消息通知
+     *
      * @return 返回消息通知列表
      */
     @GetMapping("/message/notification")
-    public VNotificationsResponse listNotifications(@RequestParam("state") Optional<String> state){
+    public VNotificationsResponse listNotifications(@RequestParam("state") Optional<String> state) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var scenes = session.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .toList();
-        var list= notificationService.listNotification(
+        var list = notificationService.listNotification(
             session.getSession().getCompanyCode(),
-            state.orElseThrow(()-> new NullPointerException("数据为空")).equals("0")?Whether.NO:Whether.YES,
+            state.orElseThrow(() -> new NullPointerException("数据为空")).equals("0") ? Whether.NO : Whether.YES,
             session.getSession().getOperatorCode(),
             scenes
         );
@@ -47,28 +48,29 @@ public class MessageController {
             .code(200)
             .message("获取数据成功")
             .list(list.stream()
-                    .map(notificationMapper::toVNotificationDo)
-                        .toList()
+                .map(notificationMapper::toVNotificationDo)
+                .toList()
             )
             .build();
     }
 
     /**
      * 修改消息通知状态
+     *
      * @param notifications 消息通知编码列表
      * @return 返回成功或者失败信息
      */
     @PostMapping("/message/notification/state")
-    public VBaseResponse  modifyNotificationState(@RequestBody Optional<VNotificationsRequest> notifications){
+    public VBaseResponse modifyNotificationState(@RequestBody Optional<VNotificationsRequest> notifications) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = notificationService.modifyNotification(
             session.getSession().getCompanyCode(),
-            notifications.orElseThrow(()-> new NullPointerException("数据为空")).getCodes()
+            notifications.orElseThrow(() -> new NullPointerException("数据为空")).getCodes()
         );
         return VBaseResponse.builder()
-            .code(flag?200:500)
-            .message(flag?"操作成功":"操作失败")
+            .code(flag ? 200 : 500)
+            .message(flag ? "操作成功" : "操作失败")
             .build();
     }
 

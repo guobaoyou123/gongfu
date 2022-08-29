@@ -5,7 +5,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 
-public interface AdministrativeAreaRepository extends CrudRepository<AdministrativeArea,String>, QuerydslPredicateExecutor<AdministrativeArea> {
+public interface AdministrativeAreaRepository extends CrudRepository<AdministrativeArea, String>, QuerydslPredicateExecutor<AdministrativeArea> {
 
 
 }

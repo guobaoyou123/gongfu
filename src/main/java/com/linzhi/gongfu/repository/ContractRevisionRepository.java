@@ -11,5 +11,4 @@ public interface ContractRevisionRepository
     extends CrudRepository<ContractRevision, ContractRevisionId>, QuerydslPredicateExecutor<ContractRevision> {
 
 
-
 }

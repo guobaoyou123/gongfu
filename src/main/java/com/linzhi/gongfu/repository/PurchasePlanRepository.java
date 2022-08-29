@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 
-public interface PurchasePlanRepository extends CrudRepository<PurchasePlan, PurchasePlanId> , QuerydslPredicateExecutor<PurchasePlan> {
-   @Query(value="select  right(('000'+cast((cast(max(right(plan_code,2)) as int)+1) as varchar)),2) from purchase_plan  where  dc_comp_id=?1 and created_by=?2\n" +
+public interface PurchasePlanRepository extends CrudRepository<PurchasePlan, PurchasePlanId>, QuerydslPredicateExecutor<PurchasePlan> {
+    @Query(value = "select  right(('000'+cast((cast(max(right(plan_code,2)) as int)+1) as varchar)),2) from purchase_plan  where  dc_comp_id=?1 and created_by=?2\n" +
         "             and DateDiff(dd,created_at,GETDATE())=0",
         nativeQuery = true)
     String findMaxCode(String dcCompId, String createdBy, LocalDate createdAt);
@@ -26,7 +26,7 @@ public interface PurchasePlanRepository extends CrudRepository<PurchasePlan, Pur
 
     @Modifying
     @Query("delete from PurchasePlan as c  where c.purchasePlanId=?1 ")
-    void  deletePurchasePlan(PurchasePlanId purchasePlanId);
+    void deletePurchasePlan(PurchasePlanId purchasePlanId);
 
     Optional<PurchasePlan> findFirstByPurchasePlanId_DcCompIdAndCreatedBy(String dcCompId, String createdBy);
 

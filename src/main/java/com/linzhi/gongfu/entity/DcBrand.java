@@ -6,6 +6,10 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+
+/**
+ * 系统品牌表
+ */
 @Builder
 @Setter
 @Getter

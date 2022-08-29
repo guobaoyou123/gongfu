@@ -10,6 +10,9 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 合同记录临时记录表
+ */
 @Builder
 @Setter
 @Getter

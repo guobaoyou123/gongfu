@@ -10,8 +10,7 @@ import java.util.List;
 public interface OperatorSceneRepository extends CrudRepository<OperatorScene, OperatorSceneId>, QuerydslPredicateExecutor<OperatorScene> {
 
 
-
-    void deleteByOperatorSceneId_DcCompIdAndOperatorSceneId_OperatorCode(String compId,String operatorCode);
+    void deleteByOperatorSceneId_DcCompIdAndOperatorSceneId_OperatorCode(String compId, String operatorCode);
 
     void deleteByOperatorSceneId_DcCompIdAndOperatorSceneId_OperatorCodeIn(String compId, List<String> operators);
 }

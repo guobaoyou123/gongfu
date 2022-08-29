@@ -44,16 +44,16 @@ public class PreloadController {
      */
     @GetMapping("/host")
     public VPreloadCompanyInfoResponse fetchCompanyInfoByHost(
-            @RequestHeader("CompanyDomain") Optional<String> domain, @RequestParam("host") Optional<String> hostname) {
+        @RequestHeader("CompanyDomain") Optional<String> domain, @RequestParam("host") Optional<String> hostname) {
         return hostname.or(() -> domain)
-                .map(URLTools::extractSubdomainName)
-                .flatMap(companyService::findCompanyInformationByHostname)
-                .map(companyMapper::toPreload)
-                .orElse(VPreloadCompanyInfoResponse.builder()
-                        .code(404)
-                        .message("请求的公司信息没有找到。")
-                        .companyName("UNKNOWN")
-                        .companyShortName("UNKNOWN").build());
+            .map(URLTools::extractSubdomainName)
+            .flatMap(companyService::findCompanyInformationByHostname)
+            .map(companyMapper::toPreload)
+            .orElse(VPreloadCompanyInfoResponse.builder()
+                .code(404)
+                .message("请求的公司信息没有找到。")
+                .companyName("UNKNOWN")
+                .companyShortName("UNKNOWN").build());
     }
 
     /**
@@ -65,13 +65,13 @@ public class PreloadController {
     public VPreloadMenuResponse fetchFrontendMenus() {
 
         var mainMenus = menuService.fetchAllMenus().stream()
-                .map(menuMapper::toPreloadMainMenu)
-                .collect(Collectors.toSet());
+            .map(menuMapper::toPreloadMainMenu)
+            .collect(Collectors.toSet());
         return VPreloadMenuResponse.builder()
-                .code(200)
-                .message("所有菜单结构已经获取，使用时请保证菜单顺序。")
-                .menus(mainMenus)
-                .build();
+            .code(200)
+            .message("所有菜单结构已经获取，使用时请保证菜单顺序。")
+            .menus(mainMenus)
+            .build();
     }
 
     /**
@@ -82,43 +82,44 @@ public class PreloadController {
     @GetMapping("/strings")
     public VPreloadWordsResponse fetchFrontendWords() {
         var words = wordService.fetchAllWords().stream()
-                .map(wordMapper::toVO)
-                .collect(Collectors.toSet());
+            .map(wordMapper::toVO)
+            .collect(Collectors.toSet());
         return VPreloadWordsResponse.builder()
-                .code(200)
-                .message("所有文案词汇已经获取，使用时请注意定位键。")
-                .words(words)
-                .build();
+            .code(200)
+            .message("所有文案词汇已经获取，使用时请注意定位键。")
+            .words(words)
+            .build();
     }
 
     /**
      * 修改密码
+     *
      * @param password 密码信息
-     * @param domain 域名
+     * @param domain   域名
      * @return 返回成功信息
      * @throws Exception 异常
      */
     @PostMapping("/password")
-    public VBaseResponse resetPassword( @RequestBody Optional<VResetPasswordRequest> password ,@RequestHeader("CompanyDomain") Optional<String> domain) throws Exception {
+    public VBaseResponse resetPassword(@RequestBody Optional<VResetPasswordRequest> password, @RequestHeader("CompanyDomain") Optional<String> domain) throws Exception {
         //查询公司编码
-        TCompanyBaseInformation tCompanyBaseInformation= domain
+        TCompanyBaseInformation tCompanyBaseInformation = domain
             .map(URLTools::extractSubdomainName)
             .flatMap(companyService::findCompanyInformationByHostname)
-            .orElseThrow(()->new IOException("未从数据库中查到"));
+            .orElseThrow(() -> new IOException("未从数据库中查到"));
         //验证旧密码是否正确
         var flag = operatorService.verifyPassword(
             tCompanyBaseInformation.getCode(),
             password.orElseThrow().getCode(),
             password.orElseThrow().getOldpassword()
         );
-        if(!flag)
+        if (!flag)
             throw new AuthenticationException("输入的原密码不正确");
         operatorService.resetPassword(
-            tCompanyBaseInformation.getCode(),
+                tCompanyBaseInformation.getCode(),
                 password.orElseThrow().getCode(),
                 password.orElseThrow().getPassword()
             )
-            .orElseThrow(()->new Exception("设置失败"));
+            .orElseThrow(() -> new Exception("设置失败"));
         return VBaseResponse.builder()
             .code(200)
             .message("操作成功")

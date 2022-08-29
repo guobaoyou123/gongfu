@@ -35,12 +35,12 @@ public class CompTradeApply implements Serializable {
      * 类型（1-申请采购 ）
      */
     @Column(length = 1, nullable = false)
-    private  String type;
+    private String type;
 
     /**
      * 创建单位
      */
-    @Column(name = "created_comp_by",length = 40, nullable = false)
+    @Column(name = "created_comp_by", length = 40, nullable = false)
     @NonNull
     @NotNull
     @NotBlank
@@ -49,7 +49,7 @@ public class CompTradeApply implements Serializable {
     /**
      * 创建人
      */
-    @Column(name = "created_by",length = 40, nullable = false)
+    @Column(name = "created_by", length = 40, nullable = false)
     private String createdBy;
 
     /**
@@ -61,25 +61,25 @@ public class CompTradeApply implements Serializable {
     /**
      * 创建者申请备注
      */
-    @Column(name = "created_remark",length = 100)
+    @Column(name = "created_remark", length = 100)
     private String createdRemark;
 
     /**
      * 处理单位
      */
-    @Column(name = "handled_comp_by",length = 40, nullable = false)
+    @Column(name = "handled_comp_by", length = 40, nullable = false)
     private String handledCompBy;
 
     /**
      * 处理人
      */
-    @Column(name = "handled_by",length = 40)
+    @Column(name = "handled_by", length = 40)
     private String handledBy;
 
     /**
      * 拒绝原因
      */
-    @Column(name = "refuse_remark",length = 100)
+    @Column(name = "refuse_remark", length = 100)
     private String refuseRemark;
 
     /**
@@ -150,6 +150,6 @@ public class CompTradeApply implements Serializable {
      * 公司简介
      */
     @Column
-    private String  introduction;
+    private String introduction;
 
 }

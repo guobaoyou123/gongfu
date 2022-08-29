@@ -17,7 +17,7 @@ public class CompInvitationCodeId implements Serializable {
     /**
      * 品牌编码
      */
-    @Column(name="dc_comp_id",length = 40,nullable = false)
+    @Column(name = "dc_comp_id", length = 40, nullable = false)
     @NonNull
     @NotNull
     @NotBlank
@@ -27,7 +27,7 @@ public class CompInvitationCodeId implements Serializable {
     /**
      * 被授权单位id
      */
-    @Column(name="invitation_code",length = 50,nullable = false)
+    @Column(name = "invitation_code", length = 50, nullable = false)
     @NonNull
     @NotNull
     @NotBlank

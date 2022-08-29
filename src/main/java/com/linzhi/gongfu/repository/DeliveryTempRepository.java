@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface DeliveryTempRepository extends CrudRepository<DeliverTemp, DeliverTempId>, QuerydslPredicateExecutor<DeliverTemp> {
 
-    void  deleteDeliverTempsByDeliverTempId_ContractId(String contractId);
+    void deleteDeliverTempsByDeliverTempId_ContractId(String contractId);
 
     List<DeliverTemp> findDeliverTempsByDeliverTempId_ContractId(String contractId);
 }

@@ -46,18 +46,20 @@ public class ProductService {
 
     /**
      * 获取产品一级二级分类信息
+     *
      * @param type 编号
      * @return 产品一级二级分类信息列表
      */
     @Cacheable(value = "product_class;1800", unless = "#result == null")
     public List<TProductClass> listProductClasses(String type) {
         return mainProductClassRepository.findMainProductClassByBaseProductClassId_Type(type).stream()
-             .map(mainProductClassMapper::toDTO)
+            .map(mainProductClassMapper::toDTO)
             .collect(Collectors.toList());
     }
 
     /**
      * 获取产品对照表信息
+     *
      * @param name 名称
      * @return 产品对照表信息列表
      */
@@ -70,76 +72,78 @@ public class ProductService {
 
     /**
      * 根据查询条件获取产品列表信息
-     * @param brands 品牌编码列表
-     * @param classes 二级分类编码
-     * @param material 主材质编码
-     * @param drive 驱动方式名称
+     *
+     * @param brands      品牌编码列表
+     * @param classes     二级分类编码
+     * @param material    主材质编码
+     * @param drive       驱动方式名称
      * @param connection1 连接方式名称
      * @param connection2 连接方式名称
-     * @param pageable 分页
+     * @param pageable    分页
      * @return 产品列表信息
      */
-    public VProductPageResponse  pageProducts(List<String> brands, String classes, String material
+    public VProductPageResponse pageProducts(List<String> brands, String classes, String material
 
-        , String drive, String connection1, String connection2,  Pageable pageable){
+        , String drive, String connection1, String connection2, Pageable pageable) {
 
         //根据条件查询产品信息
         List<TProduct> products = listProductsAll(brands, classes, material, drive, connection1, connection2).stream()
             .map(productMapper::toProduct)
             .collect(Collectors.toList());
-        if(products.size()==0){
+        if (products.size() == 0) {
             products = listProductsAll(new ArrayList<>(), classes, material, drive, connection1, connection2).stream()
                 .map(productMapper::toProduct)
                 .collect(Collectors.toList());
-            Page<TProduct> otherProductPage = PageTools.listConvertToPage(products,pageable);
-                return VProductPageResponse.builder()
-                    .code(200)
-                    .message("获取产品列表成功。")
-                    .total(otherProductPage.getTotalPages())
-                    .current(otherProductPage.getNumber()+1)
-                    .products(new ArrayList<>())
-                    .otherproducts(otherProductPage.getContent().stream().map(productMapper::toPreloadProduct).collect(Collectors.toList()))
-                    .build();
+            Page<TProduct> otherProductPage = PageTools.listConvertToPage(products, pageable);
+            return VProductPageResponse.builder()
+                .code(200)
+                .message("获取产品列表成功。")
+                .total(otherProductPage.getTotalPages())
+                .current(otherProductPage.getNumber() + 1)
+                .products(new ArrayList<>())
+                .otherproducts(otherProductPage.getContent().stream().map(productMapper::toPreloadProduct).collect(Collectors.toList()))
+                .build();
         }
         //进行分页
-        Page<TProduct> productPage = PageTools.listConvertToPage(products,pageable);
-        return  VProductPageResponse.builder()
+        Page<TProduct> productPage = PageTools.listConvertToPage(products, pageable);
+        return VProductPageResponse.builder()
             .code(200)
             .message("获取产品列表成功。")
             .total(Integer.parseInt(String.valueOf(productPage.getTotalElements())))
-            .current(productPage.getNumber()+1)
+            .current(productPage.getNumber() + 1)
             .otherproducts(new ArrayList<>())
             .products(productPage.getContent().stream().map(productMapper::toPreloadProduct).collect(Collectors.toList()))
             .build();
     }
 
     /**
-     *  获取产品信息列表
-     * @param brands 品牌编码列表
-     * @param classes 二级分裂编码
-     * @param material 主材质编码
-     * @param drive 驱动名称
+     * 获取产品信息列表
+     *
+     * @param brands      品牌编码列表
+     * @param classes     二级分裂编码
+     * @param material    主材质编码
+     * @param drive       驱动名称
      * @param connection1 连接方式名称
      * @param connection2 连接方式名称
      * @return 产品列表
      */
     @Cacheable(value = "products;1800", unless = "#result == null")
-    public  List<Product>  listProductsAll(List<String> brands, String classes, String material
-        , String drive, String connection1, String connection2){
+    public List<Product> listProductsAll(List<String> brands, String classes, String material
+        , String drive, String connection1, String connection2) {
         //根据条件查询产品信息
         QProduct qProduct = QProduct.product;
         JPAQuery<Product> query = queryFactory.select(qProduct).from(qProduct);
-        if(brands.size()>0)
+        if (brands.size() > 0)
             query.where(qProduct.brandCode.in(brands));
-        if(!classes.isEmpty())
+        if (!classes.isEmpty())
             query.where(qProduct.class2.eq(classes));
-        if ( !drive.isEmpty())
+        if (!drive.isEmpty())
             query.where(qProduct.drivMode.eq(drive));
-        if ( !material.isEmpty())
+        if (!material.isEmpty())
             query.where(qProduct.mainMate.eq(material));
-        if ( !connection1.isEmpty() &&  !connection2.isEmpty())
+        if (!connection1.isEmpty() && !connection2.isEmpty())
             query.where((qProduct.conn1Type.eq(connection1).and(qProduct.conn2Type.eq(connection2))).or((qProduct.conn1Type.eq(connection2).and(qProduct.conn2Type.eq(connection1)))));
-        if ( !connection1.isEmpty() &&connection2.isEmpty())
+        if (!connection1.isEmpty() && connection2.isEmpty())
             query.where(qProduct.conn1Type.eq(connection1).or(qProduct.conn2Type.eq(connection1)));
         if (connection1.isEmpty() && !connection2.isEmpty())
             query.where(qProduct.conn1Type.eq(connection2).or(qProduct.conn2Type.eq(connection2)));
@@ -148,11 +152,12 @@ public class ProductService {
 
     /**
      * 获取产品信息
+     *
      * @param productId 产品id
      * @return 产品详细信息
      */
     @Cacheable(value = "productDetail;1800", unless = "#result == null")
-    public Optional<TProduct> getProduct(String productId){
+    public Optional<TProduct> getProduct(String productId) {
         return productRepository.findById(productId)
             .map(productMapper::toProduct)
             ;
@@ -160,12 +165,13 @@ public class ProductService {
 
     /**
      * 根据产品编码获取产品列表
+     *
      * @param productCode 产品编码
      * @return 产品列表信息
      */
-    @Cacheable(value = "productsByCode;1800",key = "T(String).valueOf(#productCode)", unless = "#result == null")
-    public List<TProduct> listProductsByCode(String productCode){
-        return   productRepository.findProductByCode(productCode).stream()
+    @Cacheable(value = "productsByCode;1800", key = "T(String).valueOf(#productCode)", unless = "#result == null")
+    public List<TProduct> listProductsByCode(String productCode) {
+        return productRepository.findProductByCode(productCode).stream()
             .map(productMapper::toProduct).collect(Collectors.toList());
     }
 }

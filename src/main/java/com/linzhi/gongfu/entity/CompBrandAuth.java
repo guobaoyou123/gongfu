@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 /**
  * 我授权的品牌
+ *
  * @author zgh
  * @create_time 2022-02-07
  */
@@ -20,7 +21,7 @@ import java.time.LocalDate;
 @Table(name = "comp_brand_auth")
 public class CompBrandAuth {
     @EmbeddedId
-     private CompBrandAuthId compBrandAuthId;
+    private CompBrandAuthId compBrandAuthId;
 
     /**
      * 授权公司

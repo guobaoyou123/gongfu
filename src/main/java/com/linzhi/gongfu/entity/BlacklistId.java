@@ -25,6 +25,7 @@ public class BlacklistId implements Serializable {
     @Getter
     @Setter
     private String dcCompId;
+
     /**
      * 类型（1-申请采购 ）
      */

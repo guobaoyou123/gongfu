@@ -41,7 +41,7 @@ public class CompTradDetail implements Serializable {
     private Availability state;
 
     /**
-     *所属买方操作员
+     * 所属买方操作员
      */
     @Column(name = "buyer_belong_to")
     private String buyerBelongTo;
@@ -50,6 +50,6 @@ public class CompTradDetail implements Serializable {
      * 所属卖方单位操作员
      */
     @Column(name = "saler_belong_to")
-    private String  salerBelongTo;
+    private String salerBelongTo;
 
 }

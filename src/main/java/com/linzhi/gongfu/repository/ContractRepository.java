@@ -9,33 +9,33 @@ import java.util.List;
 
 public interface ContractRepository
     extends CrudRepository<ContractList, String>, QuerydslPredicateExecutor<ContractList> {
-    @Query(value="select  count(distinct c.id) " +
+    @Query(value = "select  count(distinct c.id) " +
         "from contract_base c ,contract_rev  r  " +
         "where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  " +
-        "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) "+
-        "  and  c.state ='1' "+
+        "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) " +
+        "  and  c.state ='1' " +
         "and c.type = '0' ",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode);
 
-    @Query(value="select  count(distinct c.id) from contract_base c ,contract_rev  r " +
+    @Query(value = "select  count(distinct c.id) from contract_base c ,contract_rev  r " +
         " where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  and c.type = '0'" +
-        "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) "+
-        "  and  c.state ='1' "+
+        "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) " +
+        "  and  c.state ='1' " +
         " and c.id <> ?3",
         nativeQuery = true)
-    int findByOrderCode(String dcCompId, String orderCode,String contractId);
+    int findByOrderCode(String dcCompId, String orderCode, String contractId);
 
-    @Query(value = "select  c.id from contract_base c ,contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id  and c.type = '0' and r.fingerprint =?2 and r.revision=(select max(revision) from contract_rev v where v.id = r.id) "  ,nativeQuery = true)
+    @Query(value = "select  c.id from contract_base c ,contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id  and c.type = '0' and r.fingerprint =?2 and r.revision=(select max(revision) from contract_rev v where v.id = r.id) ", nativeQuery = true)
     List<String> findContractId(String dcCompId, String sequenceCode);
 
     @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code ,d.revision as revision,d.saler_order_code as supplierContractNo ," +
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +
         "end as category,\n" +
-        "d.confirm_total_price_vat as confirmTaxedTotal, \n"+
-        " d.total_price_vat  as taxedTotal,\n"+
-        " cb.chi_short  as salerCompNameShort\n"+
+        "d.confirm_total_price_vat as confirmTaxedTotal, \n" +
+        " d.total_price_vat  as taxedTotal,\n" +
+        " cb.chi_short  as salerCompNameShort\n" +
         " from   contract_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join comp_base cb on  b.saler_comp = cb.code \n" +
@@ -60,15 +60,15 @@ public interface ContractRepository
         "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<ContractList> listContracts(String compId, String operator, String  type, String  state);
+    List<ContractList> listContracts(String compId, String operator, String type, String state);
 
     @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code,d.revision as revision ,d.saler_order_code as supplierContractNo ," +
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +
         "end as category,\n" +
-        "d.confirm_total_price_vat as confirmTaxedTotal, \n"+
-        " d.total_price_vat  as taxedTotal,\n"+
-        " cb.chi_short  as salerCompNameShort\n"+
+        "d.confirm_total_price_vat as confirmTaxedTotal, \n" +
+        " d.total_price_vat  as taxedTotal,\n" +
+        " cb.chi_short  as salerCompNameShort\n" +
         " from   contract_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join comp_base cb on  b.saler_comp = cb.code\n" +
@@ -93,5 +93,5 @@ public interface ContractRepository
         "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<ContractList> listContracts(String compId, String  type, String  state);
+    List<ContractList> listContracts(String compId, String type, String state);
 }

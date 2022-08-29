@@ -8,6 +8,7 @@ import java.util.Set;
 
 /**
  * 我经营的品牌
+ *
  * @author zgh
  * @create_time 2022-01-28
  */
@@ -18,7 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="comp_allowed_brand")
+@Table(name = "comp_allowed_brand")
 public class CompAllowedBrand implements Serializable {
     @EmbeddedId
     private CompAllowedBrandId compAllowedBrandId;

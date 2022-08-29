@@ -28,14 +28,15 @@ public class SceneService {
 
     /**
      * 根据单位编码查找所属与本单位的场景列表
+     *
      * @param companyCode 单位编码
      * @return 返回场景列表信息
      * @throws IOException 异常
      */
-    @Cacheable(value = "scene_List;1800", unless = "#result == null",key = "#companyCode")
+    @Cacheable(value = "scene_List;1800", unless = "#result == null", key = "#companyCode")
     public List<Scene> listScenes(String companyCode) throws IOException {
-        EnrolledCompany enrolledCompany = enrolledCompanyRepository.findById(companyCode).orElseThrow(()->new IOException("未从数据库中找到"));
-        List<CompanyRole> companyRoles =new ArrayList<>();
+        EnrolledCompany enrolledCompany = enrolledCompanyRepository.findById(companyCode).orElseThrow(() -> new IOException("未从数据库中找到"));
+        List<CompanyRole> companyRoles = new ArrayList<>();
         Arrays.stream(enrolledCompany.getDetails().getRole().split(",")).toList().forEach(s -> companyRoles.add(CompanyRole.valueBySign(s).get()));
         return sceneRepository.findSceneByRoleIn(companyRoles).stream().toList();
     }

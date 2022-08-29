@@ -7,6 +7,7 @@ import javax.persistence.Embeddable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+
 @Builder
 @Embeddable
 @AllArgsConstructor
@@ -16,7 +17,7 @@ public class CompBrandOwnerId implements Serializable {
     /**
      * 品牌编码
      */
-    @Column(name="brand_code",length = 4,nullable = false)
+    @Column(name = "brand_code", length = 4, nullable = false)
     @NonNull
     @NotNull
     @NotBlank
@@ -26,7 +27,7 @@ public class CompBrandOwnerId implements Serializable {
     /**
      * 被授权单位id
      */
-    @Column(name="owner_code",length = 4,nullable = false)
+    @Column(name = "owner_code", length = 4, nullable = false)
     @NonNull
     @NotNull
     @NotBlank

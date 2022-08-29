@@ -8,6 +8,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
+/**
+ * 合同版本详情表主键
+ */
 @Builder
 @Embeddable
 @AllArgsConstructor

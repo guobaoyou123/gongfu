@@ -25,6 +25,9 @@ import lombok.ToString;
 
 import java.time.LocalDate;
 
+/**
+ * 系统入格单位表
+ */
 @Builder
 @Getter
 @Setter

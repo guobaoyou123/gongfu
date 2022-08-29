@@ -31,7 +31,7 @@ public class WordService {
     @Cacheable("Word;1800")
     public Set<TWord> fetchAllWords() {
         return StreamSupport.stream(wordRepository.findAll().spliterator(), false)
-                .map(wordMapper::toDTO)
-                .collect(Collectors.toSet());
+            .map(wordMapper::toDTO)
+            .collect(Collectors.toSet());
     }
 }

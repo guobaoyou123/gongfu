@@ -22,43 +22,46 @@ import java.util.List;
  */
 public interface CompTradeRepository
     extends CrudRepository<CompTrad, CompTradId>, QuerydslPredicateExecutor<CompTrad> {
-    List<CompTrad> findSuppliersByCompTradId_CompBuyerAndState(@Param("compBuyer") String compBuyer,@Param("state") Availability state);
+    List<CompTrad> findSuppliersByCompTradId_CompBuyerAndState(@Param("compBuyer") String compBuyer, @Param("state") Availability state);
 
 
-    List<CompTrad> findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(String compBuyer,List<String> compSuppliers);
+    List<CompTrad> findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(String compBuyer, List<String> compSuppliers);
 
 
     /**
      * 更改买方所属操作员
-     * @param operators 操作员编码（以逗号隔开）
+     *
+     * @param operators  操作员编码（以逗号隔开）
      * @param compTradId 主键
      */
-    @CacheEvict(value = "Enrolled_Supplier_detail;1800",key="#compTradId.compBuyer+'-'+#compTradId.compSaler")
+    @CacheEvict(value = "Enrolled_Supplier_detail;1800", key = "#compTradId.compBuyer+'-'+#compTradId.compSaler")
     @Modifying
     @Query("UPDATE CompTrad  c set c.buyerBelongTo=?1 where c.compTradId=?2")
-    void updateCompTradeBuyer(String operators,CompTradId compTradId);
+    void updateCompTradeBuyer(String operators, CompTradId compTradId);
 
     /**
      * 更改交易信息状态
-     * @param state 状态
-     * @param compBuyer 买方单位编码
+     *
+     * @param state      状态
+     * @param compBuyer  买方单位编码
      * @param compSalers 卖方单位编码列表
      */
     @Modifying
     @Query("UPDATE CompTrad  c set c.state=?1 where c.compTradId.compBuyer=?2 and c.compTradId.compSaler in ?3")
-    void updateCompTradeState(Availability state,String compBuyer,List<String> compSalers);
+    void updateCompTradeState(Availability state, String compBuyer, List<String> compSalers);
 
     /**
      * 更改卖方所属操作员
-     * @param operators 操作员编码（以逗号隔开）
+     *
+     * @param operators  操作员编码（以逗号隔开）
      * @param compTradId 主键
      */
-    @CacheEvict(value = "Enrolled_Customer_detail;1800",key="#compTradId.compSaler+'-'+#compTradId.compBuyer")
+    @CacheEvict(value = "Enrolled_Customer_detail;1800", key = "#compTradId.compSaler+'-'+#compTradId.compBuyer")
     @Modifying
     @Query("UPDATE CompTrad  c set c.salerBelongTo=?1 where c.compTradId=?2")
-    void updateCompTradeSaler(String operators,CompTradId compTradId);
+    void updateCompTradeSaler(String operators, CompTradId compTradId);
 
     @Modifying
     @Query("UPDATE CompTrad  c set c.taxModel=?1 where c.compTradId=?2")
-    void updateTaxModel(TaxMode taxMode,CompTradId compTradId);
+    void updateTaxModel(TaxMode taxMode, CompTradId compTradId);
 }

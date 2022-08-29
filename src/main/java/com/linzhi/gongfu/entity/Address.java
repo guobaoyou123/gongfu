@@ -32,27 +32,31 @@ public class Address implements Serializable {
     private AddressId addressId;
 
     /**
-     *区域编码
+     * 区域编码
      */
-    @Column(name = "area_code",length = 8)
+    @Column(name = "area_code", length = 8)
     private String areaCode;
+
     /**
-     *区域名称
+     * 区域名称
      */
-    @Column(name = "area_name",length = 8)
+    @Column(name = "area_name", length = 8)
     private String areaName;
+
     /**
-     *详细地址
+     * 详细地址
      */
     @Column(length = 150)
     private String address;
+
     /**
-     *是否为本部地址（本部标志（1-代表是公司地址 0-不是公司地址））
+     * 是否为本部地址（本部标志（1-代表是公司地址 0-不是公司地址））
      */
     @Column(length = 1)
     private Whether flag;
+
     /**
-     *状态(0,停用;1,启用)
+     * 状态(0,停用;1,启用)
      */
     @Column(length = 1)
     private Availability state;

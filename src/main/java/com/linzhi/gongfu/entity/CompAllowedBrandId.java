@@ -24,6 +24,7 @@ public class CompAllowedBrandId implements Serializable {
     @Getter
     @Setter
     private String compCode;
+
     /**
      * 品牌编码
      */

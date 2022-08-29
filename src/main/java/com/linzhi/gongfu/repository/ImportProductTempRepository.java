@@ -13,8 +13,9 @@ public interface ImportProductTempRepository
     extends CrudRepository<ImportProductTemp, ImportProductTempId>, QuerydslPredicateExecutor<ImportProductTemp> {
 
 
-    List<ImportProductTemp> findImportProductTempsByImportProductTempId_DcCompIdAndImportProductTempId_OperatorAndImportProductTempId_InquiryId(String dcCompId,String operator,String id );
+    List<ImportProductTemp> findImportProductTempsByImportProductTempId_DcCompIdAndImportProductTempId_OperatorAndImportProductTempId_InquiryId(String dcCompId, String operator, String id);
+
     @Modifying
     @Query("delete from ImportProductTemp as c  where c.importProductTempId.inquiryId=?1 and c.importProductTempId.dcCompId=?2 and c.importProductTempId.operator=?3 ")
-    void  deleteProduct(String inquiryId,String dcCompId,String operator);
+    void deleteProduct(String inquiryId, String dcCompId, String operator);
 }

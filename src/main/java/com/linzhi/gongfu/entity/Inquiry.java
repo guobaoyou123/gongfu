@@ -11,6 +11,9 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 询价单表
+ */
 @Builder
 @Setter
 @Getter

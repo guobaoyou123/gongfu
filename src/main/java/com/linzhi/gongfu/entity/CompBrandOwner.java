@@ -6,6 +6,7 @@ import javax.persistence.*;
 
 /**
  * 我拥有的品牌
+ *
  * @author zgh
  * @create_time 2022-02-07
  */

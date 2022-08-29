@@ -12,11 +12,11 @@ import java.io.Serializable;
 @Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
-public class CompBrandAuthId  implements Serializable {
+public class CompBrandAuthId implements Serializable {
     /**
      * 品牌编码
      */
-    @Column(name="brand_code",length = 10,nullable = false)
+    @Column(name = "brand_code", length = 10, nullable = false)
     @NonNull
     @NotNull
     @NotBlank
@@ -26,7 +26,7 @@ public class CompBrandAuthId  implements Serializable {
     /**
      * 被授权单位id
      */
-    @Column(name="be_auth_comp",length = 20,nullable = false)
+    @Column(name = "be_auth_comp", length = 20, nullable = false)
     @NonNull
     @NotNull
     @NotBlank

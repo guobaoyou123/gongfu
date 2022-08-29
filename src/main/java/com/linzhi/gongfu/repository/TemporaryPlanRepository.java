@@ -12,7 +12,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface TemporaryPlanRepository extends CrudRepository<TemporaryPlan, TemporaryPlanId>, QuerydslPredicateExecutor<TemporaryPlan> {
-    List<TemporaryPlan> findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByOrderByCreatedAt(String dcCompId,String createdBy);
+    List<TemporaryPlan> findAllByTemporaryPlanId_DcCompIdAndTemporaryPlanId_CreatedByOrderByCreatedAt(String dcCompId, String createdBy);
+
     @Modifying
     @Query("update TemporaryPlan as c set c.demand = ?1 where c.temporaryPlanId = ?2")
     @Transactional

@@ -9,10 +9,10 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface SceneMenuRepository  extends CrudRepository<SceneMenu, SceneMenuId>, QuerydslPredicateExecutor<SceneMenu> {
+public interface SceneMenuRepository extends CrudRepository<SceneMenu, SceneMenuId>, QuerydslPredicateExecutor<SceneMenu> {
 
     @Query(value = "select distinct  m.* from dc_scene_menu  m\n" +
         "where m.menu_code in (select  code  from sys_menu where parent = (select code from sys_menu where name=?1)) ",
         nativeQuery = true)
-     List<SceneMenu> findList(String menuName);
+    List<SceneMenu> findList(String menuName);
 }

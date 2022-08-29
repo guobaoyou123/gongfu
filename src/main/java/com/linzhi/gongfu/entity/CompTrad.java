@@ -46,18 +46,18 @@ public class CompTrad implements Serializable {
      */
     @OneToOne
     @JoinColumn(name = "comp_saler", referencedColumnName = "code", insertable = false, updatable = false)
-    private  Company  companys;
+    private Company companys;
 
     /**
      * 可见经营品牌
      */
     @Singular
     @ManyToMany
-    @JoinTable(name="comp_trade_brand",joinColumns = {
-        @JoinColumn(name="comp_saler",referencedColumnName = "comp_saler", insertable = false, updatable = false),
-        @JoinColumn(name="comp_buyer",referencedColumnName = "comp_buyer", insertable = false, updatable = false)
-    },inverseJoinColumns = {
-        @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
+    @JoinTable(name = "comp_trade_brand", joinColumns = {
+        @JoinColumn(name = "comp_saler", referencedColumnName = "comp_saler", insertable = false, updatable = false),
+        @JoinColumn(name = "comp_buyer", referencedColumnName = "comp_buyer", insertable = false, updatable = false)
+    }, inverseJoinColumns = {
+        @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
     private Set<DcBrand> manageBrands;
 
@@ -66,10 +66,10 @@ public class CompTrad implements Serializable {
      */
     @Singular
     @ManyToMany
-    @JoinTable(name="comp_brand_auth",joinColumns = {
-        @JoinColumn(name="be_auth_comp",referencedColumnName = "comp_saler", insertable = false, updatable = false),
-   },inverseJoinColumns = {
-        @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
+    @JoinTable(name = "comp_brand_auth", joinColumns = {
+        @JoinColumn(name = "be_auth_comp", referencedColumnName = "comp_saler", insertable = false, updatable = false),
+    }, inverseJoinColumns = {
+        @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
     private Set<DcBrand> authBrands;
 
@@ -78,10 +78,10 @@ public class CompTrad implements Serializable {
      */
     @Singular
     @ManyToMany
-    @JoinTable(name="comp_brand_owner",joinColumns = {
-        @JoinColumn(name="owner_code",referencedColumnName = "comp_saler", insertable = false, updatable = false)
-    },inverseJoinColumns = {
-        @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
+    @JoinTable(name = "comp_brand_owner", joinColumns = {
+        @JoinColumn(name = "owner_code", referencedColumnName = "comp_saler", insertable = false, updatable = false)
+    }, inverseJoinColumns = {
+        @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
     private Set<DcBrand> selfSupportBrands;
 
