@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.controller;
 
+
 import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
@@ -154,4 +155,35 @@ public class CustomerController {
             .message("保存数据成功")
             .build();
     }
+
+    /**
+     * 本单位的外客户列表
+     *
+     * @return 外客户列表
+     */
+    @GetMapping("/customers/page")
+    public VForeignCustomerPageResponse foreignSuppliers( @RequestParam("name") Optional<String> name,
+                                                       @RequestParam("pageNum") Optional<String> pageNum,
+                                                       @RequestParam("pageSize") Optional<String> pageSize,
+                                                          @RequestParam("state") Optional<String> state) throws IOException {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var page = companyService.pageForeignCustomers(
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            name.orElse(""),
+            pageNum.map(PageTools::verificationPageNum).orElse(0),
+            pageSize.map(PageTools::verificationPageSize).orElse(10),
+            state.orElse("1")
+        );
+        return VForeignCustomerPageResponse.builder()
+            .code(200)
+            .message("数据获取成功")
+            .current(page.getNumber() + 1)
+            .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
+            .customers(page.getContent().stream().map(companyMapper::toVForeignCustomer).toList())
+            .build();
+    }
+
 }

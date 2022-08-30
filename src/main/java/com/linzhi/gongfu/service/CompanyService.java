@@ -10,6 +10,7 @@ import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,7 @@ public class CompanyService {
     private final EnrolledSupplierRepository enrolledSupplierRepository;
     private final OperatorRepository operatorRepository;
     private final OperatorMapper operatorMapper;
-
+    private final OperatorDetailRepository operatorDetailRepository;
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -171,15 +172,17 @@ public class CompanyService {
     public List<TCompanyBaseInformation> listForeignSuppliers(String companyCode) {
         QCompany qCompany = QCompany.company;
         QCompTrad qCompTrad = QCompTrad.compTrad;
-        JPAQuery<Company> query = queryFactory.selectDistinct(qCompany).from(qCompany).leftJoin(qCompTrad)
-            .on(qCompany.code.eq(qCompTrad.compTradId.compSaler));
+        QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
+         JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany,qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrad)
+            .on(qCompany.code.eq(qCompTrad.compTradId.compBuyer))
+            .leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
         query.where
             (qCompTrad.compTradId.compBuyer.eq(companyCode)
                 .and(qCompany.role.eq(CompanyRole.EXTERIOR_SUPPLIER.getSign())));
-        List<Company> companies = query.orderBy(qCompany.code.desc())
+        List<Tuple> companies = query.orderBy(qCompany.code.desc())
             .fetch();
         return companies.stream()
-            .map(companyMapper::toBaseInformation)
+            .map(companyMapper::toForeignCompany)
             .toList();
     }
 
@@ -810,5 +813,53 @@ public class CompanyService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * 查询外客户列表 分页
+     * @param companyCode 本单位编码
+     * @param operator 操作员编码
+     * @param name 公司名称
+     * @param pageSize 每页展示几条
+     * @param pageNum 页码
+     * @return 外客户列表
+     * @throws IOException 异常
+     */
+    public Page<TCompanyBaseInformation> pageForeignCustomers(String companyCode, String operator, String name, Integer pageNum, Integer pageSize,String state) throws IOException {
+        OperatorDetail operatorDetail = operatorDetailRepository.findById(OperatorId.builder()
+                .operatorCode(operator)
+                .companyCode(companyCode)
+            .build()).orElseThrow(()->new IOException("没有从数据库中找打该数据"));
+        return PageTools.listConvertToPage(listForeignCustomers(companyCode,operator,operatorDetail.getAdmin(),name,state),PageRequest.of(pageNum,pageSize));
+    }
+    /**
+     * 查找外供应商列表
+     *
+     * @param companyCode 单位id
+     * @param operator 操作员编码
+     * @param name 公司名称
+     * @return 返回外客户列表
+     */
+    @Cacheable(value = "Foreign_Customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#state+'-'+#name")
+    public List<TCompanyBaseInformation> listForeignCustomers(String companyCode,String operator,Whether isAdmin,String name,String state) {
+        QCompany qCompany = QCompany.company;
+        QCompTrad qCompTrad = QCompTrad.compTrad;
+        QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
+        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany,qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrad)
+            .on(qCompany.code.eq(qCompTrad.compTradId.compBuyer))
+            .leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
+        query.where
+            (qCompTrad.compTradId.compSaler.eq(companyCode)
+                .and(qCompany.role.eq(CompanyRole.EXTERIOR_CUSTOMER.getSign())));
+        if(isAdmin.equals(Whether.NO))
+            query.where(qCompTrad.salerBelongTo.contains(operator));
+        if(!name.equals(""))
+            query.where(qCompany.nameInCN.like("%"+name+"%"));
+        query.where(qCompany.state.eq(state.equals("1")?Availability.ENABLED:Availability.DISABLED));
+        List<Tuple> companies = query.orderBy(qCompany.code.desc())
+            .fetch();
+        return companies.stream()
+            .map(companyMapper::toForeignCompany)
+            .toList();
     }
 }
