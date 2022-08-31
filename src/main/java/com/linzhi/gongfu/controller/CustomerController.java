@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.controller;
 
 
+import com.linzhi.gongfu.enumeration.CompanyRole;
 import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
@@ -162,10 +163,10 @@ public class CustomerController {
      * @return 外客户列表
      */
     @GetMapping("/customers/page")
-    public VForeignCustomerPageResponse foreignSuppliers( @RequestParam("name") Optional<String> name,
-                                                       @RequestParam("pageNum") Optional<String> pageNum,
-                                                       @RequestParam("pageSize") Optional<String> pageSize,
-                                                       @RequestParam("state") Optional<String> state) throws IOException {
+    public VForeignCustomerPageResponse foreignSuppliers(@RequestParam("name") Optional<String> name,
+                                                         @RequestParam("pageNum") Optional<String> pageNum,
+                                                         @RequestParam("pageSize") Optional<String> pageSize,
+                                                         @RequestParam("state") Optional<String> state) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -204,5 +205,35 @@ public class CustomerController {
             .build();
     }
 
-    
+    /**
+     * 保存外客户
+     *
+     * @param customer 客户信息
+     * @return 成功或者失败信息
+     */
+    @PostMapping("/customer")
+    public VBaseResponse saveForeignCustomer(@RequestBody Optional<VForeignCompanyRequest> customer) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var map = companyService.judgeCompanyExists(null,
+            session.getSession().getCompanyCode(),
+            CompanyRole.EXTERIOR_CUSTOMER,
+            customer.orElseThrow(() -> new NullPointerException("数据为空")).getUsci());
+        if (((int) map.get("code")) == 201)
+            return VBaseResponse.builder()
+                .code((int) map.get("code"))
+                .message((String) map.get("message"))
+                .build();
+        companyService.saveForeignCompany(
+            customer.orElseThrow(() -> new NullPointerException("数据为空")),
+            session.getSession().getCompanyCode(),
+            null, CompanyRole.EXTERIOR_CUSTOMER
+        );
+        return VBaseResponse.builder()
+            .code(200)
+            .message("数据保存成功")
+            .build();
+    }
+
 }

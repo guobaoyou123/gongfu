@@ -55,6 +55,7 @@ public class CompanyService {
     private final OperatorRepository operatorRepository;
     private final OperatorMapper operatorMapper;
     private final OperatorDetailRepository operatorDetailRepository;
+
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -173,7 +174,7 @@ public class CompanyService {
         QCompany qCompany = QCompany.company;
         QCompTrad qCompTrad = QCompTrad.compTrad;
         QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
-         JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany,qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrad)
+        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany, qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrad)
             .on(qCompany.code.eq(qCompTrad.compTradId.compBuyer))
             .leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
         query.where
@@ -214,138 +215,6 @@ public class CompanyService {
         vSupplier.setTaxMode(String.valueOf(trade.getTaxModel().getTaxMode()));
         vSupplier.setUsci(enrolledCompany.getUSCI());
         return vSupplier;
-    }
-
-    /**
-     * 保存外供应商
-     *
-     * @param foreignSupplier 供应商信息
-     * @param companyCode     单位id
-     * @return 返回成功或者是吧消息
-     */
-    @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800", key = "'*'+#companyCode"),
-        @CacheEvict(value = "Foreign_Supplier_List;1800", key = "#companyCode"),
-        @CacheEvict(value = "brands_company;1800", key = "'*'+#companyCode"),
-        @CacheEvict(value = "SupplierAndBrand;1800", key = "#companyCode"),
-        @CacheEvict(value = "supplierDetail;1800", key = "#companyCode+'-'+#code", condition = "#code != null"),
-    })
-    @Transactional
-    public Map<String, Object> saveForeignSupplier(VForeignSupplierRequest foreignSupplier,
-                                                   String companyCode,
-                                                   String code) {
-        Map<String, Object> map = new HashMap<>();
-        String maxCode;
-        Company company;
-        try {
-            if (code == null) {
-                //判重
-                QCompany qCompany = QCompany.company;
-                QCompTrad qCompTrad = QCompTrad.compTrad;
-                QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
-                JPAQuery<Company> query = queryFactory.selectDistinct(qCompany)
-                    .from(qCompany, qEnrolledCompany)
-                    .leftJoin(qCompTrad)
-                    .on(qCompany.code.eq(qCompTrad.compTradId.compSaler)
-                        .and(qCompTrad.compTradId.compBuyer.eq(companyCode)));
-                query.where(qEnrolledCompany.USCI.eq(foreignSupplier.getUsci()));
-                query.where(qEnrolledCompany.id.eq(qCompany.identityCode));
-                query.where(qCompany.role.eq(CompanyRole.EXTERIOR_SUPPLIER.getSign()));
-                List<Company> list = query.fetch();
-                if (list.size() > 0) {
-                    map.put("code", 201);
-                    map.put("message", "供应商已存在于列表中");
-                    return map;
-                }
-                //查询有没有系统唯一码
-                Optional<EnrolledCompany> enrolledCompany = enrolledCompanyRepository
-                    .findByUSCI(foreignSupplier.getUsci());
-                //判断系统单位表是否为空
-                if (enrolledCompany.isEmpty()) {
-                    //空的话获取系统单位表的最大编码，生成新的单位
-                    String maxId = enrolledCompanyRepository.findMaxCode();
-                    if (maxId == null)
-                        maxId = "1002";
-                    EnrolledCompany enrolledCompany1 = EnrolledCompany.builder()
-                        .id(maxId)
-                        .nameInCN(foreignSupplier.getCompanyName())
-                        .USCI(foreignSupplier.getUsci())
-                        .contactName(foreignSupplier.getContactName())
-                        .contactPhone(foreignSupplier.getContactPhone())
-                        .state(Enrollment.NOT_ENROLLED)
-                        .build();
-                    enrolledCompanyRepository.save(enrolledCompany1);
-                    enrolledCompany = Optional.of(enrolledCompany1);
-                }
-                maxCode = companyRepository.findMaxCode(CompanyRole.EXTERIOR_SUPPLIER.getSign(), companyCode);
-                if (maxCode == null)
-                    maxCode = "101";
-                code = companyCode + maxCode;
-                company = Company.builder()
-                    .code(code)
-                    .encode(maxCode)
-                    // .USCI(foreignSupplier.getUsci())
-                    .role(CompanyRole.EXTERIOR_SUPPLIER.getSign())
-                    .nameInCN(foreignSupplier.getCompanyName())
-                    .identityCode(enrolledCompany.get().getId())
-                    .state(Availability.ENABLED)
-                    .build();
-            } else {
-                company = companyRepository.findById(code).orElseThrow(() -> new IOException("从数据库搜索不到该供应商"));
-                compTradBrandRepository.deleteCompTradBrand(companyCode, code);
-            }
-            if (foreignSupplier.getAreaCode() != null && !foreignSupplier.getAreaCode().equals("")) {
-                company.setAreaCode(foreignSupplier.getAreaCode());
-                company.setAreaName(addressService.findByCode("", foreignSupplier.getAreaCode()));
-            } else {
-                company.setAreaCode(null);
-                company.setAreaName(null);
-            }
-            company.setAddress(foreignSupplier.getAddress());
-            company.setShortNameInCN(foreignSupplier.getCompanyShortName());
-            company.setContactName(foreignSupplier.getContactName());
-            company.setContactPhone(foreignSupplier.getContactPhone());
-            company.setEmail(foreignSupplier.getEmail());
-            company.setPhone(foreignSupplier.getPhone());
-            companyRepository.save(company);
-            //保存价税模式
-            compTradeRepository.save(
-                CompTrad.builder()
-                    .compTradId(
-                        CompTradId.builder()
-                            .compBuyer(companyCode)
-                            .compSaler(code)
-                            .build()
-                    )
-                    .taxModel(foreignSupplier.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED)
-                    .state(Availability.ENABLED)
-                    .build()
-            );
-            List<CompTradBrand> compTradBrands = new ArrayList<>();
-            String finalCode = code;
-            foreignSupplier.getBrands().forEach(s -> compTradBrands.add(
-                    CompTradBrand.builder()
-                        .compTradBrandId(
-                            CompTradBrandId.builder()
-                                .brandCode(s)
-                                .compBuyer(companyCode)
-                                .compSaler(finalCode)
-                                .build()
-                        )
-                        .sort(0)
-                        .build()
-                )
-            );
-            //保存经营品牌
-            compTradBrandRepository.saveAll(compTradBrands);
-            map.put("code", 200);
-            map.put("message", "保存成功");
-            return map;
-        } catch (Exception e) {
-            e.printStackTrace();
-            map.put("code", 500);
-            map.put("message", "保存失败");
-            return map;
-        }
     }
 
     /**
@@ -685,9 +554,9 @@ public class CompanyService {
         if (enrolledSupplier.getBuyerBelongTo() != null) {
             //查询本单位负责人
             List<TOperatorInfo> operatorList = getAuthorizedOperatorList(
-                    companyCode,
-                    enrolledSupplier.getBuyerBelongTo()
-                );
+                companyCode,
+                enrolledSupplier.getBuyerBelongTo()
+            );
             tEnrolledSupplier.get().setOperators(operatorList);
         }
         return tEnrolledSupplier;
@@ -743,9 +612,9 @@ public class CompanyService {
         if (enrolledSupplier.getSalerBelongTo() != null) {
             //查询本单位负责人
             List<TOperatorInfo> operatorList = getAuthorizedOperatorList(
-                    companyCode,
-                    enrolledSupplier.getSalerBelongTo()
-                );
+                companyCode,
+                enrolledSupplier.getSalerBelongTo()
+            );
             tEnrolledCustomer.get().setOperators(operatorList);
         }
         return tEnrolledCustomer;
@@ -818,46 +687,47 @@ public class CompanyService {
 
     /**
      * 查询外客户列表 分页
+     *
      * @param companyCode 本单位编码
-     * @param operator 操作员编码
-     * @param name 公司名称
-     * @param pageSize 每页展示几条
-     * @param pageNum 页码
+     * @param operator    操作员编码
+     * @param name        公司名称
+     * @param pageSize    每页展示几条
+     * @param pageNum     页码
      * @return 外客户列表
      * @throws IOException 异常
      */
-    public Page<TCompanyBaseInformation> pageForeignCustomers(String companyCode, String operator, String name, Integer pageNum, Integer pageSize,String state) throws IOException {
+    public Page<TCompanyBaseInformation> pageForeignCustomers(String companyCode, String operator, String name, Integer pageNum, Integer pageSize, String state) throws IOException {
         OperatorDetail operatorDetail = operatorDetailRepository.findById(OperatorId.builder()
-                .operatorCode(operator)
-                .companyCode(companyCode)
-            .build()).orElseThrow(()->new IOException("没有从数据库中找打该数据"));
-        return PageTools.listConvertToPage(listForeignCustomers(companyCode,operator,operatorDetail.getAdmin(),name,state),PageRequest.of(pageNum,pageSize));
+            .operatorCode(operator)
+            .companyCode(companyCode)
+            .build()).orElseThrow(() -> new IOException("没有从数据库中找打该数据"));
+        return PageTools.listConvertToPage(listForeignCustomers(companyCode, operator, operatorDetail.getAdmin(), name, state), PageRequest.of(pageNum, pageSize));
     }
 
     /**
      * 查找外客户列表
      *
      * @param companyCode 单位id
-     * @param operator 操作员编码
-     * @param name 公司名称
+     * @param operator    操作员编码
+     * @param name        公司名称
      * @return 返回外客户列表
      */
     @Cacheable(value = "Foreign_Customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#state+'-'+#name")
-    public List<TCompanyBaseInformation> listForeignCustomers(String companyCode,String operator,Whether isAdmin,String name,String state) {
+    public List<TCompanyBaseInformation> listForeignCustomers(String companyCode, String operator, Whether isAdmin, String name, String state) {
         QCompany qCompany = QCompany.company;
         QCompTrad qCompTrad = QCompTrad.compTrad;
         QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
-        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany,qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrad)
+        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany, qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrad)
             .on(qCompany.code.eq(qCompTrad.compTradId.compBuyer))
             .leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
         query.where
             (qCompTrad.compTradId.compSaler.eq(companyCode)
                 .and(qCompany.role.eq(CompanyRole.EXTERIOR_CUSTOMER.getSign())));
-        if(isAdmin.equals(Whether.NO))
+        if (isAdmin.equals(Whether.NO))
             query.where(qCompTrad.salerBelongTo.contains(operator));
-        if(!name.equals(""))
-            query.where(qCompany.nameInCN.like("%"+name+"%"));
-        query.where(qCompany.state.eq(state.equals("1")?Availability.ENABLED:Availability.DISABLED));
+        if (!name.equals(""))
+            query.where(qCompany.nameInCN.like("%" + name + "%"));
+        query.where(qCompany.state.eq(state.equals("1") ? Availability.ENABLED : Availability.DISABLED));
         List<Tuple> companies = query.orderBy(qCompany.code.desc())
             .fetch();
         return companies.stream()
@@ -872,7 +742,7 @@ public class CompanyService {
      * @param companyCode 单位编码
      * @return 返回详细信息
      */
-    //@Cacheable(value = "customerDetail;1800", unless = "#result == null ", key = "#companyCode+'-'+#code")
+    @Cacheable(value = "customerDetail;1800", unless = "#result == null ", key = "#companyCode+'-'+#code")
     public VForeignCustomerResponse.VCustomer getForeignCustomerDetail(String code, String companyCode) throws IOException {
 
         var trade = compTradeRepository.findById(CompTradId.builder()
@@ -894,7 +764,7 @@ public class CompanyService {
         if (trade.getSalerBelongTo() != null) {
             //查询本单位负责人
             var operatorList = getAuthorizedOperatorList(companyCode,
-                    trade.getSalerBelongTo()).stream()
+                trade.getSalerBelongTo()).stream()
                 .map(operatorMapper::toForeignCustomerDetail)
                 .toList();
             vCustomer.setOperators(operatorList);
@@ -905,15 +775,168 @@ public class CompanyService {
 
     /**
      * 查找授权操作员列表
+     *
      * @param companyCode 公司单位编码
-     * @param operators 操作员编码
+     * @param operators   操作员编码
      * @return 返回操作员列表
      */
-    public List<TOperatorInfo> getAuthorizedOperatorList(String companyCode,String operators){
-        return  operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
+    public List<TOperatorInfo> getAuthorizedOperatorList(String companyCode, String operators) {
+        return operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
                 companyCode,
                 Arrays.asList(operators.split(","))
             ).stream().map(operatorMapper::toDTO)
             .toList();
+    }
+
+    /**
+     * 判断新添加的外客户或者供应商是否存在于系统表中
+     *
+     * @param buyerCode   买方编码
+     * @param salerCode   卖方编码
+     * @param companyRole 角色
+     * @param usci        社会统一信用代码
+     * @return 返回成功或者失败消息
+     */
+    public Map<String, Object> judgeCompanyExists(String buyerCode, String salerCode, CompanyRole companyRole, String usci) {
+        Map<String, Object> map = new HashMap<>();
+        //判重
+        QCompany qCompany = QCompany.company;
+        QCompTrad qCompTrad = QCompTrad.compTrad;
+        QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
+        JPAQuery<Company> query = queryFactory.selectDistinct(qCompany)
+            .from(qCompany, qEnrolledCompany);
+        if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)) {
+            query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compBuyer))
+                .on(qCompTrad.compTradId.compSaler.eq(salerCode));
+        } else {
+            query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compSaler))
+                .on(qCompTrad.compTradId.compBuyer.eq(buyerCode));
+        }
+        query.where(qEnrolledCompany.USCI.eq(usci));
+        query.where(qEnrolledCompany.id.eq(qCompany.identityCode));
+        query.where(qCompany.role.eq(companyRole.getSign()));
+        List<Company> list = query.fetch();
+        if (list.size() > 0) {
+            map.put("code", 201);
+            map.put("message", "客户已存在于列表中");
+            return map;
+        }
+        map.put("code", 200);
+        return map;
+
+    }
+
+    /**
+     * 保存外客户或者外供应商信息
+     *
+     * @param foreignCompany 外客户或者外供应商信息
+     * @param companyCode    本单位编码
+     * @param code           外客户或者外供应商编码
+     * @param companyRole    角色
+     */
+    @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800", key = "'*'+#companyCode", condition = "#companyRole.getSign().equals('6')"),
+        @CacheEvict(value = "Foreign_Supplier_List;1800", key = "#companyCode", condition = "#companyRole.getSign().equals('6')"),
+        @CacheEvict(value = "brands_company;1800", key = "'*'+#companyCode", condition = "#companyRole.getSign().equals('6')"),
+        @CacheEvict(value = "SupplierAndBrand;1800", key = "#companyCode", condition = "#companyRole.getSign().equals('6')"),
+        @CacheEvict(value = "supplierDetail;1800", key = "#companyCode+'-'+#code", condition = "#code != null && #companyRole.getSign().equals('6')"),
+        @CacheEvict(value = "Foreign_Customer_List;1800", key = "#companyCode+'*'", condition = "#companyRole.getSign().equals('7')"),
+        @CacheEvict(value = "customerDetail;1800", key = "#companyCode+'-'+#code", condition = "#code != null && #companyRole.getSign().equals('7')"),
+    })
+    @Transactional
+    public void saveForeignCompany(VForeignCompanyRequest foreignCompany,
+                                   String companyCode, String code,
+                                   CompanyRole companyRole) {
+        Company company;
+        try {
+            if (code == null) {
+                //查询有没有系统唯一码
+                Optional<EnrolledCompany> enrolledCompany = enrolledCompanyRepository
+                    .findByUSCI(foreignCompany.getUsci());
+
+                //判断系统单位表是否为空
+                if (enrolledCompany.isEmpty()) {
+                    //空的话获取系统单位表的最大编码，生成新的单位
+                    String maxId = enrolledCompanyRepository.findMaxCode();
+                    if (maxId == null)
+                        maxId = "1002";
+                    EnrolledCompany enrolledCompany1 = EnrolledCompany.builder()
+                        .id(maxId)
+                        .nameInCN(foreignCompany.getCompanyName())
+                        .USCI(foreignCompany.getUsci())
+                        .contactName(foreignCompany.getContactName())
+                        .contactPhone(foreignCompany.getContactPhone())
+                        .state(Enrollment.NOT_ENROLLED)
+                        .build();
+                    enrolledCompanyRepository.save(enrolledCompany1);
+                    enrolledCompany = Optional.of(enrolledCompany1);
+                }
+                String maxCode = companyRepository.findMaxCode(companyRole.getSign(), companyCode);
+                if (maxCode == null && companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER)) {
+                    maxCode = "101";
+                } else if (maxCode == null && companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)) {
+                    maxCode = "201";
+                }
+                code = companyCode + maxCode;
+                company = Company.builder()
+                    .code(code)
+                    .encode(maxCode)
+                    .role(companyRole.getSign())
+                    .nameInCN(foreignCompany.getCompanyName())
+                    .identityCode(enrolledCompany.get().getId())
+                    .state(Availability.ENABLED)
+                    .build();
+            } else {
+                company = companyRepository.findById(code).orElseThrow(() -> new IOException("从数据库搜索不到该供应商"));
+                compTradBrandRepository.deleteCompTradBrand(companyCode, code);
+            }
+            CompTradId compTradId = CompTradId.builder()
+                .compBuyer(companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER) ? companyCode : code)
+                .compSaler(companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER) ? code : companyCode)
+                .build();
+            if (foreignCompany.getAreaCode() != null && !foreignCompany.getAreaCode().equals("")) {
+                company.setAreaCode(foreignCompany.getAreaCode());
+                company.setAreaName(addressService.findByCode("", foreignCompany.getAreaCode()));
+            } else {
+                company.setAreaCode(null);
+                company.setAreaName(null);
+            }
+            company.setAddress(foreignCompany.getAddress());
+            company.setShortNameInCN(foreignCompany.getCompanyShortName());
+            company.setContactName(foreignCompany.getContactName());
+            company.setContactPhone(foreignCompany.getContactPhone());
+            company.setEmail(foreignCompany.getEmail());
+            company.setPhone(foreignCompany.getPhone());
+            companyRepository.save(company);
+            //保存价税模式
+            compTradeRepository.save(
+                CompTrad.builder()
+                    .compTradId(compTradId)
+                    .taxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED)
+                    .state(Availability.ENABLED)
+                    .salerBelongTo(companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER) ? foreignCompany.getOperators() : null)
+                    .build()
+            );
+            List<CompTradBrand> compTradBrands = new ArrayList<>();
+            foreignCompany.getBrands().
+                forEach(s -> compTradBrands.add(
+                        CompTradBrand.builder()
+                            .compTradBrandId(
+                                CompTradBrandId.builder()
+                                    .brandCode(s)
+                                    .compBuyer(compTradId.getCompBuyer())
+                                    .compSaler(compTradId.getCompSaler())
+                                    .build()
+                            )
+                            .sort(0)
+                            .build()
+                    )
+                );
+            //保存经营品牌
+            compTradBrandRepository.saveAll(compTradBrands);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 }

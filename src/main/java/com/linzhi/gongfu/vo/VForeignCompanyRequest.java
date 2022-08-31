@@ -7,12 +7,12 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于接前端添加、修改、停用启用外供应商信息的请求
+ * 用于接前端添加、修改、停用启用外供应商或者客户信息的请求
  */
 @Data
 @Jacksonized
 @NoArgsConstructor
-public class VForeignSupplierRequest {
+public class VForeignCompanyRequest {
 
     /**
      * 系统编码
@@ -83,6 +83,11 @@ public class VForeignSupplierRequest {
      * 品牌列表
      */
     private List<String> brands ;
+
+    /**
+     * 授权操作员以逗号隔开
+     */
+    private String operators ;
 
     /**
      * 停用供应商编码列表
