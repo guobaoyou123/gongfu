@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.controller;
 
 
+import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.CompanyRole;
 import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.mapper.CompanyMapper;
@@ -236,4 +237,28 @@ public class CustomerController {
             .build();
     }
 
+    /**
+     * 修改外客户
+     *
+     * @param customer 客户信息
+     * @return 成功或者失败信息
+     */
+    @PutMapping("/customer/{code}")
+    public VBaseResponse modifyForeignCustomer(@PathVariable("code") String code,
+                                               @RequestBody VForeignCompanyRequest customer
+    ) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        companyService.saveForeignCompany(
+            customer,
+            session.getSession().getCompanyCode(),
+            code,
+            CompanyRole.EXTERIOR_CUSTOMER
+        );
+        return VBaseResponse.builder()
+            .code(200)
+            .message("数据修改成功")
+            .build();
+    }
 }

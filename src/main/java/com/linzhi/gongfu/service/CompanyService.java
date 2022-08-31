@@ -907,15 +907,22 @@ public class CompanyService {
             company.setEmail(foreignCompany.getEmail());
             company.setPhone(foreignCompany.getPhone());
             companyRepository.save(company);
-            //保存价税模式
-            compTradeRepository.save(
-                CompTrad.builder()
+            CompTrad compTrade;
+            if (code != null) {
+                compTrade = compTradeRepository.findById(compTradId).orElseThrow();
+                if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER))
+                    compTrade.setSalerBelongTo(foreignCompany.getOperators());
+                compTrade.setTaxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED);
+            } else {
+                compTrade = CompTrad.builder()
                     .compTradId(compTradId)
                     .taxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED)
                     .state(Availability.ENABLED)
-                    .salerBelongTo(companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER) ? foreignCompany.getOperators() : null)
-                    .build()
-            );
+                    .salerBelongTo(companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER) && code == null ? foreignCompany.getOperators() : null)
+                    .build();
+            }
+            //保存价税模式
+            compTradeRepository.save(compTrade);
             List<CompTradBrand> compTradBrands = new ArrayList<>();
             foreignCompany.getBrands().
                 forEach(s -> compTradBrands.add(
