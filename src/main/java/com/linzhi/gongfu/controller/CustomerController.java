@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -259,6 +260,34 @@ public class CustomerController {
         return VBaseResponse.builder()
             .code(200)
             .message("数据修改成功")
+            .build();
+    }
+
+    /**
+     * 停用启用外客户
+     *
+     * @param state 状态 0-禁用 1-启用
+     * @return 成功或者失败信息
+     */
+    @PutMapping("/customer/{code}/state")
+    public VBaseResponse foreignCustomerDisable(@PathVariable String code, @RequestBody VForeignCompanyRequest state) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var flag = companyService.modifyTradeState(
+            Arrays.asList(code),
+            state.getState().equals("1") ? Availability.ENABLED : Availability.DISABLED,
+            session.getSession().getCompanyCode(),
+            CompanyRole.EXTERIOR_CUSTOMER
+        );
+        if (flag)
+            return VBaseResponse.builder()
+                .code(200)
+                .message("操作成功")
+                .build();
+        return VBaseResponse.builder()
+            .code(500)
+            .message("操作失败")
             .build();
     }
 }

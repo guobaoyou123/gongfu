@@ -93,4 +93,6 @@ public class VForeignCompanyRequest {
      * 停用供应商编码列表
      */
     private List<String> codes;
+
+    private String state;
 }
