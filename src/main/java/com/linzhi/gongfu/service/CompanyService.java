@@ -201,15 +201,18 @@ public class CompanyService {
             .compBuyer(companyCode)
             .build()
         ).orElseThrow(() -> new IOException("没用从数据库中查到数据"));
+        EnrolledCompany enrolledCompany = enrolledCompanyRepository.findById(trade.getSalerCompanys().getIdentityCode())
+            .orElseThrow(() -> new IOException("没用从数据库中查到数据"));
         var brands = trade.getManageBrands().stream()
             .map(brandMapper::toBrand)
             .map(brandMapper::toSupplierBrandPreload)
             .toList();
-        VForeignSupplierResponse.VSupplier vSupplier = Optional.of(trade).map(CompTrad::getCompanys)
+        VForeignSupplierResponse.VSupplier vSupplier = Optional.of(trade).map(CompTrad::getSalerCompanys)
             .map(companyMapper::toBaseInformation)
             .map(companyMapper::toSupplierDetail).orElseThrow();
         vSupplier.setBrands(brands);
         vSupplier.setTaxMode(String.valueOf(trade.getTaxModel().getTaxMode()));
+        vSupplier.setUsci(enrolledCompany.getUSCI());
         return vSupplier;
     }
 
@@ -681,11 +684,10 @@ public class CompanyService {
         Optional<TEnrolledTradeCompany> tEnrolledSupplier = Optional.of(enrolledSupplier).map(companyMapper::toTEnrolledSupplierDetail);
         if (enrolledSupplier.getBuyerBelongTo() != null) {
             //查询本单位负责人
-            List<TOperatorInfo> operatorList = operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
+            List<TOperatorInfo> operatorList = getAuthorizedOperatorList(
                     companyCode,
-                    Arrays.asList(enrolledSupplier.getBuyerBelongTo().split(","))
-                ).stream().map(operatorMapper::toDTO)
-                .toList();
+                    enrolledSupplier.getBuyerBelongTo()
+                );
             tEnrolledSupplier.get().setOperators(operatorList);
         }
         return tEnrolledSupplier;
@@ -740,11 +742,10 @@ public class CompanyService {
         Optional<TEnrolledTradeCompany> tEnrolledCustomer = Optional.of(enrolledSupplier).map(companyMapper::toTEnrolledCustomerDetail);
         if (enrolledSupplier.getSalerBelongTo() != null) {
             //查询本单位负责人
-            List<TOperatorInfo> operatorList = operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
+            List<TOperatorInfo> operatorList = getAuthorizedOperatorList(
                     companyCode,
-                    Arrays.asList(enrolledSupplier.getSalerBelongTo().split(","))
-                ).stream().map(operatorMapper::toDTO)
-                .toList();
+                    enrolledSupplier.getSalerBelongTo()
+                );
             tEnrolledCustomer.get().setOperators(operatorList);
         }
         return tEnrolledCustomer;
@@ -832,8 +833,9 @@ public class CompanyService {
             .build()).orElseThrow(()->new IOException("没有从数据库中找打该数据"));
         return PageTools.listConvertToPage(listForeignCustomers(companyCode,operator,operatorDetail.getAdmin(),name,state),PageRequest.of(pageNum,pageSize));
     }
+
     /**
-     * 查找外供应商列表
+     * 查找外客户列表
      *
      * @param companyCode 单位id
      * @param operator 操作员编码
@@ -860,6 +862,58 @@ public class CompanyService {
             .fetch();
         return companies.stream()
             .map(companyMapper::toForeignCompany)
+            .toList();
+    }
+
+    /**
+     * 查找外客户详情
+     *
+     * @param code        客户编码
+     * @param companyCode 单位编码
+     * @return 返回详细信息
+     */
+    //@Cacheable(value = "customerDetail;1800", unless = "#result == null ", key = "#companyCode+'-'+#code")
+    public VForeignCustomerResponse.VCustomer getForeignCustomerDetail(String code, String companyCode) throws IOException {
+
+        var trade = compTradeRepository.findById(CompTradId.builder()
+            .compSaler(companyCode)
+            .compBuyer(code)
+            .build()
+        ).orElseThrow(() -> new IOException("没用从数据库中查到数据"));
+        EnrolledCompany enrolledCompany = enrolledCompanyRepository.findById(trade.getBuyerCompanys().getIdentityCode())
+            .orElseThrow(() -> new IOException("没用从数据库中查到数据"));
+        var brands = trade.getManageBrands().stream()
+            .map(brandMapper::toBrand)
+            .map(brandMapper::toCustomerBrandPreload)
+            .toList();
+        VForeignCustomerResponse.VCustomer vCustomer = Optional.of(trade).map(CompTrad::getBuyerCompanys)
+            .map(companyMapper::toBaseInformation)
+            .map(companyMapper::toVCustomer).orElseThrow();
+        vCustomer.setBrands(brands);
+        vCustomer.setTaxMode(String.valueOf(trade.getTaxModel().getTaxMode()));
+        if (trade.getSalerBelongTo() != null) {
+            //查询本单位负责人
+            var operatorList = getAuthorizedOperatorList(companyCode,
+                    trade.getSalerBelongTo()).stream()
+                .map(operatorMapper::toForeignCustomerDetail)
+                .toList();
+            vCustomer.setOperators(operatorList);
+        }
+        vCustomer.setUsci(enrolledCompany.getUSCI());
+        return vCustomer;
+    }
+
+    /**
+     * 查找授权操作员列表
+     * @param companyCode 公司单位编码
+     * @param operators 操作员编码
+     * @return 返回操作员列表
+     */
+    public List<TOperatorInfo> getAuthorizedOperatorList(String companyCode,String operators){
+        return  operatorRepository.findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(
+                companyCode,
+                Arrays.asList(operators.split(","))
+            ).stream().map(operatorMapper::toDTO)
             .toList();
     }
 }

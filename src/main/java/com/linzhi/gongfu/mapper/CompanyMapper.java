@@ -255,4 +255,14 @@ public interface CompanyMapper {
     @Mapping(target = "usci", source = "USCI")
     VForeignCustomerPageResponse.VForeignCustomer toVForeignCustomer(TCompanyBaseInformation company);
 
+    /**
+     * 将获取到的外供应商公司信息，转换成可供使用的公司基础信息
+     *
+     * @param company 外供应商的公司全部信息
+     * @return 外供应商公司简要基础信息
+     */
+    @Mapping(target = "companyName", source = "name")
+    @Mapping(target = "companyShortName", source = "shortName")
+    @Mapping(target = "usci", source = "USCI")
+    VForeignCustomerResponse.VCustomer toVCustomer(TCompanyBaseInformation company);
 }

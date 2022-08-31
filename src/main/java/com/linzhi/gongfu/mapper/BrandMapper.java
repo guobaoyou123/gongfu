@@ -7,6 +7,7 @@ import com.linzhi.gongfu.entity.Brand;
 import com.linzhi.gongfu.entity.ViewBrand;
 import com.linzhi.gongfu.vo.VBrandPageResponse;
 import com.linzhi.gongfu.vo.VDcBrandResponse;
+import com.linzhi.gongfu.vo.VForeignCustomerResponse;
 import com.linzhi.gongfu.vo.VForeignSupplierResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -84,10 +85,14 @@ public interface BrandMapper {
 
     TBrand toViewBrand(ViewBrand viewBrand);
 
+    /**
+     * 将获取到的外供应商公司经营品牌转化成可供使用的外供应商公司经营品牌详细信息
+     * @param brand  外供应商公司经营品牌
+     * @return 可供使用的外供应商公司经营品牌
+     */
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "name")
     VForeignSupplierResponse.VBrand toSupplierBrandPreload(TBrand brand);
-
 
     /**
      * 将获取到的公司经营品牌转化成可供使用的公司经营品牌详细信息
@@ -98,4 +103,13 @@ public interface BrandMapper {
     @Mapping(target = "name", source = "dcBrand.chiShort")
     @Mapping(target = "sort", source = "dcBrand.sort")
     TBrand  toCompAllowedBrandDTO(CompAllowedBrand allowedBrand);
+
+    /**
+     * 将获取到的外客户公司经营品牌转化成可供使用的外客户公司经营品牌详细信息
+     * @param brand  外客户公司经营品牌
+     * @return 可供使用的外客户公司经营品牌
+     */
+    @Mapping(target = "code", source = "code")
+    @Mapping(target = "name", source = "name")
+    VForeignCustomerResponse.VBrand toCustomerBrandPreload(TBrand brand);
 }

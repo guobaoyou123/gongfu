@@ -22,7 +22,6 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
         , nativeQuery = true)
     String findMaxCode(String role, String dcCompId);
 
-
     @Modifying
     @Query("update Company as a set a.state=?1 where a.code in ?2")
     void updateCompanyState(Availability availability, List<String> code);

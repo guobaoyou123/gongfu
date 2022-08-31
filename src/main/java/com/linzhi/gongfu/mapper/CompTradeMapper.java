@@ -37,12 +37,12 @@ public interface CompTradeMapper {
      * @param compTrad 我的供应商信息
      * @return 我的供应商以及品牌信息
      */
-    @Mapping(target = "code", source = "companys.code")
-    @Mapping(target = "name", source = "companys.shortNameInCN")
+    @Mapping(target = "code", source = "salerCompanys.code")
+    @Mapping(target = "name", source = "salerCompanys.shortNameInCN")
     @Mapping(target = "selfSupportBrands", source = "selfSupportBrands")
     @Mapping(target = "authBrands", source = "authBrands")
     @Mapping(target = "manageBrands", source = "manageBrands")
-    @Mapping(target = "state",expression = "java(String.valueOf(compTrad.getCompanys().getState().getState()))")
+    @Mapping(target = "state",expression = "java(String.valueOf(compTrad.getSalerCompanys().getState().getState()))")
     TCompanyIncludeBrand toSuppliersIncludeBrand(CompTrad compTrad);
 
 }

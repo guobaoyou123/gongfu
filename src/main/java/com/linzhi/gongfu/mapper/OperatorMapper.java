@@ -4,6 +4,7 @@ import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.Operator;
 
 import com.linzhi.gongfu.entity.OperatorDetail;
+import com.linzhi.gongfu.vo.VForeignCustomerResponse;
 import com.linzhi.gongfu.vo.VOperatorDetailResponse;
 import com.linzhi.gongfu.vo.VOperatorListResponse;
 import com.linzhi.gongfu.vo.VOperatorPageResponse;
@@ -41,4 +42,6 @@ public interface OperatorMapper {
 
     @Mapping(target = "scenes",expression = "java(operator.getScenes().stream().map(TScene::getCode).collect(java.util.stream.Collectors.toSet()))")
     VOperatorListResponse.VOperator toOperatorDTOs(TOperatorInfo operator);
+
+    VForeignCustomerResponse.VOperator toForeignCustomerDetail(TOperatorInfo operatorInfo);
 }

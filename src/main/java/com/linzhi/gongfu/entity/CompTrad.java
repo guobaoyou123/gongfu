@@ -46,7 +46,14 @@ public class CompTrad implements Serializable {
      */
     @OneToOne
     @JoinColumn(name = "comp_saler", referencedColumnName = "code", insertable = false, updatable = false)
-    private Company companys;
+    private Company salerCompanys;
+
+    /**
+     * 供应商
+     */
+    @OneToOne
+    @JoinColumn(name = "comp_buyer", referencedColumnName = "code", insertable = false, updatable = false)
+    private Company buyerCompanys;
 
     /**
      * 可见经营品牌

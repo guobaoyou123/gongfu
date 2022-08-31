@@ -165,7 +165,7 @@ public class CustomerController {
     public VForeignCustomerPageResponse foreignSuppliers( @RequestParam("name") Optional<String> name,
                                                        @RequestParam("pageNum") Optional<String> pageNum,
                                                        @RequestParam("pageSize") Optional<String> pageSize,
-                                                          @RequestParam("state") Optional<String> state) throws IOException {
+                                                       @RequestParam("state") Optional<String> state) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -186,4 +186,23 @@ public class CustomerController {
             .build();
     }
 
+    /**
+     * 本单位的外客户的详情
+     *
+     * @return 外客户列表
+     */
+    @GetMapping("/customer/{code}")
+    public VForeignCustomerResponse foreignCustomerDetail(@PathVariable String code) throws IOException {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var customer = companyService.getForeignCustomerDetail(code, session.getSession().getCompanyCode());
+        return VForeignCustomerResponse.builder()
+            .code(200)
+            .message("获取客户详情成功")
+            .customer(customer)
+            .build();
+    }
+
+    
 }
