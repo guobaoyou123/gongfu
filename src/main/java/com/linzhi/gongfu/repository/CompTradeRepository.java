@@ -51,6 +51,16 @@ public interface CompTradeRepository
     void updateCompTradeState(Availability state, String compBuyer, List<String> compSalers);
 
     /**
+     * 更改交易信息状态
+     *
+     * @param state      状态
+     * @param compBuyers  买方单位编码列表
+     * @param compSaler 卖方单位编码
+     */
+    @Modifying
+    @Query("UPDATE CompTrad  c set c.state=?1 where c.compTradId.compBuyer in ?2 and c.compTradId.compSaler = ?3")
+    void updateCompTradeState(Availability state, List<String>  compBuyers, String compSaler);
+    /**
      * 更改卖方所属操作员
      *
      * @param operators  操作员编码（以逗号隔开）

@@ -218,26 +218,28 @@ public class CompanyService {
     }
 
     /**
-     * 修改供应商状态
+     * 修改供应商客户状态
      *
-     * @param code  供应商编码
+     * @param code  供应商客户编码
      * @param state 状态
-     * @param type  类型1-外供供应商 2-内供应商
+     * @param companyRole  角色
      * @return 返回成功或者失败
      */
-    @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800", key = "'*'+#companyCode"),
-        @CacheEvict(value = "brands_company;1800", key = "'*'+#companyCode"),
-        @CacheEvict(value = "SupplierAndBrand;1800", key = "#companyCode"),
-        @CacheEvict(value = "Foreign_Supplier_List;1800", key = "#companyCode", condition = "#type=='1'"),
-        @CacheEvict(value = "Enrolled_Supplier_List;1800", key = "#companyCode")
+    @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800", key = "'*'+#companyCode", condition = "#companyRole.getSign()=='6'"),
+        @CacheEvict(value = "brands_company;1800", key = "'*'+#companyCode", condition = "#companyRole.getSign()=='6'"),
+        @CacheEvict(value = "SupplierAndBrand;1800", key = "#companyCode", condition = "#companyRole.getSign()=='6'"),
+        @CacheEvict(value = "Foreign_Supplier_List;1800", key = "#companyCode", condition = "#companyRole.getSign()=='6'"),
+        @CacheEvict(value = "Foreign_Customer_List;1800", key = "#companyCode+'*'", condition = "#companyRole.getSign()=='7'")
     })
     @Transactional
-    public Boolean modifySupplierState(List<String> code, Availability state, String companyCode, String type) {
+    public Boolean modifyTradeState(List<String> code, Availability state, String companyCode,CompanyRole companyRole) {
         try {
-            if (type.equals("1")) {
-                companyRepository.updateCompanyState(state, code);
-            }
-            compTradeRepository.updateCompTradeState(state, companyCode, code);
+             companyRepository.updateCompanyState(state, code);
+             if(companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER)) {
+                 compTradeRepository.updateCompTradeState(state, companyCode, code);
+             }else{
+                 compTradeRepository.updateCompTradeState(state, code,companyCode);
+             }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
