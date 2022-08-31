@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.enumeration.Availability;
+import com.linzhi.gongfu.enumeration.CompanyRole;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
@@ -131,18 +132,27 @@ public class SuppliersController {
      * @return 成功或者失败信息
      */
     @PostMapping("/supplier")
-    public VBaseResponse saveForeignSupplier(@RequestBody VForeignSupplierRequest supplier) {
+    public VBaseResponse saveForeignSupplier(@RequestBody Optional<VForeignCompanyRequest> supplier) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var map = companyService.saveForeignSupplier(
-            supplier,
+        var map = companyService.judgeCompanyExists(session.getSession().getCompanyCode(),
+            null,
+            CompanyRole.EXTERIOR_SUPPLIER,
+            supplier.orElseThrow(() -> new NullPointerException("数据为空")).getUsci());
+        if (((int) map.get("code")) == 201)
+            return VBaseResponse.builder()
+                .code((int) map.get("code"))
+                .message((String) map.get("message"))
+                .build();
+        companyService.saveForeignCompany(
+            supplier.orElseThrow(() -> new NullPointerException("数据为空")),
             session.getSession().getCompanyCode(),
-            null
+            null, CompanyRole.EXTERIOR_SUPPLIER
         );
         return VBaseResponse.builder()
-            .code((int) map.get("code"))
-            .message((String) map.get("message"))
+            .code(200)
+            .message("数据保存成功")
             .build();
     }
 
@@ -154,19 +164,20 @@ public class SuppliersController {
      */
     @PutMapping("/supplier/{code}")
     public VBaseResponse modifyForeignSupplier(@PathVariable("code") String code,
-                                               @RequestBody VForeignSupplierRequest supplier
+                                               @RequestBody VForeignCompanyRequest supplier
     ) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var map = companyService.saveForeignSupplier(
+        companyService.saveForeignCompany(
             supplier,
             session.getSession().getCompanyCode(),
-            code
+            code,
+            CompanyRole.EXTERIOR_SUPPLIER
         );
         return VBaseResponse.builder()
-            .code((int) map.get("code"))
-            .message((String) map.get("message"))
+            .code(200)
+            .message("数据修改成功")
             .build();
     }
 
@@ -177,7 +188,7 @@ public class SuppliersController {
      * @return 成功或者失败信息
      */
     @PutMapping("/supplier/disable")
-    public VBaseResponse foreignSupplierDisable(@RequestBody VForeignSupplierRequest supplier) {
+    public VBaseResponse foreignSupplierDisable(@RequestBody VForeignCompanyRequest supplier) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -200,7 +211,7 @@ public class SuppliersController {
      * @return 成功或者失败信息
      */
     @PutMapping("/supplier/enable")
-    public VBaseResponse foreignSupplierEnable(@RequestBody VForeignSupplierRequest supplier) {
+    public VBaseResponse foreignSupplierEnable(@RequestBody VForeignCompanyRequest supplier) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
