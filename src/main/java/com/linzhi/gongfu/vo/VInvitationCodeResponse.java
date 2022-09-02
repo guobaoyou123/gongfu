@@ -12,7 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VInvitationCodeResponse extends VBaseResponse{
+public class VInvitationCodeResponse extends VBaseResponse {
 
     /**
      * 邀请码

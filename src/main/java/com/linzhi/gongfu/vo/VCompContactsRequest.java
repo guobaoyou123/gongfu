@@ -20,24 +20,24 @@ public class VCompContactsRequest {
     private String companyName;
 
     /**
-     *姓名
+     * 姓名
      */
-    private String name ;
+    private String name;
 
     /**
      * 电话
      */
-    private String phone ;
+    private String phone;
 
     /**
-     *地址编码
+     * 地址编码
      */
-    private String addressCode ;
+    private String addressCode;
 
     /**
      * 状态
      */
-    private String state ;
+    private String state;
 
     /**
      * 启用、禁用人员编码

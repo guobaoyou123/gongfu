@@ -7,6 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 /**
  * 用于响应前端对于查询产品列表的预加载请求
  *
@@ -17,7 +18,17 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VProductPageResponse extends VBaseResponse{
+public class VProductPageResponse extends VBaseResponse {
+
+    /**
+     * 产品列表
+     */
+    List<VProduct> products;
+
+    /**
+     * 其他相关产品列表
+     */
+    List<VProduct> otherproducts;
 
     /**
      * 当前页
@@ -29,25 +40,18 @@ public class VProductPageResponse extends VBaseResponse{
      */
     private int total;
 
-    /**
-     * 产品列表
-     */
-    List<VProduct> products;
-
-    /**
-     * 其他相关产品列表
-     */
-    List<VProduct> otherproducts;
     @Data
-    public static class VProduct{
+    public static class VProduct {
         /**
          * 产品唯一码
          */
         private String id;
+
         /**
          * 产品编码
          */
         private String code;
+
         /**
          * 品牌名称
          */
@@ -62,6 +66,7 @@ public class VProductPageResponse extends VBaseResponse{
          * 计价单位
          */
         private String chargeUnit;
+
         /**
          * 产品面价
          */

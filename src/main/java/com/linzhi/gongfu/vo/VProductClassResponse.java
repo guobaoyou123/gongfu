@@ -15,13 +15,14 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VProductClassResponse extends VBaseResponse{
+public class VProductClassResponse extends VBaseResponse {
     /**
      * 产品分类列表
      */
     List<VProductClass> classes;
+
     @Data
-    public static class VProductClass{
+    public static class VProductClass {
         /**
          * 编码
          */
@@ -37,8 +38,9 @@ public class VProductClassResponse extends VBaseResponse{
          */
         private List<VSubProductClass> children;
     }
+
     @Data
-    public static class VSubProductClass{
+    public static class VSubProductClass {
         /**
          * 编码
          */

@@ -17,24 +17,29 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VDisableAreaResponse extends  VBaseResponse{
+public class VDisableAreaResponse extends VBaseResponse {
     List<Area> areas;
 
     @Data
-    public static  class Area{
+    public static class Area {
         /**
          * 系统主键
          */
-        private String code ;
+        private String code;
+
         /**
          * 页面显示编码
          */
         private String idcode;
+
         /**
          * 区域名称
          */
         private String name;
 
+        /**
+         * 创建时间
+         */
         private long createdAt;
     }
 }

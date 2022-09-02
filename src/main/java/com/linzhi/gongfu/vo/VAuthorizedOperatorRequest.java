@@ -11,5 +11,9 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @NoArgsConstructor
 public class VAuthorizedOperatorRequest {
-    private  String operators;
+
+    /**
+     * 操作员编码
+     */
+    private String operators;
 }

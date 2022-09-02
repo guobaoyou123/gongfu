@@ -16,6 +16,5 @@ public interface BlacklistRepository extends CrudRepository<Blacklist, Blacklist
      * @param dcCompId 公司编码
      * @return 名单列表
      */
-
     List<Blacklist> findBlacklistsByBlacklistId_DcCompId(String dcCompId);
 }

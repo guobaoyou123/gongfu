@@ -22,11 +22,24 @@ import java.util.List;
  */
 public interface CompTradeRepository
     extends CrudRepository<CompTrad, CompTradId>, QuerydslPredicateExecutor<CompTrad> {
+
+    /**
+     * 查找供应商列表
+     *
+     * @param compBuyer 买方编码
+     * @param state     状态
+     * @return 供应商列表
+     */
     List<CompTrad> findSuppliersByCompTradId_CompBuyerAndState(@Param("compBuyer") String compBuyer, @Param("state") Availability state);
 
-
+    /**
+     * 查找交易列表
+     *
+     * @param compBuyer     买方编码
+     * @param compSuppliers 卖方编码列表
+     * @return 交易列表
+     */
     List<CompTrad> findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(String compBuyer, List<String> compSuppliers);
-
 
     /**
      * 更改买方所属操作员
@@ -54,12 +67,13 @@ public interface CompTradeRepository
      * 更改交易信息状态
      *
      * @param state      状态
-     * @param compBuyers  买方单位编码列表
-     * @param compSaler 卖方单位编码
+     * @param compBuyers 买方单位编码列表
+     * @param compSaler  卖方单位编码
      */
     @Modifying
     @Query("UPDATE CompTrad  c set c.state=?1 where c.compTradId.compBuyer in ?2 and c.compTradId.compSaler = ?3")
-    void updateCompTradeState(Availability state, List<String>  compBuyers, String compSaler);
+    void updateCompTradeState(Availability state, List<String> compBuyers, String compSaler);
+
     /**
      * 更改卖方所属操作员
      *
@@ -71,6 +85,12 @@ public interface CompTradeRepository
     @Query("UPDATE CompTrad  c set c.salerBelongTo=?1 where c.compTradId=?2")
     void updateCompTradeSaler(String operators, CompTradId compTradId);
 
+    /**
+     * 更新交易中的报价模式
+     *
+     * @param taxMode    报价模式
+     * @param compTradId 交易主键
+     */
     @Modifying
     @Query("UPDATE CompTrad  c set c.taxModel=?1 where c.compTradId=?2")
     void updateTaxModel(TaxMode taxMode, CompTradId compTradId);

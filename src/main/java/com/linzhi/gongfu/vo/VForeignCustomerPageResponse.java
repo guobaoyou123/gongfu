@@ -8,7 +8,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于响应前端外供应商列表的请求
+ * 用于响应前端外客户列表的请求
  *
  * @author zgh
  * @create_at 2022-02-09
@@ -17,7 +17,12 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VForeignCustomerPageResponse extends VBaseResponse{
+public class VForeignCustomerPageResponse extends VBaseResponse {
+    /**
+     * 外客户列表
+     */
+    List<VForeignCustomer> customers;
+
     /**
      * 当前页码
      */
@@ -28,13 +33,8 @@ public class VForeignCustomerPageResponse extends VBaseResponse{
      */
     private int total;
 
-    /**
-     * 外客户列表
-     */
-    List<VForeignCustomer> customers;
-
     @Data
-    public static class VForeignCustomer{
+    public static class VForeignCustomer {
 
         /**
          * 系统编码

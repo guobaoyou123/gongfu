@@ -34,8 +34,9 @@ public class VInquiryRequest {
      * 产品列表
      */
     private List<VProduct> products;
+
     @Data
-    public  static  class  VProduct{
+    public static class VProduct {
 
         /**
          * 产品序号

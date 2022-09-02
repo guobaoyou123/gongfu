@@ -206,7 +206,7 @@ public class InquiryService {
      * @param state       状态
      * @return 返回询价列表
      */
-    @Cacheable(value = "inquiry_List;1800", key = "#companyCode+'_'+#operator+'_'+#state")
+   // @Cacheable(value = "inquiry_List;1800", key = "#companyCode+'_'+#operator+'_'+#state")
     public List<TInquiry> listInquiries(String companyCode, String operator, String state) {
         try {
             //查询操作员信息

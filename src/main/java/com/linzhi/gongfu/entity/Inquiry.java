@@ -5,7 +5,10 @@ import com.linzhi.gongfu.enumeration.InquiryType;
 import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -20,91 +23,91 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="inquiry_base")
+@Table(name = "inquiry_base")
 public class Inquiry {
     /**
      * 询价单唯一id
      */
     @Id
-    @Column(length = 50,nullable = false)
+    @Column(length = 50, nullable = false)
     @NotNull
     @NotBlank
     @NonNull
-    private String id ;
+    private String id;
     /**
      * 询价单编号
      */
-    @Column(length = 40,nullable = false)
+    @Column(length = 40, nullable = false)
     @NotNull
     @NotBlank
     private String code;
     /**
      * 合同id
      */
-    @Column(name = "contract_id",length = 50)
+    @Column(name = "contract_id", length = 50)
     private String contractId;
     /*
      * 合同系统编号
      */
-    @Column(name = "contract_code",length = 40)
+    @Column(name = "contract_code", length = 40)
     private String contractCode;
-    @Column(name = "orderCode",updatable = false,insertable = false)
+    @Column(name = "orderCode", updatable = false, insertable = false)
     private String orderCode;
 
     /**
      * 类型（0-询价单 1-报价当）
      */
-    @Column(name = "type",length = 1)
+    @Column(name = "type", length = 1)
     private InquiryType type;
     /*
      * 对应销售合同记录系统主键
      */
-    @Column(name = "sales_contract_id",length = 50)
+    @Column(name = "sales_contract_id", length = 50)
     private String salesContractId;
     /*
      * 对应销售合同记录系统编码
      */
-    @Column(name = "salesContractCode",updatable = false,insertable = false)
+    @Column(name = "salesContractCode", updatable = false, insertable = false)
     private String salesContractCode;
     /*
      * 对应销售合同记录中本单位编码
      */
-    @Column(name = "salesOrderCode",updatable = false,insertable = false)
+    @Column(name = "salesOrderCode", updatable = false, insertable = false)
     private String salesOrderCode;
 
     /**
      * 所属单位编码
      */
-    @Column(name = "created_by_comp",length = 20)
+    @Column(name = "created_by_comp", length = 20)
     private String createdByComp;
     /**
      * 所属操作员编码
      */
-    @Column(name = "created_by",length = 20)
+    @Column(name = "created_by", length = 20)
     private String createdBy;
-    @Column(name = "createdByName",updatable = false,insertable = false)
+    @Column(name = "createdByName", updatable = false, insertable = false)
     private String createdByName;
     /**
      * 客户公司编码
      */
-    @Column(name = "buyer_comp",length = 40,nullable = false)
+    @Column(name = "buyer_comp", length = 40, nullable = false)
     private String buyerComp;
     /**
      * 客户名称
      */
-    @Column(name = "buyer_comp_name",length = 100)
+    @Column(name = "buyer_comp_name", length = 100)
     private String buyerCompName;
 
     /**
      * 供应商公司编号
      */
-    @Column(name = "saler_comp",length = 40,nullable = false)
+    @Column(name = "saler_comp", length = 40, nullable = false)
 
     private String salerComp;
     /**
      * 供应商名称
      */
-    @Column(name = "saler_comp_name",length = 100)
+    @Column(name = "saler_comp_name", length = 100)
     private String salerCompName;
 
 
@@ -119,7 +122,7 @@ public class Inquiry {
     @Column(name = "service_rate")
     private BigDecimal vatServiceRate;
     /**
-     *折扣
+     * 折扣
      */
     @Column(name = "discount")
     private BigDecimal discount;
@@ -156,7 +159,7 @@ public class Inquiry {
     /**
      * 税模式（0-未税 1-含税）
      */
-    @Column(name = "offer_mode",length = 1)
+    @Column(name = "offer_mode", length = 1)
     private TaxMode offerMode;
     /**
      * 创建时间

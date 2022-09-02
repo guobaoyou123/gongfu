@@ -17,11 +17,12 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VSceneListResponse extends VBaseResponse{
+public class VSceneListResponse extends VBaseResponse {
 
     List<VScene> scenes;
+
     @Data
-    public static class VScene{
+    public static class VScene {
         /**
          * 场景编码
          */

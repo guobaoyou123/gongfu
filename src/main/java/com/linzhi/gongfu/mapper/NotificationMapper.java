@@ -17,13 +17,14 @@ public interface NotificationMapper {
 
     /**
      * 将从数据库中查到的消息通知转换成可供使用的消息通知
+     *
      * @param notification 消息通知
      * @return 返回可使用的消息通知信息
      */
     TNotification toTNotificationDo(Notification notification);
 
-    @Mapping(target = "type",expression = "java(String.valueOf(tNotification.getType().getType()))")
-    @Mapping(target = "content",source = "message")
+    @Mapping(target = "type", expression = "java(String.valueOf(tNotification.getType().getType()))")
+    @Mapping(target = "content", source = "message")
     VNotificationsResponse.VNotification toVNotificationDo(TNotification tNotification);
 
 }

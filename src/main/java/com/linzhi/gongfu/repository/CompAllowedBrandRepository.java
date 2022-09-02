@@ -8,5 +8,12 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface CompAllowedBrandRepository extends CrudRepository<CompAllowedBrand, CompAllowedBrandId>, QuerydslPredicateExecutor<CompAllowedBrand> {
-    List<CompAllowedBrand> findBrandsByCompAllowedBrandIdCompCode(String compBuyer);
+
+    /**
+     * 查找单位允许经营品牌
+     *
+     * @param companyCode 单位编码
+     * @return
+     */
+    List<CompAllowedBrand> findBrandsByCompAllowedBrandIdCompCode(String companyCode);
 }

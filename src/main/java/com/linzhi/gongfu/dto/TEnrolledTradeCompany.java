@@ -65,7 +65,7 @@ public class TEnrolledTradeCompany {
     /**
      * 公司简介
      */
-    private String  introduction;
+    private String introduction;
 
     /**
      * 税模式

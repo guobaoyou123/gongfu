@@ -15,7 +15,10 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VResetPasswordResponse  extends VBaseResponse{
+public class VResetPasswordResponse extends VBaseResponse {
 
+    /**
+     * 密码
+     */
     private String password;
 }

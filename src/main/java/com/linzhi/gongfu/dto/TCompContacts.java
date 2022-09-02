@@ -1,11 +1,9 @@
 package com.linzhi.gongfu.dto;
 
-import com.linzhi.gongfu.enumeration.Availability;
-import lombok.*;
-
-import javax.persistence.Column;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 用于转移地址联系人信息
@@ -18,20 +16,25 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TCompContacts {
+    /**
+     * 单位编码
+     */
     private String dcCompId;
+
     /**
      * 操作员编码
      */
     private String operatorCode;
+
     /**
      * 地址编码
      */
     private String addrCode;
+
     /**
      * 联系人编码
      */
     private String code;
-
 
     /**
      * 联系人公司名称
@@ -49,11 +52,12 @@ public class TCompContacts {
     private String contPhone;
 
     /**
-     *状态(0,停用;1,启用)
+     * 状态(0,停用;1,启用)
      */
     private String state;
+
     /**
-     *是否可编辑(0,停用;1,启用)
+     * 是否可编辑(0,停用;1,启用)
      */
-    private Boolean  readOnly;
+    private Boolean readOnly;
 }

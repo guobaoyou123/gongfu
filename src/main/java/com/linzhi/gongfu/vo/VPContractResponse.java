@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VPContractResponse extends VBaseResponse{
+public class VPContractResponse extends VBaseResponse {
 
     /**
      * 合同主键

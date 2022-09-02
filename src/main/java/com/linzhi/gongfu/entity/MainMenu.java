@@ -1,17 +1,11 @@
 package com.linzhi.gongfu.entity;
 
-import java.util.Set;
-
-import javax.persistence.*;
-
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.SuperBuilder;
+import javax.persistence.*;
+import java.util.Set;
 
 /**
  * 一级主菜单信息实体
@@ -34,10 +28,10 @@ public class MainMenu extends BaseMenu {
      * 访问菜单所需要的场景（权限）
      */
     @ManyToMany
-    @JoinTable(name="dc_scene_menu",joinColumns = {
-        @JoinColumn(name="menu_code",referencedColumnName = "code", insertable = false, updatable = false)
-    },inverseJoinColumns = {
-        @JoinColumn(name="scene_code",referencedColumnName = "code",insertable = false, updatable = false)
+    @JoinTable(name = "dc_scene_menu", joinColumns = {
+        @JoinColumn(name = "menu_code", referencedColumnName = "code", insertable = false, updatable = false)
+    }, inverseJoinColumns = {
+        @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
     private Set<Scene> scenes;
     /**

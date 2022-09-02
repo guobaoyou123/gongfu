@@ -1,15 +1,12 @@
 package com.linzhi.gongfu.entity;
 
-import javax.persistence.*;
-
-import org.hibernate.annotations.Where;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Where;
 
+import javax.persistence.*;
 import java.util.Set;
 
 /**
@@ -27,10 +24,10 @@ import java.util.Set;
 @Where(clause = "parent != '0'")
 public class SubMenu extends BaseMenu {
     @ManyToMany
-    @JoinTable(name="dc_scene_menu",joinColumns = {
-        @JoinColumn(name="menu_code",referencedColumnName = "code", insertable = false, updatable = false)
-    },inverseJoinColumns = {
-        @JoinColumn(name="scene_code",referencedColumnName = "code",insertable = false, updatable = false)
+    @JoinTable(name = "dc_scene_menu", joinColumns = {
+        @JoinColumn(name = "menu_code", referencedColumnName = "code", insertable = false, updatable = false)
+    }, inverseJoinColumns = {
+        @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
     private Set<Scene> scenes;
 }

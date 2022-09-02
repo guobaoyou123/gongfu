@@ -1,12 +1,11 @@
 package com.linzhi.gongfu.mapper;
 
-import java.time.LocalDateTime;
-
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.entity.Session;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
-
 import org.mapstruct.Mapper;
+
+import java.time.LocalDateTime;
 
 /**
  * 用于转换操作员访问会话相关数据结构

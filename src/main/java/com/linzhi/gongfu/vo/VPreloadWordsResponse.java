@@ -1,12 +1,12 @@
 package com.linzhi.gongfu.vo;
 
-import java.util.Set;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Singular;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
+
+import java.util.Set;
 
 /**
  * 用于前端预加载文案词汇的响应体组建

@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
+
 /**
  * 用于前端供验证社会统一信用代码的响应体组建
  *
@@ -14,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VUCSIVerificationResponse extends VBaseResponse{
+public class VUCSIVerificationResponse extends VBaseResponse {
 
     /**
      * 公司名称

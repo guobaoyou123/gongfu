@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
 import java.math.BigDecimal;
 
 /**
@@ -23,23 +22,28 @@ public class TInquiryRecord {
     /**
      * 询价单唯一id
      */
-    private String inquiryId ;
+    private String inquiryId;
+
     /**
      * 序号
      */
-    private Integer code ;
+    private Integer code;
+
     /**
      * 创建时间
      */
     private String createdAt;
+
     /**
      * 产品id
      */
     private String productId;
+
     /**
      * 产品编码
      */
     private String productCode;
+
     /**
      * 描述
      */
@@ -49,68 +53,82 @@ public class TInquiryRecord {
      * 类型（1-货物 2-服务）
      */
     private String type;
+
     /**
      * 品牌编码
      */
     private String brandCode;
+
     /**
-     *品牌名称
+     * 品牌名称
      */
     private String brand;
+
     /**
      * 税率
      */
     private BigDecimal vatRate;
+
     /**
-     *计价单位
+     * 计价单位
      */
     private String chargeUnit;
+
     /**
      * 面价
      */
     private BigDecimal facePrice;
+
     /**
      * 价格
      */
     private BigDecimal price;
+
     /**
      * 含税价格
      */
     private BigDecimal priceVat;
+
     /**
      * 数量
      */
     private BigDecimal amount;
+
     /**
      * 未税总价
      */
     private BigDecimal totalPrice;
+
     /**
      * 含税总价
      */
     private BigDecimal totalPriceVat;
 
     /**
-     *折扣
+     * 折扣
      */
     private BigDecimal discount;
 
     /**
-     *折扣后未税价格
+     * 折扣后未税价格
      */
     private BigDecimal discountedPrice;
+
     /**
-     *折扣后未税小计
+     * 折扣后未税小计
      */
     private BigDecimal totalDiscountedPrice;
+
     /**
-     *折扣后含税价格
+     * 折扣后含税价格
      */
     private BigDecimal discountedPriceVat;
+
     /**
-     *折扣后含税小计
+     * 折扣后含税小计
      */
     private BigDecimal totalDiscountedPriceVat;
+
     /**
      * 备货期
      */

@@ -13,14 +13,14 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SysCompareDetailId implements Serializable {
-    @Column(name = "code",length = 3,nullable = false)
+    @Column(name = "code", length = 3, nullable = false)
     @Setter
     @Getter
     @NonNull
     @NotNull
     @NotBlank
     private String code;
-    @Column(name = "compare_type",length = 2,nullable = false)
+    @Column(name = "compare_type", length = 2, nullable = false)
     @Setter
     @Getter
     @NonNull

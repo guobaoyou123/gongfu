@@ -15,7 +15,8 @@ public class WebConfiguration implements WebMvcConfigurer {
                     "http://localhost:3000",
                     "http://124.71.134.200:3000",
                     "http://124.71.134.200:82",
-                    "http://192.168.2.105:3000/")
+                    "http://192.168.2.120:3000",
+                    "http://192.168.3.20:3000/")
                 .allowedMethods("OPTIONS","PUT","DELETE","GET","POST","PATCH");
     }
 }

@@ -6,7 +6,7 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * 用于前端供应商详情\本单位信息请求的响应体组建
+ * 用于前端本单位信息请求的响应体组建
  *
  * @author zgh
  * @create_at 2022-01-28
@@ -15,11 +15,12 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VCompanyResponse extends VBaseResponse  {
+public class VCompanyResponse extends VBaseResponse {
 
     private VCompany company;
+
     @Data
-    public  static  class  VCompany{
+    public static class VCompany {
 
         /**
          * 公司编码
@@ -42,7 +43,7 @@ public class VCompanyResponse extends VBaseResponse  {
         private String companyShortName;
 
         /**
-         *社会统一信用代码
+         * 社会统一信用代码
          */
         private String usci;
 
@@ -79,7 +80,7 @@ public class VCompanyResponse extends VBaseResponse  {
         /**
          * 是否对格友可见
          */
-        private Boolean  visible;
+        private Boolean visible;
 
         /**
          * 可见内容

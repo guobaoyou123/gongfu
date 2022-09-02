@@ -1,12 +1,12 @@
 package com.linzhi.gongfu.vo;
 
-import java.util.List;
-import java.util.Set;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * 用于前端预加载功能菜单请求的响应体组建

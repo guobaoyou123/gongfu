@@ -1,10 +1,12 @@
 package com.linzhi.gongfu.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 用于转移公司包括经营、自营、授权品牌
@@ -31,17 +33,19 @@ public class TCompanyIncludeBrand implements Serializable {
      * 自营品牌
      */
     private List<TBrand> manageBrands;
+
     /**
      * 自营品牌
      */
-
     private List<TBrand> authBrands;
+
     /**
      * 自营品牌
      */
-
     private List<TBrand> selfSupportBrands;
 
-
-   private String state;
+    /**
+     * 状态
+     */
+    private String state;
 }

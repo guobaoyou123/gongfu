@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+
 /**
  * 用于转禁用区域基本信息
  *
@@ -21,6 +22,7 @@ public class TDisableArea {
      * 系统编码
      */
     private String code;
+
     /**
      * 国家编码
      */
@@ -32,7 +34,7 @@ public class TDisableArea {
     private String idcode;
 
     /**
-     *区域名称
+     * 区域名称
      */
     private String name;
 

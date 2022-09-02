@@ -7,13 +7,14 @@ import com.linzhi.gongfu.vo.VDriversResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel="spring")
+@Mapper(componentModel = "spring")
 public interface SysCompareDetailMapper {
 
-    @Mapping(target = "code",source = "sysCompareDetailId.code")
-    @Mapping(target = "name",source = "chiName")
+    @Mapping(target = "code", source = "sysCompareDetailId.code")
+    @Mapping(target = "name", source = "chiName")
     TCompareDetail toCompareDetail(SysCompareDetail compareDetail);
 
     VDriversResponse.VDrives toPreloadDriver(TCompareDetail tCompareDetail);
+
     VConnectionsResponse.VConnections toPreloadConnection(TCompareDetail tCompareDetail);
 }

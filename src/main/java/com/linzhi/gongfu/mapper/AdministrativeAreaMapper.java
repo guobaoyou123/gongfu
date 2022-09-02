@@ -22,7 +22,7 @@ public interface AdministrativeAreaMapper {
      * @return 三级行政区划基础信息
      */
     @Mapping(target = "disabled", constant = "false")
-    @Mapping(target = "lev",  expression = "java(Long.parseLong(area.getLev()))")
+    @Mapping(target = "lev", expression = "java(Long.parseLong(area.getLev()))")
     TArea toDo(AdministrativeArea area);
 
     /**
@@ -31,7 +31,7 @@ public interface AdministrativeAreaMapper {
      * @param area 三级行政区划基础信息
      * @return 三级行政区划基本信息预获取响应
      */
-    @Mapping(target = "parent",source = "parentCode")
+    @Mapping(target = "parent", source = "parentCode")
     VAreaResponse.Area toAreaDo(TArea area);
 
 }

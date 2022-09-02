@@ -7,6 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 /**
  * 用于响应前端对于查询产品列表的预加载请求
  *
@@ -17,10 +18,11 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VProductListResponse extends VBaseResponse{
+public class VProductListResponse extends VBaseResponse {
     List<VProduct> products;
+
     @Data
-    public static class VProduct{
+    public static class VProduct {
         /**
          * 产品唯一码
          */

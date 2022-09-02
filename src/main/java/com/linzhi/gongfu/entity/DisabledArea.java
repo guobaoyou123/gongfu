@@ -32,7 +32,7 @@ public class DisabledArea implements Serializable {
     /**
      * 国家编码
      */
-    @Column(length = 50,nullable = false)
+    @Column(length = 50, nullable = false)
     @NonNull
     @NotNull
     @NotBlank
@@ -41,13 +41,13 @@ public class DisabledArea implements Serializable {
     /**
      * 国家编码
      */
-    @Column(length = 8,nullable = false)
+    @Column(length = 8, nullable = false)
     @NonNull
     @NotNull
     @NotBlank
     private String idcode;
     /**
-     *区域名称
+     * 区域名称
      */
     @Column(length = 100)
     private String name;

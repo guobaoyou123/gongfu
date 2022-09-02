@@ -2,7 +2,10 @@ package com.linzhi.gongfu.entity;
 
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -24,7 +27,7 @@ public class PurchasePlanProductSupplier implements Serializable {
     /**
      * 供应商公司名称
      */
-    @Column(name = "saler_name",length = 20)
+    @Column(name = "saler_name", length = 20)
     private String salerName;
     /**
      * 可销库存

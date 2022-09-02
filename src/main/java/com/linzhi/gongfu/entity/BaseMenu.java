@@ -1,21 +1,14 @@
 package com.linzhi.gongfu.entity;
 
-import java.time.LocalDateTime;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.SuperBuilder;
+import java.time.LocalDateTime;
 
 /**
  * 用于定义菜单的基础字段信息类，该类不可实例化，不对应任何数据表
@@ -78,7 +71,6 @@ public abstract class BaseMenu {
      */
     @Column(length = 50)
     private String description;
-
 
 
     /**

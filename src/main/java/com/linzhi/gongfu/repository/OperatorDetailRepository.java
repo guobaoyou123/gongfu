@@ -21,15 +21,35 @@ import java.util.Optional;
  */
 public interface OperatorDetailRepository extends CrudRepository<OperatorDetail, OperatorId>, QuerydslPredicateExecutor<OperatorDetail> {
 
-
+    /**
+     * 最大编码
+     *
+     * @param companyCode 单位编码
+     * @return 编码
+     */
     @Query(value = "select  right(('000'+cast((cast(max(code) as int)+1) as varchar)),3) from comp_operator  where  dc_comp_id=?1 ",
         nativeQuery = true)
     Optional<String> findMaxCode(String companyCode);
 
+    /**
+     * 重置密码
+     *
+     * @param password   密码
+     * @param changed    是否更改
+     * @param operatorId 操作员主键
+     */
     @Modifying
     @Query(value = "update OperatorDetail o set o.password=?1 ,o.changed=?2 where o.identity=?3")
     void updatePassword(String password, Whether changed, OperatorId operatorId);
 
+    /**
+     * 操作员详情
+     *
+     * @param state       状态
+     * @param companyCode 单位编码
+     * @param operator    操作员编码
+     * @return 操作员详情
+     */
     List<OperatorDetail> findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(
         Availability state,
         String companyCode,

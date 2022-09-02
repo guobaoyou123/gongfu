@@ -15,10 +15,11 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VTemporaryPlanResponse extends VBaseResponse{
+public class VTemporaryPlanResponse extends VBaseResponse {
     List<VProduct> products;
+
     @Data
-    public static class VProduct{
+    public static class VProduct {
         /**
          * 产品唯一码
          */

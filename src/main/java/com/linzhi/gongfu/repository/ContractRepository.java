@@ -9,6 +9,13 @@ import java.util.List;
 
 public interface ContractRepository
     extends CrudRepository<ContractList, String>, QuerydslPredicateExecutor<ContractList> {
+    /**
+     * 查找有相同单位合同号的合同数量
+     *
+     * @param dcCompId  本单位编码
+     * @param orderCode 单位合同号
+     * @return 合同数量
+     */
     @Query(value = "select  count(distinct c.id) " +
         "from contract_base c ,contract_rev  r  " +
         "where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  " +
@@ -18,6 +25,14 @@ public interface ContractRepository
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode);
 
+    /**
+     * 查找有相同单位合同号的合同数量
+     *
+     * @param dcCompId   本单位编码
+     * @param orderCode  单位合同号
+     * @param contractId 合同主键
+     * @return
+     */
     @Query(value = "select  count(distinct c.id) from contract_base c ,contract_rev  r " +
         " where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  and c.type = '0'" +
         "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) " +
@@ -26,9 +41,25 @@ public interface ContractRepository
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode, String contractId);
 
+    /**
+     * 根据指纹查找合同编码列表
+     *
+     * @param dcCompId     本单位编码
+     * @param sequenceCode 指纹
+     * @return 合同编码列表
+     */
     @Query(value = "select  c.id from contract_base c ,contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id  and c.type = '0' and r.fingerprint =?2 and r.revision=(select max(revision) from contract_rev v where v.id = r.id) ", nativeQuery = true)
     List<String> findContractId(String dcCompId, String sequenceCode);
 
+    /**
+     * 合同列表
+     *
+     * @param compId   单位编码
+     * @param operator 操作员
+     * @param type     类型
+     * @param state    状态
+     * @return 合同列表
+     */
     @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code ,d.revision as revision,d.saler_order_code as supplierContractNo ," +
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +
@@ -62,6 +93,14 @@ public interface ContractRepository
         nativeQuery = true)
     List<ContractList> listContracts(String compId, String operator, String type, String state);
 
+    /**
+     * 合同列表
+     *
+     * @param compId 单位编码
+     * @param type   类型
+     * @param state  状态
+     * @return 合同列表
+     */
     @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code,d.revision as revision ,d.saler_order_code as supplierContractNo ," +
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +

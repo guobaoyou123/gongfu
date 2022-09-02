@@ -17,14 +17,15 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VAreaResponse  extends VBaseResponse {
-   private List<Area> areas;
+public class VAreaResponse extends VBaseResponse {
+    private List<Area> areas;
+
     @Data
     public static class Area {
         /**
          * 系统主键
          */
-        private String code ;
+        private String code;
         /**
          * 页面显示编码
          */

@@ -11,5 +11,8 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @NoArgsConstructor
 public class VInquiryIdRequest {
+    /**
+     * 供应商编码
+     */
     private String supplierCode;
 }

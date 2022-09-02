@@ -18,14 +18,14 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VInvoicedResponse extends VBaseResponse{
+public class VInvoicedResponse extends VBaseResponse {
     /**
      * 产品列表
      */
     List<VProduct> products;
 
     @Data
-    public static class VProduct{
+    public static class VProduct {
 
         /**
          * 产品主键

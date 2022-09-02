@@ -192,7 +192,7 @@ public class SuppliersController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var flag = companyService.modifyTradeState(supplier.getCodes(), Availability.DISABLED, session.getSession().getCompanyCode(),CompanyRole.EXTERIOR_SUPPLIER);
+        var flag = companyService.modifyTradeState(supplier.getCodes(), Availability.DISABLED, session.getSession().getCompanyCode(), CompanyRole.EXTERIOR_SUPPLIER);
         if (flag)
             return VBaseResponse.builder()
                 .code(200)
@@ -215,7 +215,7 @@ public class SuppliersController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var flag = companyService.modifyTradeState(supplier.getCodes(), Availability.ENABLED, session.getSession().getCompanyCode(),CompanyRole.EXTERIOR_SUPPLIER);
+        var flag = companyService.modifyTradeState(supplier.getCodes(), Availability.ENABLED, session.getSession().getCompanyCode(), CompanyRole.EXTERIOR_SUPPLIER);
         if (flag)
             return VBaseResponse.builder()
                 .code(200)

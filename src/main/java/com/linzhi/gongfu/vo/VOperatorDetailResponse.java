@@ -17,11 +17,15 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VOperatorDetailResponse extends VBaseResponse{
+public class VOperatorDetailResponse extends VBaseResponse {
+
+    /**
+     * 人员信息
+     */
     VOperator operator;
 
     @Data
-    public  static  class  VOperator{
+    public static class VOperator {
 
         /**
          * 编码
@@ -88,7 +92,7 @@ public class VOperatorDetailResponse extends VBaseResponse{
      * 用于表示一个场景
      */
     @Data
-    public  static  class  VScene{
+    public static class VScene {
         /**
          * 编码
          */

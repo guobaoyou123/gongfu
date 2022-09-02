@@ -2,7 +2,6 @@ package com.linzhi.gongfu.entity;
 
 
 import com.linzhi.gongfu.enumeration.NotificationType;
-import com.linzhi.gongfu.enumeration.TradeApply;
 import com.linzhi.gongfu.enumeration.Whether;
 import lombok.*;
 
@@ -26,11 +25,11 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="comp_message")
+@Table(name = "comp_message")
 public class Notification {
 
     @Id
-    @Column(length = 50,nullable = false)
+    @Column(length = 50, nullable = false)
     @NotNull
     @NotBlank
     @NonNull
@@ -46,18 +45,18 @@ public class Notification {
      * 消息内容
      */
     @Column(length = 100, nullable = false)
-    private  String message;
+    private String message;
 
     /**
      * 相关表的主键
      */
     @Column(length = 50, nullable = false)
-    private  String id;
+    private String id;
 
     /**
      * 创建单位
      */
-    @Column(name = "created_comp_by",length = 40, nullable = false)
+    @Column(name = "created_comp_by", length = 40, nullable = false)
     @NonNull
     @NotNull
     @NotBlank
@@ -66,7 +65,7 @@ public class Notification {
     /**
      * 创建人
      */
-    @Column(name = "created_by",length = 40)
+    @Column(name = "created_by", length = 40)
     private String createdBy;
 
     /**
@@ -79,19 +78,19 @@ public class Notification {
     /**
      * 推送单位
      */
-    @Column(name = "push_comp",length = 50)
+    @Column(name = "push_comp", length = 50)
     private String pushComp;
 
     /**
      * 推送场景
      */
-    @Column(name = "push_scene",length = 50)
+    @Column(name = "push_scene", length = 50)
     private String pushScene;
 
     /**
      * 推送人
      */
-    @Column(name = "push_operator",length = 50)
+    @Column(name = "push_operator", length = 50)
     private String pushOperator;
 
     /**

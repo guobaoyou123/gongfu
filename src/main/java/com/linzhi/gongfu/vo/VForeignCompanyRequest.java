@@ -82,12 +82,12 @@ public class VForeignCompanyRequest {
     /**
      * 品牌列表
      */
-    private List<String> brands ;
+    private List<String> brands;
 
     /**
      * 授权操作员以逗号隔开
      */
-    private String operators ;
+    private String operators;
 
     /**
      * 停用供应商编码列表

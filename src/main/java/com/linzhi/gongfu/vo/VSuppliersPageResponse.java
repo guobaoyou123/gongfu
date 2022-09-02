@@ -20,8 +20,9 @@ import java.util.Set;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VSuppliersPageResponse extends VBaseResponse  {
+public class VSuppliersPageResponse extends VBaseResponse {
 
+    List<VSupplier> suppliers;
     /**
      * 当前页
      */
@@ -30,7 +31,7 @@ public class VSuppliersPageResponse extends VBaseResponse  {
      * 总条数
      */
     private int total;
-    List<VSupplier> suppliers;
+
     /**
      * 用于表示一个首页展示供应商
      */
@@ -80,7 +81,7 @@ public class VSuppliersPageResponse extends VBaseResponse  {
         /**
          * 当前公司是否正在营销此品牌
          */
-        private Boolean  vending;
+        private Boolean vending;
 
     }
 }

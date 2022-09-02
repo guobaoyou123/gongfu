@@ -1,11 +1,11 @@
 package com.linzhi.gongfu.dto;
 
-import java.util.Set;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Set;
 
 /**
  * 用于转移从数据库获取的前端菜单结构
@@ -50,7 +50,7 @@ public class TMenu {
     private Set<TScene> scenes;
 
     /**
-     *子菜单列表
+     * 子菜单列表
      */
     private Set<TMenu> children;
 }

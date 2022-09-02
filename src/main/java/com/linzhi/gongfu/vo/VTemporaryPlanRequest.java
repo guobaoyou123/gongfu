@@ -18,7 +18,7 @@ public class VTemporaryPlanRequest implements Serializable {
     /**
      * 产品编码
      */
-    private String productId ;
+    private String productId;
 
     /**
      * 需求数量

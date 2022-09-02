@@ -1,19 +1,12 @@
 package com.linzhi.gongfu.entity;
 
+import com.linzhi.gongfu.enumeration.CompanyRole;
+import lombok.*;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import com.linzhi.gongfu.enumeration.CompanyRole;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * 入格企业类型可用功能场景对照表

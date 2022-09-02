@@ -17,7 +17,12 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VTradeApplyHistoryResponse extends  VBaseResponse{
+public class VTradeApplyHistoryResponse extends VBaseResponse {
+
+    /**
+     * 历史申请记录
+     */
+    List<VApply> applies;
 
     /**
      * 当前页
@@ -29,10 +34,6 @@ public class VTradeApplyHistoryResponse extends  VBaseResponse{
      */
     private int total;
 
-    /**
-     * 历史申请记录
-     */
-    List<VApply> applies;
     /**
      * 用于表示一个申请记录
      */

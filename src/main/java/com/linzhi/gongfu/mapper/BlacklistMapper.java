@@ -17,12 +17,14 @@ public interface BlacklistMapper {
 
     /**
      * 将黑名单公司信息 转换为可供使用的公司信息
+     *
      * @param blacklist 黑名单中的公司信息
      * @return 可供使用的公司信息
      */
-    @Mapping(target = "code",source = "company.id")
-    @Mapping(target = "name",source = "company.nameInCN")
+    @Mapping(target = "code", source = "company.id")
+    @Mapping(target = "name", source = "company.nameInCN")
     TCompanyBaseInformation toTCompanyDetail(Blacklist blacklist);
+
     /**
      * 明确可以成功获取到始终拒绝公司的基础信息时，向预获取响应转换
      *

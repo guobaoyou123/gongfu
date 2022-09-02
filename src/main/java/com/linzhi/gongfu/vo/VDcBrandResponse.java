@@ -17,10 +17,11 @@ import java.util.Set;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VDcBrandResponse extends  VBaseResponse{
+public class VDcBrandResponse extends VBaseResponse {
     Set<VBrand> brands;
+
     /**
-     * 用于表示一个首页展示供应商品牌
+     * 用于表示一个品牌
      */
     @Data
     public static class VBrand {

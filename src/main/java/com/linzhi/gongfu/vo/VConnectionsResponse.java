@@ -17,11 +17,12 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VConnectionsResponse extends VBaseResponse{
+public class VConnectionsResponse extends VBaseResponse {
 
     List<VConnections> connections;
+
     @Data
-    public static class  VConnections{
+    public static class VConnections {
         /**
          * 驱动编码
          */

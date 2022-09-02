@@ -14,11 +14,11 @@ import org.mapstruct.Mapping;
  */
 @Mapper(componentModel = "spring")
 public interface ImportProductTempMapper {
-    @Mapping(target = "itemNo",source = "importProductTempId.itemNo")
-    @Mapping(target = "dcCompId",source = "importProductTempId.dcCompId")
-    @Mapping(target = "operator",source = "importProductTempId.operator")
-    @Mapping(target = "confirmedBrand",source = "brandCode")
-    @Mapping(target = "confirmedBrandName",source = "brandName")
+    @Mapping(target = "itemNo", source = "importProductTempId.itemNo")
+    @Mapping(target = "dcCompId", source = "importProductTempId.dcCompId")
+    @Mapping(target = "operator", source = "importProductTempId.operator")
+    @Mapping(target = "confirmedBrand", source = "brandCode")
+    @Mapping(target = "confirmedBrandName", source = "brandName")
     TImportProductTemp toTImportProductTemp(ImportProductTemp importProductTemp);
 
     VImportProductTempResponse.VProduct toVProduct(TImportProductTemp importProductTemp);

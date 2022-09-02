@@ -1,11 +1,9 @@
 package com.linzhi.gongfu.entity;
 
 import lombok.*;
-import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 供应商对经销商设置可见品牌表

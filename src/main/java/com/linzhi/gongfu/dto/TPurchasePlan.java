@@ -1,13 +1,11 @@
 package com.linzhi.gongfu.dto;
 
-import com.linzhi.gongfu.enumeration.DemandSource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -21,10 +19,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TPurchasePlan implements Serializable {
+
     /**
      * 计划编码
      */
     private String planCode;
+
     /**
      * 对应销售合同号
      */

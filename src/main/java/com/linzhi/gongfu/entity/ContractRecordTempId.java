@@ -20,30 +20,30 @@ public class ContractRecordTempId implements Serializable {
      * 询价单唯一id
      */
 
-    @Column(name = "contract_id",length = 50,nullable = false)
+    @Column(name = "contract_id", length = 50, nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private String contractId ;
+    private String contractId;
     /**
      * 序号
      */
 
-    @Column(name = "code",nullable = false)
+    @Column(name = "code", nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private Integer code ;
+    private Integer code;
     /**
      * 版本
      */
 
-    @Column(name = "revision",nullable = false)
+    @Column(name = "revision", nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private Integer revision ;
+    private Integer revision;
 }

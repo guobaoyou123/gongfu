@@ -6,7 +6,6 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 一级主菜单信息实体
@@ -23,7 +22,7 @@ import java.util.Set;
 @Entity
 @Table(name = "sys_class")
 @Where(clause = "parent_code = '00'")
-public class MainProductClass extends  BaseProductClass{
+public class MainProductClass extends BaseProductClass {
 
     /**
      * 二级分类
@@ -31,7 +30,7 @@ public class MainProductClass extends  BaseProductClass{
     @OneToMany
     @JoinColumns({
         @JoinColumn(name = "parent_code", referencedColumnName = "code"),
-        @JoinColumn(name = "type",referencedColumnName = "type")
+        @JoinColumn(name = "type", referencedColumnName = "type")
     })
     private List<SubProductClass> children;
 }

@@ -4,7 +4,10 @@ import com.linzhi.gongfu.enumeration.ContractState;
 import com.linzhi.gongfu.enumeration.InquiryType;
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;

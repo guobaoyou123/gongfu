@@ -1,28 +1,14 @@
 package com.linzhi.gongfu.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import com.linzhi.gongfu.enumeration.Enrollment;
+import com.linzhi.gongfu.enumeration.Whether;
+import lombok.*;
+
+import javax.persistence.*;
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
-
-import com.linzhi.gongfu.enumeration.Enrollment;
-
-import com.linzhi.gongfu.enumeration.Whether;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
 import java.time.LocalDate;
 
 /**
@@ -156,7 +142,7 @@ public class EnrolledCompany {
      * 公司简介
      */
     @Column
-    private String  introduction;
+    private String introduction;
 
     /**
      * 是否对格友可见

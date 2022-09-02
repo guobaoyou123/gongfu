@@ -1,15 +1,16 @@
 package com.linzhi.gongfu.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Whether;
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.Set;
 
 /**
  * 公司操作员实体
@@ -88,7 +89,7 @@ public class OperatorDetail {
      * 性别
      */
     @Column(name = "sex")
-    private String  sex;
+    private String sex;
 
     /**
      * 区域编号，区级行政区划编号

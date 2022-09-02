@@ -1,16 +1,10 @@
 package com.linzhi.gongfu.dto;
 
-import com.linzhi.gongfu.entity.EnrolledCompany;
-import com.linzhi.gongfu.enumeration.TradeApply;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -24,22 +18,26 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 public class TCompTradeApply {
-
+    /**
+     * 申请记录编码
+     */
     private String code;
 
     /**
      * 类型（1-申请采购 ）
      */
-    private  String type;
+    private String type;
 
     /**
      * 创建单位
      */
     private String createdCompBy;
+
     /**
      * 创建单位公司名称
      */
     private String createdCompanyName;
+
     /**
      * 创建单位公司简称
      */
@@ -55,9 +53,8 @@ public class TCompTradeApply {
      */
     private String createdAt;
 
-
     /**
-     *  处理单位
+     * 处理单位
      */
     private String handledCompanyCode;
 
@@ -65,6 +62,7 @@ public class TCompTradeApply {
      * 处理单位公司名称
      */
     private String handledCompanyName;
+
     /**
      * 处理单位公司简称
      */
@@ -90,7 +88,6 @@ public class TCompTradeApply {
      */
     private String state;
 
-
     /**
      * 申请或者被申请公司编码
      */
@@ -110,6 +107,7 @@ public class TCompTradeApply {
      * 申请或者被申请公司社会统一信用代码
      */
     private String usci;
+
     /**
      * 申请或者被申请公司联系人姓名
      */
@@ -140,13 +138,10 @@ public class TCompTradeApply {
      */
     private String introduction;
 
-
-
     /**
      * 本单位编码
      */
     private String dcCompId;
-
 
     /**
      * 备注
@@ -163,6 +158,9 @@ public class TCompTradeApply {
      */
     private String taxModel;
 
+    /**
+     * 操作员列表
+     */
     private List<TOperatorInfo> operators;
 
 }

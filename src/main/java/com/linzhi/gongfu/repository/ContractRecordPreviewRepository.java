@@ -9,7 +9,12 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface ContractRecordPreviewRepository extends CrudRepository<ContractRecordPreview, String>, QuerydslPredicateExecutor<ContractRecordPreview> {
-
+    /**
+     * 合同明细记录预览
+     *
+     * @param contractId 合同主键
+     * @return 明细列表
+     */
     @Query(value = " select  c.product_id as product_id ,c.product_code as product_code,\n" +
         "sum(c.previous_my_quantity) as amount,sum(c.my_quantity) as modifiedAmount,\n" +
         "(select sum(re.my_quantity) from deliver_record re left join deliver_base be   on  re.deliver_code = be.id and be.type='2'where re.product_id = c.product_id and be.contract_id =c.contract_id ) as received,\n" +

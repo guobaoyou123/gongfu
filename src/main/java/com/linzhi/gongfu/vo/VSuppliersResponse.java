@@ -17,9 +17,10 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VSuppliersResponse extends VBaseResponse  {
+public class VSuppliersResponse extends VBaseResponse {
 
     List<VSupplier> suppliers;
+
     /**
      * 用于表示一个供应商
      */

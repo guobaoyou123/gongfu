@@ -7,6 +7,7 @@ import javax.persistence.Embeddable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+
 @Builder
 @Embeddable
 @NoArgsConstructor
@@ -15,7 +16,7 @@ public class PurchasePlanId implements Serializable {
     /**
      * 采购计划编码
      */
-    @Column(name = "plan_code",nullable = false,length = 30)
+    @Column(name = "plan_code", nullable = false, length = 30)
     @NonNull
     @NotNull
     @NotBlank
@@ -24,7 +25,7 @@ public class PurchasePlanId implements Serializable {
     /**
      * 入格单位id
      */
-    @Column(name = "dc_comp_id",nullable = false,length = 20)
+    @Column(name = "dc_comp_id", nullable = false, length = 20)
     @NonNull
     @NotNull
     @NotBlank

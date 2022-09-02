@@ -20,22 +20,22 @@ public class SysCompareTable implements Serializable {
     @Id
     @NotNull
     @NotBlank
-    @Column(length = 4,nullable = false)
+    @Column(length = 4, nullable = false)
     private String code;
     /**
      * 对照表名称
      */
-    @Column(length = 100,nullable = false)
+    @Column(length = 100, nullable = false)
     @NotNull
     @NotBlank
     private String name;
     /**
      * 排序
      */
-    @Column(name = "serial_number",nullable = false)
+    @Column(name = "serial_number", nullable = false)
     @NotNull
     private Integer serialNumber;
     @OneToMany
-    @JoinColumn(name = "compare_type",referencedColumnName = "code")
+    @JoinColumn(name = "compare_type", referencedColumnName = "code")
     private List<SysCompareDetail> list;
 }

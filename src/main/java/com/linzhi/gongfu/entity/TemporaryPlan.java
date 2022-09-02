@@ -2,7 +2,10 @@ package com.linzhi.gongfu.entity;
 
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,24 +19,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="purchase_plan_temp")
+@Table(name = "purchase_plan_temp")
 public class TemporaryPlan implements Serializable {
     @EmbeddedId
     private TemporaryPlanId temporaryPlanId;
     /**
      * 产品代码
      */
-    @Column(name = "product_code",length = 20,nullable = false)
+    @Column(name = "product_code", length = 20, nullable = false)
     private String productCode;
     /**
      * 品牌代码
      */
-    @Column(name = "brand_code",length = 10)
+    @Column(name = "brand_code", length = 10)
     private String brandCode;
     /**
-     *品牌
+     * 品牌
      */
-    @Column(name = "brand",length = 10)
+    @Column(name = "brand", length = 10)
     private String brand;
     /**
      * 产品描述
@@ -43,7 +46,7 @@ public class TemporaryPlan implements Serializable {
     /**
      * 计价单位
      */
-    @Column(name = "charge_unit",length = 10)
+    @Column(name = "charge_unit", length = 10)
     private String chargeUnit;
     /**
      * 需求

@@ -1,17 +1,12 @@
 package com.linzhi.gongfu.dto;
 
-import com.linzhi.gongfu.enumeration.Availability;
-import com.linzhi.gongfu.enumeration.VatRateType;
-import com.linzhi.gongfu.enumeration.Whether;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
  * 用于转移税率信息场景
@@ -28,23 +23,28 @@ public class TTaxRates implements Serializable {
     /**
      * 主键
      */
-    private  String id;
+    private String id;
+
     /**
      * 使用国家
      */
     private String useCountry;
+
     /**
      * 类型(1货物，2服务)
      */
     private String type;
+
     /**
      * 税率编号
      */
     private String code;
+
     /**
      * 税率
      */
     private BigDecimal rate;
+
     /**
      * 创建时间
      */

@@ -22,7 +22,7 @@ public class DeliverRecordId implements Serializable {
     @Setter
     private String deliverCode;
 
-    @Column(name = "code",  nullable = false)
+    @Column(name = "code", nullable = false)
     @NonNull
     @NotNull
     @NotBlank

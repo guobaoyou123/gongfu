@@ -14,12 +14,16 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VInquiryListResponse extends VBaseResponse{
+public class VInquiryListResponse extends VBaseResponse {
+
+    /**
+     * 询价单列表
+     */
     List<VInquiry> inquiries;
 
     @Data
-    public  static  class  VInquiry{
-        private String id ;
+    public static class VInquiry {
+        private String id;
         private String code;
         private String ownerCode;
         private String ownerName;
@@ -27,7 +31,7 @@ public class VInquiryListResponse extends VBaseResponse{
         private String salesContractId;
         private String salesContractCode;
         private String salesContractNo;
-        private String  salesCustomerNo;
+        private String salesCustomerNo;
         private String purchaseContractId;
         private String purchaseContractCode;
         private String purchaseContractNo;

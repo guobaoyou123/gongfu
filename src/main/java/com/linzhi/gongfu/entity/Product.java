@@ -24,21 +24,21 @@ public class Product implements Serializable {
      * 产品唯一码
      */
     @Id
-    @Column(length = 64,nullable = false)
+    @Column(length = 64, nullable = false)
     @NotBlank
     @NotNull
     private String id;
     /**
      * 产品编码
      */
-    @Column(length = 20,nullable = false)
+    @Column(length = 20, nullable = false)
     @NotBlank
     @NotNull
     private String code;
     /**
      * 品牌编码
      */
-    @Column(name = "brand_code",length = 10,nullable = false)
+    @Column(name = "brand_code", length = 10, nullable = false)
     @NotBlank
     @NotNull
     private String brandCode;
@@ -71,34 +71,34 @@ public class Product implements Serializable {
     /**
      * 产品驱动方式
      */
-    @Column(name = "driv_mode",length = 20)
+    @Column(name = "driv_mode", length = 20)
     private String drivMode;
 
     /**
      * 产品主材质
      */
-    @Column(name = "main_mate",length = 10)
+    @Column(name = "main_mate", length = 10)
     private String mainMate;
     /**
      * 产品主材质名称
      */
-    @Column(name = "main_mate_name",length = 10)
+    @Column(name = "main_mate_name", length = 10)
     private String mainMateName;
     /**
      * 产品连接方式
      */
-    @Column(name = "conn1_type",length = 20)
+    @Column(name = "conn1_type", length = 20)
     private String conn1Type;
     /**
      * 产品连接方式
      */
-    @Column(name = "conn2_type",length = 20)
+    @Column(name = "conn2_type", length = 20)
     private String conn2Type;
 
     /**
      * 计价单位
      */
-    @Column(name = "charge_unit",length = 10)
+    @Column(name = "charge_unit", length = 10)
     private String chargeUnit;
     /**
      * 面价

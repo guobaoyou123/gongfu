@@ -14,9 +14,24 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 public class VPlanDemandRequest implements Serializable {
-        private String planCode;
-        private String productId;
-        private String supplierCode;
-        private BigDecimal demand;
+    /**
+     * 计划编码
+     */
+    private String planCode;
+
+    /**
+     * 产品编码
+     */
+    private String productId;
+
+    /**
+     * 供应商编码
+     */
+    private String supplierCode;
+
+    /**
+     * 需求数量
+     */
+    private BigDecimal demand;
 
 }

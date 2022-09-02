@@ -220,9 +220,9 @@ public class CompanyService {
     /**
      * 修改供应商客户状态
      *
-     * @param code  供应商客户编码
-     * @param state 状态
-     * @param companyRole  角色
+     * @param code        供应商客户编码
+     * @param state       状态
+     * @param companyRole 角色
      * @return 返回成功或者失败
      */
     @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800", key = "'*'+#companyCode", condition = "#companyRole.getSign()=='6'"),
@@ -232,14 +232,14 @@ public class CompanyService {
         @CacheEvict(value = "Foreign_Customer_List;1800", key = "#companyCode+'*'", condition = "#companyRole.getSign()=='7'")
     })
     @Transactional
-    public Boolean modifyTradeState(List<String> code, Availability state, String companyCode,CompanyRole companyRole) {
+    public Boolean modifyTradeState(List<String> code, Availability state, String companyCode, CompanyRole companyRole) {
         try {
-             companyRepository.updateCompanyState(state, code);
-             if(companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER)) {
-                 compTradeRepository.updateCompTradeState(state, companyCode, code);
-             }else{
-                 compTradeRepository.updateCompTradeState(state, code,companyCode);
-             }
+            companyRepository.updateCompanyState(state, code);
+            if (companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER)) {
+                compTradeRepository.updateCompTradeState(state, companyCode, code);
+            } else {
+                compTradeRepository.updateCompTradeState(state, code, companyCode);
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();

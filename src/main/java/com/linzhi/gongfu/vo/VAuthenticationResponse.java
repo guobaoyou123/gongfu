@@ -1,12 +1,12 @@
 package com.linzhi.gongfu.vo;
 
-import java.time.LocalDateTime;
-import java.util.Set;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
+
+import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * 用于响应用户登录成功后的响应体组建

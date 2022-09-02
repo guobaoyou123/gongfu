@@ -1,13 +1,12 @@
 package com.linzhi.gongfu.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Builder
 @Data
@@ -29,34 +28,42 @@ public class TTemporaryPlan implements Serializable {
      * 产品id
      */
     private String productId;
+
     /**
      * 产品编码
      */
     private String productCode;
+
     /**
      * 品牌代码
      */
     private String brandCode;
+
     /**
-     *品牌
+     * 品牌
      */
     private String brand;
+
     /**
      * 产品描述
      */
     private String describe;
+
     /**
      * 计价单位
      */
     private String chargeUnit;
+
     /**
      * 需求
      */
     private BigDecimal demand;
+
     /**
      * 创建时间
      */
     private Long createdAt;
+
     /**
      * 面价
      */

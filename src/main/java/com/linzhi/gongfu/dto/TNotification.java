@@ -33,12 +33,12 @@ public class TNotification {
     /**
      * 消息内容
      */
-    private  String message;
+    private String message;
 
     /**
      * 相关表的主键
      */
-    private  String id;
+    private String id;
 
     /**
      * 创建单位

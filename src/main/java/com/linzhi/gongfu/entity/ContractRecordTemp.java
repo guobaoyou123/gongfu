@@ -19,13 +19,13 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="contract_record_temp")
+@Table(name = "contract_record_temp")
 public class ContractRecordTemp {
     /**
      * 合同唯一id
      */
     @EmbeddedId
-    private ContractRecordTempId contractRecordTempId ;
+    private ContractRecordTempId contractRecordTempId;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     /**
@@ -36,37 +36,37 @@ public class ContractRecordTemp {
     /**
      * 产品id
      */
-    @Column(name = "product_id",length = 64)
+    @Column(name = "product_id", length = 64)
     private String productId;
     /**
      * 产品编码
      */
-    @Column(name = "product_code",length = 20)
+    @Column(name = "product_code", length = 20)
     private String productCode;
     /**
      * 客户自定义产品代码
      */
-    @Column(name = "customer_custom_code",length = 50)
+    @Column(name = "customer_custom_code", length = 50)
     private String customerCustomCode;
     /**
      * 本单位自定义产品代码
      */
-    @Column(name = "comp_custom_code",length = 50)
+    @Column(name = "comp_custom_code", length = 50)
     private String compCustomCode;
     /**
      * 描述
      */
-    @Column(name = "product_description",length = 100)
+    @Column(name = "product_description", length = 100)
     private String productDescription;
 
 
     /**
      * 品牌编码
      */
-    @Column(name = "brand_code",length = 10)
+    @Column(name = "brand_code", length = 10)
     private String brandCode;
     /**
-     *品牌名称
+     * 品牌名称
      */
     @Column
     private String brand;
@@ -81,7 +81,7 @@ public class ContractRecordTemp {
     @Column(name = "previous_vat_rate")
     private BigDecimal previousVatRate;
     /**
-     *计价单位
+     * 计价单位
      */
     @Column(name = "charge_unit")
     private String chargeUnit;
@@ -98,12 +98,12 @@ public class ContractRecordTemp {
     @Column(name = "previous_ratio")
     private BigDecimal previousRatio;
     /**
-     *我的计价单位
+     * 我的计价单位
      */
     @Column(name = "my_charge_unit")
     private String myChargeUnit;
     /**
-     *上一版我的计价单位
+     * 上一版我的计价单位
      */
     @Column(name = "previous_my_charge_unit")
     private String previousMyChargeUnit;

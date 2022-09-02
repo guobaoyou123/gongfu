@@ -151,55 +151,55 @@ public class DeliverBase implements Serializable {
     private String receiveContactCompany;
 
     /**
-     *收货人姓名
+     * 收货人姓名
      */
     @Column(name = "receive_contact_name", length = 40)
     private String receiveContactName;
 
     /**
-     *收货人电话
+     * 收货人电话
      */
     @Column(name = "receive_contact_phone", length = 40)
     private String receiveContactPhone;
 
     /**
-     *创建单位
+     * 创建单位
      */
     @Column(name = "created_by_comp", length = 40)
     private String createdByComp;
 
     /**
-     *创建者
+     * 创建者
      */
     @Column(name = "created_by", length = 20)
     private String createdBy;
 
     /**
-     *创建时间
+     * 创建时间
      */
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     /**
-     *确认时间
+     * 确认时间
      */
     @Column(name = "confirm_at")
     private LocalDateTime confirmdAt;
 
     /**
-     *确认人
+     * 确认人
      */
     @Column(name = "confirm_by", length = 40)
     private String confirmBy;
 
     /**
-     *拣货人
+     * 拣货人
      */
     @Column(name = "picked_by", length = 40)
     private String pickedBy;
 
     /**
-     *复核人
+     * 复核人
      */
     @Column(name = "checked_by", length = 40)
     private String checkedBy;
@@ -210,6 +210,6 @@ public class DeliverBase implements Serializable {
     @Column
     private DeliverState state;
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "deliver_code",referencedColumnName = "id", insertable = true, updatable = true)
+    @JoinColumn(name = "deliver_code", referencedColumnName = "id", insertable = true, updatable = true)
     private List<DeliverRecord> deliverRecords;
 }

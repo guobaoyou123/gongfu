@@ -13,6 +13,13 @@ import java.util.List;
 @Jacksonized
 @NoArgsConstructor
 public class VTradeInforRequest {
+    /**
+     * 品牌列表
+     */
     private List<String> brands;
-    private  String taxmodel;
+
+    /**
+     * 税模式
+     */
+    private String taxmodel;
 }

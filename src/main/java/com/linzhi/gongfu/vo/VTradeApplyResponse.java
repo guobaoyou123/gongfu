@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VTradeApplyResponse extends VBaseResponse{
+public class VTradeApplyResponse extends VBaseResponse {
 
     /**
      * 申请记录编码

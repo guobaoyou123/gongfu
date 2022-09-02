@@ -1,17 +1,16 @@
 package com.linzhi.gongfu.entity;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.Set;
-
-import javax.validation.constraints.FutureOrPresent;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import lombok.Builder;
 import lombok.Data;
 import lombok.With;
 import lombok.extern.jackson.Jacksonized;
+
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * 用户会话信息

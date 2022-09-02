@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface DeliverRecordMapper {
-    @Mapping(target = "deliverRecordId.code",source = "deliverTempId.code")
-    @Mapping(target = "deliverRecordId.deliverCode",constant="1")
-    DeliverRecord toDeliverRecord (DeliverTemp deliverTemp);
+    @Mapping(target = "deliverRecordId.code", source = "deliverTempId.code")
+    @Mapping(target = "deliverRecordId.deliverCode", constant = "1")
+    DeliverRecord toDeliverRecord(DeliverTemp deliverTemp);
 }

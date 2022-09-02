@@ -4,7 +4,10 @@ import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 /**

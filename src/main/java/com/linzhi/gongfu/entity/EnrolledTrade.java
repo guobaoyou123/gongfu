@@ -47,23 +47,23 @@ public class EnrolledTrade implements Serializable {
      */
     @OneToOne
     @JoinColumn(name = "comp_saler", referencedColumnName = "id", insertable = false, updatable = false)
-    private  EnrolledCompany  company;
+    private EnrolledCompany company;
 
     /**
      * 客户信息
      */
     @OneToOne
     @JoinColumn(name = "comp_buyer", referencedColumnName = "id", insertable = false, updatable = false)
-    private  EnrolledCompany  buyerCompany;
+    private EnrolledCompany buyerCompany;
     /**
      * 交易品牌
      */
     @ManyToMany
-    @JoinTable(name="comp_trade_brand",joinColumns = {
-        @JoinColumn(name="comp_saler",referencedColumnName = "comp_saler", insertable = false, updatable = false),
-        @JoinColumn(name="comp_buyer",referencedColumnName = "comp_buyer", insertable = false, updatable = false)
-    },inverseJoinColumns = {
-        @JoinColumn(name="brand_code",referencedColumnName = "code",insertable = false, updatable = false)
+    @JoinTable(name = "comp_trade_brand", joinColumns = {
+        @JoinColumn(name = "comp_saler", referencedColumnName = "comp_saler", insertable = false, updatable = false),
+        @JoinColumn(name = "comp_buyer", referencedColumnName = "comp_buyer", insertable = false, updatable = false)
+    }, inverseJoinColumns = {
+        @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
     private List<DcBrand> brands;
 

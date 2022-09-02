@@ -18,7 +18,7 @@ import java.io.Serializable;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="improt_product_temp")
+@Table(name = "improt_product_temp")
 public class ImportProductTemp implements Serializable {
     @EmbeddedId
     private ImportProductTempId importProductTempId;
@@ -26,38 +26,38 @@ public class ImportProductTemp implements Serializable {
     /**
      * 产品id
      */
-    @Column(name = "productId",length = 64)
+    @Column(name = "productId", length = 64)
     private String productId;
 
     /**
      * 产品编码
      */
-    @Column(name = "code",length = 20)
+    @Column(name = "code", length = 20)
     private String code;
 
     /**
      * 品牌编码
      */
-    @Column(name = "brand_code",length = 20)
+    @Column(name = "brand_code", length = 20)
     private String brandCode;
 
     /**
      * 品牌名称
      */
-    @Column(name = "brand_name",length = 20)
+    @Column(name = "brand_name", length = 20)
     private String brandName;
 
     /**
      * 价格
      */
-    @Column(name = "price",length = 20)
+    @Column(name = "price", length = 20)
     private String price;
 
 
     /*
      *数量
      */
-    @Column(name = "amount",length = 20)
+    @Column(name = "amount", length = 20)
     private String amount;
 
     /*

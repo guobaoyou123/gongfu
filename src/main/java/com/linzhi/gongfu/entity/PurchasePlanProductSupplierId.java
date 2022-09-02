@@ -16,7 +16,7 @@ public class PurchasePlanProductSupplierId implements Serializable {
     /**
      * 采购计划编码
      */
-    @Column(name = "plan_code",nullable = false,length = 30)
+    @Column(name = "plan_code", nullable = false, length = 30)
     @NonNull
     @NotNull
     @NotBlank
@@ -25,7 +25,7 @@ public class PurchasePlanProductSupplierId implements Serializable {
     /**
      * 入格单位id
      */
-    @Column(name = "dc_comp_id",nullable = false,length = 20)
+    @Column(name = "dc_comp_id", nullable = false, length = 20)
     @NonNull
     @NotNull
     @NotBlank
@@ -34,7 +34,7 @@ public class PurchasePlanProductSupplierId implements Serializable {
     /**
      * 产品id
      */
-    @Column(name = "product_id",nullable = false,length = 64)
+    @Column(name = "product_id", nullable = false, length = 64)
     @NonNull
     @NotNull
     @NotBlank
@@ -43,7 +43,7 @@ public class PurchasePlanProductSupplierId implements Serializable {
     /**
      * 产品id
      */
-    @Column(name = "saler_code",nullable = false,length = 10)
+    @Column(name = "saler_code", nullable = false, length = 10)
     @NonNull
     @NotNull
     @NotBlank

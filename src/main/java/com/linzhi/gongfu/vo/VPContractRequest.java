@@ -26,7 +26,7 @@ public class VPContractRequest {
     private String contactNo;
 
     /**
-     *对应供应商合同号
+     * 对应供应商合同号
      */
     private String supplierNo;
 
@@ -63,10 +63,10 @@ public class VPContractRequest {
     /**
      * 退回产品列表
      */
-    private List<DeliveryRecord>   deliveryRecords;
+    private List<DeliveryRecord> deliveryRecords;
 
     @Data
-    public static class DeliveryRecord{
+    public static class DeliveryRecord {
         /**
          * 产品主键
          */

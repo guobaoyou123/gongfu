@@ -17,7 +17,12 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VTradeApplyPageResponse extends VBaseResponse  {
+public class VTradeApplyPageResponse extends VBaseResponse {
+
+    /**
+     * 待处理申请采购列表
+     */
+    List<VTradeApply> applies;
 
     /**
      * 当前页
@@ -29,13 +34,8 @@ public class VTradeApplyPageResponse extends VBaseResponse  {
      */
     private int total;
 
-    /**
-     * 待处理申请采购列表
-     */
-    List<VTradeApply> applies;
-
     @Data
-    public  static  class  VTradeApply{
+    public static class VTradeApply {
 
         /**
          * 申请记录编码

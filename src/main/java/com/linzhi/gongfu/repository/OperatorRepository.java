@@ -16,7 +16,14 @@ import java.util.List;
  */
 public interface OperatorRepository extends CrudRepository<Operator, OperatorId>, QuerydslPredicateExecutor<Operator> {
 
-
+    /**
+     * 操作员列表
+     *
+     * @param state       状态
+     * @param companyCode 单位编码
+     * @param operator    操作员编码
+     * @return 操作员列表
+     */
     List<Operator> findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(
         Availability state,
         String companyCode,

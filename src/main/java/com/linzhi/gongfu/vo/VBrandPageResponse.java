@@ -17,7 +17,12 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VBrandPageResponse extends  VBaseResponse{
+public class VBrandPageResponse extends VBaseResponse {
+    /**
+     * 品牌列表
+     */
+    List<VBrand> brands;
+
     /**
      * 当前页
      */
@@ -29,14 +34,11 @@ public class VBrandPageResponse extends  VBaseResponse{
     private int total;
 
     /**
-     * 品牌列表
-     */
-    List<VBrand> brands;
-    /**
      * 用于表示一个首页展示供应商品牌
      */
     @Data
     public static class VBrand {
+
         /**
          * 品牌编号
          */
@@ -56,14 +58,16 @@ public class VBrandPageResponse extends  VBaseResponse{
          * 该品牌是否有品牌管理方
          */
         private Boolean haveOwned;
+
         /**
          * 当前公司是否是品牌管理方
          */
         private Boolean owned;
+
         /**
          * 当前公司是否正在营销此品牌
          */
-        private Boolean  vending;
+        private Boolean vending;
     }
 
 }

@@ -17,7 +17,7 @@ public class SceneMenuId implements Serializable {
     /**
      * 采购计划编码
      */
-    @Column(name = "scene_code",nullable = false,length = 10)
+    @Column(name = "scene_code", nullable = false, length = 10)
     @NonNull
     @NotNull
     @NotBlank
@@ -26,7 +26,7 @@ public class SceneMenuId implements Serializable {
     /**
      * 入格单位id
      */
-    @Column(name = "menu_code",nullable = false,length = 10)
+    @Column(name = "menu_code", nullable = false, length = 10)
     @NonNull
     @NotNull
     @NotBlank

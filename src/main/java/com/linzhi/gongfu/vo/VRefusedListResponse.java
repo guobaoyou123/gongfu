@@ -17,21 +17,21 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VRefusedListResponse extends VBaseResponse{
+public class VRefusedListResponse extends VBaseResponse {
     /**
      * 公司列表
      */
     List<VCompany> companies;
 
     @Data
-    public  static  class  VCompany{
+    public static class VCompany {
         /**
          * 公司编码
          */
         private String code;
 
         /**
-         *公司名称
+         * 公司名称
          */
         private String companyName;
     }

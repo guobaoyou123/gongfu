@@ -15,12 +15,12 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VEnrolledCompanyResponse extends VBaseResponse{
+public class VEnrolledCompanyResponse extends VBaseResponse {
 
     private VCompany company;
 
     @Data
-    public static class VCompany{
+    public static class VCompany {
         /**
          * 编码
          */

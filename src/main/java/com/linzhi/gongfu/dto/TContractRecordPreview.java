@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
 import java.math.BigDecimal;
 
 @Builder
@@ -23,29 +22,29 @@ public class TContractRecordPreview {
      * 产品编码
      */
     private String productCode;
+
     /**
      * 已收货
      */
-
     private BigDecimal delivered;
+
     /**
      * 退回数量
      */
-
     private BigDecimal received;
+
     /**
      * 已开票数量
      */
-
     private BigDecimal invoicedAmount;
+
     /**
      * 数量
      */
-
     private BigDecimal amount;
+
     /**
      * 合同修改后数量
      */
-
     private BigDecimal modifiedAmount;
 }

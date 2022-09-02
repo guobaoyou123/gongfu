@@ -17,30 +17,31 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VNotificationsResponse extends VBaseResponse{
+public class VNotificationsResponse extends VBaseResponse {
 
-      private List<VNotification> list;
-      @Data
-      public static class VNotification{
+    private List<VNotification> list;
 
-          /**
-           * 消息通知编码
-           */
-          private String code;
+    @Data
+    public static class VNotification {
 
-          /**
-           * 类型0-格友申请 1-格友供应商 2-申请采购历史记录
-           */
-          private String type;
+        /**
+         * 消息通知编码
+         */
+        private String code;
 
-          /**
-           * 通知内容
-           */
-          private String content;
+        /**
+         * 类型0-格友申请 1-格友供应商 2-申请采购历史记录
+         */
+        private String type;
 
-          /**
-           * 对应的申请记录主键或者供应商主键
-           */
-          private String id;
-      }
+        /**
+         * 通知内容
+         */
+        private String content;
+
+        /**
+         * 对应的申请记录主键或者供应商主键
+         */
+        private String id;
+    }
 }

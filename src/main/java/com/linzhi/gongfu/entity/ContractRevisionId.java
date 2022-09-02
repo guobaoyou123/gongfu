@@ -21,20 +21,20 @@ public class ContractRevisionId implements Serializable {
      * 合同唯一id
      */
 
-    @Column(name = "id",length = 50,nullable = false)
+    @Column(name = "id", length = 50, nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private String id ;
+    private String id;
     /**
      * 版本号
      */
 
-    @Column(name = "revision",nullable = false)
+    @Column(name = "revision", nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private Integer revision ;
+    private Integer revision;
 }

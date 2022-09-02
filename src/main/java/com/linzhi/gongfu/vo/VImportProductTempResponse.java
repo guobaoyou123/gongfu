@@ -17,50 +17,62 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VImportProductTempResponse extends VBaseResponse{
+public class VImportProductTempResponse extends VBaseResponse {
 
     /**
      * 是否可以确认
      * 用于前端是否可以点击保存
      */
     private boolean confirmable;
+
     /**
      * 询价单/合同编码
      */
     private String enCode;
 
+    /**
+     * 产品列表
+     */
     private List<VProduct> products;
 
+
     @Data
-    public  static  class VProduct{
+    public static class VProduct {
         /**
          * 行号
          */
-        private Integer itemNo ;
+        private Integer itemNo;
+
         /**
          * 产品id
          */
         private String productId;
+
         /**
          * 产品编码
          */
         private String code;
+
         /**
          * 品牌列表
          */
         private List<VBrand> brand;
+
         /**
          * 价格
          */
         private String price;
+
         /*
          *数量
          */
         private String amount;
+
         /**
          * 错误信息messages
          */
         private List<String> messages;
+
         /**
          * 已被确认的品牌编码
          */
@@ -69,7 +81,7 @@ public class VImportProductTempResponse extends VBaseResponse{
     }
 
     @Data
-    public  static  class VBrand{
+    public static class VBrand {
         /**
          * 品牌编号
          */

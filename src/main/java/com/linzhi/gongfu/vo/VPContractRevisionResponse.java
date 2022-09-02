@@ -15,7 +15,10 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VPContractRevisionResponse extends  VBaseResponse{
+public class VPContractRevisionResponse extends VBaseResponse {
 
+    /**
+     * 版本号
+     */
     private int revision;
 }

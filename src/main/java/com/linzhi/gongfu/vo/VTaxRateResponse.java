@@ -18,37 +18,37 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VTaxRateResponse extends VBaseResponse  {
+public class VTaxRateResponse extends VBaseResponse {
 
     /**
      * 税率列表
      */
     List<VTaxRates> taxRates;
 
-     @Data
-    public  static class VTaxRates{
-         /**
-          * 税率编码
-          */
+    @Data
+    public static class VTaxRates {
+        /**
+         * 税率编码
+         */
         private String id;
-         /**
-          * 类型
-          */
+        /**
+         * 类型
+         */
         private String type;
 
-         /**
-          * 税率
-          */
+        /**
+         * 税率
+         */
         private BigDecimal rate;
 
-         /**
-          * 是否默认
-          */
+        /**
+         * 是否默认
+         */
         private String deflag;
 
-         /**
-          * 创建时间
-          */
+        /**
+         * 创建时间
+         */
         private long createdAt;
     }
 }

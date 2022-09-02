@@ -9,18 +9,18 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface CompContactsMapper {
 
-    @Mapping(target = "code",source = "compContactsId.code")
-    @Mapping(target = "dcCompId",source = "compContactsId.dcCompId")
-    @Mapping(target = "addrCode",source = "compContactsId.addrCode")
-    @Mapping(target = "operatorCode",source = "compContactsId.operatorCode")
-    @Mapping(target = "state",expression = "java(String.valueOf(compContacts.getState().getState()))")
-    @Mapping(target = "readOnly",constant = "true")
+    @Mapping(target = "code", source = "compContactsId.code")
+    @Mapping(target = "dcCompId", source = "compContactsId.dcCompId")
+    @Mapping(target = "addrCode", source = "compContactsId.addrCode")
+    @Mapping(target = "operatorCode", source = "compContactsId.operatorCode")
+    @Mapping(target = "state", expression = "java(String.valueOf(compContacts.getState().getState()))")
+    @Mapping(target = "readOnly", constant = "true")
     TCompContacts toTCompContacts(CompContacts compContacts);
 
-    @Mapping(target = "companyName",source = "contCompName")
-    @Mapping(target = "name",source = "contName")
-    @Mapping(target = "phone",source = "contPhone")
-    @Mapping(target = "addressCode",source = "addrCode")
-    @Mapping(target = "state",source = "state")
+    @Mapping(target = "companyName", source = "contCompName")
+    @Mapping(target = "name", source = "contName")
+    @Mapping(target = "phone", source = "contPhone")
+    @Mapping(target = "addressCode", source = "addrCode")
+    @Mapping(target = "state", source = "state")
     VCompContactsResponse.Contacts toVContacts(TCompContacts tCompContacts);
 }

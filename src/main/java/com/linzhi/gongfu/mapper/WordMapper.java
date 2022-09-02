@@ -3,7 +3,6 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TWord;
 import com.linzhi.gongfu.entity.Word;
 import com.linzhi.gongfu.vo.VPreloadWordsResponse;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

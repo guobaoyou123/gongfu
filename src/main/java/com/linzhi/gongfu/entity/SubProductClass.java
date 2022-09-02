@@ -18,5 +18,5 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "sys_class")
 @Where(clause = "parent_code != '00'")
-public class SubProductClass extends BaseProductClass{
+public class SubProductClass extends BaseProductClass {
 }

@@ -24,18 +24,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="dc_tax_rates")
+@Table(name = "dc_tax_rates")
 public class TaxRates implements Serializable {
     @Id
     @Column
     @NonNull
     @NotBlank
     @NotNull
-    private  String id;
+    private String id;
     /**
      * 使用国家
      */
-    @Column(name = "use_country",length = 3)
+    @Column(name = "use_country", length = 3)
     private String useCountry;
     /**
      * 类型(1货物，2服务)

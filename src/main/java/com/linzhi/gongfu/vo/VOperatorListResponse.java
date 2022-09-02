@@ -18,11 +18,15 @@ import java.util.Set;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VOperatorListResponse extends VBaseResponse{
+public class VOperatorListResponse extends VBaseResponse {
+
+    /**
+     * 操作员列表
+     */
     List<VOperator> operators;
 
     @Data
-    public  static  class  VOperator{
+    public static class VOperator {
         /**
          * 人员编码
          */

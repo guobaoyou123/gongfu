@@ -17,8 +17,12 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VEnrolledTradeCompaniesResponse extends VBaseResponse{
+public class VEnrolledTradeCompaniesResponse extends VBaseResponse {
 
+    /**
+     * 内供应商列表
+     */
+    List<VEnrolledTradeCompany> companies;
     /**
      * 当前页
      */
@@ -28,13 +32,8 @@ public class VEnrolledTradeCompaniesResponse extends VBaseResponse{
      */
     private int total;
 
-    /**
-     * 内供应商列表
-     */
-    List<VEnrolledTradeCompany> companies;
-
     @Data
-    public static class VEnrolledTradeCompany{
+    public static class VEnrolledTradeCompany {
 
         /**
          * 系统编码

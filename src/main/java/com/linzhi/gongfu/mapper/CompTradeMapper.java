@@ -1,12 +1,8 @@
 package com.linzhi.gongfu.mapper;
 
 
-import com.linzhi.gongfu.dto.TCompTradeApply;
-import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
 import com.linzhi.gongfu.entity.CompTrad;
-import com.linzhi.gongfu.entity.CompTradeApply;
-import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.vo.VSuppliersPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -18,7 +14,7 @@ import org.mapstruct.Mapping;
  * @author xutao
  * @create_at 2022-01-19
  */
-@Mapper(componentModel = "spring",uses = { BrandMapper.class,BrandMapper.class })
+@Mapper(componentModel = "spring", uses = {BrandMapper.class, BrandMapper.class})
 public interface CompTradeMapper {
     /**
      * 将获取到的我的供应商信息信息，转换成可供使用的我的供应商信息基础信息
@@ -29,8 +25,9 @@ public interface CompTradeMapper {
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "name")
     @Mapping(target = "brands", source = "selfSupportBrands")
-    @Mapping(target = "sort",constant = "1")
+    @Mapping(target = "sort", constant = "1")
     VSuppliersPageResponse.VSupplier toPreloadSuppliersIncludeBrandDTOs(TCompanyIncludeBrand tCompanyIncludeBrand);
+
     /**
      * 将获取到的入格公司信息，转换成可供使用的公司基础信息
      *
@@ -42,7 +39,7 @@ public interface CompTradeMapper {
     @Mapping(target = "selfSupportBrands", source = "selfSupportBrands")
     @Mapping(target = "authBrands", source = "authBrands")
     @Mapping(target = "manageBrands", source = "manageBrands")
-    @Mapping(target = "state",expression = "java(String.valueOf(compTrad.getSalerCompanys().getState().getState()))")
+    @Mapping(target = "state", expression = "java(String.valueOf(compTrad.getSalerCompanys().getState().getState()))")
     TCompanyIncludeBrand toSuppliersIncludeBrand(CompTrad compTrad);
 
 }

@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+
 /**
  * 用于接前端添加和修改人员信息的请求
  */

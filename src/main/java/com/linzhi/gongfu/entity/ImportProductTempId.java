@@ -15,44 +15,44 @@ import java.io.Serializable;
 public class ImportProductTempId implements Serializable {
 
     /**
-     * 单位id
+     * 合同或者询价单主键
      */
 
-    @Column(name = "inquiry_id",length = 50,nullable = false)
+    @Column(name = "inquiry_id", length = 50, nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private String inquiryId ;
+    private String inquiryId;
     /**
      * 单位id
      */
 
-    @Column(name = "dc_comp_id",length = 20,nullable = false)
+    @Column(name = "dc_comp_id", length = 20, nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private String dcCompId ;
+    private String dcCompId;
     /**
      * 操作员id
      */
 
-    @Column(name = "operator",length = 20,nullable = false)
+    @Column(name = "operator", length = 20, nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private String operator ;
+    private String operator;
     /**
      * 序号
      */
 
-    @Column(name = "item_no",nullable = false)
+    @Column(name = "item_no", nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private Integer itemNo ;
+    private Integer itemNo;
 
 }

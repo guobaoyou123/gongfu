@@ -1,11 +1,9 @@
 package com.linzhi.gongfu.entity;
 
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.MappedSuperclass;
 import javax.persistence.Table;
 import java.io.Serializable;
 
@@ -23,7 +21,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "dc_operator_scene")
-public class OperatorScene  implements Serializable {
+public class OperatorScene implements Serializable {
     /**
      * 主键
      */

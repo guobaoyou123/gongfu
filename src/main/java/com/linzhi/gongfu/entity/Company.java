@@ -1,25 +1,15 @@
 package com.linzhi.gongfu.entity;
 
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.Set;
+import com.linzhi.gongfu.enumeration.Availability;
+import lombok.*;
 
-import javax.persistence.*;
-import javax.validation.constraints.FutureOrPresent;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
-
-import com.linzhi.gongfu.enumeration.Availability;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.io.Serializable;
 
 /**
  * 公司基本信息实体

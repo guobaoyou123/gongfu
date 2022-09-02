@@ -17,12 +17,12 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VForeignSuppliersResponse extends VBaseResponse{
+public class VForeignSuppliersResponse extends VBaseResponse {
 
     List<VForeignSupplier> suppliers;
 
     @Data
-    public static class VForeignSupplier{
+    public static class VForeignSupplier {
 
         /**
          * 系统编码

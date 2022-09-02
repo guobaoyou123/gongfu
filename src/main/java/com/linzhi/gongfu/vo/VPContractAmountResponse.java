@@ -12,7 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VPContractAmountResponse extends VBaseResponse{
+public class VPContractAmountResponse extends VBaseResponse {
 
     /**
      * 数量

@@ -17,14 +17,15 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VMaterialResponse extends VBaseResponse{
+public class VMaterialResponse extends VBaseResponse {
 
     /**
      * 主材质列表
      */
     List<VMaterial> materials;
+
     @Data
-    public static class VMaterial{
+    public static class VMaterial {
 
         /**
          * 编码
@@ -41,8 +42,9 @@ public class VMaterialResponse extends VBaseResponse{
          */
         private List<VSubMaterial> children;
     }
+
     @Data
-    public static class VSubMaterial{
+    public static class VSubMaterial {
 
         /**
          * 编码

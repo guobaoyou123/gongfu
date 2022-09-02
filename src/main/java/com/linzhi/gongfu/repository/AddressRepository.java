@@ -43,6 +43,14 @@ public interface AddressRepository extends CrudRepository<Address, AddressId>, Q
     @Query(value = "update comp_address set state=?1 where dc_comp_id=?2 and code in ?3", nativeQuery = true)
     void updateAddressStateById(String state, String dcCompId, List<String> code);
 
+    /**
+     * 查找地址列表
+     *
+     * @param area     区域编码
+     * @param address  详细地址
+     * @param dcCompId 本单位编码
+     * @return 地址列表
+     */
     List<Address> findAddressByAreaCodeAndAddressLikeAndAddressId_DcCompId(String area, String address, String dcCompId);
 
 }

@@ -17,7 +17,7 @@ import java.util.List;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VTradeApplyDetailResponse extends VBaseResponse{
+public class VTradeApplyDetailResponse extends VBaseResponse {
 
     /**
      * 申请记录详情
@@ -25,7 +25,7 @@ public class VTradeApplyDetailResponse extends VBaseResponse{
     private VApply record;
 
     @Data
-    public static class VApply{
+    public static class VApply {
         /**
          * 记录编码
          */
@@ -122,7 +122,7 @@ public class VTradeApplyDetailResponse extends VBaseResponse{
     }
 
     @Data
-    public static class VBrand{
+    public static class VBrand {
 
         /**
          * 品牌编码
@@ -136,7 +136,7 @@ public class VTradeApplyDetailResponse extends VBaseResponse{
     }
 
     @Data
-    public static class VOperator{
+    public static class VOperator {
 
         /**
          * 人员编码

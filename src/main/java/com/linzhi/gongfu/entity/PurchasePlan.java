@@ -23,18 +23,18 @@ public class PurchasePlan implements Serializable {
     /**
      * 创建者
      */
-    @Column(name = "created_by",length = 20,nullable = false)
+    @Column(name = "created_by", length = 20, nullable = false)
     private String createdBy;
     /**
      * 对应销售合同主键
      */
-    @Column(name = "sales_id",length = 50)
+    @Column(name = "sales_id", length = 50)
     private String salesId;
 
     /**
      * 对应销售合同号
      */
-    @Column(name = "sales_code",length = 50)
+    @Column(name = "sales_code", length = 50)
     private String salesCode;
     /**
      * 创建时间
@@ -47,9 +47,9 @@ public class PurchasePlan implements Serializable {
     @Column(length = 1)
     private DemandSource source;
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumns({@JoinColumn(name = "plan_code",referencedColumnName = "plan_code", insertable = true, updatable = true),
-    @JoinColumn(name = "dc_comp_id",referencedColumnName = "dc_comp_id", insertable = true, updatable = true)})
-    @NotFound(action= NotFoundAction.IGNORE)
+    @JoinColumns({@JoinColumn(name = "plan_code", referencedColumnName = "plan_code", insertable = true, updatable = true),
+        @JoinColumn(name = "dc_comp_id", referencedColumnName = "dc_comp_id", insertable = true, updatable = true)})
+    @NotFound(action = NotFoundAction.IGNORE)
     @OrderBy("createdAt ASC")
     private List<PurchasePlanProduct> product;
 }

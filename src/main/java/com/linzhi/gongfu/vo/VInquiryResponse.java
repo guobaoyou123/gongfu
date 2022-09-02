@@ -15,6 +15,10 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Jacksonized
 @SuperBuilder(toBuilder = true)
-public class VInquiryResponse extends VBaseResponse{
+public class VInquiryResponse extends VBaseResponse {
+
+    /**
+     * 询价单主键
+     */
     private String inquiryId;
 }

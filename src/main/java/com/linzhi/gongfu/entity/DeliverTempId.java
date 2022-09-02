@@ -22,7 +22,7 @@ public class DeliverTempId implements Serializable {
     @Setter
     private String contractId;
 
-    @Column(name = "code",  nullable = false)
+    @Column(name = "code", nullable = false)
     @NonNull
     @NotNull
     @NotBlank

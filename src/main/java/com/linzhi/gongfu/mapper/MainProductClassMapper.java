@@ -18,20 +18,25 @@ import java.util.List;
  */
 @Mapper(componentModel = "spring")
 public interface MainProductClassMapper {
-    @Mapping(target = "code",source = "baseProductClassId.code")
+    @Mapping(target = "code", source = "baseProductClassId.code")
     TProductClass toDTO(MainProductClass mainProductClass);
-    @Mapping(target = "code",source = "baseProductClassId.code")
+
+    @Mapping(target = "code", source = "baseProductClassId.code")
     List<TProductClass> toSubProductClassDTOs(List<SubProductClass> subProductClass);
 
-    @Mapping(target = "code",source = "baseProductClassId.code")
-    @Mapping(target = "children",ignore = true )
+    @Mapping(target = "code", source = "baseProductClassId.code")
+    @Mapping(target = "children", ignore = true)
     TProductClass toDTO(SubProductClass subProductClass);
 
     VProductClassResponse.VProductClass toPreloadMainProductClass(TProductClass tProductClass);
+
     List<VProductClassResponse.VSubProductClass> toPreloadSubProductClasses(List<TProductClass> tProductClasses);
+
     VProductClassResponse.VSubProductClass toPreloadSubProductClass(TProductClass tProductClass);
 
     VMaterialResponse.VMaterial toPreloadMainMaterial(TProductClass tProductClass);
+
     List<VMaterialResponse.VSubMaterial> toPreloadSubMaterials(List<TProductClass> tProductClasses);
+
     VMaterialResponse.VSubMaterial toPreloadSubMaterial(TProductClass tProductClass);
 }

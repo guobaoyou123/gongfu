@@ -7,7 +7,6 @@ import org.hibernate.annotations.NotFoundAction;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,12 +23,12 @@ public class PurchasePlanProduct implements Serializable {
     /**
      * 产品代码
      */
-    @Column(name = "product_code",length = 50,nullable = false)
+    @Column(name = "product_code", length = 50, nullable = false)
     private String productCode;
     /**
      * 品牌编码
      */
-    @Column(name = "brand_code",length = 10,nullable = false)
+    @Column(name = "brand_code", length = 10, nullable = false)
     private String brandCode;
     /**
      * 可销库存
@@ -64,17 +63,17 @@ public class PurchasePlanProduct implements Serializable {
     /**
      * 品牌名称
      */
-    @Column(name = "brand",length = 10)
+    @Column(name = "brand", length = 10)
     private String brand;
     /**
      * 产品描述
      */
-    @Column(name = "describe",length = 100)
+    @Column(name = "describe", length = 100)
     private String describe;
     /**
      * 计价单位
      */
-    @Column(name = "charge_unit",length = 50)
+    @Column(name = "charge_unit", length = 50)
     private String chargeUnit;
     /**
      * 面价
@@ -83,10 +82,10 @@ public class PurchasePlanProduct implements Serializable {
     private BigDecimal facePrice;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumns({@JoinColumn(name = "plan_code",referencedColumnName = "plan_code", insertable = true, updatable = true),
-        @JoinColumn(name = "dc_comp_id",referencedColumnName = "dc_comp_id", insertable = true, updatable = true),
-    @JoinColumn(name = "product_id",referencedColumnName = "product_id", insertable = true, updatable = true)})
-    @NotFound(action= NotFoundAction.IGNORE)
+    @JoinColumns({@JoinColumn(name = "plan_code", referencedColumnName = "plan_code", insertable = true, updatable = true),
+        @JoinColumn(name = "dc_comp_id", referencedColumnName = "dc_comp_id", insertable = true, updatable = true),
+        @JoinColumn(name = "product_id", referencedColumnName = "product_id", insertable = true, updatable = true)})
+    @NotFound(action = NotFoundAction.IGNORE)
     @OrderBy("serial ASC")
     private List<PurchasePlanProductSupplier> salers;
 

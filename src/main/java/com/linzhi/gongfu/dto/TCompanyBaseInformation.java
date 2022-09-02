@@ -1,14 +1,9 @@
 package com.linzhi.gongfu.dto;
 
+import lombok.*;
+
 import java.io.Serializable;
 import java.util.List;
-
-import com.linzhi.gongfu.enumeration.Whether;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Singular;
 
 /**
  * 用于转移公司基本信息
@@ -45,44 +40,56 @@ public class TCompanyBaseInformation implements Serializable {
      * 公司所使用的二级域名
      */
     private String subdomain;
+
     /**
      * 社会统一信用代码
      */
     private String USCI;
+
     /**
      * 联系人
      */
     private String contactName;
+
     /**
      * 联系电话
      */
     private String contactPhone;
+
     /**
      * 系统区域编码
      */
     private String areaCode;
+
     /**
      * 区域名称
      */
     private String areaName;
+
     /**
      * 详细地址
      */
     private String address;
+
     /**
      * 公司邮箱
      */
     private String email;
+
     /**
      * 公司电话
      */
     private String phone;
+
     /**
      * 公司所具备的应用场景
      */
     @Singular
     private List<String> scenes;
 
+    /**
+     * 状态
+     */
     private String state;
 
     /**
@@ -93,7 +100,7 @@ public class TCompanyBaseInformation implements Serializable {
     /**
      * 是否对格友可见
      */
-    private String  visible;
+    private String visible;
 
     /**
      * 可见内容

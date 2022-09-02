@@ -2,7 +2,9 @@ package com.linzhi.gongfu.entity;
 
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * 我拥有的品牌

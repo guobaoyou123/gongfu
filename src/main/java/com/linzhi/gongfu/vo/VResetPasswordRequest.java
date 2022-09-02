@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
 import java.io.Serializable;
+
 /**
  * 用于接前端重置密码的请求参数
  */

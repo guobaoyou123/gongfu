@@ -6,10 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 用于转移经营、自营、授权品牌
@@ -36,20 +34,23 @@ public class TBrand implements Serializable {
     /**
      * 排序
      */
-    private Integer  sort;
+    private Integer sort;
 
     /**
      * 该品牌是否有品牌管理方
      */
     private Boolean haveOwned;
+
     /**
      * 当前公司是否是品牌管理方
      */
     private Boolean owned;
+
     /**
      * 当前公司是否正在营销此品牌
      */
-    private Boolean  vending;
+    private Boolean vending;
+
     /**
      * 品牌方
      */

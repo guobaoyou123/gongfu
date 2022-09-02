@@ -31,37 +31,37 @@ public class DeliverRecord {
     /**
      * 产品主键
      */
-    @Column(name = "product_id",length = 64)
+    @Column(name = "product_id", length = 64)
     private String productId;
 
     /**
      * 产品编码
      */
-    @Column(name = "product_code",length = 64)
+    @Column(name = "product_code", length = 64)
     private String productCode;
 
     /**
      * 客户自定义产品代码
      */
-    @Column(name = "customer_custom_code",length = 50)
+    @Column(name = "customer_custom_code", length = 50)
     private String customerPCode;
 
     /**
      * 本单位自定义产品代码
      */
-    @Column(name = "comp_custom_code",length = 50)
+    @Column(name = "comp_custom_code", length = 50)
     private String localPCode;
 
     /**
      * 产品描述
      */
-    @Column(name = "product_description",length = 100)
+    @Column(name = "product_description", length = 100)
     private String productDescription;
 
     /**
      * 品牌编码
      */
-    @Column(name = "brand_code",length = 10)
+    @Column(name = "brand_code", length = 10)
     private String brandCode;
 
     /**
