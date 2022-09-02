@@ -398,6 +398,15 @@ public class OperatorService {
                 });
                 return flag.get();
             }).toList();
+            case "2" -> tOperatorInfos.stream().filter(operatorInfo -> {
+                AtomicBoolean flag = new AtomicBoolean(false);
+                operatorInfo.getScenes().forEach(t -> {
+                    if (t.getName().contains("销售")) {
+                        flag.set(true);
+                    }
+                });
+                return flag.get();
+            }).toList();
             default -> null;
         };
     }
