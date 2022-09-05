@@ -169,13 +169,13 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回外供应商列表
      */
-    @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ", key = "#companyCode")
+   // @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ", key = "#companyCode")
     public List<TCompanyBaseInformation> listForeignSuppliers(String companyCode) {
         QCompany qCompany = QCompany.company;
         QCompTrad qCompTrad = QCompTrad.compTrad;
         QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
         JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany, qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrad)
-            .on(qCompany.code.eq(qCompTrad.compTradId.compBuyer))
+            .on(qCompany.code.eq(qCompTrad.compTradId.compSaler))
             .leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
         query.where
             (qCompTrad.compTradId.compBuyer.eq(companyCode)
@@ -811,16 +811,16 @@ public class CompanyService {
         QCompTrad qCompTrad = QCompTrad.compTrad;
         QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
         JPAQuery<Company> query = queryFactory.selectDistinct(qCompany)
-            .from(qCompany, qEnrolledCompany);
-        if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)) {
-            query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compBuyer))
-                .on(qCompTrad.compTradId.compSaler.eq(salerCode));
+            .from(qCompany);
+        query.leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
+        if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER) ) {
+            query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compBuyer));
         } else {
             query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compSaler))
                 .on(qCompTrad.compTradId.compBuyer.eq(buyerCode));
         }
         query.where(qEnrolledCompany.USCI.eq(usci));
-        query.where(qEnrolledCompany.id.eq(qCompany.identityCode));
+        query.where(qCompTrad.compTradId.compSaler.eq(salerCode));
         query.where(qCompany.role.eq(companyRole.getSign()));
         List<Company> list = query.fetch();
         if (list.size() > 0) {
@@ -925,7 +925,7 @@ public class CompanyService {
                     .compTradId(compTradId)
                     .taxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED)
                     .state(Availability.ENABLED)
-                    .salerBelongTo(companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER) && code == null ? foreignCompany.getOperators() : null)
+                    .salerBelongTo(companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)? foreignCompany.getOperators() : null)
                     .build();
             }
             //保存价税模式

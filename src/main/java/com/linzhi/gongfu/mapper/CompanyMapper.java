@@ -56,6 +56,7 @@ public interface CompanyMapper {
     @Mapping(target = "name", expression = "java(tuple.get(0,Company.class).getNameInCN())")
     @Mapping(target = "shortName", expression = "java(tuple.get(0,Company.class).getShortNameInCN())")
     @Mapping(target = "USCI", expression = "java(tuple.get(1,String.class))")
+    @Mapping(target = "state", expression = "java(tuple.get(0,Company.class).getState().getState()+\"\")")
     TCompanyBaseInformation toForeignCompany(Tuple tuple);
 
     /**
