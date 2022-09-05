@@ -572,8 +572,8 @@ public class CompanyService {
      * @param operators 操作员编码（以逗号隔开）
      */
     @Caching(evict = {
-        @CacheEvict(value = "Enrolled_Supplier_detail;1800", key = "#compTradId.compBuyer+'-'+#compTradId.compSaler",condition = "#type=='1'"),
-        @CacheEvict(value = "customerDetail;1800", key = "#compTradId.compSaler+'-'+#compTradId.compBuyer",condition = "#type=='2'"),
+        @CacheEvict(value = "Enrolled_Supplier_detail;1800", key = "#compBuyer+'-'+#compSaler",condition = "#type=='1'"),
+        @CacheEvict(value = "customerDetail;1800", key = "#compSaler+'-'+#compBuyer",condition = "#type=='2'"),
 
     })
     @Transactional
