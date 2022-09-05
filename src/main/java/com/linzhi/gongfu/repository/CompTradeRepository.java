@@ -47,7 +47,7 @@ public interface CompTradeRepository
      * @param operators  操作员编码（以逗号隔开）
      * @param compTradId 主键
      */
-    @CacheEvict(value = "Enrolled_Supplier_detail;1800", key = "#compTradId.compBuyer+'-'+#compTradId.compSaler")
+
     @Modifying
     @Query("UPDATE CompTrad  c set c.buyerBelongTo=?1 where c.compTradId=?2")
     void updateCompTradeBuyer(String operators, CompTradId compTradId);
@@ -80,7 +80,6 @@ public interface CompTradeRepository
      * @param operators  操作员编码（以逗号隔开）
      * @param compTradId 主键
      */
-    @CacheEvict(value = "Enrolled_Customer_detail;1800", key = "#compTradId.compSaler+'-'+#compTradId.compBuyer")
     @Modifying
     @Query("UPDATE CompTrad  c set c.salerBelongTo=?1 where c.compTradId=?2")
     void updateCompTradeSaler(String operators, CompTradId compTradId);

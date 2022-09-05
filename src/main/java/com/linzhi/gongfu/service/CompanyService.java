@@ -571,6 +571,11 @@ public class CompanyService {
      * @param compBuyer 买方编码
      * @param operators 操作员编码（以逗号隔开）
      */
+    @Caching(evict = {
+        @CacheEvict(value = "Enrolled_Supplier_detail;1800", key = "#compTradId.compBuyer+'-'+#compTradId.compSaler",condition = "#type=='1'"),
+        @CacheEvict(value = "customerDetail;1800", key = "#compTradId.compSaler+'-'+#compTradId.compBuyer",condition = "#type=='2'"),
+
+    })
     @Transactional
     public void authorizedOperator(String compSaler, String compBuyer, String operators, String type) {
         try {
@@ -604,7 +609,7 @@ public class CompanyService {
      * @param companyCode 本单位编码
      * @return 入格客户查询
      */
-    @Cacheable(value = "Enrolled_Customer_detail;1800", key = "#companyCode+'-'+#code", unless = "#result == null ")
+    @Cacheable(value = "customerDetail;1800", key = "#companyCode+'-'+#code", unless = "#result == null ")
     public Optional<TEnrolledTradeCompany> enrolledCustomer(String code, String companyCode) throws IOException {
         EnrolledTrade enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
             .compSaler(companyCode)
@@ -630,7 +635,7 @@ public class CompanyService {
      * @param brands    品牌列表
      */
     @Caching(evict = {
-        @CacheEvict(value = "Enrolled_Customer_detail;1800", key = "#compSaler+'-'+#compBuyer"),
+        @CacheEvict(value = "customerDetail;1800", key = "#compSaler+'-'+#compBuyer"),
         @CacheEvict(value = "Enrolled_Supplier_detail;1800", key = "#compBuyer+'-'+#compSaler"),
         @CacheEvict(value = "suppliers_brands;1800", key = "'*'+#compBuyer"),
         @CacheEvict(value = "brands_company;1800", key = "'*'+#compBuyer"),
@@ -663,7 +668,7 @@ public class CompanyService {
      * @param taxModel  报价模式
      */
     @Caching(evict = {
-        @CacheEvict(value = "Enrolled_Customer_detail;1800", key = "#compSaler+'-'+#compBuyer"),
+        @CacheEvict(value = "customerDetail;1800", key = "#compSaler+'-'+#compBuyer"),
         @CacheEvict(value = "Enrolled_Supplier_detail;1800", key = "#compBuyer+'-'+#compSaler")
     })
     @Transactional
