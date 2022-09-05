@@ -18,7 +18,7 @@ import java.util.List;
 public interface CompanyRepository extends CrudRepository<Company, String>, QuerydslPredicateExecutor<Company> {
 
     /**
-     * 查找做大编码
+     * 外供应查找做大编码
      *
      * @param role     角色
      * @param dcCompId 单位编码
@@ -26,7 +26,18 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
      */
     @Query(value = " SELECT  cast(max(b.encode) as int)+1 code  FROM    comp_base b,comp_trade t  where b.role=?1 and t.comp_saler=b.code and t.comp_buyer=?2  "
         , nativeQuery = true)
-    String findMaxCode(String role, String dcCompId);
+    String findSupplierMaxCode(String role, String dcCompId);
+
+    /**
+     * 外客户查找做大编码
+     *
+     * @param role     角色
+     * @param dcCompId 单位编码
+     * @return 最大编码
+     */
+    @Query(value = " SELECT  cast(max(b.encode) as int)+1 code  FROM    comp_base b,comp_trade t  where b.role=?1 and t.comp_buyer=b.code and t.comp_saler=?2  "
+        , nativeQuery = true)
+    String findCustomerMaxCode(String role, String dcCompId);
 
     /**
      * 更改单位状态

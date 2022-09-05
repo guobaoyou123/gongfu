@@ -854,6 +854,7 @@ public class CompanyService {
                                    String companyCode, String code,
                                    CompanyRole companyRole) {
         Company company;
+        String maxCode = null;
         try {
             if (code == null) {
                 //查询有没有系统唯一码
@@ -877,11 +878,12 @@ public class CompanyService {
                     enrolledCompanyRepository.save(enrolledCompany1);
                     enrolledCompany = Optional.of(enrolledCompany1);
                 }
-                String maxCode = companyRepository.findMaxCode(companyRole.getSign(), companyCode);
-                if (maxCode == null && companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER)) {
-                    maxCode = "101";
-                } else if (maxCode == null && companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)) {
-                    maxCode = "201";
+                if ( companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER)) {
+                    maxCode = companyRepository.findSupplierMaxCode(companyRole.getSign(), companyCode);
+                    maxCode = maxCode==null?"101":maxCode;
+                } else if ( companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)) {
+                    maxCode = companyRepository.findCustomerMaxCode(companyRole.getSign(), companyCode);
+                    maxCode = maxCode==null?"201":maxCode;
                 }
                 code = companyCode + maxCode;
                 company = Company.builder()
@@ -914,9 +916,8 @@ public class CompanyService {
             company.setEmail(foreignCompany.getEmail());
             company.setPhone(foreignCompany.getPhone());
             companyRepository.save(company);
-            CompTrad compTrade;
-            if (code != null) {
-                compTrade = compTradeRepository.findById(compTradId).orElseThrow();
+            CompTrad compTrade= compTradeRepository.findById(compTradId).orElse(null);
+            if (compTrade != null) {
                 if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER))
                     compTrade.setSalerBelongTo(foreignCompany.getOperators());
                 compTrade.setTaxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED);
