@@ -169,7 +169,7 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回外供应商列表
      */
-   // @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ", key = "#companyCode")
+    @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ", key = "#companyCode")
     public List<TCompanyBaseInformation> listForeignSuppliers(String companyCode) {
         QCompany qCompany = QCompany.company;
         QCompTrad qCompTrad = QCompTrad.compTrad;
