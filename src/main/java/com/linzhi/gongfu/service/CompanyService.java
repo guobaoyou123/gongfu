@@ -815,12 +815,12 @@ public class CompanyService {
         query.leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
         if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER) ) {
             query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compBuyer));
+            query.where(qCompTrad.compTradId.compSaler.eq(salerCode));
         } else {
-            query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compSaler))
-                .on(qCompTrad.compTradId.compBuyer.eq(buyerCode));
+            query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compSaler));
+            query.where(qCompTrad.compTradId.compBuyer.eq(buyerCode));
         }
         query.where(qEnrolledCompany.USCI.eq(usci));
-        query.where(qCompTrad.compTradId.compSaler.eq(salerCode));
         query.where(qCompany.role.eq(companyRole.getSign()));
         List<Company> list = query.fetch();
         if (list.size() > 0) {
