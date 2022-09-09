@@ -4,7 +4,7 @@ import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.enumeration.ContractState;
 import com.linzhi.gongfu.mapper.*;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
-import com.linzhi.gongfu.service.ContractService;
+import com.linzhi.gongfu.service.PurchaseContractService;
 import com.linzhi.gongfu.service.InquiryService;
 import com.linzhi.gongfu.service.PlanService;
 import com.linzhi.gongfu.util.ExcelUtil;
@@ -39,7 +39,7 @@ public class ContractController {
     private final PurchasePlanMapper purchasePlanMapper;
     private final InquiryService inquiryService;
     private final InquiryMapper inquiryMapper;
-    private final ContractService contractService;
+    private final PurchaseContractService purchaseContractService;
     private final ContractMapper contractMapper;
 
     /**
@@ -641,13 +641,13 @@ public class ContractController {
         String contractCodes = "";
         //判断是否需要进行判断是否有重复的合同
         if (!contractRequest.isEnforce())
-            contractCodes = contractService.getContractProductRepeat(contractRequest.getInquiryId()).orElse("");
+            contractCodes = purchaseContractService.getContractProductRepeat(contractRequest.getInquiryId()).orElse("");
         if (!contractCodes.equals(""))
             return VBaseResponse.builder()
                 .code(201)
                 .message("可能重复的合同有：" + contractCodes)
                 .build();
-        flag = contractService.saveContract(contractRequest, session.getSession().getCompanyCode(), session.getSession().getOperatorName(), session.getSession().getOperatorCode());
+        flag = purchaseContractService.saveContract(contractRequest, session.getSession().getCompanyCode(), session.getSession().getOperatorName(), session.getSession().getOperatorCode());
         return VBaseResponse.builder()
             .code(flag ? 200 : 500)
             .message(flag ? "成功采购合同" : "生成采购合同失败")
@@ -663,7 +663,7 @@ public class ContractController {
     @GetMapping("/contract/taxRate")
     public VTaxRateResponse listTaxRates(@RequestParam("type") String type) {
 
-        var list = contractService.listTaxRates(type);
+        var list = purchaseContractService.listTaxRates(type);
         return VTaxRateResponse.builder()
             .code(200)
             .message("获取税率列表成功")
@@ -682,7 +682,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = contractService.changeContractNoRepeated(contractNo.orElse(""), session.getSession().getCompanyCode(), "");
+        var flag = purchaseContractService.changeContractNoRepeated(contractNo.orElse(""), session.getSession().getCompanyCode(), "");
         return VBaseResponse.builder()
             .code(flag ? 200 : 201)
             .message(flag ? "数据不重复" : "数据重复")
@@ -702,7 +702,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = contractService.changeContractNoRepeated(contractNo.orElse(""), session.getSession().getCompanyCode(), id);
+        var flag = purchaseContractService.changeContractNoRepeated(contractNo.orElse(""), session.getSession().getCompanyCode(), id);
         return VBaseResponse.builder()
             .code(flag ? 200 : 201)
             .message(flag ? "数据不重复" : "数据重复")
@@ -736,7 +736,7 @@ public class ContractController {
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10)
         );
-        var page = contractService.pageContracts(
+        var page = purchaseContractService.pageContracts(
             state.orElse("0"),
             supplierCode.orElse(""),
             startTime.orElse(""),
@@ -771,10 +771,10 @@ public class ContractController {
 
         boolean repetitive = false;
         //查询采购合同
-        var contract = contractService.getPurchaseContractDetail(id, revision);
+        var contract = purchaseContractService.getPurchaseContractDetail(id, revision);
         //如果合同版本号大于1且状态为未完成，需要判断是否已上一版内容一致
         if (revision > 1 && contract.getState().equals(ContractState.UN_FINISHED.getState() + ""))
-            repetitive = contractService.judgeContractRev(id, revision);
+            repetitive = purchaseContractService.judgeContractRev(id, revision);
         return VPContractDetailResponse.builder()
             .code(200)
             .message("获取数据成功")
@@ -794,7 +794,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var id = contractService.savePurchaseContractEmpty(
+        var id = purchaseContractService.savePurchaseContractEmpty(
                 supplierCode.orElse(new VInquiryIdRequest()).getSupplierCode(),
                 session.getSession().getCompanyCode(),
                 session.getSession().getCompanyName(),
@@ -833,7 +833,7 @@ public class ContractController {
         return VPContractAmountResponse.builder()
             .code(200)
             .message("获取数据成功")
-            .amount(contractService.getUnFinished(
+            .amount(purchaseContractService.getUnFinished(
                 session.getSession().getCompanyCode(),
                 session.getSession().getOperatorCode(),
                 startTime.orElse(""),
@@ -860,7 +860,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = contractService.saveProduct(product.orElseThrow().getProductId(),
+        var flag = purchaseContractService.saveProduct(product.orElseThrow().getProductId(),
             product.get().getPrice(),
             product.get().getAmount(),
             id,
@@ -891,7 +891,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = contractService.removeContractProduct(
+        var flag = purchaseContractService.removeContractProduct(
             codes,
             id,
             revision,
@@ -915,10 +915,10 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var revision = contractService.modifyContractState(id,
+        var revision = purchaseContractService.modifyContractState(id,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
-            contractService.getMaxRevision(id)
+            purchaseContractService.getMaxRevision(id)
         );
         return VPContractRevisionResponse.builder()
             .code(revision == 0 ? 500 : 200)
@@ -944,7 +944,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = contractService.modifyPurchaseContract(
+        var flag = purchaseContractService.modifyPurchaseContract(
             vModifyInquiryRequest.orElse(new VInquiryRequest()),
             id,
             revision,
@@ -970,7 +970,7 @@ public class ContractController {
         HttpServletResponse response
     ) {
 
-        List<LinkedHashMap<String, Object>> database = contractService.exportProductTemplate(id, revision);
+        List<LinkedHashMap<String, Object>> database = purchaseContractService.exportProductTemplate(id, revision);
         ExcelUtil.exportToExcel(response, id + "采购合同明细表", database);
     }
 
@@ -987,7 +987,7 @@ public class ContractController {
         HttpServletResponse response
     ) {
 
-        List<LinkedHashMap<String, Object>> database = contractService.exportProduct(id, revision);
+        List<LinkedHashMap<String, Object>> database = purchaseContractService.exportProduct(id, revision);
         ExcelUtil.exportToExcel(response, id + "采购合同明细表", database);
     }
 
@@ -1003,15 +1003,15 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var contract = contractService.getContractDetail(id);
+        var contract = purchaseContractService.getContractDetail(id);
         if (contract.getState().equals(ContractState.FINISHED))
             return VBaseResponse.builder()
                 .code(500)
                 .message("该版本已撤销")
                 .build();
-        contractService.removeCurrentRevision(
+        purchaseContractService.removeCurrentRevision(
             id,
-            contractService.getMaxRevision(id),
+            purchaseContractService.getMaxRevision(id),
             contract, session.getSession().getCompanyCode()
         );
 
@@ -1036,7 +1036,7 @@ public class ContractController {
         @PathVariable("revision") Integer revision
     ) {
 
-        contractService.saveDeliveryTemp(deliveryTempRequests, id, revision);
+        purchaseContractService.saveDeliveryTemp(deliveryTempRequests, id, revision);
         return VBaseResponse.builder()
             .code(200)
             .message("保存成功")
@@ -1061,13 +1061,13 @@ public class ContractController {
             .getContext().getAuthentication();
         String contractCodes = "";
         if (!generateContractRequest.isEnforce())
-            contractCodes = contractService.findContractProductRepeat(id, revision).orElse("");
+            contractCodes = purchaseContractService.findContractProductRepeat(id, revision).orElse("");
         if (!contractCodes.equals(""))
             return VBaseResponse.builder()
                 .code(201)
                 .message("可能重复的合同有：" + contractCodes)
                 .build();
-        contractService.saveContractRevision(id,
+        purchaseContractService.saveContractRevision(id,
             revision,
             generateContractRequest,
             session.getSession().getCompanyCode(),
@@ -1089,7 +1089,7 @@ public class ContractController {
     @GetMapping("/contract/purchase/{id}/invoiced")
     // TODO: 2022/6/2   需要重新完善
     public VInvoicedResponse getInvoicedList(@PathVariable String id) {
-        var products = contractService.getInvoicedList(id);
+        var products = purchaseContractService.getInvoicedList(id);
         return VInvoicedResponse.builder()
             .code(200)
             .message("获取数据成功")
@@ -1106,7 +1106,7 @@ public class ContractController {
     // TODO: 2022/6/2   需要重新完善
     @GetMapping("/contract/purchase/{id}/received")
     public VReceivedResponse getReceivedList(@PathVariable String id) {
-        var products = contractService.getReceivedList(id);
+        var products = purchaseContractService.getReceivedList(id);
         return VReceivedResponse.builder()
             .code(200)
             .message("获取数据成功")
@@ -1125,7 +1125,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        contractService.removePurchaseContract(
+        purchaseContractService.removePurchaseContract(
             id,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
@@ -1149,7 +1149,7 @@ public class ContractController {
         @PathVariable("revision") Integer revision
     ) {
 
-        var list = contractService.modifyContractPreview(id, revision);
+        var list = purchaseContractService.modifyContractPreview(id, revision);
         return VPContractPreviewResponse.builder()
             .code(200)
             .message("获取数据成功")
@@ -1169,7 +1169,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        String contractId = contractService.copyContract(
+        String contractId = purchaseContractService.copyContract(
             id,
             revision,
             session.getSession().getCompanyCode(),

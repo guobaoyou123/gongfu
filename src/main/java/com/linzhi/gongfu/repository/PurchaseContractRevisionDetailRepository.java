@@ -1,8 +1,8 @@
 package com.linzhi.gongfu.repository;
 
 
-import com.linzhi.gongfu.entity.ContractRevisionDetail;
-import com.linzhi.gongfu.entity.ContractRevisionId;
+import com.linzhi.gongfu.entity.PurchaseContractRevisionDetail;
+import com.linzhi.gongfu.entity.PurchaseContractRevisionId;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface ContractRevisionDetailRepository
-    extends CrudRepository<ContractRevisionDetail, ContractRevisionId>, QuerydslPredicateExecutor<ContractRevisionDetail> {
+public interface PurchaseContractRevisionDetailRepository
+    extends CrudRepository<PurchaseContractRevisionDetail, PurchaseContractRevisionId>, QuerydslPredicateExecutor<PurchaseContractRevisionDetail> {
 
     /**
      * 合同详情
@@ -28,14 +28,14 @@ public interface ContractRevisionDetailRepository
         "b.code as code ,b.sales_contract_id as salesContractId,b.buyer_comp as buyer_comp,b.buyer_comp_name as buyer_comp_name,b.created_by_comp as created_by_comp,b.created_by as created_by,b.saler_comp as saler_comp,b.saler_comp_name as saler_comp_name,b.state as state,\n" +
         "o.name as createdByName,a.code as salesContractCode ,re.order_code as salesOrderCode, \n" +
         "pre.total_price as previousUntaxedTotal,pre.total_price_vat as previousTaxedTotal  \n" +
-        " from contract_rev r \n" +
-        "left join contract_base b on b.id = r.id\n" +
+        " from purchase_contract_rev r \n" +
+        "left join purchase_contract_base b on b.id = r.id\n" +
         "left join comp_operator o on o.dc_comp_id=b.created_by_comp and o.code=b.created_by\n" +
-        "left join contract_base a on a.id = b.sales_contract_id\n" +
-        "left join contract_rev re on re.id=b.id and re.revision = (select MAX(e.revision) from contract_rev e  where e.id = re.id)\n" +
-        "left join contract_rev pre on pre.id=re.id and pre.revision = (re.revision-1) \n" +
+        "left join purchase_contract_base a on a.id = b.sales_contract_id\n" +
+        "left join purchase_contract_rev re on re.id=b.id and re.revision = (select MAX(e.revision) from purchase_contract_rev e  where e.id = re.id)\n" +
+        "left join purchase_contract_rev pre on pre.id=re.id and pre.revision = (re.revision-1) \n" +
         "where r.revision=?1 and r.id=?2", nativeQuery = true)
-    Optional<ContractRevisionDetail> getDetail(int revision, String id);
+    Optional<PurchaseContractRevisionDetail> getDetail(int revision, String id);
 
     /**
      * 合同版本号列表
@@ -43,7 +43,7 @@ public interface ContractRevisionDetailRepository
      * @param id 合同主键
      * @return 合同版本号列表
      */
-    @Query(value = "select d.contractRevisionId.revision as revision,d.createdAt as createdAt from ContractRevisionDetail d where d.contractRevisionId.id=?1")
+    @Query(value = "select d.purchaseContractRevisionId.revision as revision,d.createdAt as createdAt from PurchaseContractRevisionDetail d where d.purchaseContractRevisionId.id=?1")
     List<Map<String, Object>> listRevision(String id);
 
     /**
@@ -68,6 +68,6 @@ public interface ContractRevisionDetailRepository
      * @param id 合同主键
      * @return 版本号
      */
-    @Query(value = "select max(c.contractRevisionId.revision)   from ContractRevisionDetail as c where c.contractRevisionId.id=?1")
+    @Query(value = "select max(c.purchaseContractRevisionId.revision)   from PurchaseContractRevisionDetail as c where c.purchaseContractRevisionId.id=?1")
     Optional<String> getMaxRevision(String id);
 }

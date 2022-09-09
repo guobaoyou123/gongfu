@@ -8,29 +8,35 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
-/**
- * 合同版本详情表主键
- */
 @Builder
 @Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
-public class ContractRevisionId implements Serializable {
+public class PurchaseContractRecordId implements Serializable {
 
     /**
-     * 合同唯一id
+     * 询价单唯一id
      */
-
-    @Column(name = "id", length = 50, nullable = false)
+    @Column(name = "contract_id", length = 50, nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
-    private String id;
-    /**
-     * 版本号
-     */
+    private String contractId;
 
+    /**
+     * 序号
+     */
+    @Column(name = "code", nullable = false)
+    @NotNull
+    @NotBlank
+    @Getter
+    @Setter
+    private Integer code;
+
+    /**
+     * 版本
+     */
     @Column(name = "revision", nullable = false)
     @NotNull
     @NotBlank

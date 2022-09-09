@@ -30,7 +30,7 @@ public interface ContractMapper {
     @Mapping(target = "type", expression = "java(String.valueOf(contract.getType().getType()))")
     @Mapping(target = "state", expression = "java(String.valueOf(contract.getState().getState()))")
     @Mapping(target = "salerCompName", source = "salerCompNameShort")
-    TContract toContractList(ContractList contract);
+    TContract toContractList(PurchaseContractList contract);
 
     /**
      * 转换采购合同列表
@@ -50,8 +50,8 @@ public interface ContractMapper {
     @Mapping(target = "confirmTaxedTotal", source = "confirmTaxedTotal")
     VPContractPageResponse.VContract toContractPage(TContract tContract);
 
-    @Mapping(target = "id", source = "contractRevisionId.id")
-    @Mapping(target = "revision", source = "contractRevisionId.revision")
+    @Mapping(target = "id", source = "purchaseContractRevisionId.id")
+    @Mapping(target = "revision", source = "purchaseContractRevisionId.revision")
     @Mapping(target = "code", source = "code")
     @Mapping(target = "orderCode", source = "orderCode")
     @Mapping(target = "supplierContractNo", source = "salerOrderCode")
@@ -84,7 +84,7 @@ public interface ContractMapper {
     @Mapping(target = "confirmTaxedTotal", source = "confirmTotalPriceVat")
     @Mapping(target = "discount", source = "discount")
     @Mapping(target = "discountedTotalPrice", source = "discountedTotalPrice")
-    TContract toTContractDetail(ContractRevisionDetail contractRevisionDetail);
+    TContract toTContractDetail(PurchaseContractRevisionDetail contractRevisionDetail);
 
     @Mapping(target = "contractNo", source = "orderCode")
     @Mapping(target = "supplierNo", source = "supplierContractNo")
@@ -99,7 +99,7 @@ public interface ContractMapper {
     @Mapping(target = "consigneeCode", source = "contactCode")
     VPContractDetailResponse.VContract toContractDetail(TContract tContract);
 
-    ContractRevision toContractRevision(ContractRevisionDetail contractRevisionDetail);
+    PurchaseContractRevision toContractRevision(PurchaseContractRevisionDetail contractRevisionDetail);
 
     @Mapping(target = "received", expression = "java(contractReceived.getDelivered()!=null?contractReceived.getReceived()!=null?contractReceived.getDelivered().subtract(contractReceived.getReceived()):contractReceived.getDelivered():null)")
     TContractReceived toTContractReceived(ContractReceived contractReceived);
@@ -110,10 +110,10 @@ public interface ContractMapper {
     @Mapping(target = "id", constant = "")
     @Mapping(target = "code", ignore = true)
     @Mapping(target = "salesContractId", ignore = true)
-    ContractDetail toContractDetail(ContractDetail contractDetail);
+    PurchaseContractDetail toContractDetail(PurchaseContractDetail contractDetail);
 
-    @Mapping(target = "contractRevisionId.id", ignore = true)
-    @Mapping(target = "contractRevisionId.revision", constant = "1")
+    @Mapping(target = "purchaseContractRevisionId.id", ignore = true)
+    @Mapping(target = "purchaseContractRevisionId.revision", constant = "1")
     @Mapping(target = "orderCode", ignore = true)
     @Mapping(target = "salerOrderCode", ignore = true)
     @Mapping(target = "revokedAt", ignore = true)
@@ -123,5 +123,5 @@ public interface ContractMapper {
     @Mapping(target = "confirmedAt", ignore = true)
     @Mapping(target = "confirmedBy", ignore = true)
     @Mapping(target = "contractRecords", ignore = true)
-    ContractRevision toContractRevision(ContractRevision contractRevision);
+    PurchaseContractRevision toContractRevision(PurchaseContractRevision contractRevision);
 }

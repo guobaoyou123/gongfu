@@ -860,7 +860,6 @@ public class CompanyService {
                 //查询有没有系统唯一码
                 Optional<EnrolledCompany> enrolledCompany = enrolledCompanyRepository
                     .findByUSCI(foreignCompany.getUsci());
-
                 //判断系统单位表是否为空
                 if (enrolledCompany.isEmpty()) {
                     //空的话获取系统单位表的最大编码，生成新的单位

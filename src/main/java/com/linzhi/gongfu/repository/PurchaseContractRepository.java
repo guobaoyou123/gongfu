@@ -1,14 +1,14 @@
 package com.linzhi.gongfu.repository;
 
-import com.linzhi.gongfu.entity.ContractList;
+import com.linzhi.gongfu.entity.PurchaseContractList;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface ContractRepository
-    extends CrudRepository<ContractList, String>, QuerydslPredicateExecutor<ContractList> {
+public interface PurchaseContractRepository
+    extends CrudRepository<PurchaseContractList, String>, QuerydslPredicateExecutor<PurchaseContractList> {
     /**
      * 查找有相同单位合同号的合同数量
      *
@@ -17,7 +17,7 @@ public interface ContractRepository
      * @return 合同数量
      */
     @Query(value = "select  count(distinct c.id) " +
-        "from contract_base c ,contract_rev  r  " +
+        "from purchase_contract_base c ,purchase_contract_rev  r  " +
         "where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  " +
         "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) " +
         "  and  c.state ='1' " +
@@ -33,9 +33,9 @@ public interface ContractRepository
      * @param contractId 合同主键
      * @return
      */
-    @Query(value = "select  count(distinct c.id) from contract_base c ,contract_rev  r " +
+    @Query(value = "select  count(distinct c.id) from purchase_contract_base c ,purchase_contract_rev  r " +
         " where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  and c.type = '0'" +
-        "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) " +
+        "  and r.revision = (select max(revision) from purchase_contract_rev re where re.id=r.id) " +
         "  and  c.state ='1' " +
         " and c.id <> ?3",
         nativeQuery = true)
@@ -48,7 +48,7 @@ public interface ContractRepository
      * @param sequenceCode 指纹
      * @return 合同编码列表
      */
-    @Query(value = "select  c.id from contract_base c ,contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id  and c.type = '0' and r.fingerprint =?2 and r.revision=(select max(revision) from contract_rev v where v.id = r.id) ", nativeQuery = true)
+    @Query(value = "select  c.id from purchase_contract_base c ,purchase_contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id  and c.type = '0' and r.fingerprint =?2 and r.revision=(select max(revision) from purchase_contract_rev v where v.id = r.id) ", nativeQuery = true)
     List<String> findContractId(String dcCompId, String sequenceCode);
 
     /**
@@ -67,14 +67,14 @@ public interface ContractRepository
         "d.confirm_total_price_vat as confirmTaxedTotal, \n" +
         " d.total_price_vat  as taxedTotal,\n" +
         " cb.chi_short  as salerCompNameShort\n" +
-        " from   contract_base b\n" +
+        " from   purchase_contract_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join comp_base cb on  b.saler_comp = cb.code \n" +
-        "left join contract_base c on c.id = b.sales_contract_id\n" +
-        "left join contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from contract_rev  where id = r.id)\n" +
-        "left join contract_rev d on d.id = b.id  and d.revision in (select max(revision) from contract_rev  where id = d.id)\n" +
-        "left join contract_record_temp t on t.contract_id = d.id\n" +
-        "left join contract_record_rev v on v.contract_id = d.id and v.revision = d.revision\n" +
+        "left join purchase_contract_base c on c.id = b.sales_contract_id\n" +
+        "left join purchase_contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from purchase_contract_rev  where id = r.id)\n" +
+        "left join purchase_contract_rev d on d.id = b.id  and d.revision in (select max(revision) from purchase_contract_rev  where id = d.id)\n" +
+        "left join purchase_contract_record_temp t on t.contract_id = d.id\n" +
+        "left join purchase_contract_record_rev v on v.contract_id = d.id and v.revision = d.revision\n" +
         " where  b.created_by_comp=?1 and b.created_by=?2 and b.type=?3 and b.state=?4 \n" +
         "group by b.id,o.name \n" +
         "      ,b.code\n" +
@@ -91,7 +91,7 @@ public interface ContractRepository
         "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<ContractList> listContracts(String compId, String operator, String type, String state);
+    List<PurchaseContractList> listContracts(String compId, String operator, String type, String state);
 
     /**
      * 合同列表
@@ -108,14 +108,14 @@ public interface ContractRepository
         "d.confirm_total_price_vat as confirmTaxedTotal, \n" +
         " d.total_price_vat  as taxedTotal,\n" +
         " cb.chi_short  as salerCompNameShort\n" +
-        " from   contract_base b\n" +
+        " from   purchase_contract_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join comp_base cb on  b.saler_comp = cb.code\n" +
-        "left join contract_base c on c.id = b.sales_contract_id\n" +
-        "left join contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from contract_rev  where id = r.id)\n" +
-        "left join contract_rev d on d.id = b.id  and d.revision in (select max(revision) from contract_rev  where id = d.id)\n" +
-        "left join contract_record_temp t on t.contract_id = d.id\n" +
-        "left join contract_record_rev v on v.contract_id = d.id and v.revision = d.revision\n" +
+        "left join purchase_contract_base c on c.id = b.sales_contract_id\n" +
+        "left join purchase_contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from purchase_contract_rev  where id = r.id)\n" +
+        "left join purchase_contract_rev d on d.id = b.id  and d.revision in (select max(revision) from purchase_contract_rev  where id = d.id)\n" +
+        "left join purchase_contract_record_temp t on t.contract_id = d.id\n" +
+        "left join purchase_contract_record_rev v on v.contract_id = d.id and v.revision = d.revision\n" +
         " where  b.created_by_comp=?1  and b.type=?2 and b.state=?3 \n" +
         "group by b.id,o.name \n" +
         "      ,b.code\n" +
@@ -132,5 +132,5 @@ public interface ContractRepository
         "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<ContractList> listContracts(String compId, String type, String state);
+    List<PurchaseContractList> listContracts(String compId, String type, String state);
 }

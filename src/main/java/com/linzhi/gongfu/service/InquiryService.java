@@ -52,7 +52,7 @@ public class InquiryService {
     private final TaxRatesRepository vatRatesRepository;
     private final ImportProductTempRepository importProductTempRepository;
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
-    private final ContractRepository contractRepository;
+    private final PurchaseContractRepository contractRepository;
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final PurchasePlanRepository purchasePlanRepository;
     private final UnfinishedInquiryRepository unfinishedInquiryRepository;
@@ -110,7 +110,7 @@ public class InquiryService {
             //查出服务税率
             // Optional<TaxRates> service=vatRatesRepository.findByTypeAndDeflagAndUseCountry(VatRateType.SERVICE,Whether.YES,"001");
             //查出对应的销售合同
-            ContractList salesContract = null;
+            PurchaseContractList salesContract = null;
             if (purchasePlan.get().getSalesId() != null) {
                 salesContract = contractRepository.findById(purchasePlan.get().getSalesId()).orElseThrow(() -> new IOException("数据库中找不到该销售合同"));
             }
@@ -149,7 +149,7 @@ public class InquiryService {
                 maxCode = "01";
             AtomicInteger max = new AtomicInteger(Integer.parseInt(maxCode));
             //对每个供应商生成询价单
-            ContractList finalSalesContract = salesContract;
+            PurchaseContractList finalSalesContract = salesContract;
             companyRepository.findAllById(suppliers).forEach(company -> {
 
                 List<String> inquiryCodes = getInquiryCode(max.get() + "", operatorCode, companyCode, company.getRole().equals(CompanyRole.EXTERIOR_SUPPLIER.getSign()) ? company.getEncode() : company.getCode());

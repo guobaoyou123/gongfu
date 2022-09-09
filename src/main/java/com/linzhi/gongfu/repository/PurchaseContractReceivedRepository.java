@@ -7,7 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface ContractReceivedRepository extends CrudRepository<ContractReceived, String>, QuerydslPredicateExecutor<ContractReceived> {
+public interface PurchaseContractReceivedRepository extends CrudRepository<ContractReceived, String>, QuerydslPredicateExecutor<ContractReceived> {
 
     /**
      * 合同产品明细已收（发）货列表
@@ -17,7 +17,7 @@ public interface ContractReceivedRepository extends CrudRepository<ContractRecei
      */
     @Query(value = "  select  r.product_id as id ,r.product_code as code,r.product_description as describe,r.my_charge_unit as charge_unit, \n" +
         "sum(r.my_actual)as delivered ,\n" +
-        "(select sum(my_quantity) from  contract_record_temp t where t.product_id =r.product_id and  t.contract_id=b.contract_id ) as amount,\n" +
+        "(select sum(my_quantity) from  purchase_contract_record_temp t where t.product_id =r.product_id and  t.contract_id=b.contract_id ) as amount,\n" +
         "(select sum(re.my_quantity) from deliver_record re\n" +
         "left join deliver_base be   on  re.deliver_code = be.id and be.type='2'\n" +
 

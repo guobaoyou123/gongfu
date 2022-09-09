@@ -1,17 +1,17 @@
 package com.linzhi.gongfu.entity;
 
-
 import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
 
-import javax.persistence.*;
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * 合同版本
+ * 合同版本详情表
  */
 @Builder
 @Setter
@@ -19,19 +19,37 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "contract_rev")
-public class ContractRevision implements Serializable {
+@Table(name = "purchase_contract_rev")
+public class PurchaseContractRevisionDetail {
     /**
      * 合同唯一id
      */
     @EmbeddedId
-    private ContractRevisionId contractRevisionId;
+    private PurchaseContractRevisionId purchaseContractRevisionId;
 
+    @Column(insertable = false, updatable = false)
+    private String code;
     /**
      * 合同编码
      */
     @Column(name = "order_code", length = 40)
     private String orderCode;
+    /*
+     * 对应销售合同记录系统主键
+     */
+    @Column(insertable = false, updatable = false)
+    private String salesContractId;
+    /*
+     * 对应销售合同记录系统编码
+     */
+    @Column(insertable = false, updatable = false)
+    private String salesContractCode;
+    /*
+     * 对应销售合同记录中本单位编码
+     */
+    @Column(insertable = false, updatable = false)
+    private String salesOrderCode;
+
     /**
      * 供应商合同编码
      */
@@ -92,14 +110,24 @@ public class ContractRevision implements Serializable {
     @Column(name = "total_price_vat")
     private BigDecimal totalPriceVat;
     /**
+     * 上一版未税总价
+     */
+    @Column(name = "previousUntaxedTotal")
+    private BigDecimal previousUntaxedTotal;
+    /**
+     * 上一版本含税总价
+     */
+    @Column(name = "previousTaxedTotal")
+    private BigDecimal previousTaxedTotal;
+    /**
      * 最终未税总价
      */
-    @Column(name = "discount_total_price")
+    @Column(name = "discount_total_price", insertable = false, updatable = false)
     private BigDecimal discountedTotalPrice;
     /**
      * 确认价税合计
      */
-    @Column(name = "confirm_total_price_vat")
+    @Column(name = "confirm_total_price_vat", insertable = false, updatable = false)
     private BigDecimal confirmTotalPriceVat;
 
     /**
@@ -174,6 +202,48 @@ public class ContractRevision implements Serializable {
      */
     @Column(name = "confirmed_by")
     private String confirmedBy;
+
+
+    /**
+     * 所属单位编码
+     */
+    @Column(name = "created_by_comp", insertable = false, updatable = false)
+    private String createdByComp;
+    /**
+     * 所属操作员编码
+     */
+    @Column(name = "created_by", insertable = false, updatable = false)
+    private String createdBy;
+
+    @Column(name = "createdByName", updatable = false, insertable = false)
+    private String createdByName;
+    /**
+     * 客户公司编码
+     */
+    @Column(name = "buyer_comp", insertable = false, updatable = false)
+    private String buyerComp;
+    /**
+     * 客户名称
+     */
+    @Column(name = "buyer_comp_name", insertable = false, updatable = false)
+    private String buyerCompName;
+    /**
+     * 供应商公司编号
+     */
+    @Column(name = "saler_comp", insertable = false, updatable = false)
+
+    private String salerComp;
+    /**
+     * 供应商名称
+     */
+    @Column(name = "saler_comp_name", insertable = false, updatable = false)
+    private String salerCompName;
+    /**
+     * 状态（0-未确认 1-确认 2-撤销）
+     */
+    @Column(insertable = false, updatable = false)
+    private String state;
+
     /**
      * 收货地址编码
      */
@@ -184,10 +254,4 @@ public class ContractRevision implements Serializable {
      */
     @Column(name = "contact_code", length = 20)
     private String contactCode;
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumns({
-        @JoinColumn(name = "contract_id", referencedColumnName = "id", insertable = true, updatable = true),
-        @JoinColumn(name = "revision", referencedColumnName = "revision", insertable = true, updatable = true)
-    })
-    private List<ContractRecord> contractRecords;
 }

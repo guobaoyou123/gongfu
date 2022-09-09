@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "contract_base")
-public class ContractDetail {
+@Table(name = "purchase_contract_base")
+public class PurchaseContractDetail {
     /**
      * 合同唯一id
      */

@@ -2,7 +2,7 @@ package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
-import com.linzhi.gongfu.service.ContractService;
+import com.linzhi.gongfu.service.PurchaseContractService;
 import com.linzhi.gongfu.service.EximportService;
 import com.linzhi.gongfu.service.InquiryService;
 import com.linzhi.gongfu.vo.VBaseResponse;
@@ -30,7 +30,7 @@ public class EximportController {
 
     private final InquiryService inquiryService;
 
-    private final ContractService contractService;
+    private final PurchaseContractService contractService;
     private final EximportService eximportService;
 
     /**

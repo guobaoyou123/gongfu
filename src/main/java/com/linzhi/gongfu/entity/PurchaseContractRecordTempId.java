@@ -8,11 +8,14 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
+/**
+ * 合同记录临时表主键
+ */
 @Builder
 @Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
-public class ContractRecordId implements Serializable {
+public class PurchaseContractRecordTempId implements Serializable {
     /**
      * 询价单唯一id
      */
@@ -23,10 +26,10 @@ public class ContractRecordId implements Serializable {
     @Getter
     @Setter
     private String contractId;
-
     /**
      * 序号
      */
+
     @Column(name = "code", nullable = false)
     @NotNull
     @NotBlank
