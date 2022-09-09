@@ -27,7 +27,6 @@ public interface ContractMapper {
      * @return 采购合同基本信息
      */
     @Mapping(target = "createdAt", expression = "java(com.linzhi.gongfu.util.DateConverter.dateFormat(contract.getCreatedAt()))")
-    @Mapping(target = "type", expression = "java(String.valueOf(contract.getType().getType()))")
     @Mapping(target = "state", expression = "java(String.valueOf(contract.getState().getState()))")
     @Mapping(target = "salerCompName", source = "salerCompNameShort")
     TContract toContractList(PurchaseContractList contract);

@@ -283,7 +283,6 @@ public class PurchaseContractService {
             .code(code)
             .createdByComp(createdByComp)
             .salesContractId(salesContractId)
-            .type(inquiryType)
             .createdBy(createdBy)
             .buyerComp(buyerComp)
             .buyerCompName(buyerCompName)
@@ -421,11 +420,11 @@ public class PurchaseContractService {
             )
             .orElseThrow(() -> new IOException("请求的操作员找不到"));
         if (operator1.getAdmin().equals(Whether.YES))
-            return purchaseContractRepository.listContracts(companyCode, InquiryType.INQUIRY_LIST.getType() + "", state)
+            return purchaseContractRepository.listContracts(companyCode,  state)
                 .stream()
                 .map(contractMapper::toContractList)
                 .toList();
-        return purchaseContractRepository.listContracts(companyCode, operator, InquiryType.INQUIRY_LIST.getType() + "", state)
+        return purchaseContractRepository.listContracts(companyCode, operator, state)
             .stream()
             .map(contractMapper::toContractList)
             .toList();

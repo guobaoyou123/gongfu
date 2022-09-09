@@ -41,12 +41,6 @@ public class PurchaseContractDetail {
     @NotBlank
     private String code;
 
-    /**
-     * 类型（0-采购合同 1-销售合同）
-     */
-    @Column(name = "type", length = 1)
-    private InquiryType type;
-
     /*
      * 对应销售合同记录系统主键
      */
