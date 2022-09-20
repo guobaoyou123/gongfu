@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * 用于接前端询价单生成合同信息的请求
+ * 用于接前端确认生成合同信息的请求
  */
 @Data
 @Jacksonized
@@ -29,6 +29,11 @@ public class VPContractRequest {
      * 对应供应商合同号
      */
     private String supplierNo;
+
+    /**
+     * 对应客户合同号
+     */
+    private String customerNo;
 
     /**
      * 总的价税合计值
@@ -56,6 +61,16 @@ public class VPContractRequest {
     private String supplierContactPhone;
 
     /**
+     * 客户联系人姓名
+     */
+    private String customerContactName;
+
+    /**
+     * 客户联系人电话
+     */
+    private String customerContactPhone;
+
+    /**
      * 是否强制执行
      */
     private boolean enforce;
@@ -76,5 +91,23 @@ public class VPContractRequest {
          * 退回数量
          */
         private BigDecimal returnAmount;
+    }
+
+    /**
+     * 收回产品列表
+     */
+    private List<VReceivedRecord> receivedRecords;
+
+    @Data
+    public static class VReceivedRecord {
+        /**
+         * 产品主键
+         */
+        private String productId;
+
+        /**
+         * 收回数量
+         */
+        private BigDecimal receivedAmount;
     }
 }

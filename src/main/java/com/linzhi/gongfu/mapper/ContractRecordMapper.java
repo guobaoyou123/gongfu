@@ -179,4 +179,25 @@ public interface ContractRecordMapper {
     @Mapping(target = "remark", source = "remark")
     @Mapping(target = "salesContractRecordTempId.revision", expression = "java(salesContractRecordId.getRevision()+1)")
     SalesContractRecordTemp toContractRecordTemp(SalesContractRecord contractRecord);
+
+    /**
+     * 將销售合同临时明细转换为合同明细
+     * @param contractRecord 临时明细
+     * @return 合同明细
+     */
+    @Mapping(target = "salesContractRecordId.contractId", source = "salesContractRecordTempId.contractId")
+    @Mapping(target = "salesContractRecordId.code", source = "salesContractRecordTempId.code")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "priceVat", source = "priceVat")
+    @Mapping(target = "amount", source = "amount")
+    @Mapping(target = "totalPrice", source = "totalPrice")
+    @Mapping(target = "totalPriceVat", source = "totalPriceVat")
+    @Mapping(target = "vatRate", source = "vatRate")
+    @Mapping(target = "ratio", source = "ratio")
+    @Mapping(target = "sysChargeUnit", source = "sysChargeUnit")
+    @Mapping(target = "chargeUnit", source = "chargeUnit")
+    @Mapping(target = "salesContractRecordId.revision", source = "salesContractRecordTempId.revision")
+    @Mapping(target = "specification", source = "specification")
+    @Mapping(target = "remark", source = "remark")
+    SalesContractRecord toSalesContractRecord(SalesContractRecordTemp contractRecord);
 }

@@ -115,7 +115,7 @@ public class SalesContractRecord {
      * 计价单位
      */
     @Column(name = "charge_unit")
-    private String ChargeUnit;
+    private String chargeUnit;
 
     /**
      * 面价

@@ -1,7 +1,6 @@
 package com.linzhi.gongfu.service;
 
 import com.linzhi.gongfu.dto.TContract;
-import com.linzhi.gongfu.dto.TContractRecord;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.ContractMapper;
@@ -11,6 +10,7 @@ import com.linzhi.gongfu.util.CalculateUtil;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 采购合同信息处理及业务服务
@@ -52,6 +53,10 @@ public class SalesContractService {
     private final TaxRatesRepository  vatRatesRepository;
     private final ProductRepository productRepository;
     private final SalesContractRevisionDetailRepository salesContractRevisionDetailRepository;
+    private final AddressRepository addressRepository;
+    private final CompContactsRepository compContactsRepository;
+    private final DeliverBaseRepository deliverBaseRepository;
+
     /**
      * 查看合同列表
      *
@@ -123,28 +128,20 @@ public class SalesContractService {
      * @param id       合同主键
      * @param revision 版本号
      * @return 返回合同详情
-     * @throws IOException 异常
      */
-    public VPContractDetailResponse.VContract getSalesContractDetail(String id, int revision) throws IOException {
-        SalesContractRevisionDetail salesContractRevisionDetail = salesContractRevisionDetailRepository.findSalesContractRevisionDetailBySalesContractRevisionId(
-            SalesContractRevisionId.builder()
-                .id(id)
-                .revision(revision)
-                .build()
-        ).orElseThrow(() -> new IOException("数据库中未查询到该数据"));
-        List<TContractRecord> contractRecords;
-        if (salesContractRevisionDetail.getSalesContractBase().getState().equals(ContractState.UN_FINISHED)) {
-            contractRecords =salesContractRevisionDetail.getContractRecordTemps().stream()
-                .map(contractRecordMapper::toTContractRecord)
-                .toList();
-        } else {
-            contractRecords = salesContractRevisionDetail.getContractRecords().stream()
-                .map(contractRecordMapper::toTContractRecord)
-                .toList();
-        }
+    public VPContractDetailResponse.VContract getSalesContractDetail(String id, int revision)  {
+        SalesContractRevisionDetail salesContractRevisionDetail = getSalesContractRevisionDetail(id,revision);
         Optional<TContract> contractRevision = Optional.of(salesContractRevisionDetail)
             .map(contractMapper::toTContractDetail);
-        contractRevision.get().setRecords(contractRecords);
+        if (salesContractRevisionDetail.getSalesContractBase().getState().equals(ContractState.UN_FINISHED)) {
+            contractRevision.get().setRecords(salesContractRevisionDetail.getContractRecordTemps().stream()
+                .map(contractRecordMapper::toTContractRecord)
+                .toList());
+        } else {
+            contractRevision.get().setRecords(salesContractRevisionDetail.getContractRecords().stream()
+                .map(contractRecordMapper::toTContractRecord)
+                .toList());
+        }
         return contractRevision.map(contractMapper::toContractDetail).orElse(null);
     }
 
@@ -373,7 +370,7 @@ public class SalesContractService {
                 price,
                 contractRevision.getOfferMode(),
                 amount,
-                goods.getRate(),"0"
+                goods.getRate(),0
             );
             //保存合同明
             salesContractRecordTempRepository.save(contractRecordTemp);
@@ -423,7 +420,7 @@ public class SalesContractService {
      * @return 临时记录实体
      */
     public SalesContractRecordTemp createContractRecordTemp(String id, int revision, int code, Product product, BigDecimal price,
-                                                               TaxMode taxMode, BigDecimal amount, BigDecimal vatRate,String productCode) {
+                                                               TaxMode taxMode, BigDecimal amount, BigDecimal vatRate,Integer productCode) {
         return SalesContractRecordTemp.builder()
             .salesContractRecordTempId(SalesContractRecordTempId.builder()
                 .revision(revision)
@@ -740,7 +737,6 @@ public class SalesContractService {
      * @param vModifyInquiryRequest 修改信息
      * @param id                    合同主键
      * @param revision              合同版本
-     * @return 返回成功或者失败
      */
     @Caching(evict = {@CacheEvict(value = "sales_contract_revision_detail;1800", key = "#id+'-'+#revision"),
         @CacheEvict(value = "sales_contract_List;1800", key = "#companyCode+'-'+'*'")
@@ -834,6 +830,322 @@ public class SalesContractService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 销售合同详情
+     * @param id 合同主键
+     * @param revision 版本号
+     * @return 合同详情
+     */
+    @Cacheable(value = "sales_contract_revision_detail;1800", key = "#id+'-'+#revision")
+    public SalesContractRevisionDetail getSalesContractRevisionDetail(String id,int revision){
+        return  salesContractRevisionDetailRepository
+            .getSalesContractRevisionDetailBySalesContractRevisionId(
+                SalesContractRevisionId.builder()
+                    .id(id)
+                    .revision(revision)
+                    .build()
+            );
+    }
+
+    /**
+     * 查询合同是否重复（产品种类和数量）
+     *
+     * @param id       销售合同id
+     * @param revision 版本号
+     * @return 返回 true 或者 false
+     */
+    public Optional<String> findContractProductRepeat(String id, Integer revision) throws Exception {
+        SalesContractRevisionDetail  salesContractRevisionDetail = getSalesContractRevisionDetail(id,revision);
+        if (!salesContractRevisionDetail.getSalesContractBase().getState().equals(ContractState.UN_FINISHED))
+            throw new Exception("合同已确认");
+        List<SalesContractRecordTemp> contractRecordTemps =salesContractRevisionDetail.getContractRecordTemps();
+        //进行排序
+        contractRecordTemps.sort((o1, o2) -> {
+            if (o1.getProductId().compareTo(o2.getProductId()) == 0) {
+                if (o1.getAmount().doubleValue() < o2.getAmount().doubleValue()) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+            return o1.getProductId().compareTo(o2.getProductId());
+        });
+
+        // 将相同的产品系统数量进行累加
+        for(int i =0;i<contractRecordTemps.size()-1;i++){
+            if(contractRecordTemps.get(i).getProductId().equals(contractRecordTemps.get(i+1).getProductId())){
+                contractRecordTemps.get(i).setSysAmount(contractRecordTemps.get(i).getSysAmount().add(contractRecordTemps.get(i+1).getSysAmount()));
+                contractRecordTemps.remove(i+1);
+                i=i-1;
+            }
+        }
+        String str = createSequenceCode(
+            contractRecordTemps.stream()
+                .map(contractRecord ->
+                    contractRecord.getProductId() + "-"
+                        + contractRecord.getSysAmount().setScale(4, RoundingMode.HALF_UP)
+                ).toList(),
+            salesContractRevisionDetail.getSalesContractBase().getSalerComp(),
+            salesContractRevisionDetail.getSalesContractBase().getBuyerComp(),
+            salesContractRevisionDetail.getOfferMode()
+        );
+        //产品种类和数量相同的合同号
+        List<String> contractId = salesContractRepository.findContractId(salesContractRevisionDetail.getSalesContractBase().getCreatedByComp(), str);
+
+        return Optional.of(String.join(",", contractId));
+    }
+
+    /**
+     * 根据明细生成序列码
+     *
+     * @param records      明细
+     * @param supplierCode 供应商编码
+     * @param buyerCode    客户编码
+     * @param taxMode      税模式
+     * @return MD5编码
+     */
+    private String createSequenceCode(List<String> records, String supplierCode, String buyerCode, TaxMode taxMode) {
+        String str = supplierCode + "-" + buyerCode + "-" + taxMode + "-" + String.join("-", records);
+        return DigestUtils.md5Hex(str);
+    }
+
+    /**
+     *确认销售合同
+     *
+     * @param id                      合同主键
+     * @param revision                版本
+     * @param generateContractRequest 保存内容
+     * @param companyCode             公司编码
+     * @param operator                操作员编码
+     */
+    @Caching(evict = {@CacheEvict(value = "sales_contract_revision_detail;1800", key = "#id+'-'+#revision"),
+        @CacheEvict(value = "sales_contract_List;1800", key = "#companyCode+'-'+'*'")
+    })
+    @Transactional
+    public void saveContractRevision(String id, int revision, VPContractRequest generateContractRequest, String companyCode, String operator) {
+        try {
+            SalesContractRevisionDetail salesContractRevisionDetail = getSalesContractRevisionDetail(id, revision);
+            //合同明细
+            List<SalesContractRecordTemp> contractRecordTemps = salesContractRevisionDetail.getContractRecordTemps();
+            //查询合同详情
+            SalesContractBase contractBase = salesContractRevisionDetail.getSalesContractBase();
+            SalesContractRevision contractRevision = salesContractRevisionDetail.getSalesContractRevisions().stream()
+                .filter(s -> s.getSalesContractRevisionId().getRevision() == revision).toList().get(0);
+            if (!contractBase.getState().equals(ContractState.UN_FINISHED)) {
+                throw new Exception("合同已确认");
+            }
+            //修改数据set到版本合同中
+            contractRevision = modifyContractRevisionDetail(contractRevision, generateContractRequest, companyCode);
+
+            //合同明细
+            List<SalesContractRecord> records = new ArrayList<>();
+            //计算折扣，折扣后价格，税额
+            if (contractRevision.getTotalPrice()!=null) {
+                BigDecimal discount = (contractRevision.getTotalPriceVat().subtract(generateContractRequest.getSum())).divide(contractRevision.getTotalPriceVat(), 4, RoundingMode.HALF_UP);
+                //计算折扣的含税价格 和未税价格以及小计等
+                BigDecimal discountSumVat = new BigDecimal("0");
+                BigDecimal discountSum = new BigDecimal("0");
+                for (int i = 0; i < contractRecordTemps.size(); i++) {
+                    SalesContractRecord record = Optional.of(contractRecordTemps.get(i)).map(contractRecordMapper::toSalesContractRecord).orElse(null);
+                    record.getSalesContractRecordId().setCode(i + 1);
+                    record.setDiscount(discount);
+                    record.setDiscountedPrice(CalculateUtil.calculateDiscountedPrice(record.getPrice(), discount));
+                    record.setTotalDiscountedPrice(CalculateUtil.calculateDiscountedSubtotal(record.getDiscountedPrice(), discount, record.getAmount()));
+                    record.setDiscountedPriceVat(CalculateUtil.calculateDiscountedPrice(record.getPriceVat(), discount));
+                    if (i == contractRecordTemps.size() - 1) {
+                        record.setTotalDiscountedPriceVat(contractRevision.getConfirmTotalPriceVat().subtract(discountSumVat));
+                    } else {
+                        record.setTotalDiscountedPriceVat(CalculateUtil.calculateDiscountedSubtotal(record.getPriceVat(), discount, record.getAmount()));
+                        discountSumVat = discountSumVat.add(record.getTotalDiscountedPriceVat());
+                    }
+                    discountSum = discountSum.add(record.getTotalDiscountedPrice());
+                    records.add(
+                        record
+                    );
+                }
+                contractRevision.setDiscountedTotalPrice(discountSum);
+                contractRevision.setVat(contractRevision.getConfirmTotalPriceVat().subtract(discountSum));
+                contractRevision.setDiscount(discount);
+            }
+            salesContractRecordRepository.saveAll(records);
+            /*
+              获取指纹
+             */
+            String str = createSequenceCode(
+                recordSort(records),
+                contractBase.getSalerComp(),
+                contractBase.getBuyerComp(),
+                contractRevision.getOfferMode()
+            );
+            salesContractRecordTempRepository.deleteProducts(id);
+            contractRevision.setConfirmedAt(LocalDateTime.now());
+            contractRevision.setConfirmedBy(operator);
+            contractBase.setState(ContractState.FINISHED);
+            //保存合同
+            salesContractRepository.save(contractBase);
+            contractRevision.setFingerprint(str);
+            salesContractRevisionRepository.save(contractRevision);
+
+            //将收回记录录保存到货运信息表中
+            if (generateContractRequest.getReceivedRecords()!=null && generateContractRequest.getReceivedRecords().size() > 0)
+                saveDelivery(id, revision, companyCode, operator, generateContractRequest.getReceivedRecords());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+        /**
+         * 修改合同
+         *
+         * @param contractRevision        合同
+         * @param generateContractRequest 修改数据
+         * @param companyCode             本单位编码
+         * @return 合同详情
+         * @throws IOException 异常
+         */
+        public SalesContractRevision modifyContractRevisionDetail(SalesContractRevision contractRevision, VPContractRequest generateContractRequest, String companyCode) throws IOException {
+            contractRevision.setOrderCode(generateContractRequest.getContactNo());
+            contractRevision.setBuyerOrderCode(generateContractRequest.getSupplierNo());
+            //供应商联系人
+            contractRevision.setSalerContactName(generateContractRequest.getSupplierContactName());
+            //供应商联系人电话
+            contractRevision.setSalerContactPhone(generateContractRequest.getSupplierContactPhone());
+            //地址
+            if (StringUtils.isNotBlank(generateContractRequest.getAddressCode())) {
+                //查找地址
+                Address address = addressRepository.findById(
+                    AddressId.builder()
+                        .dcCompId(companyCode)
+                        .code(generateContractRequest.getAddressCode())
+                        .build()
+                ).orElseThrow(() -> new IOException("数据库中找不到该地址"));
+                contractRevision.setDeliveryCode(generateContractRequest.getAddressCode());
+                contractRevision.setAreaCode(address.getAreaCode());
+                contractRevision.setAreaName(address.getAreaName());
+                contractRevision.setAddress(address.getAddress());
+            } else {
+                contractRevision.setDeliveryCode(null);
+                contractRevision.setAreaCode(null);
+                contractRevision.setAreaName(null);
+                contractRevision.setAddress(null);
+            }
+            //联系人
+            if (StringUtils.isNotBlank(generateContractRequest.getContactCode())) {
+                //联系人
+                CompContacts compContacts = compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndCompContactsId_Code(
+                    generateContractRequest.getAddressCode(),
+                    companyCode,
+                    generateContractRequest.getContactCode()
+                ).orElseThrow(() -> new IOException("数据库中找不到该联系人"));
+                contractRevision.setContactCode(generateContractRequest.getContactCode());
+                contractRevision.setConsigneeName(compContacts.getContName());
+                contractRevision.setConsigneePhone(compContacts.getContPhone());
+            } else {
+                contractRevision.setContactCode(null);
+                contractRevision.setConsigneeName(null);
+                contractRevision.setConsigneePhone(null);
+            }
+            contractRevision.setConfirmTotalPriceVat(generateContractRequest.getSum());
+            return contractRevision;
+        }
+
+    /**
+     * 将合同列表进行排序，并以产品编码-系统数量进行拼接成字符串
+     *
+     * @param records 合同明细
+     * @return 返回字符串列表
+     */
+    private List<String> recordSort(List<SalesContractRecord> records) {
+        //进行排序
+        records.sort((o1, o2) -> {
+            if (o1.getProductId().compareTo(o2.getProductId()) == 0) {
+                if (o1.getAmount().doubleValue() < o2.getAmount().doubleValue()) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+            return o1.getProductId().compareTo(o2.getProductId());
+        });
+
+         // 将相同的产品进行累加
+        for(int i =0;i<records.size()-1;i++){
+            if(records.get(i).getProductId().equals(records.get(i+1).getProductId())){
+                records.get(i).setSysAmount(records.get(i).getSysAmount().add(records.get(i+1).getSysAmount()));
+                records.remove(i+1);
+                i=i-1;
+            }
+        }
+
+        return records.stream().map(contractRecord -> {
+                contractRecord.setPriceVat(contractRecord.getPriceVat() == null ? null : contractRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP));
+                return contractRecord.getProductId() + "-"
+                    + contractRecord.getSysAmount().setScale(4, RoundingMode.HALF_UP) ;
+            }
+
+        ).toList();
+    }
+
+    /**
+     * 将退回的产品生产货运记录
+     *
+     * @param id          合同id
+     * @param companyCode 本单位编码
+     * @param operator    操作员编码
+     * @param list        退回产品列表
+     */
+    public void saveDelivery(String id, Integer revision, String companyCode, String operator, List<VPContractRequest.VReceivedRecord> list) {
+        // TODO: 2022/6/1 需要完善货运记录 库存等问题
+        List<SalesContractRecord> contractRecords = salesContractRecordRepository.findContractRecordsBySalesContractRecordId_ContractIdAndSalesContractRecordId_Revision(id, revision);
+        Map<String, SalesContractRecord> map = new HashMap<>();
+        contractRecords.forEach(contractRecord -> map.put(contractRecord.getProductId(), contractRecord));
+        List<DeliverRecord> deliverRecords = new ArrayList<>();
+        AtomicInteger maxCode = new AtomicInteger(1);
+        UUID uuid = UUID.randomUUID();
+        String deliveryId = "HY-" + companyCode + "-" + operator + "-" + uuid.toString().substring(0, 8);
+        DeliverBase deliverBase = DeliverBase.builder()
+            .id(deliveryId)
+            .contractId(id)
+            .type(DeliverType.RECEIVE)
+            .createdAt(LocalDateTime.now())
+            .createdBy(operator)
+            .createdByComp(companyCode)
+            .state(DeliverState.PENDING)
+            .build();
+        for (VPContractRequest.VReceivedRecord v : list) {
+            SalesContractRecord temp = map.get(v.getProductId());
+            if (v.getReceivedAmount().floatValue() > 0) {
+                if (temp.getProductId().equals(v.getProductId())) {
+                    DeliverRecord deliverTemp = DeliverRecord.builder()
+                        .deliverRecordId(
+                            DeliverRecordId.builder()
+                                .deliverCode(deliveryId)
+                                .code(maxCode.get())
+                                .build()
+                        )
+                        .type(DeliverType.RECEIVE)
+                        .productId(v.getProductId())
+                        .productCode(temp.getProductCode())
+                        .brandCode(temp.getBrandCode())
+                        .brand(temp.getBrand())
+                        .customerPCode(temp.getCustomerCustomCode())
+                        .localPCode(temp.getCompCustomCode())
+                        .productDescription(temp.getProductDescription())
+                        .chargeUnit(temp.getSysChargeUnit())
+                        .myChargeUnit(temp.getChargeUnit())
+                        .ratio(temp.getRatio())
+                        .myAmount(v.getReceivedAmount())
+                        .amount(v.getReceivedAmount().multiply(temp.getRatio()))
+                        .build();
+                    deliverRecords.add(deliverTemp);
+                }
+            }
+            maxCode.getAndIncrement();
+        }
+        deliverBase.setDeliverRecords(deliverRecords);
+        deliverBaseRepository.save(deliverBase);
     }
 
 }

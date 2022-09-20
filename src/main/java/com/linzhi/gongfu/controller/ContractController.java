@@ -1061,15 +1061,19 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
+
         String contractCodes = "";
         if (!generateContractRequest.isEnforce())
             contractCodes = purchaseContractService.findContractProductRepeat(id, revision).orElse("");
+
         if (!contractCodes.equals(""))
             return VBaseResponse.builder()
                 .code(201)
                 .message("可能重复的合同有：" + contractCodes)
                 .build();
-        purchaseContractService.saveContractRevision(id,
+
+        purchaseContractService.saveContractRevision(
+            id,
             revision,
             generateContractRequest,
             session.getSession().getCompanyCode(),
@@ -1459,7 +1463,7 @@ public class ContractController {
      * @param revision              版本
      * @return 返回成功或者失败
      */
-    @PutMapping("/contract/purchase/{id}/{revision}")
+    @PutMapping("/contract/sales/{id}/{revision}")
     public VBaseResponse modifySalesContract(
         @RequestBody Optional<VInquiryRequest> vModifyInquiryRequest,
         @PathVariable("id") String id,
@@ -1508,6 +1512,47 @@ public class ContractController {
                 endTime.orElse(""),
                 customerCode.orElse("")
             ))
+            .build();
+    }
+
+    /**
+     * 确认销售合同
+     *
+     * @param id       采购合同id
+     * @param revision 版本号
+     * @return 返回成功或者失败
+     */
+    @PostMapping("/contract/sales/{id}/{revision}")
+    public VBaseResponse saveSalesContractRevision(
+        @PathVariable String id,
+        @PathVariable Integer revision,
+        @RequestBody VPContractRequest generateContractRequest
+    ) throws Exception {
+
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+
+        String contractCodes = "";
+        if (!generateContractRequest.isEnforce())
+            contractCodes = salesContractService.findContractProductRepeat(id, revision).orElse("");
+
+        if (!contractCodes.equals(""))
+            return VBaseResponse.builder()
+                .code(201)
+                .message("可能重复的合同有：" + contractCodes)
+                .build();
+
+        salesContractService.saveContractRevision(
+            id,
+            revision,
+            generateContractRequest,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+
+        return VBaseResponse.builder()
+            .code(200)
+            .message("成功采购合同")
             .build();
     }
 

@@ -4,11 +4,13 @@ package com.linzhi.gongfu.entity;
 import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 销售合同版本

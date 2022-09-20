@@ -2,11 +2,9 @@ package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
-import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "sales_contract_rev")
-public class SalesContractRevisionDetail {
+public class SalesContractRevisionDetail implements Serializable {
     /**
      * 合同唯一id
      */
@@ -71,7 +69,7 @@ public class SalesContractRevisionDetail {
     private BigDecimal vatProductRate;
 
     /**
-     * 货物税率
+     * 服务税率
      */
     @Column(name = "service_rate")
     private BigDecimal vatServiceRate;
@@ -221,7 +219,7 @@ public class SalesContractRevisionDetail {
     /**
      * 合同临时明细
      */
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     @JoinColumns({
         @JoinColumn(name = "contract_id", referencedColumnName = "id", insertable = false, updatable = false),
         @JoinColumn(name = "revision", referencedColumnName = "revision", insertable = false, updatable = false)
@@ -235,7 +233,7 @@ public class SalesContractRevisionDetail {
     @JoinColumns({
         @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })
-     private SalesContractBase salesContractBase;
+    private SalesContractBase salesContractBase;
 
     /**
      * 合同版本

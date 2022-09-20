@@ -9,6 +9,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 
+import java.util.List;
 import java.util.Optional;
 /**
  * 销售合同基础信息的Repository
@@ -41,4 +42,14 @@ public interface SalesContractRepository
     @Modifying
     @Query(value = "update SalesContractBase c set c.state=?1 where c.id=?2")
     void updateContractState(ContractState state, String id);
+
+    /**
+     * 根据指纹查找合同编码列表
+     *
+     * @param dcCompId     本单位编码
+     * @param sequenceCode 指纹
+     * @return 合同编码列表
+     */
+    @Query(value = "select  c.id from sales_contract_base c ,sales_contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id   and r.fingerprint =?2 and r.revision=(select max(revision) from sales_contract_rev v where v.id = r.id) ", nativeQuery = true)
+    List<String> findContractId(String dcCompId, String sequenceCode);
 }
