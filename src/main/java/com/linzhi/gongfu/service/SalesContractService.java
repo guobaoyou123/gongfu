@@ -11,10 +11,12 @@ import com.linzhi.gongfu.util.CalculateUtil;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -460,7 +462,6 @@ public class SalesContractService {
      * @param id       销售合同
      * @param revision 版本号
      * @param operator 操作员
-     * @return 返回成功或者失败信息
      */
     @Caching(evict = {@CacheEvict(value = "sales_contract_revision_detail;1800", key = "#id+'-'+#revision"),
         @CacheEvict(value = "sales_contract_List;1800", key = "#companyCode+'-'+'*'")
@@ -535,7 +536,7 @@ public class SalesContractService {
             SalesContractRevision contractRevision = contractRevisionDetail
                 .map(contractMapper::toContractRevision)
                 .orElseThrow(() -> new IOException("不存在该合同"));
-            if (contractRevisionDetail.get().getSalesContractBase().getState().equals(ContractState.UN_FINISHED.getState() + ""))
+            if (contractRevisionDetail.get().getSalesContractBase().getState().equals(ContractState.UN_FINISHED))
                 throw new Exception("该合同已经是未确认的，不可再次修改");
             salesContractRepository.updateContractState(ContractState.UN_FINISHED, id);
             contractRevision.getSalesContractRevisionId().setRevision(revision + 1);
@@ -713,4 +714,126 @@ public class SalesContractService {
         }
 
     }
+
+    /**
+     * 获取未确认的销售合同数量
+     *
+     * @param companyCode  本单位编码
+     * @param operator     操作员编码
+     * @param startTime    开始时间
+     * @param endTime      结束时间
+     * @param customerCode 客户编码
+     * @return 返回确认的采购合同数量
+     */
+    public int getUnFinished(String companyCode, String operator, String startTime, String endTime, String customerCode) throws Exception {
+
+        var page = pageContracts(ContractState.UN_FINISHED.getState() + "", customerCode, startTime, endTime, companyCode, operator, PageRequest.of(
+            1,
+            10
+        ));
+        return Integer.parseInt(String.valueOf(page.getTotalElements()));
+    }
+
+    /**
+     * 修改销售合同
+     *
+     * @param vModifyInquiryRequest 修改信息
+     * @param id                    合同主键
+     * @param revision              合同版本
+     * @return 返回成功或者失败
+     */
+    @Caching(evict = {@CacheEvict(value = "sales_contract_revision_detail;1800", key = "#id+'-'+#revision"),
+        @CacheEvict(value = "sales_contract_List;1800", key = "#companyCode+'-'+'*'")
+    })
+    @Transactional
+    public void modifySalesContract(VInquiryRequest vModifyInquiryRequest, String id, int revision, String companyCode, String operator) {
+        try {
+            //查询合同详情
+            SalesContractRevisionDetail  salesContractRevisionDetail = salesContractRevisionDetailRepository
+                .findSalesContractRevisionDetailBySalesContractRevisionId(
+                    SalesContractRevisionId.builder()
+                        .id(id)
+                        .revision(revision)
+                        .build()
+                ).orElseThrow(() -> new IOException("请求的销售合同不存在"));
+            //合同临时明细列表
+            List<SalesContractRecordTemp> contractRecordTemps = salesContractRevisionDetail.getContractRecordTemps();
+            //合同基础信息
+            SalesContractRevision contractRevision = salesContractRevisionDetail.getSalesContractRevisions().stream()
+                .filter(s->s.getSalesContractRevisionId().getRevision()==revision)
+                .toList().get(0);
+            contractRevision.setOfferMode(StringUtils.isNotBlank(vModifyInquiryRequest.getTaxModel()) ? vModifyInquiryRequest.getTaxModel().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED : contractRevision.getOfferMode());
+            if (vModifyInquiryRequest.getServiceVat() != null) {
+                contractRevision.setVatServiceRate(vModifyInquiryRequest.getServiceVat());
+                contractRecordTemps.forEach(
+                    record -> {
+                        if (record.getType().equals(VatRateType.SERVICE))
+                            record.setVatRate(vModifyInquiryRequest.getServiceVat());
+                    }
+                );
+            }
+            if (vModifyInquiryRequest.getGoodsVat() != null) {
+                contractRevision.setVatProductRate(vModifyInquiryRequest.getGoodsVat());
+                contractRecordTemps.forEach(
+                    record -> {
+                        if (record.getType().equals(VatRateType.GOODS))
+                            record.setVatRate(vModifyInquiryRequest.getGoodsVat());
+                    }
+                );
+            }
+
+            if (vModifyInquiryRequest.getProducts() != null) {
+                vModifyInquiryRequest.getProducts().forEach(vProduct -> contractRecordTemps.forEach(record -> {
+                    if (record.getSalesContractRecordTempId().getCode() == vProduct.getCode()) {
+                        //保存计价单位
+                        if(vProduct.getChargeUnit() !=null){
+                            record.setChargeUnit(vProduct.getChargeUnit());
+                            record.setRatio(vProduct.getRatio());
+                        }
+                        //数量
+                        if (vProduct.getAmount() != null) {
+                            record.setAmount(vProduct.getAmount().intValue() < 0 ? new BigDecimal("0") : vProduct.getAmount());
+                            record.setSysAmount(vProduct.getAmount().multiply(vProduct.getRatio()==null?record.getRatio():vProduct.getRatio()));
+                        }
+                        //税率
+                        record.setVatRate(vProduct.getVatRate() != null ? vProduct.getVatRate() : record.getVatRate());
+                        //价格
+                        record.setPrice(vProduct.getPrice() != null && vProduct.getPrice().intValue() < 0 ?
+                            record.getPrice() : vProduct.getPrice() != null && vProduct.getPrice().intValue() >= 0 ?
+                            contractRevision.getOfferMode().equals(TaxMode.UNTAXED) ? vProduct.getPrice() : CalculateUtil.calculateUntaxedUnitPrice(vProduct.getPrice(), record.getVatRate()) : record.getPrice());
+                        record.setPriceVat(vProduct.getPrice() != null && vProduct.getPrice().intValue() < 0 ?
+                            record.getPriceVat() : vProduct.getPrice() != null && vProduct.getPrice().intValue() >= 0 ?
+                            contractRevision.getOfferMode().equals(TaxMode.INCLUDED) ? vProduct.getPrice() : CalculateUtil.calculateTaxedUnitPrice(vProduct.getPrice(), record.getVatRate()) : record.getPriceVat());
+                        //总价
+                        record.setTotalPrice(record.getPrice() == null ? null : CalculateUtil.calculateSubtotal(record.getPrice(), record.getAmount()));
+                        record.setTotalPriceVat(record.getPriceVat() == null ? null : CalculateUtil.calculateSubtotal(record.getPriceVat(), record.getAmount()));
+                    }
+                }));
+            }
+            salesContractRecordTempRepository.saveAll(contractRecordTemps);
+            //判断产品列表中的产品是否都有价格
+            List<SalesContractRecordTemp> list1 = contractRecordTemps.stream()
+                .filter(s-> s.getTotalPrice()==null)
+                .toList();
+            //list的长度为0，表示产品都有价格，需要计算总金额
+            if(list1.size()==0){
+                BigDecimal totalPrice = new BigDecimal("0");
+                BigDecimal totalPriceVat = new BigDecimal("0");
+                for (SalesContractRecordTemp t:contractRecordTemps) {
+                    totalPrice=totalPrice.add(t.getTotalPrice());
+                    totalPriceVat=totalPriceVat.add(t.getTotalPriceVat());
+                }
+                BigDecimal vat = totalPriceVat.subtract(totalPrice).setScale(2, RoundingMode.HALF_UP);
+                contractRevision.setTotalPrice(totalPrice);
+                contractRevision.setTotalPriceVat(totalPriceVat);
+                contractRevision.setVat(vat);
+                contractRevision.setModifiedBy(operator);
+                contractRevision.setModifiedAt(LocalDateTime.now());
+                salesContractRevisionRepository.save(contractRevision);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

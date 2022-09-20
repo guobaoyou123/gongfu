@@ -43,6 +43,7 @@ public class ContractController {
     private final PurchaseContractService purchaseContractService;
     private final ContractMapper contractMapper;
     private final SalesContractService salesContractService;
+
     /**
      * 根据操作员编码、单位id查询该操作员的临时计划表
      *
@@ -1467,7 +1468,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = purchaseContractService.modifyPurchaseContract(
+        salesContractService.modifySalesContract(
             vModifyInquiryRequest.orElse(new VInquiryRequest()),
             id,
             revision,
@@ -1475,8 +1476,38 @@ public class ContractController {
             session.getSession().getOperatorCode()
         );
         return VBaseResponse.builder()
-            .code(flag ? 200 : 500)
-            .message(flag ? "修改合同成功" : "修改合同失败")
+            .code(200)
+            .message("修改合同成功" )
+            .build();
+    }
+
+    /**
+     * 获取未确认的销售合同数量
+     *
+     * @param customerCode 客户编码
+     * @param startTime    开始时间
+     * @param endTime      结束时间
+     * @return 返回未确认的销售合同数量
+     */
+    @GetMapping("/contract/sales/unconfirmed")
+    public VPContractAmountResponse findSalesUnfinishedAmount(
+        @RequestParam("customerCode") Optional<String> customerCode,
+        @RequestParam("startTime") Optional<String> startTime,
+        @RequestParam("endTime") Optional<String> endTime
+    ) throws Exception {
+
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        return VPContractAmountResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .amount(salesContractService.getUnFinished(
+                session.getSession().getCompanyCode(),
+                session.getSession().getOperatorCode(),
+                startTime.orElse(""),
+                endTime.orElse(""),
+                customerCode.orElse("")
+            ))
             .build();
     }
 
