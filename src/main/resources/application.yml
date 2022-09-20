@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: 'base,dev,mssql_remote,redis_local'
+    active: 'base,dev,mssql_remote,redis_remote'
 ---
 spring:
   config:
