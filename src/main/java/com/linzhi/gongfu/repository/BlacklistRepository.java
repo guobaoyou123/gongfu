@@ -7,7 +7,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-
+/**
+ * 操作始终拒绝名单的Repository
+ *
+ * @author zgh
+ * @create_at 2022-01-21
+ */
 public interface BlacklistRepository extends CrudRepository<Blacklist, BlacklistId>, QuerydslPredicateExecutor<Blacklist> {
 
     /**

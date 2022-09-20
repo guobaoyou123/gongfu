@@ -10,7 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface EnrolledSupplierRepository
+public interface EnrolledTradeRepository
     extends CrudRepository<EnrolledTrade, CompTradId>, QuerydslPredicateExecutor<EnrolledTrade> {
 
     /**

@@ -23,6 +23,7 @@ public class SceneMenuId implements Serializable {
     @NotBlank
     @Getter
     private String sceneCode;
+
     /**
      * 入格单位id
      */

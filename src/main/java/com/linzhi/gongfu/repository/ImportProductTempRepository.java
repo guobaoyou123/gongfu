@@ -8,7 +8,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-
+/**
+ * 导入临时产品的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface ImportProductTempRepository
     extends CrudRepository<ImportProductTemp, ImportProductTempId>, QuerydslPredicateExecutor<ImportProductTemp> {
 

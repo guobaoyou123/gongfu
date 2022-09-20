@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 /**
- * 公合同详情
+ * 采购合同详情
  */
 @Builder
 @Setter
@@ -95,4 +95,9 @@ public class PurchaseContractDetail {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    /**
+     * 配对码
+     */
+    @Column(name = "paired_code")
+    private String pairedCode;
 }

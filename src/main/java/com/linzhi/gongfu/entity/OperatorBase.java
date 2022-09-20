@@ -27,7 +27,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 @Entity
 @Table(name = "comp_operator")
-public class OperatorDetail {
+public class OperatorBase {
 
     /**
      * 操作员编号

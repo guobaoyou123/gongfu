@@ -10,6 +10,7 @@ import com.linzhi.gongfu.mapper.ContractRecordMapper;
 import com.linzhi.gongfu.mapper.DeliverRecordMapper;
 import com.linzhi.gongfu.mapper.TaxRatesMapper;
 import com.linzhi.gongfu.repository.*;
+import com.linzhi.gongfu.util.CalculateUtil;
 import com.linzhi.gongfu.util.DateConverter;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
@@ -81,16 +82,14 @@ public class PurchaseContractService {
         //查询询价单详情
         Inquiry inquiry = inquiryService.getInquiry(inquiryId).orElseThrow(() -> new IOException("数据库中找不到该询价单"));
         //询价单名称
-        List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecord(inquiryId);
+        List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecordTwins(inquiryId);
         //形成指纹
         String str = createSequenceCode(
             records.stream().map(inquiryRecord -> {
                 {
-                    inquiryRecord.setPriceVat(inquiryRecord.getPriceVat() == null ? null : inquiryRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP));
                     return inquiryRecord.getProductId() + "-"
                         + inquiryRecord.getChargeUnit() + "-"
                         + inquiryRecord.getAmount().setScale(4, RoundingMode.HALF_UP) + "-"
-                        + inquiryRecord.getPriceVat() + "-"
                         + inquiryRecord.getVatRate();
                 }
             }).toList(),
@@ -170,13 +169,13 @@ public class PurchaseContractService {
                 for (int i = 0; i < inquiry.getRecords().size(); i++) {
                     InquiryRecord record = inquiry.getRecords().get(i);
                     record.setDiscount(discount);
-                    record.setDiscountedPrice(calculateDiscountedPrice(record.getPrice(), discount));
-                    record.setTotalDiscountedPrice(calculateDiscountedSubtotal(record.getPrice(), discount, record.getAmount()));
-                    record.setDiscountedPriceVat(calculateDiscountedPrice(record.getPriceVat(), discount));
+                    record.setDiscountedPrice(CalculateUtil.calculateDiscountedPrice(record.getPrice(), discount));
+                    record.setTotalDiscountedPrice(CalculateUtil.calculateDiscountedSubtotal(record.getPrice(), discount, record.getAmount()));
+                    record.setDiscountedPriceVat(CalculateUtil.calculateDiscountedPrice(record.getPriceVat(), discount));
                     if (i == inquiry.getRecords().size() - 1) {
                         record.setTotalDiscountedPriceVat(inquiry.getConfirmTotalPriceVat().subtract(discountSumVat));
                     } else {
-                        record.setTotalDiscountedPriceVat(calculateDiscountedSubtotal(record.getPriceVat(), discount, record.getAmount()));
+                        record.setTotalDiscountedPriceVat(CalculateUtil.calculateDiscountedSubtotal(record.getPriceVat(), discount, record.getAmount()));
                         discountSumVat = discountSumVat.add(record.getTotalDiscountedPriceVat());
                     }
                     discountSum = discountSum.add(record.getTotalDiscountedPrice());
@@ -462,12 +461,19 @@ public class PurchaseContractService {
             }
             return o1.getProductId().compareTo(o2.getProductId());
         });
+
+        for(int i =0;i<records.size()-1;i++){
+            if(records.get(i).getProductId().equals(records.get(i+1).getProductId())){
+                records.get(i).setMyAmount(records.get(i).getMyAmount().add(records.get(i+1).getMyAmount()));
+                records.remove(i+1);
+            }
+        }
+
         return records.stream().map(contractRecord -> {
                 contractRecord.setPriceVat(contractRecord.getPriceVat() == null ? null : contractRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP));
                 return contractRecord.getProductId() + "-"
                     + contractRecord.getMyChargeUnit() + "-"
                     + contractRecord.getMyAmount().setScale(4, RoundingMode.HALF_UP) + "-"
-                    + contractRecord.getPriceVat() + "-"
                     + contractRecord.getVatRate();
             }
 
@@ -697,8 +703,8 @@ public class PurchaseContractService {
             .productDescription(product.getDescribe())
             .facePrice(product.getFacePrice())
             .chargeUnit(product.getChargeUnit())
-            .price(price != null ? taxMode.equals(TaxMode.UNTAXED) ? price : calculateUntaxedUnitPrice(price, vatRate) : null)
-            .priceVat(price != null ? taxMode.equals(TaxMode.INCLUDED) ? price : calculateTaxedUnitPrice(price, vatRate) : null)
+            .price(price != null ? taxMode.equals(TaxMode.UNTAXED) ? price : CalculateUtil.calculateUntaxedUnitPrice(price, vatRate) : null)
+            .priceVat(price != null ? taxMode.equals(TaxMode.INCLUDED) ? price : CalculateUtil.calculateTaxedUnitPrice(price, vatRate) : null)
             .amount(amount)
             .myAmount(amount)
             .createdAt(LocalDateTime.now())
@@ -706,8 +712,8 @@ public class PurchaseContractService {
             .myChargeUnit(product.getChargeUnit())
             .stockTime(0)
             .vatRate(vatRate)
-            .totalPrice(price != null ? taxMode.equals(TaxMode.UNTAXED) ? calculateSubtotal(price, amount) : calculateSubtotal(calculateUntaxedUnitPrice(price, vatRate), amount) : null)
-            .totalPriceVat(price != null ? taxMode.equals(TaxMode.INCLUDED) ? calculateSubtotal(price, amount) : calculateSubtotal(calculateTaxedUnitPrice(price, vatRate), amount) : null)
+            .totalPrice(price != null ? taxMode.equals(TaxMode.UNTAXED) ? CalculateUtil.calculateSubtotal(price, amount) : CalculateUtil.calculateSubtotal(CalculateUtil.calculateUntaxedUnitPrice(price, vatRate), amount) : null)
+            .totalPriceVat(price != null ? taxMode.equals(TaxMode.INCLUDED) ? CalculateUtil.calculateSubtotal(price, amount) : CalculateUtil.calculateSubtotal(CalculateUtil.calculateTaxedUnitPrice(price, vatRate), amount) : null)
             .build();
     }
 
@@ -841,12 +847,12 @@ public class PurchaseContractService {
                         record.setVatRate(vProduct.getVatRate() != null ? vProduct.getVatRate() : record.getVatRate());
                         record.setPrice(vProduct.getPrice() != null && vProduct.getPrice().intValue() < 0 ?
                             record.getPrice() : vProduct.getPrice() != null && vProduct.getPrice().intValue() >= 0 ?
-                            contractRevision.getOfferMode().equals(TaxMode.UNTAXED) ? vProduct.getPrice() : calculateUntaxedUnitPrice(vProduct.getPrice(), record.getVatRate()) : record.getPrice());
+                            contractRevision.getOfferMode().equals(TaxMode.UNTAXED) ? vProduct.getPrice() : CalculateUtil.calculateUntaxedUnitPrice(vProduct.getPrice(), record.getVatRate()) : record.getPrice());
                         record.setPriceVat(vProduct.getPrice() != null && vProduct.getPrice().intValue() < 0 ?
                             record.getPriceVat() : vProduct.getPrice() != null && vProduct.getPrice().intValue() >= 0 ?
-                            contractRevision.getOfferMode().equals(TaxMode.INCLUDED) ? vProduct.getPrice() : calculateTaxedUnitPrice(vProduct.getPrice(), record.getVatRate()) : record.getPriceVat());
-                        record.setTotalPrice(record.getPrice() == null ? null : calculateSubtotal(record.getPrice(), record.getMyAmount()));
-                        record.setTotalPriceVat(record.getPriceVat() == null ? null : calculateSubtotal(record.getPriceVat(), record.getMyAmount()));
+                            contractRevision.getOfferMode().equals(TaxMode.INCLUDED) ? vProduct.getPrice() : CalculateUtil.calculateTaxedUnitPrice(vProduct.getPrice(), record.getVatRate()) : record.getPriceVat());
+                        record.setTotalPrice(record.getPrice() == null ? null : CalculateUtil.calculateSubtotal(record.getPrice(), record.getMyAmount()));
+                        record.setTotalPriceVat(record.getPriceVat() == null ? null : CalculateUtil.calculateSubtotal(record.getPriceVat(), record.getMyAmount()));
                     }
                 }));
             }
@@ -1144,7 +1150,7 @@ public class PurchaseContractService {
         if (!contractRevisionDetail.getState().equals(ContractState.UN_FINISHED.getState() + ""))
             throw new Exception("合同已确认");
         List<PurchaseContractRecordTemp> contractRecordTemps = purchaseContractRecordTempRepository
-            .findContractRecordTempsByPurchaseContractRecordTempId_ContractId(id);
+            .findContractRecordTempsTwins(id);
 
         String str = createSequenceCode(
             contractRecordTemps.stream()
@@ -1152,7 +1158,6 @@ public class PurchaseContractService {
                     contractRecord.getProductId() + "-"
                         + contractRecord.getMyChargeUnit() + "-"
                         + contractRecord.getMyAmount().setScale(4, RoundingMode.HALF_UP) + "-"
-                        + contractRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP) + "-"
                         + contractRecord.getVatRate()
                 ).toList(),
             contractRevisionDetail.getSalerComp(),
@@ -1212,13 +1217,13 @@ public class PurchaseContractService {
                     PurchaseContractRecord record = Optional.of(contractRecordTemps.get(i)).map(contractRecordMapper::toContractRecord).orElse(null);
                     record.getPurchaseContractRecordId().setCode(i + 1);
                     record.setDiscount(discount);
-                    record.setDiscountedPrice(calculateDiscountedPrice(record.getPrice(), discount));
-                    record.setTotalDiscountedPrice(calculateDiscountedSubtotal(record.getDiscountedPrice(), discount, record.getMyAmount()));
-                    record.setDiscountedPriceVat(calculateDiscountedPrice(record.getPriceVat(), discount));
+                    record.setDiscountedPrice(CalculateUtil.calculateDiscountedPrice(record.getPrice(), discount));
+                    record.setTotalDiscountedPrice(CalculateUtil.calculateDiscountedSubtotal(record.getDiscountedPrice(), discount, record.getMyAmount()));
+                    record.setDiscountedPriceVat(CalculateUtil.calculateDiscountedPrice(record.getPriceVat(), discount));
                     if (i == contractRecordTemps.size() - 1) {
                         record.setTotalDiscountedPriceVat(contractRevision.getConfirmTotalPriceVat().subtract(discountSumVat));
                     } else {
-                        record.setTotalDiscountedPriceVat(calculateDiscountedSubtotal(record.getPriceVat(), discount, record.getMyAmount()));
+                        record.setTotalDiscountedPriceVat(CalculateUtil.calculateDiscountedSubtotal(record.getPriceVat(), discount, record.getMyAmount()));
                         discountSumVat = discountSumVat.add(record.getTotalDiscountedPriceVat());
                     }
                     discountSum = discountSum.add(record.getTotalDiscountedPrice());
@@ -1616,60 +1621,5 @@ public class PurchaseContractService {
 
     }
 
-    /**
-     * 计算未税单价
-     *
-     * @param price   单价
-     * @param vatRate 税率
-     * @return 未税单价
-     */
-    public BigDecimal calculateUntaxedUnitPrice(BigDecimal price, BigDecimal vatRate) {
-        return price.divide(new BigDecimal("1").add(vatRate), 4, RoundingMode.HALF_UP);
-    }
 
-    /**
-     * 计算含税单价
-     *
-     * @param price   单价
-     * @param vatRate 税率
-     * @return 含税单价
-     */
-    public BigDecimal calculateTaxedUnitPrice(BigDecimal price, BigDecimal vatRate) {
-        return price.multiply(new BigDecimal("1").add(vatRate))
-            .setScale(4, RoundingMode.HALF_UP);
-    }
-
-    /**
-     * 计算小计
-     *
-     * @param price  单价
-     * @param amount 数量
-     * @return 小计
-     */
-    public BigDecimal calculateSubtotal(BigDecimal price, BigDecimal amount) {
-        return price.multiply(amount).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    /**
-     * 计算折扣后单价
-     *
-     * @param price    单价
-     * @param discount 折扣
-     * @return 折扣后单价
-     */
-    public BigDecimal calculateDiscountedPrice(BigDecimal price, BigDecimal discount) {
-        return price.multiply(new BigDecimal("1").subtract(discount)).setScale(4, RoundingMode.HALF_UP);
-    }
-
-    /**
-     * 计算折扣后小计
-     *
-     * @param price    单价
-     * @param amount   数量
-     * @param discount 折扣
-     * @return 折扣后小计
-     */
-    public BigDecimal calculateDiscountedSubtotal(BigDecimal price, BigDecimal discount, BigDecimal amount) {
-        return price.multiply(new BigDecimal("1").subtract(discount)).multiply(amount).setScale(2, RoundingMode.HALF_UP);
-    }
 }

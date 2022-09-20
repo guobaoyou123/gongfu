@@ -15,7 +15,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 /**
- * 查询供应Repository
+ * 交易信息的Repository
  *
  * @author zgh
  * @create_at 2022-01-27

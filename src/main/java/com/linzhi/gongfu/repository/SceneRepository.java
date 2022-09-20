@@ -8,7 +8,12 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 import java.util.Set;
-
+/**
+ * 场景的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface SceneRepository extends CrudRepository<Scene, String>, QuerydslPredicateExecutor<String> {
     /**
      * 场景列表

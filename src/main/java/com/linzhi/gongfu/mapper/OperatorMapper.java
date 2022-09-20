@@ -2,7 +2,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.Operator;
-import com.linzhi.gongfu.entity.OperatorDetail;
+import com.linzhi.gongfu.entity.OperatorBase;
 import com.linzhi.gongfu.vo.VForeignCustomerResponse;
 import com.linzhi.gongfu.vo.VOperatorDetailResponse;
 import com.linzhi.gongfu.vo.VOperatorListResponse;
@@ -34,7 +34,7 @@ public interface OperatorMapper {
     @Mapping(target = "entryAt", expression = "java(operator.getEntryAt()==null?null:com.linzhi.gongfu.util.DateConverter.dateFormat(operator.getEntryAt()))")
     @Mapping(target = "resignationAt", expression = "java(operator.getResignationAt()==null?null:com.linzhi.gongfu.util.DateConverter.dateFormat(operator.getResignationAt()))")
     @Mapping(target = "sex", expression = "java(operator.getSex()!=null?operator.getSex().trim():null)")
-    TOperatorInfo toOperatorDetailDTO(OperatorDetail operator);
+    TOperatorInfo toOperatorDetailDTO(OperatorBase operator);
 
     @Mapping(target = "state", expression = "java(String.valueOf(operator.getState().getState()))")
     VOperatorDetailResponse.VOperator toOperatorDetailDTOs(TOperatorInfo operator);

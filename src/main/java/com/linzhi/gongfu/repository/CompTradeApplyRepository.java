@@ -9,7 +9,12 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 import java.util.Optional;
-
+/**
+ * 申请采购详情信息的Repository
+ *
+ * @author zgh
+ * @create_at 2022-01-21
+ */
 public interface CompTradeApplyRepository extends CrudRepository<CompTradeApply, String>, QuerydslPredicateExecutor<CompTradeApply> {
     /**
      * 查询是否有跟某个格友申请采购请求

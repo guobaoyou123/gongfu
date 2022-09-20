@@ -77,6 +77,21 @@ public class VPContractDetailResponse extends VBaseResponse {
         private String supplierName;
 
         /**
+         * 客戶合同编码
+         */
+        private String customerNo;
+
+        /**
+         * 客户公司编号
+         */
+        private String customerCode;
+
+        /**
+         * 客户名称
+         */
+        private String customerName;
+
+        /**
          * 税模式（0-未税 1-含税）
          */
         private String offerMode;

@@ -52,6 +52,11 @@ public class TContract {
     private String supplierContractNo;
 
     /**
+     * 客户合同编码
+     */
+    private String customerContractNo;
+
+    /**
      * 类型（0-采购合同 1-销售合同）
      */
     private String type;
@@ -225,4 +230,9 @@ public class TContract {
      * 交货联系人编码
      */
     private String contactCode;
+
+    /**
+     * 是否配对
+     */
+    private Boolean paired;
 }

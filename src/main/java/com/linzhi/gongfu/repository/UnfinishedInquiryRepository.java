@@ -7,7 +7,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-
+/**
+ * 未完成的询价单那的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface UnfinishedInquiryRepository
     extends CrudRepository<UnfinishedInquiry, String>, QuerydslPredicateExecutor<UnfinishedInquiry> {
     /**

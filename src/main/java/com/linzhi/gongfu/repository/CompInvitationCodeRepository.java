@@ -6,7 +6,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
-
+/**
+ * 申请采购的邀请的Repository
+ *
+ * @author zgh
+ * @create_at 2022-01-21
+ */
 public interface CompInvitationCodeRepository extends CrudRepository<CompInvitationCode, CompInvitationCodeId>, QuerydslPredicateExecutor<CompInvitationCode> {
 
     /**

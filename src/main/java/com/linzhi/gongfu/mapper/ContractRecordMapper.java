@@ -2,9 +2,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TContractRecord;
 import com.linzhi.gongfu.dto.TContractRecordPreview;
-import com.linzhi.gongfu.entity.PurchaseContractRecord;
-import com.linzhi.gongfu.entity.ContractRecordPreview;
-import com.linzhi.gongfu.entity.PurchaseContractRecordTemp;
+import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.vo.VPContractPreviewResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -100,4 +98,85 @@ public interface ContractRecordMapper {
 
     @Mapping(target = "receivedAmount", source = "received")
     VPContractPreviewResponse.VProduct toVProduct(TContractRecordPreview tContractRecordPreview);
+
+    /**
+     * 将从数据库中查找到的销售合同明细转换为可供使用的销售合同明细
+     * @param contractRecord 销售合同明细
+     * @return 可供使用的销售合同明细
+     */
+    @Mapping(target = "itemNo", source = "salesContractRecordId.code")
+    @Mapping(target = "createdAt", expression = "java(com.linzhi.gongfu.util.DateConverter.dateFormat(contractRecord.getCreatedAt()))")
+    @Mapping(target = "id", source = "productId")
+    @Mapping(target = "code", source = "productCode")
+    @Mapping(target = "describe", source = "productDescription")
+    @Mapping(target = "brandCode", source = "brandCode")
+    @Mapping(target = "brandName", source = "brand")
+    @Mapping(target = "amount", source = "amount")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "priceVat", source = "priceVat")
+    @Mapping(target = "totalPrice", source = "totalPrice")
+    @Mapping(target = "totalPriceVat", source = "totalPriceVat")
+    @Mapping(target = "vatRate", source = "vatRate")
+    @Mapping(target = "chargeUnit", source = "chargeUnit")
+    @Mapping(target = "type", expression = "java(String.valueOf(contractRecord.getType().getType()))")
+    @Mapping(target = "facePrice", source = "facePrice")
+    TContractRecord toTContractRecord(SalesContractRecord contractRecord);
+
+    /**
+     * 将从数据库中查找到的临时销售合同明细转换为可供使用的临时销售合同明细
+     * @param contractRecordTemp 临时销售合同明细
+     * @return 可供使用的临时销售合同明细
+     */
+    @Mapping(target = "itemNo", source = "salesContractRecordTempId.code")
+    @Mapping(target = "createdAt", expression = "java(contractRecordTemp.getCreatedAt()!=null?com.linzhi.gongfu.util.DateConverter.dateFormat(contractRecordTemp.getCreatedAt()):null)")
+    @Mapping(target = "id", source = "productId")
+    @Mapping(target = "code", source = "productCode")
+    @Mapping(target = "describe", source = "productDescription")
+    @Mapping(target = "brandCode", source = "brandCode")
+    @Mapping(target = "brandName", source = "brand")
+    @Mapping(target = "amount", source = "amount")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "priceVat", source = "priceVat")
+    @Mapping(target = "totalPrice", source = "totalPrice")
+    @Mapping(target = "totalPriceVat", source = "totalPriceVat")
+    @Mapping(target = "previousPrice", source = "previousPrice")
+    @Mapping(target = "previousTotalPrice", source = "totalPreviousPrice")
+    @Mapping(target = "previousPriceVat", source = "previousPriceVat")
+    @Mapping(target = "previousTotalPriceVat", source = "totalPreviousPriceVat")
+    @Mapping(target = "vatRate", source = "vatRate")
+    @Mapping(target = "previousVatRate", source = "previousVatRate")
+    @Mapping(target = "chargeUnit", source = "chargeUnit")
+    @Mapping(target = "previousChargeUnit", source = "previousChargeUnit")
+    @Mapping(target = "type", expression = "java(String.valueOf(contractRecordTemp.getType().getType()))")
+    @Mapping(target = "facePrice", source = "facePrice")
+    @Mapping(target = "previousAmount", source = "previousAmount")
+    TContractRecord toTContractRecord(SalesContractRecordTemp contractRecordTemp);
+
+    /**
+     * 将产品明细实体转换为产品临时明细
+     * @param contractRecord 产品明细实体
+     * @return 产品临时明细实体
+     */
+    @Mapping(target = "salesContractRecordTempId.contractId", source = "salesContractRecordId.contractId")
+    @Mapping(target = "salesContractRecordTempId.code", source = "salesContractRecordId.code")
+    @Mapping(target = "previousVatRate", source = "vatRate")
+    @Mapping(target = "previousChargeUnit", source = "chargeUnit")
+    @Mapping(target = "previousPrice", source = "price")
+    @Mapping(target = "previousPriceVat", source = "priceVat")
+    @Mapping(target = "previousAmount", source = "amount")
+    @Mapping(target = "totalPreviousPrice", source = "totalPrice")
+    @Mapping(target = "totalPreviousPriceVat", source = "totalPriceVat")
+    @Mapping(target = "vatRate", source = "vatRate")
+    @Mapping(target = "ratio", source = "ratio")
+    @Mapping(target = "sysChargeUnit", source = "sysChargeUnit")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "priceVat", source = "priceVat")
+    @Mapping(target = "amount", source = "amount")
+    @Mapping(target = "sysAmount", source = "sysAmount")
+    @Mapping(target = "totalPrice", source = "totalPrice")
+    @Mapping(target = "totalPriceVat", source = "totalPriceVat")
+    @Mapping(target = "previousRemark", source = "remark")
+    @Mapping(target = "remark", source = "remark")
+    @Mapping(target = "salesContractRecordTempId.revision", expression = "java(salesContractRecordId.getRevision()+1)")
+    SalesContractRecordTemp toContractRecordTemp(SalesContractRecord contractRecord);
 }

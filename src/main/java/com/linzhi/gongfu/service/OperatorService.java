@@ -7,7 +7,7 @@ import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.mapper.SceneMapper;
-import com.linzhi.gongfu.repository.OperatorDetailRepository;
+import com.linzhi.gongfu.repository.OperatorBaseRepository;
 import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.repository.OperatorSceneRepository;
 import com.linzhi.gongfu.repository.SceneRepository;
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 @Service
 public class OperatorService {
     private final OperatorRepository operatorRepository;
-    private final OperatorDetailRepository operatorDetailRepository;
+    private final OperatorBaseRepository operatorDetailRepository;
     private final OperatorMapper operatorMapper;
     private final SceneRepository sceneRepository;
     private final SceneMapper sceneMapper;
@@ -94,7 +94,7 @@ public class OperatorService {
      * @return 人员列表
      */
     @Cacheable(value = "Operator_List;1800", key = "#companyCode+'-'+#state")
-    public List<OperatorDetail> listOperators(String companyCode, String state) {
+    public List<OperatorBase> listOperators(String companyCode, String state) {
         return operatorDetailRepository.findOperatorByStateAndIdentity_CompanyCodeAndIdentity_OperatorCodeNot(state.equals("0") ? Availability.DISABLED : Availability.ENABLED,
             companyCode,
             "000");
@@ -108,7 +108,7 @@ public class OperatorService {
      * @return 人员详情
      */
     @Cacheable(value = "Operator_detail;1800", key = "#companyCode+'-'+#operatorCode")
-    public Optional<OperatorDetail> getOperator(String companyCode, String operatorCode) {
+    public Optional<OperatorBase> getOperator(String companyCode, String operatorCode) {
         return operatorDetailRepository.findById(OperatorId.builder()
             .companyCode(companyCode)
             .operatorCode(operatorCode)
@@ -174,7 +174,7 @@ public class OperatorService {
     @Transactional
     public boolean modifyOperator(String companyCode, String operatorCode, VOperatorRequest operatorRequest) {
         try {
-            OperatorDetail operatorDetail = getOperator(companyCode, operatorCode)
+            OperatorBase operatorDetail = getOperator(companyCode, operatorCode)
                 .orElseThrow(() -> new IOException("为从数据库找到"));
             operatorDetail.setName(operatorRequest.getName());
             operatorDetail.setBirthday(operatorRequest.getBirthday() == null ? null : LocalDate.parse(operatorRequest.getBirthday()));
@@ -211,7 +211,7 @@ public class OperatorService {
         try {
             String maxCode = operatorDetailRepository.findMaxCode(companyCode).orElse("001");
             String password = RNGUtil.getLowerLetter(3) + RNGUtil.getNumber(3);
-            OperatorDetail operatorDetail = OperatorDetail.builder()
+            OperatorBase operatorDetail = OperatorBase.builder()
                 .identity(OperatorId.builder()
                     .companyCode(companyCode)
                     .operatorCode(maxCode)
@@ -369,7 +369,7 @@ public class OperatorService {
     @Transactional
     public boolean modifyOperatorState(String code, String companyCode, String state) {
         try {
-            OperatorDetail operator = getOperator(companyCode, code).orElseThrow(() -> new IOException("没有从数据库中找到"));
+            OperatorBase operator = getOperator(companyCode, code).orElseThrow(() -> new IOException("没有从数据库中找到"));
             operator.setState(state.equals("0") ? Availability.DISABLED : Availability.ENABLED);
             operatorDetailRepository.save(operator);
             return true;

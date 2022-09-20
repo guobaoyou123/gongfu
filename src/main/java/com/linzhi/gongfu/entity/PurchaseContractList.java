@@ -1,7 +1,6 @@
 package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.ContractState;
-import com.linzhi.gongfu.enumeration.InquiryType;
 import lombok.*;
 
 import javax.persistence.Column;

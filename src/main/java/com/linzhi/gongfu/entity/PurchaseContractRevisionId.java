@@ -20,17 +20,16 @@ public class PurchaseContractRevisionId implements Serializable {
     /**
      * 合同唯一id
      */
-
     @Column(name = "id", length = 50, nullable = false)
     @NotNull
     @NotBlank
     @Getter
     @Setter
     private String id;
+
     /**
      * 版本号
      */
-
     @Column(name = "revision", nullable = false)
     @NotNull
     @NotBlank

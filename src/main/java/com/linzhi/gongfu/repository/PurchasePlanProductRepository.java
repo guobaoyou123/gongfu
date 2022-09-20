@@ -8,7 +8,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
-
+/**
+ * 采购计划产品明细的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface PurchasePlanProductRepository extends CrudRepository<PurchasePlanProduct, PurchasePlanProductId>, QuerydslPredicateExecutor<PurchasePlanProduct> {
     /**
      * 更新采购计划需求

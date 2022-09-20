@@ -7,7 +7,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-
+/**
+ * 采购合同明细预览的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface PurchaseContractRecordPreviewRepository extends CrudRepository<ContractRecordPreview, String>, QuerydslPredicateExecutor<ContractRecordPreview> {
     /**
      * 合同明细记录预览

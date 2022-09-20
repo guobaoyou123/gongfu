@@ -10,7 +10,12 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 import java.util.Optional;
-
+/**
+ * 联系人的Repository
+ *
+ * @author zgh
+ * @create_at 2022-01-21
+ */
 public interface CompContactsRepository extends CrudRepository<CompContacts, CompContactsId>, QuerydslPredicateExecutor<CompContacts> {
 
     /**

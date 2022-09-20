@@ -44,6 +44,7 @@ public class PurchaseContractRevisionDetail {
      */
     @Column(insertable = false, updatable = false)
     private String salesContractCode;
+
     /*
      * 对应销售合同记录中本单位编码
      */
@@ -56,12 +57,12 @@ public class PurchaseContractRevisionDetail {
     @Column(name = "saler_order_code", length = 40)
     private String salerOrderCode;
 
-
     /**
      * 买方联系人姓名
      */
     @Column(name = "buyer_contact_name", length = 20)
     private String buyerContactName;
+
     /**
      * 买方联系人电话
      */
@@ -73,6 +74,7 @@ public class PurchaseContractRevisionDetail {
      */
     @Column(name = "saler_contact_name", length = 20)
     private String salerContactName;
+
     /**
      * 供应商中联系人电话
      */
@@ -84,46 +86,55 @@ public class PurchaseContractRevisionDetail {
      */
     @Column(name = "goods_rate")
     private BigDecimal vatProductRate;
+
     /**
      * 货物税率
      */
     @Column(name = "service_rate")
     private BigDecimal vatServiceRate;
+
     /**
      * 折扣
      */
     @Column(name = "discount")
     private BigDecimal discount;
+
     /**
      * 税额
      */
     @Column(name = "vat")
     private BigDecimal vat;
+
     /**
      * 未税总价
      */
     @Column(name = "total_price")
     private BigDecimal totalPrice;
+
     /**
      * 含税总价
      */
     @Column(name = "total_price_vat")
     private BigDecimal totalPriceVat;
+
     /**
      * 上一版未税总价
      */
     @Column(name = "previousUntaxedTotal")
     private BigDecimal previousUntaxedTotal;
+
     /**
      * 上一版本含税总价
      */
     @Column(name = "previousTaxedTotal")
     private BigDecimal previousTaxedTotal;
+
     /**
      * 最终未税总价
      */
     @Column(name = "discount_total_price", insertable = false, updatable = false)
     private BigDecimal discountedTotalPrice;
+
     /**
      * 确认价税合计
      */
@@ -141,26 +152,31 @@ public class PurchaseContractRevisionDetail {
      */
     @Column(name = "area_code", length = 20)
     private String areaCode;
+
     /**
      * 区域名称
      */
     @Column(name = "area_name", length = 100)
     private String areaName;
+
     /**
      * 详细地址
      */
     @Column(name = "address", length = 100)
     private String address;
+
     /**
      * 收货人
      */
     @Column(name = "consignee_name", length = 20)
     private String consigneeName;
+
     /**
      * 收货人电话
      */
     @Column(name = "consignee_phone", length = 20)
     private String consigneePhone;
+
     /**
      * 序列码（由 供应商编码+客户编码+产品+数量 组成）
      */
@@ -172,43 +188,49 @@ public class PurchaseContractRevisionDetail {
      */
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
     /**
      * 删除时间
      */
     @Column(name = "revoked_at")
     private LocalDateTime revokedAt;
+
     /**
      * 删除人
      */
     @Column(name = "revoked_by")
     private String revokedBy;
+
     /**
      * 修改时间
      */
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt;
+
     /**
      * 修改人
      */
     @Column(name = "modified_by")
     private String modifiedBy;
+
     /**
      * 确认时间
      */
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
+
     /**
      * 确认人
      */
     @Column(name = "confirmed_by")
     private String confirmedBy;
 
-
     /**
      * 所属单位编码
      */
     @Column(name = "created_by_comp", insertable = false, updatable = false)
     private String createdByComp;
+
     /**
      * 所属操作员编码
      */
@@ -217,27 +239,31 @@ public class PurchaseContractRevisionDetail {
 
     @Column(name = "createdByName", updatable = false, insertable = false)
     private String createdByName;
+
     /**
      * 客户公司编码
      */
     @Column(name = "buyer_comp", insertable = false, updatable = false)
     private String buyerComp;
+
     /**
      * 客户名称
      */
     @Column(name = "buyer_comp_name", insertable = false, updatable = false)
     private String buyerCompName;
+
     /**
      * 供应商公司编号
      */
     @Column(name = "saler_comp", insertable = false, updatable = false)
-
     private String salerComp;
+
     /**
      * 供应商名称
      */
     @Column(name = "saler_comp_name", insertable = false, updatable = false)
     private String salerCompName;
+
     /**
      * 状态（0-未确认 1-确认 2-撤销）
      */
@@ -249,6 +275,7 @@ public class PurchaseContractRevisionDetail {
      */
     @Column(name = "delivery_code", length = 20)
     private String deliveryCode;
+
     /**
      * 交货联系人编码
      */

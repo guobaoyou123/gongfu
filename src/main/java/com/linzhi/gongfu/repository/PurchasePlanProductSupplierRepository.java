@@ -10,7 +10,12 @@ import org.springframework.data.repository.CrudRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * 采购计划供应商的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface PurchasePlanProductSupplierRepository extends CrudRepository<PurchasePlanProductSupplier, PurchasePlanProductSupplierId>, QuerydslPredicateExecutor<PurchasePlanProductSupplier> {
     /**
      * 更新需求数量

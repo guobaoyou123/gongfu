@@ -13,7 +13,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
+/**
+ * 采购合同详细信息的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface PurchaseContractRevisionDetailRepository
     extends CrudRepository<PurchaseContractRevisionDetail, PurchaseContractRevisionId>, QuerydslPredicateExecutor<PurchaseContractRevisionDetail> {
 

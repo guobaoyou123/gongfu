@@ -12,7 +12,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
+/**
+ * 询价单的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface InquiryRepository
     extends CrudRepository<Inquiry, String>, QuerydslPredicateExecutor<Inquiry> {
     /**

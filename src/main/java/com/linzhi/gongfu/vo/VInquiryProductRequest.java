@@ -7,7 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.math.BigDecimal;
 
 /**
- * 用于接前端询价单添加产品信息的请求
+ * 用于接前端询价单或者合同添加产品信息的请求
  */
 @Data
 @Jacksonized

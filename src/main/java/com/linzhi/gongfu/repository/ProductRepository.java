@@ -6,7 +6,12 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 import java.util.Optional;
-
+/**
+ * 产品的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface ProductRepository extends CrudRepository<Product, String>, QuerydslPredicateExecutor<Product> {
     /**
      * 产品列表

@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * 用于前端根据条件查询采购合同列表的响应体组建
+ * 用于前端根据条件查询采购或者销售合同列表的响应体组建
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -70,6 +70,11 @@ public class VPContractPageResponse extends VBaseResponse {
         private String supplierName;
 
         /**
+         * 客户名称
+         */
+        private String customerName;
+
+        /**
          * 对应销售合同
          */
         private String salesContractId;
@@ -100,9 +105,14 @@ public class VPContractPageResponse extends VBaseResponse {
         private Boolean paired;
 
         /**
-         * 配对对应的供应商合同记录号
+         * 供应商合同号
          */
         private String supplierContractNo;
+
+        /**
+         * 客户合同号
+         */
+        private String customerContractNo;
 
         /**
          * 产品种类

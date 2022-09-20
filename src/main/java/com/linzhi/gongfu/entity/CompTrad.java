@@ -49,7 +49,7 @@ public class CompTrad implements Serializable {
     private Company salerCompanys;
 
     /**
-     * 供应商
+     * 客户
      */
     @OneToOne
     @JoinColumn(name = "comp_buyer", referencedColumnName = "code", insertable = false, updatable = false)
@@ -97,6 +97,7 @@ public class CompTrad implements Serializable {
      */
     @Column(name = "saler_belong_to")
     private String salerBelongTo;
+
     /**
      * 买方所属操作员
      */

@@ -20,61 +20,73 @@ import java.util.List;
 public class PurchasePlanProduct implements Serializable {
     @EmbeddedId
     private PurchasePlanProductId purchasePlanProductId;
+
     /**
      * 产品代码
      */
     @Column(name = "product_code", length = 50, nullable = false)
     private String productCode;
+
     /**
      * 品牌编码
      */
     @Column(name = "brand_code", length = 10, nullable = false)
     private String brandCode;
+
     /**
      * 可销库存
      */
     @Column(name = "deliver_num")
     private BigDecimal deliverNum;
+
     /**
      * 在途库存
      */
     @Column(name = "tran_num")
     private BigDecimal tranNum;
+
     /**
      * 需求数量
      */
     @Column(name = "demand")
     private BigDecimal demand;
+
     /**
      * 安全库存
      */
     @Column(name = "safety_stock")
     private BigDecimal safetyStock;
+
     /**
      * 上次采购价格
      */
     @Column(name = "before_sales_price")
     private BigDecimal beforeSalesPrice;
+
     /**
      * 正在询价数量
      */
     @Column(name = "inquiry_num")
     private BigDecimal inquiryNum;
+
     /**
      * 品牌名称
      */
     @Column(name = "brand", length = 10)
     private String brand;
+
     /**
      * 产品描述
      */
     @Column(name = "describe", length = 100)
     private String describe;
+
     /**
      * 计价单位
      */
     @Column(name = "charge_unit", length = 50)
     private String chargeUnit;
+
     /**
      * 面价
      */

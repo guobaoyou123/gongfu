@@ -22,6 +22,7 @@ public class PurchasePlanProductSupplierId implements Serializable {
     @NotBlank
     @Getter
     private String planCode;
+
     /**
      * 入格单位id
      */
@@ -31,6 +32,7 @@ public class PurchasePlanProductSupplierId implements Serializable {
     @NotBlank
     @Getter
     private String dcCompId;
+
     /**
      * 产品id
      */
@@ -40,6 +42,7 @@ public class PurchasePlanProductSupplierId implements Serializable {
     @NotBlank
     @Getter
     private String productId;
+
     /**
      * 产品id
      */

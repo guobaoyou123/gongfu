@@ -100,9 +100,16 @@ public class Product implements Serializable {
      */
     @Column(name = "charge_unit", length = 10)
     private String chargeUnit;
+
     /**
      * 面价
      */
     @Column(name = "face_price")
     private BigDecimal facePrice;
+
+    /**
+     * 规格
+     */
+    @Column(name = "specs_num")
+    private BigDecimal specification;
 }

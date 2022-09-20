@@ -164,6 +164,5 @@ public class InquiryDetail {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "inquiry_id", referencedColumnName = "id", insertable = true, updatable = true)
     @NotFound(action = NotFoundAction.IGNORE)
-
     private List<InquiryRecord> records;
 }

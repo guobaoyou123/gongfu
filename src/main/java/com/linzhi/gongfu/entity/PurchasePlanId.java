@@ -22,6 +22,7 @@ public class PurchasePlanId implements Serializable {
     @NotBlank
     @Getter
     private String planCode;
+
     /**
      * 入格单位id
      */

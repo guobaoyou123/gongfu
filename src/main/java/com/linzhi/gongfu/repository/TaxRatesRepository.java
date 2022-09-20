@@ -9,7 +9,12 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 import java.util.Optional;
-
+/**
+ * 税率的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface TaxRatesRepository extends CrudRepository<TaxRates, String>, QuerydslPredicateExecutor<TaxRates> {
     /**
      * 税率详情

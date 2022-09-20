@@ -8,7 +8,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-
+/**
+ * 消息通知的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface NotificationRepository extends CrudRepository<Notification, String>, QuerydslPredicateExecutor<Notification> {
     /**
      * 更新消息状态

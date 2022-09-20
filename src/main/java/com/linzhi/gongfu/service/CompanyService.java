@@ -51,10 +51,10 @@ public class CompanyService {
     private final CompVisibleRepository compVisibleRepository;
     private final CompInvitationCodeRepository compInvitationCodeRepository;
     private final CompTradeApplyRepository compTradeApplyRepository;
-    private final EnrolledSupplierRepository enrolledSupplierRepository;
+    private final EnrolledTradeRepository enrolledTradeRepository;
     private final OperatorRepository operatorRepository;
     private final OperatorMapper operatorMapper;
-    private final OperatorDetailRepository operatorDetailRepository;
+    private final OperatorBaseRepository operatorDetailRepository;
 
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
@@ -528,9 +528,9 @@ public class CompanyService {
     public Page<TEnrolledTradeCompanies> pageEnrolledTradeCompanies(String name, int pageNum, int pageSize, String companyCode, String type) {
         List<TEnrolledTradeCompanies> list;
         if (type.equals("1")) {
-            list = enrolledSupplierRepository.findEnrolledSupplierList(companyCode);
+            list = enrolledTradeRepository.findEnrolledSupplierList(companyCode);
         } else {
-            list = enrolledSupplierRepository.findEnrolledCustomerList(companyCode);
+            list = enrolledTradeRepository.findEnrolledCustomerList(companyCode);
         }
         return PageTools.listConvertToPage(
             list.stream().filter(tEnrolledSuppliers -> tEnrolledSuppliers.getNameInCN().contains(name))
@@ -548,7 +548,7 @@ public class CompanyService {
      */
     @Cacheable(value = "Enrolled_Supplier_detail;1800", key = "#companyCode+'-'+#code", unless = "#result == null ")
     public Optional<TEnrolledTradeCompany> enrolledSupplier(String code, String companyCode) throws IOException {
-        EnrolledTrade enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
+        EnrolledTrade enrolledSupplier = enrolledTradeRepository.findById(CompTradId.builder()
             .compSaler(code)
             .compBuyer(companyCode)
             .build()).orElseThrow(() -> new IOException("未从数据库找到"));
@@ -611,7 +611,7 @@ public class CompanyService {
      */
     @Cacheable(value = "customerDetail;1800", key = "#companyCode+'-'+#code", unless = "#result == null ")
     public Optional<TEnrolledTradeCompany> enrolledCustomer(String code, String companyCode) throws IOException {
-        EnrolledTrade enrolledSupplier = enrolledSupplierRepository.findById(CompTradId.builder()
+        EnrolledTrade enrolledSupplier = enrolledTradeRepository.findById(CompTradId.builder()
             .compSaler(companyCode)
             .compBuyer(code)
             .build()).orElseThrow(() -> new IOException("未从数据库找到"));
@@ -704,7 +704,7 @@ public class CompanyService {
      * @throws IOException 异常
      */
     public Page<TCompanyBaseInformation> pageForeignCustomers(String companyCode, String operator, String name, Integer pageNum, Integer pageSize, String state) throws IOException {
-        OperatorDetail operatorDetail = operatorDetailRepository.findById(OperatorId.builder()
+        OperatorBase operatorDetail = operatorDetailRepository.findById(OperatorId.builder()
             .operatorCode(operator)
             .companyCode(companyCode)
             .build()).orElseThrow(() -> new IOException("没有从数据库中找打该数据"));

@@ -8,7 +8,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-
+/**
+ * 询价单的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface InquiryRecordRepository
     extends CrudRepository<InquiryRecord, InquiryRecordId>, QuerydslPredicateExecutor<InquiryRecord> {
     /**
@@ -58,4 +63,17 @@ public interface InquiryRecordRepository
     @Query(value = "select  *  from inquiry_record  where  inquiry_id=?1  order by product_id ,quantity  ",
         nativeQuery = true)
     List<InquiryRecord> findInquiryRecord(String inquiryId);
+
+    /**
+     * 查找询价单孪生明细
+     *
+     * @param inquiryId 询价单主键
+     * @return 询价单明细列表
+     */
+    @Query(value = "select *  from \n" +
+        "(select  product_id,count(quantity) as quantity ,max(charge_unit) as charge_unit,max(vat_rate) as vat_rate   from inquiry_record  where  inquiry_id=?1   group by product_id ) \n" +
+        "as d \n" +
+        "  order by product_id ",
+        nativeQuery = true)
+    List<InquiryRecord> findInquiryRecordTwins(String inquiryId);
 }

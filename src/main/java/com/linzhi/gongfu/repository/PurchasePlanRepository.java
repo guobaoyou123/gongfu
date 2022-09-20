@@ -9,7 +9,12 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDate;
 import java.util.Optional;
-
+/**
+ * 采购计划基础信息的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface PurchasePlanRepository extends CrudRepository<PurchasePlan, PurchasePlanId>, QuerydslPredicateExecutor<PurchasePlan> {
     /**
      * 最大编码

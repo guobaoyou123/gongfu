@@ -10,7 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-
+/**
+ * 计划的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface TemporaryPlanRepository extends CrudRepository<TemporaryPlan, TemporaryPlanId>, QuerydslPredicateExecutor<TemporaryPlan> {
     /**
      * 计划列表

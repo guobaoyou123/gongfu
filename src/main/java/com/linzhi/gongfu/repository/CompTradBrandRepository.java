@@ -9,7 +9,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-
+/**
+ * 交易品牌的Repository
+ *
+ * @author zgh
+ * @create_at 2022-01-21
+ */
 public interface CompTradBrandRepository extends CrudRepository<CompTradBrand, CompTradBrandId>, QuerydslPredicateExecutor<CompTradBrand> {
     /**
      * 根据品牌查找供应商

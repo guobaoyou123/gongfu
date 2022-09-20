@@ -6,7 +6,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-
+/**
+ * 操作公司允许经营品牌的Repository
+ *
+ * @author zgh
+ * @create_at 2022-01-21
+ */
 public interface CompAllowedBrandRepository extends CrudRepository<CompAllowedBrand, CompAllowedBrandId>, QuerydslPredicateExecutor<CompAllowedBrand> {
 
     /**

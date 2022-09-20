@@ -4,7 +4,12 @@ import com.linzhi.gongfu.entity.InquiryDetail;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
-
+/**
+ * 询价单详情的Repository
+ *
+ * @author zgh
+ * @create_at 2022-09-20
+ */
 public interface InquiryDetailRepository extends CrudRepository<InquiryDetail, String>, QuerydslPredicateExecutor<InquiryDetail> {
     /**
      * 获取最大编码

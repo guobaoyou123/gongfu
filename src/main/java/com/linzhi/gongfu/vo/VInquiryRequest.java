@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * 用于接前端修改询价单或者采购合同信息的请求
+ * 用于接前端修改询价单或者采购或则销售合同信息的请求
  */
 @Data
 @Jacksonized
@@ -57,5 +57,50 @@ public class VInquiryRequest {
          * 数量
          */
         private BigDecimal amount;
+
+        /**
+         * 计价单位(销售合同用)
+         */
+        private String chargeUnit;
+
+        /**
+         * 与系统计价单位的比例(销售合同用)
+         */
+        private BigDecimal ratio;
+
+        /**
+         * 服务列表(销售合同用)
+         */
+        List<VService> services;
+    }
+
+    @Data
+    public static class VService {
+
+        /**
+         * 产品序号
+         */
+        private int code;
+
+        /**
+         * 价格
+         */
+        private BigDecimal price;
+
+        /**
+         * 税率
+         */
+        private BigDecimal vatRate;
+
+        /**
+         * 数量
+         */
+        private BigDecimal amount;
+
+        /**
+         * 服务备注(销售合同用)
+         */
+        private String remark;
+
     }
 }

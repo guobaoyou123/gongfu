@@ -55,6 +55,7 @@ public class EnrolledTrade implements Serializable {
     @OneToOne
     @JoinColumn(name = "comp_buyer", referencedColumnName = "id", insertable = false, updatable = false)
     private EnrolledCompany buyerCompany;
+
     /**
      * 交易品牌
      */
