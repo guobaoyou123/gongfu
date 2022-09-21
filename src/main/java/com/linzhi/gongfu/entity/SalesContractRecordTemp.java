@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "sales_contract_record_temp")
-
 public class SalesContractRecordTemp implements Serializable {
     /**
      * 合同唯一id

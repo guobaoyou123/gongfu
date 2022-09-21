@@ -1247,7 +1247,7 @@ public class ContractController {
     public VPContractDetailResponse salesContractDetail(
         @PathVariable("id") String id,
         @PathVariable("revision") Integer revision
-    ) throws IOException {
+    ){
         boolean repetitive = false;
         //查询采购合同
         var contract = salesContractService.getSalesContractDetail(id, revision);
@@ -1309,7 +1309,8 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var flag = salesContractService.saveProduct(product.orElseThrow().getProductId(),
+        var flag = salesContractService.saveProduct(
+            product.orElseThrow().getProductId(),
             product.get().getPrice(),
             product.get().getAmount(),
             id,
@@ -1556,4 +1557,33 @@ public class ContractController {
             .build();
     }
 
+    /**
+     * 撤销该版本销售合同
+     *
+     * @param id 合同主键
+     * @return 返回成功信息
+     * @throws IOException 异常
+     */
+    @DeleteMapping("/contract/sales/{id}/revision")
+    public VBaseResponse cancelSalesCurrentRevision(@PathVariable String id) throws Exception {
+
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var contract = salesContractService.getContractDetail(id);
+        if (contract.getState().equals(ContractState.FINISHED))
+            return VBaseResponse.builder()
+                .code(500)
+                .message("该版本已撤销")
+                .build();
+        salesContractService.removeCurrentRevision(
+            id,
+            salesContractService.getMaxRevision(id),
+            contract, session.getSession().getCompanyCode()
+        );
+
+        return VBaseResponse.builder()
+            .code(200)
+            .message("撤销该版本成功")
+            .build();
+    }
 }

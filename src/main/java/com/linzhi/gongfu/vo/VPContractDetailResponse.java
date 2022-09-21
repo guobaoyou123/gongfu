@@ -359,6 +359,11 @@ public class VPContractDetailResponse extends VBaseResponse {
          * 面价
          */
         private BigDecimal facePrice;
+
+        /**
+         * 规格
+         */
+        private String  specification;
     }
 
     @Data

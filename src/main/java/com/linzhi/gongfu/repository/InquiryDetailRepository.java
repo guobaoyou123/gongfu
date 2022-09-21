@@ -23,5 +23,5 @@ public interface InquiryDetailRepository extends CrudRepository<InquiryDetail, S
         nativeQuery = true)
     String getMaxCode(String dcCompId, String createdBy);
 
-
+    InquiryDetail findInquiryDetailById(String id);
 }

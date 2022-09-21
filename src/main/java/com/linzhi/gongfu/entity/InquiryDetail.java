@@ -21,7 +21,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "inquiry_base")
-
 public class InquiryDetail {
     /**
      * 询价单唯一id

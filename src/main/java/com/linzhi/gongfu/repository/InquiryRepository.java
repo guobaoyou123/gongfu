@@ -80,7 +80,7 @@ public interface InquiryRepository
     @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode from   inquiry_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join purchase_contract_base c on c.id = b.sales_contract_id\n" +
-        "left join purchase_contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from purchase_contract_rev  where id = r.id)\n" +
+        "left join sales_contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from sales_contract_rev  where id = r.id)\n" +
         "left join purchase_contract_rev d on d.id = b.contract_id  and d.revision in (select max(revision) from purchase_contract_rev  where id = d.id)\n" +
 
         " where   b.id=?1 ",

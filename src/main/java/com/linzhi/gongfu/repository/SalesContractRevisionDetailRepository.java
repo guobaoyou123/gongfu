@@ -20,12 +20,5 @@ public interface SalesContractRevisionDetailRepository
      * @param salesContractRevisionId 合同主键
      * @return 合同详情
      */
-    Optional<SalesContractRevisionDetail> findSalesContractRevisionDetailBySalesContractRevisionId(SalesContractRevisionId salesContractRevisionId);
-
-    /**
-     * 根据合同编码和版本号查找合同详情
-     * @param salesContractRevisionId 合同主键
-     * @return 合同详情
-     */
     SalesContractRevisionDetail getSalesContractRevisionDetailBySalesContractRevisionId(SalesContractRevisionId salesContractRevisionId);
 }
