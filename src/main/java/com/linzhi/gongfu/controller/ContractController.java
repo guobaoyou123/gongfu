@@ -4,9 +4,9 @@ import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.enumeration.ContractState;
 import com.linzhi.gongfu.mapper.*;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
-import com.linzhi.gongfu.service.PurchaseContractService;
 import com.linzhi.gongfu.service.InquiryService;
 import com.linzhi.gongfu.service.PlanService;
+import com.linzhi.gongfu.service.PurchaseContractService;
 import com.linzhi.gongfu.service.SalesContractService;
 import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.util.PageTools;
@@ -1202,11 +1202,11 @@ public class ContractController {
      */
     @GetMapping("/contract/sales")
     public VPContractPageResponse pageSalesContracts(@RequestParam("customerCode") Optional<String> customerCode,
-                                                @RequestParam("startTime") Optional<String> startTime,
-                                                @RequestParam("endTime") Optional<String> endTime,
-                                                @RequestParam("state") Optional<String> state,
-                                                @RequestParam("pageNum") Optional<String> pageNum,
-                                                @RequestParam("pageSize") Optional<String> pageSize
+                                                     @RequestParam("startTime") Optional<String> startTime,
+                                                     @RequestParam("endTime") Optional<String> endTime,
+                                                     @RequestParam("state") Optional<String> state,
+                                                     @RequestParam("pageNum") Optional<String> pageNum,
+                                                     @RequestParam("pageSize") Optional<String> pageSize
     ) throws Exception {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
@@ -1247,7 +1247,7 @@ public class ContractController {
     public VPContractDetailResponse salesContractDetail(
         @PathVariable("id") String id,
         @PathVariable("revision") Integer revision
-    ){
+    ) {
         boolean repetitive = false;
         //查询采购合同
         var contract = salesContractService.getSalesContractDetail(id, revision);
@@ -1482,7 +1482,7 @@ public class ContractController {
         );
         return VBaseResponse.builder()
             .code(200)
-            .message("修改合同成功" )
+            .message("修改合同成功")
             .build();
     }
 
@@ -1584,6 +1584,28 @@ public class ContractController {
         return VBaseResponse.builder()
             .code(200)
             .message("撤销该版本成功")
+            .build();
+    }
+
+    /**
+     * 撤销销售合同
+     *
+     * @param id 销售合同主键
+     * @return 返回成功或者失败
+     */
+    @DeleteMapping("/contract/sales/{id}")
+    public VBaseResponse removeSalesContract(@PathVariable String id) {
+
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        salesContractService.removeSalesContract(
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+        return VBaseResponse.builder()
+            .code(200)
+            .message("撤销成功")
             .build();
     }
 }
