@@ -1633,4 +1633,20 @@ public class ContractController {
             .build();
     }
 
+    /**
+     * 查询销售合同中已开票产品列表
+     *
+     * @param id 合同主键
+     * @return 产品列表
+     */
+    @GetMapping("/contract/sales/{id}/invoiced")
+    // TODO: 2022/6/2   需要重新完善
+    public VInvoicedResponse getSaleInvoicedList(@PathVariable String id) {
+        var products = purchaseContractService.getInvoicedList(id);
+        return VInvoicedResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .products(products)
+            .build();
+    }
 }
