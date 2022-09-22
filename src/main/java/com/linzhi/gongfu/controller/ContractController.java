@@ -1417,16 +1417,19 @@ public class ContractController {
      * 销售合同导出产品明细
      *
      * @param id       合同id
+     * @param revision   版本
+     * @param type       类型 0-客户自定义代码 1-产品源代码
      * @param response HttpServletResponse
      */
     @GetMapping("/contract/sales/{id}/{revision}/products/export")
     public void exportSalesContractProduct(
         @PathVariable String id,
         @PathVariable Integer revision,
+        @RequestParam("type") String type,
         HttpServletResponse response
     ) {
 
-        List<LinkedHashMap<String, Object>> database = salesContractService.exportProduct(id, revision);
+        List<LinkedHashMap<String, Object>> database = salesContractService.exportProduct(id, revision,type);
         ExcelUtil.exportToExcel(response, id + "销售合同明细表", database);
     }
 
@@ -1629,4 +1632,5 @@ public class ContractController {
             .products(list)
             .build();
     }
+
 }

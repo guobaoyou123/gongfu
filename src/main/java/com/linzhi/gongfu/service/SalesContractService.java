@@ -333,7 +333,7 @@ public class SalesContractService {
     }
 
     /**
-     * 添加采购合同产品
+     * 添加销售合同产品
      *
      * @param productId 产品id
      * @param price     单价
@@ -610,13 +610,17 @@ public class SalesContractService {
      * @param revision 版本
      * @return 产品列表
      */
-    public List<LinkedHashMap<String, Object>> exportProduct(String id, Integer revision) {
+    public List<LinkedHashMap<String, Object>> exportProduct(String id, Integer revision,String type) {
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         try {
             var contract = getSalesContractDetail(id, revision);
             contract.getProducts().forEach(record -> {
                 LinkedHashMap<String, Object> m = new LinkedHashMap<>();
-                m.put("产品代码", record.getCode());
+                if(type.equals("0")){
+                    m.put("产品代码", record.getCustomerPCode());
+                }else{
+                    m.put("产品代码", record.getCode());
+                }
                 m.put("描述", record.getDescribe());
                 m.put("数量", record.getAmount());
                 if (contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode() + "")) {
