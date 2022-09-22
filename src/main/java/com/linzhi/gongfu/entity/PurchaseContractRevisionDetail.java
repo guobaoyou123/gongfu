@@ -267,7 +267,7 @@ public class PurchaseContractRevisionDetail {
     /**
      * 状态（0-未确认 1-确认 2-撤销）
      */
-    @Column(insertable = false, updatable = false)
+    @Column(name = "state",insertable = false, updatable = false)
     private String state;
 
     /**

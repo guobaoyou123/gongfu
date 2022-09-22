@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ContractRecordMapper {
-
+    
     @Mapping(target = "itemNo", source = "purchaseContractRecordId.code")
     @Mapping(target = "createdAt", expression = "java(com.linzhi.gongfu.util.DateConverter.dateFormat(contractRecord.getCreatedAt()))")
     @Mapping(target = "id", source = "productId")
@@ -120,8 +120,15 @@ public interface ContractRecordMapper {
     @Mapping(target = "totalPriceVat", source = "totalPriceVat")
     @Mapping(target = "vatRate", source = "vatRate")
     @Mapping(target = "chargeUnit", source = "chargeUnit")
+    @Mapping(target = "sysChargeUnit", source = "sysChargeUnit")
     @Mapping(target = "type", expression = "java(String.valueOf(contractRecord.getType().getType()))")
     @Mapping(target = "facePrice", source = "facePrice")
+    @Mapping(target = "contractAmount", constant = "23")
+    @Mapping(target = "tranNum", constant = "45")
+    @Mapping(target = "deliverNum", constant = "23")
+    @Mapping(target = "supplierDeliverNum", constant = "34")
+    @Mapping(target = "supplierTranNum", constant = "223.4")
+    @Mapping(target = "inquiryAmount", constant = "3")
     TContractRecord toTContractRecord(SalesContractRecord contractRecord);
 
     /**
@@ -148,10 +155,17 @@ public interface ContractRecordMapper {
     @Mapping(target = "vatRate", source = "vatRate")
     @Mapping(target = "previousVatRate", source = "previousVatRate")
     @Mapping(target = "chargeUnit", source = "chargeUnit")
+    @Mapping(target = "sysChargeUnit", source = "sysChargeUnit")
     @Mapping(target = "previousChargeUnit", source = "previousChargeUnit")
     @Mapping(target = "type", expression = "java(String.valueOf(contractRecordTemp.getType().getType()))")
     @Mapping(target = "facePrice", source = "facePrice")
     @Mapping(target = "previousAmount", source = "previousAmount")
+    @Mapping(target = "contractAmount", constant = "23")
+    @Mapping(target = "tranNum", constant = "45")
+    @Mapping(target = "deliverNum", constant = "23")
+    @Mapping(target = "supplierDeliverNum", constant = "34")
+    @Mapping(target = "supplierTranNum", constant = "223.4")
+    @Mapping(target = "inquiryAmount", constant = "3")
     TContractRecord toTContractRecord(SalesContractRecordTemp contractRecordTemp);
 
     /**
