@@ -85,14 +85,9 @@ public class PurchaseContractService {
         List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecordTwins(inquiryId);
         //形成指纹
         String str = createSequenceCode(
-            records.stream().map(inquiryRecord -> {
-                {
-                    return inquiryRecord.getProductId() + "-"
-                        + inquiryRecord.getChargeUnit() + "-"
-                        + inquiryRecord.getAmount().setScale(4, RoundingMode.HALF_UP) + "-"
-                        + inquiryRecord.getVatRate();
-                }
-            }).toList(),
+            records.stream().map(inquiryRecord -> inquiryRecord.getProductId() + "-"
+                + inquiryRecord.getChargeUnit() + "-"
+                + inquiryRecord.getAmount().setScale(4, RoundingMode.HALF_UP)).toList(),
             inquiry.getSalerComp(),
             inquiry.getBuyerComp(), inquiry.getOfferMode()
         );
@@ -465,7 +460,7 @@ public class PurchaseContractService {
         for(int i =0;i<records.size()-1;i++){
             if(records.get(i).getProductId().equals(records.get(i+1).getProductId())){
                 records.get(i).setMyAmount(records.get(i).getMyAmount().add(records.get(i+1).getMyAmount()));
-                records.remove(i+1);
+                records.remove(i-1);
             }
         }
 
@@ -473,8 +468,7 @@ public class PurchaseContractService {
                 contractRecord.setPriceVat(contractRecord.getPriceVat() == null ? null : contractRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP));
                 return contractRecord.getProductId() + "-"
                     + contractRecord.getMyChargeUnit() + "-"
-                    + contractRecord.getMyAmount().setScale(4, RoundingMode.HALF_UP) + "-"
-                    + contractRecord.getVatRate();
+                    + contractRecord.getMyAmount().setScale(4, RoundingMode.HALF_UP);
             }
 
         ).toList();
@@ -1117,11 +1111,11 @@ public class PurchaseContractService {
                             .customerPCode(temp.getCustomerCustomCode())
                             .localPCode(temp.getCompCustomCode())
                             .productDescription(temp.getProductDescription())
-                            .chargeUnit(temp.getChargeUnit())
-                            .myChargeUnit(temp.getMyChargeUnit())
+                            .sysChargeUnit(temp.getChargeUnit())
+                            .chargeUnit(temp.getMyChargeUnit())
                             .ratio(temp.getRatio())
-                            .myAmount(v.getReturnAmount())
-                            .amount(v.getReturnAmount().multiply(temp.getRatio()))
+                            .amount(v.getReturnAmount())
+                            .sysAmount(v.getReturnAmount().multiply(temp.getRatio()))
                             .build();
                         deliverTemps.add(deliverTemp);
                     }
@@ -1149,16 +1143,32 @@ public class PurchaseContractService {
 
         if (!contractRevisionDetail.getState().equals(ContractState.UN_FINISHED.getState() + ""))
             throw new Exception("合同已确认");
-        List<PurchaseContractRecordTemp> contractRecordTemps = purchaseContractRecordTempRepository
-            .findContractRecordTempsTwins(id);
+        List<PurchaseContractRecordTemp> contractRecordTemps =
+            purchaseContractRecordTempRepository
+            .findContractRecordTempsByPurchaseContractRecordTempId_ContractId(id);
+        contractRecordTemps.sort((o1, o2) -> {
+            if (o1.getProductId().compareTo(o2.getProductId()) == 0) {
+                if (o1.getAmount().doubleValue() < o2.getAmount().doubleValue()) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+            return o1.getProductId().compareTo(o2.getProductId());
+        });
 
+        for(int i =0;i<contractRecordTemps.size()-1;i++){
+            if(contractRecordTemps.get(i).getProductId().equals(contractRecordTemps.get(i+1).getProductId())){
+                contractRecordTemps.get(i).setMyAmount(contractRecordTemps.get(i).getMyAmount().add(contractRecordTemps.get(i+1).getMyAmount()));
+                contractRecordTemps.remove(i-1);
+            }
+        }
         String str = createSequenceCode(
             contractRecordTemps.stream()
                 .map(contractRecord ->
                     contractRecord.getProductId() + "-"
                         + contractRecord.getMyChargeUnit() + "-"
-                        + contractRecord.getMyAmount().setScale(4, RoundingMode.HALF_UP) + "-"
-                        + contractRecord.getVatRate()
+                        + contractRecord.getMyAmount().setScale(4, RoundingMode.HALF_UP)
                 ).toList(),
             contractRevisionDetail.getSalerComp(),
             contractRevisionDetail.getBuyerComp(),
@@ -1396,11 +1406,11 @@ public class PurchaseContractService {
                         .customerPCode(temp.getCustomerCustomCode())
                         .localPCode(temp.getCompCustomCode())
                         .productDescription(temp.getProductDescription())
-                        .chargeUnit(temp.getChargeUnit())
-                        .myChargeUnit(temp.getMyChargeUnit())
+                        .sysChargeUnit(temp.getChargeUnit())
+                        .chargeUnit(temp.getMyChargeUnit())
                         .ratio(temp.getRatio())
-                        .myAmount(v.getReturnAmount())
-                        .amount(v.getReturnAmount().multiply(temp.getRatio()))
+                        .amount(v.getReturnAmount())
+                        .sysAmount(v.getReturnAmount().multiply(temp.getRatio()))
                         .build();
                     deliverRecords.add(deliverTemp);
                 }

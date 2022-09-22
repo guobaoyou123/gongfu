@@ -1241,7 +1241,6 @@ public class ContractController {
      * @param id       销售合同主键
      * @param revision 版本号
      * @return 返回合同详情
-     * @throws IOException 异常
      */
     @GetMapping("/contract/sales/{id}/{revision}")
     public VPContractDetailResponse salesContractDetail(
@@ -1649,4 +1648,28 @@ public class ContractController {
             .products(products)
             .build();
     }
+
+    /**
+     * 保存收回临时记录
+     *
+     * @param deliveryTempRequests 收回临时记录列表
+     * @param id                   合同主键
+     * @param revision             合同版本
+     * @return 返回成功信息
+     */
+    @PostMapping("/contract/sales/{id}/{revision}/delivery/record")
+    public VBaseResponse saveSalesDeliveryTemp(
+        @RequestBody List<VDeliveryTempRequest> deliveryTempRequests,
+        @PathVariable("id") String id,
+        @PathVariable("revision") Integer revision
+    ) {
+
+        salesContractService.saveDeliveryTemp(deliveryTempRequests, id, revision);
+        return VBaseResponse.builder()
+            .code(200)
+            .message("保存成功")
+            .build();
+    }
+
+
 }

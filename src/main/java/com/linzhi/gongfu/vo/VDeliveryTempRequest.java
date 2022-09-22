@@ -23,4 +23,9 @@ public class VDeliveryTempRequest {
      * 退回数量
      */
     private BigDecimal returnAmount;
+
+    /**
+     * 收回数量
+     */
+    private BigDecimal retrieveAmount;
 }

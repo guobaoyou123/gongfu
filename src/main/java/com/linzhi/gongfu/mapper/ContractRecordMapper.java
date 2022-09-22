@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ContractRecordMapper {
-    
+
     @Mapping(target = "itemNo", source = "purchaseContractRecordId.code")
     @Mapping(target = "createdAt", expression = "java(com.linzhi.gongfu.util.DateConverter.dateFormat(contractRecord.getCreatedAt()))")
     @Mapping(target = "id", source = "productId")

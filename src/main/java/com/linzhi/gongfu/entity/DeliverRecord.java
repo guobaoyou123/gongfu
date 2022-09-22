@@ -89,10 +89,10 @@ public class DeliverRecord {
     private BigDecimal ratio;
 
     /**
-     * 我的计价单位
+     * 系統计价单位
      */
-    @Column(name = "my_charge_unit")
-    private String myChargeUnit;
+    @Column(name = "sys_charge_unit")
+    private String sysChargeUnit;
 
     /**
      * 未税价格
@@ -113,10 +113,10 @@ public class DeliverRecord {
     private BigDecimal amount;
 
     /**
-     * 按我的计价单位的批检数量
+     * 系統批检数量
      */
-    @Column(name = "my_quantity")
-    private BigDecimal myAmount;
+    @Column(name = "sys_quantity")
+    private BigDecimal sysAmount;
 
     /**
      * 实际批检数量
@@ -125,10 +125,10 @@ public class DeliverRecord {
     private BigDecimal actual;
 
     /**
-     * 按我的计价单位的实际批检数量
+     * 系統实际批检数量
      */
-    @Column(name = "my_actual")
-    private BigDecimal myActual;
+    @Column(name = "sys_actual")
+    private BigDecimal sysActual;
 
     /**
      * 实际未税小计
