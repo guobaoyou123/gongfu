@@ -57,5 +57,10 @@ public class VPContractPreviewResponse extends VBaseResponse {
          * 已收货数量
          */
         private BigDecimal receivedAmount;
+
+        /**
+         * 已发货数量
+         */
+        private BigDecimal deliveredAmount;
     }
 }

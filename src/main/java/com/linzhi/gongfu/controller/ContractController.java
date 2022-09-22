@@ -1608,4 +1608,25 @@ public class ContractController {
             .message("撤销成功")
             .build();
     }
+
+    /**
+     * 查看修改销售合同明细预览
+     *
+     * @param id       销售合同主键
+     * @param revision 版本号
+     * @return 返回销售合同预览列表
+     */
+    @GetMapping("/contract/sales/{id}/{revision}/preview")
+    public VPContractPreviewResponse modifySalesContractPreview(
+        @PathVariable("id") String id,
+        @PathVariable("revision") Integer revision
+    ) {
+
+        var list = salesContractService.modifyContractPreview(id, revision);
+        return VPContractPreviewResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .products(list)
+            .build();
+    }
 }

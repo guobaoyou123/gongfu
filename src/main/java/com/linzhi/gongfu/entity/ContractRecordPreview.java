@@ -21,12 +21,12 @@ public class ContractRecordPreview {
     @Column(name = "product_code")
     private String productCode;
     /**
-     * 已收货
+     * 退回数量/已发货数量
      */
     @Column
     private BigDecimal delivered;
     /**
-     * 退回数量
+     * 已收货或者收回数量
      */
     @Column
     private BigDecimal received;

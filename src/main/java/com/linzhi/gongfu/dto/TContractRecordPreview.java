@@ -24,12 +24,12 @@ public class TContractRecordPreview {
     private String productCode;
 
     /**
-     * 已收货
+     * 退回数量/已发货数量
      */
     private BigDecimal delivered;
 
     /**
-     * 退回数量
+     *  已收货或者收回数量
      */
     private BigDecimal received;
 

@@ -92,11 +92,13 @@ public interface ContractRecordMapper {
     @Mapping(target = "purchaseContractRecordId.revision", source = "purchaseContractRecordTempId.revision")
     PurchaseContractRecord toContractRecord(PurchaseContractRecordTemp contractRecord);
 
-    @Mapping(target = "received", expression = "java(contractRecordPreview.getDelivered()!=null?contractRecordPreview.getDelivered().subtract(contractRecordPreview.getReceived()):null)")
+    @Mapping(target = "received", expression = "java(contractRecordPreview.getReceived()!=null?contractRecordPreview.getReceived().subtract(contractRecordPreview.getDelivered()):null)")
+    @Mapping(target = "delivered", expression = "java(contractRecordPreview.getDelivered()!=null?contractRecordPreview.getDelivered().subtract(contractRecordPreview.getReceived()):null)")
     TContractRecordPreview toTContractRecordPreview(ContractRecordPreview contractRecordPreview);
 
 
     @Mapping(target = "receivedAmount", source = "received")
+    @Mapping(target = "deliveredAmount", source = "delivered")
     VPContractPreviewResponse.VProduct toVProduct(TContractRecordPreview tContractRecordPreview);
 
     /**

@@ -70,7 +70,7 @@ public class PurchaseContractService {
     private final DeliverRecordMapper deliverRecordMapper;
     private final DeliverBaseRepository deliverBaseRepository;
     private final PurchaseContractReceivedRepository contractReceivedRepository;
-    private final PurchaseContractRecordPreviewRepository contractRecordPreviewRepository;
+    private final ContractRecordPreviewRepository contractRecordPreviewRepository;
 
     /**
      * 查询合同是否重复（产品种类和数量）
@@ -1509,7 +1509,7 @@ public class PurchaseContractService {
      * @return 采购合同预览列表
      */
     public List<VPContractPreviewResponse.VProduct> modifyContractPreview(String id, Integer revision) {
-        return contractRecordPreviewRepository.findContractRecordPreviewRepositories(id)
+        return contractRecordPreviewRepository.findPurchaseContractRecordPreview(id)
             .stream().map(contractRecordMapper::toTContractRecordPreview)
             .map(contractRecordMapper::toVProduct)
             .toList();

@@ -60,7 +60,7 @@ public class SalesContractService {
     private final DeliveryTempRepository deliveryTempRepository;
     private final DeliverRecordMapper deliverRecordMapper;
     private final ImportProductTempRepository importProductTempRepository;
-
+    private final ContractRecordPreviewRepository contractRecordPreviewRepository;
 
     /**
      * 查看合同列表
@@ -1326,4 +1326,17 @@ public class SalesContractService {
         }
     }
 
+    /**
+     * 销售合同预览列表
+     *
+     * @param id       主键
+     * @param revision 版本号
+     * @return 采购合同预览列表
+     */
+    public List<VPContractPreviewResponse.VProduct> modifyContractPreview(String id, Integer revision) {
+        return contractRecordPreviewRepository.findSalesContractRecordPreview(id)
+            .stream().map(contractRecordMapper::toTContractRecordPreview)
+            .map(contractRecordMapper::toVProduct)
+            .toList();
+    }
 }
