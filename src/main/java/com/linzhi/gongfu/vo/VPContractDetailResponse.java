@@ -364,6 +364,49 @@ public class VPContractDetailResponse extends VBaseResponse {
          * 规格
          */
         private String  specification;
+
+        /**
+         * 系统计价单位
+         */
+        private String sysChargeUnit;
+
+        /**
+         * 单采数量
+         */
+        private BigDecimal singlePurchaseAmount;
+
+        /**
+         * 未完成的询价单的数量
+         */
+        private BigDecimal inquiryAmount;
+
+        /**
+         * 生成采购合同的数量
+         */
+        private BigDecimal contractAmount;
+
+        /**
+         * 本单位正在途
+         */
+        private BigDecimal tranNum;
+
+        /**
+         * 本单位正可销
+         */
+        private BigDecimal deliverNum;
+
+        /**
+         * 供应商正可销
+         */
+        private BigDecimal supplierDeliverNum;
+
+        /**
+         * 供应商正在途
+         */
+        private BigDecimal supplierTranNum;
+
+
+        List<VService> services;
     }
 
     @Data
@@ -378,5 +421,119 @@ public class VPContractDetailResponse extends VBaseResponse {
          * 版本号
          */
         private int revision;
+    }
+
+    @Data
+    public static class VService {
+
+        /**
+         * 序号
+         */
+        private Integer itemNo;
+
+        /**
+         * 序号
+         */
+        private String createdAt;
+
+        /**
+         * 产品id
+         */
+        private String id;
+
+        /**
+         * 产品编码
+         */
+        private String code;
+
+        /**
+         * 客户自定义产品编码
+         */
+        private String customerPCode;
+
+        /**
+         * 本单位自定义产品编码
+         */
+        private String localPCode;
+
+        /**
+         * 描述
+         */
+        private String describe;
+
+        /**
+         * 数量
+         */
+        private BigDecimal amount;
+
+        /**
+         * 价格
+         */
+        private BigDecimal price;
+
+        /**
+         * 含税价格
+         */
+        private BigDecimal priceVat;
+
+        /**
+         * 未税总价
+         */
+        private BigDecimal totalPrice;
+
+        /**
+         * 含税总价
+         */
+        private BigDecimal totalPriceVat;
+
+        /**
+         * 上一版数量
+         */
+        private BigDecimal previousAmount;
+
+        /**
+         * 上一版未税价格
+         */
+        private BigDecimal previousPrice;
+
+        /**
+         * 上一版未税小计
+         */
+        private BigDecimal previousTotalPrice;
+
+        /**
+         * 上一版含税价格
+         */
+        private BigDecimal previousPriceVat;
+
+        /**
+         * 上一版含税小计
+         */
+        private BigDecimal previousTotalPriceVat;
+
+        /**
+         * 税率
+         */
+        private BigDecimal vatRate;
+
+        /**
+         * 上一版税率
+         */
+        private BigDecimal previousVatRate;
+
+
+        /**
+         * 计价单位
+         */
+        private String chargeUnit;
+
+
+        /**
+         * 面价
+         */
+        private BigDecimal facePrice;
+
+
+
     }
 }

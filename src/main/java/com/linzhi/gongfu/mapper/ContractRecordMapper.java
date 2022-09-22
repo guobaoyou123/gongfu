@@ -177,6 +177,7 @@ public interface ContractRecordMapper {
     @Mapping(target = "totalPriceVat", source = "totalPriceVat")
     @Mapping(target = "previousRemark", source = "remark")
     @Mapping(target = "remark", source = "remark")
+    @Mapping(target = "singlePurchaseQuantity", source = "singlePurchaseQuantity")
     @Mapping(target = "salesContractRecordTempId.revision", expression = "java(salesContractRecordId.getRevision()+1)")
     SalesContractRecordTemp toContractRecordTemp(SalesContractRecord contractRecord);
 

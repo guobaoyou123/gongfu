@@ -985,9 +985,9 @@ public class PurchaseContractService {
     }
 
     /**
-     * 保存导入产品为询价单明细
+     * 保存导入产品为合同明细
      *
-     * @param id          询价单id
+     * @param id          合同主键id
      * @param companyCode 单位id
      * @param operator    操作员编码
      * @return 返回成功或者失败信息
@@ -995,7 +995,7 @@ public class PurchaseContractService {
     @Caching(evict = {
         @CacheEvict(value = "contract_revision_detail;1800", key = "#id+'-'+#revision"),
         @CacheEvict(value = "contract_revision_recordTemp_detail;1800", key = "#id"),
-        @CacheEvict(value = "purchase_contract_List;1800", key = "#companyCode+'-'", allEntries = true)
+        @CacheEvict(value = "purchase_contract_List;1800", key = "#companyCode+'-'+'*'")
     })
     @Transactional
     public Map<String, Object> saveImportProducts(String id, String companyCode, String operator, int revision) {
