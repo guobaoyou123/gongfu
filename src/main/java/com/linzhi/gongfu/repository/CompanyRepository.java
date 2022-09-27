@@ -71,4 +71,9 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
         "  where chi_short=?1 and code <>?2  and role='1' "
         , nativeQuery = true)
     int checkRepeat(String shortName, String companyCode);
+
+    @Query(value = "select c.*  from comp_base c \n" +
+        "left join comp_trade t on t.comp_buyer = c.code\n" +
+        "where t.comp_saler=?1 and t.saler_belong_to like ?2",nativeQuery = true)
+    List<Company> findCustomers(String companyCode,String operator);
 }

@@ -20,7 +20,7 @@ import java.util.List;
  * @author xutao
  * @create_at 2022-05-24
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ContractRecordMapper.class})
 public interface ContractMapper {
 
 
@@ -54,6 +54,12 @@ public interface ContractMapper {
     @Mapping(target = "confirmTaxedTotal", source = "confirmTaxedTotal")
     VPContractPageResponse.VContract toContractPage(TContract tContract);
 
+    /**
+     * 将获取到的采购合同版本详情转换成可供使用的采购合同版本详情
+     *
+     * @param contractRevisionDetail 采购合同版本详情
+     * @return 采购合同版本详情
+     */
     @Mapping(target = "id", source = "purchaseContractRevisionId.id")
     @Mapping(target = "revision", source = "purchaseContractRevisionId.revision")
     @Mapping(target = "code", source = "code")
@@ -90,6 +96,11 @@ public interface ContractMapper {
     @Mapping(target = "discountedTotalPrice", source = "discountedTotalPrice")
     TContract toTContractDetail(PurchaseContractRevisionDetail contractRevisionDetail);
 
+    /**
+     * 将可供使用的采购合同详情转换为前台展示的采购合同详情
+     * @param tContract 可供使用的采购合同详情
+     * @return 前台展示的采购合同详情
+     */
     @Mapping(target = "contractNo", source = "orderCode")
     @Mapping(target = "supplierNo", source = "supplierContractNo")
     @Mapping(target = "salesContractId", source = "salesContractId")
@@ -106,6 +117,11 @@ public interface ContractMapper {
     @Mapping(target = "consigneeCode", source = "contactCode")
     VPContractDetailResponse.VContract toContractDetail(TContract tContract);
 
+    /**
+     * 从合同详情中提取合同版本基础信息
+     * @param contractRevisionDetail 合同详情
+     * @return 合同版本基础信息
+     */
     PurchaseContractRevision toContractRevision(PurchaseContractRevisionDetail contractRevisionDetail);
 
     @Mapping(target = "received", expression = "java(contractReceived.getDelivered()!=null?contractReceived.getReceived()!=null?contractReceived.getDelivered().subtract(contractReceived.getReceived()):contractReceived.getDelivered():null)")
@@ -181,12 +197,12 @@ public interface ContractMapper {
     @Mapping(target = "discount", source = "discount")
     @Mapping(target = "discountedTotalPrice", source = "discountedTotalPrice")
     @Mapping(target = "revisions",source = "salesContractRevisions")
-   TContract toTContractDetail(SalesContractRevisionDetail contractRevisionDetail);
+    TContract toTContractDetail(SalesContractRevisionDetail contractRevisionDetail);
 
     List<TRevision> toTContractDetails(List<SalesContractRevision> salesContractRevisions);
+
     @Mapping(target = "revision",source = "salesContractRevisionId.revision")
     TRevision toTRevision(SalesContractRevision salesContractRevision);
-
 
     SalesContractRevision toContractRevision(SalesContractRevisionDetail contractRevisionDetail);
 

@@ -89,6 +89,7 @@ public interface PurchaseContractRepository
         "      ,b.saler_comp\n" +
         "      ,b.saler_comp_name\n" +
         "      ,b.created_at\n" +
+        "      ,b.paired_code\n" +
         "      ,b.state ,c.code ,r.order_code ,d.order_code,d.saler_order_code ,d.revision,  \n" +
         "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
@@ -128,6 +129,7 @@ public interface PurchaseContractRepository
         "      ,b.saler_comp\n" +
         "      ,b.saler_comp_name\n" +
         "      ,b.created_at\n" +
+        "      ,b.paired_code\n" +
         "      ,b.state ,c.code ,r.order_code ,d.order_code ,d.saler_order_code,d.revision,  \n" +
         "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",

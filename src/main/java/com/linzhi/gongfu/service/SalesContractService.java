@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -126,7 +127,7 @@ public class SalesContractService {
     }
 
     /**
-     * 根据合同主键、版本号查询采购合同详情
+     * 根据合同主键、版本号查询销售合同详情
      *
      * @param id       合同主键
      * @param revision 版本号
@@ -152,7 +153,6 @@ public class SalesContractService {
         return contractRevision.map(contractMapper::toContractDetail).orElse(null);
     }
 
-
     /**
      * 判断修改后的合同是否与上一版本相同
      *
@@ -161,16 +161,16 @@ public class SalesContractService {
      * @return 返回是或者否
      */
     public boolean judgeContractRev(String id, Integer revision) {
-        SalesContractRevision contractRevision = salesContractRevisionRepository.findById(SalesContractRevisionId.builder()
-            .id(id)
-            .revision(revision)
-            .build()).orElseThrow();
-        SalesContractRevision perContractRevision = salesContractRevisionRepository.findById(SalesContractRevisionId.builder()
-            .id(id)
-            .revision(revision - 1)
-            .build()).orElseThrow();
-        List<SalesContractRecordTemp> contractRecordTemps = salesContractRecordTempRepository.
-            findContractRecordTempsBySalesContractRecordTempId_ContractId(id);
+        //合同详情
+        SalesContractRevisionDetail salesContractRevisionDetail = getSalesContractRevisionDetail(id,revision);
+        //获取版本号为revision 的版本基础详情
+        SalesContractRevision contractRevision = salesContractRevisionDetail.getSalesContractRevisions().stream()
+            .filter(s->s.getSalesContractRevisionId().getRevision().intValue()==revision.intValue())
+            .toList().get(0);
+        SalesContractRevision perContractRevision = salesContractRevisionDetail.getSalesContractRevisions().stream()
+            .filter(s->s.getSalesContractRevisionId().getRevision().intValue()==(revision.intValue()-1))
+            .toList().get(0);;
+        List<SalesContractRecordTemp> contractRecordTemps =salesContractRevisionDetail.getContractRecordTemps();
         StringBuilder fingerprint = new StringBuilder(contractRevision.getOfferMode() + "-");
         for (SalesContractRecordTemp contractRecordTemp : contractRecordTemps) {
 
@@ -511,7 +511,12 @@ public class SalesContractService {
      * @param operator    操作员编码
      * @return 返回版本号
      */
-    @CacheEvict(value = "sales_contract_List;1800", key = "#companyCode+'-'+'*'")
+    @Caching(
+        evict = {
+            @CacheEvict(value = "sales_contract_List;1800", key = "#companyCode+'-'+'*'"),
+            @CacheEvict(value = "sales_contract_revision_detail;1800", key = "#id+'-'+'*'")
+        }
+    )
     @Transactional
     public Integer modifyContractState(String id, String companyCode, String operator, Integer revision) {
         try {
@@ -532,7 +537,7 @@ public class SalesContractService {
             contractRevision.setModifiedBy(operator);
             salesContractRevisionRepository.save(contractRevision);
             if (salesContractRecords != null && salesContractRecords.size() > 0) {
-                List<SalesContractRecordTemp> contractRecordTemps = contractRevisionDetail.getContractRecords()
+                List<SalesContractRecordTemp> contractRecordTemps = salesContractRecords
                     .stream().map(contractRecordMapper::toContractRecordTemp).toList();
                 salesContractRecordTempRepository.saveAll(contractRecordTemps);
             }
@@ -1151,7 +1156,7 @@ public class SalesContractService {
      * @param contractDetail 合同基本信息
      */
     @Caching(evict = {
-        @CacheEvict(value = "sales_contract_revision_detail;1800", key = "#id+'-'+#revision"),
+        @CacheEvict(value = "sales_contract_revision_detail;1800", key = "#id+'-'+'*'"),
         @CacheEvict(value = "sales_contract_List;1800", key = "#companyCode+'-'+'*'")
     })
     @Transactional
@@ -1172,13 +1177,18 @@ public class SalesContractService {
     }
 
     /**
-     * 撤销采购合同
+     * 撤销销售合同
      *
      * @param id          合同主键
      * @param companyCode 本单位编码
      * @param operator    操作员编码
      */
-    @CacheEvict(value = "sales_contract_List;1800", key = "#companyCode+'-'+'*'")
+    @Caching(
+        evict = {
+            @CacheEvict(value = "sales_contract_revision_detail;1800", key = "#id+'-'+'*'"),
+            @CacheEvict(value = "sales_contract_List;1800", key = "#companyCode+'-'+'*'")
+        }
+    )
     @Transactional
     public void removeSalesContract(String id, String companyCode, String operator) {
         try {
@@ -1197,9 +1207,12 @@ public class SalesContractService {
             } else if (salesContractBase.getState().equals(ContractState.UN_FINISHED) && revision == 1) {
                 //入格合同状态为未完成并且等于1，将临时合同记录存入合同记录中
                 List<SalesContractRecord> records = new ArrayList<>();
-                List<SalesContractRecordTemp> contractRecordTemps = salesContractRecordTempRepository.findContractRecordTempsBySalesContractRecordTempId_ContractId(id);
+                List<SalesContractRecordTemp> contractRecordTemps = salesContractRecordTempRepository
+                    .findContractRecordTempsBySalesContractRecordTempId_ContractId(id);
                 for (int i = 0; i < contractRecordTemps.size(); i++) {
-                    SalesContractRecord record = Optional.of(contractRecordTemps.get(i)).map(contractRecordMapper::toSalesContractRecord).orElse(null);
+                    SalesContractRecord record = Optional.of(contractRecordTemps.get(i))
+                        .map(contractRecordMapper::toSalesContractRecord)
+                        .orElse(null);
                     record.getSalesContractRecordId().setCode(i + 1);
                     records.add(
                         record
@@ -1399,6 +1412,20 @@ public class SalesContractService {
             e.printStackTrace();
         }
 
+    }
+
+
+    @Transactional
+    public void  saveSinglePurchaseAmount(String id, Integer revision, List<VSinglePurchaseRequest> singlePurchases){
+        try {
+
+            List<SalesContractRecord> list = salesContractRecordRepository
+                .findContractRecordsBySalesContractRecordId_ContractIdAndSalesContractRecordId_Revision(id,revision);
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 }

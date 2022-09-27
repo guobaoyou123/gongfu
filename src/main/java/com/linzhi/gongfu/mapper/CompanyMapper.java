@@ -266,4 +266,15 @@ public interface CompanyMapper {
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "usci", source = "USCI")
     VForeignCustomerResponse.VCustomer toVCustomer(TCompanyBaseInformation company);
+
+    /**
+     * 明确可以成功获取到客户公司基础信息时，向预获取响应转换
+     *
+     * @param info 公司基础信息
+     * @return 客户公司基本信息预获取响应
+     */
+    @Mapping(target = "code", source = "code")
+    @Mapping(target = "name", source = "shortName")
+    @Mapping(target = "sort", constant = "1")
+    VCustomersResponse.VCustomer toPreloadCustomer(TCompanyBaseInformation info);
 }

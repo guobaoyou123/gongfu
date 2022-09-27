@@ -1248,9 +1248,9 @@ public class ContractController {
         @PathVariable("revision") Integer revision
     ) {
         boolean repetitive = false;
-        //查询采购合同
+        //查询销售合同
         var contract = salesContractService.getSalesContractDetail(id, revision);
-        //如果合同版本号大于1且状态为未完成，需要判断是否已上一版内容一致
+        //如果合同版本号大于1且状态为未完成，需要判断是否与上一版内容一致
         if (revision > 1 && contract.getState().equals(ContractState.UN_FINISHED.getState() + ""))
             repetitive = salesContractService.judgeContractRev(id, revision);
         return VPContractDetailResponse.builder()
@@ -1308,6 +1308,7 @@ public class ContractController {
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
+
         var flag = salesContractService.saveProduct(
             product.orElseThrow().getProductId(),
             product.get().getPrice(),
@@ -1317,6 +1318,7 @@ public class ContractController {
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode()
         );
+
         return VBaseResponse.builder()
             .code(flag ? 200 : 500)
             .message(flag ? "添加产品成功" : "添加产品失败")
@@ -1671,5 +1673,16 @@ public class ContractController {
             .build();
     }
 
+    /**
+     * 保存单采数量
+     * @param id 合同主键
+     * @param revision 版本号
+     * @param singlePurchaseAmounts 单采数量列表
+     * @return 返回成功或者失败信息
+     */
+    @PostMapping("/contract/sales/{id}/{revision}/singlePurchase")
+    public VBaseResponse saveSinglePurchaseAmount(@PathVariable("id") String id,@PathVariable("revision") Integer revision,@RequestBody List<VSinglePurchaseRequest> singlePurchaseAmounts){
 
+        return  VBaseResponse.builder().build();
+    }
 }

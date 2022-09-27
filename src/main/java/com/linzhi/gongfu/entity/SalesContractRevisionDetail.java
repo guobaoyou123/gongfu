@@ -239,9 +239,6 @@ public class SalesContractRevisionDetail implements Serializable {
      * 合同版本
      */
     @OneToMany
-    @JoinColumns({
-        @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false),
-        @JoinColumn(name = "revision", referencedColumnName = "revision", insertable = false, updatable = false)
-    })
+    @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     private List<SalesContractRevision> salesContractRevisions;
 }

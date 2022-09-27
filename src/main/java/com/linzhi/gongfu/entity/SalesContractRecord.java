@@ -201,10 +201,5 @@ public class SalesContractRecord {
     @Column(name = "remark")
     private String remark;
 
-    /**
-     * 单独采购数量
-     */
-    @Column(name = "single_purchase_quantity")
-    private String singlePurchaseQuantity;
 
 }

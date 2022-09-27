@@ -290,4 +290,27 @@ public class CustomerController {
             .message("操作失败")
             .build();
     }
+
+    /**
+     * 查询所有我负责的客户列表
+     * @param name 客户公司名称
+     * @return 客户列表
+     */
+    @GetMapping("/customers")
+    public VCustomersResponse findCustomers(@RequestParam("name") Optional<String> name){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var customers = companyService.findAllCustomer(
+            name.orElse(""),
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        ).stream().map(companyMapper::toPreloadCustomer)
+            .toList();
+        return VCustomersResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .customers(customers)
+            .build();
+    }
 }

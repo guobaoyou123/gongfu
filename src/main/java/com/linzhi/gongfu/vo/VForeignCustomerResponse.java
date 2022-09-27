@@ -8,7 +8,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于前端外客户情的响应体组建
+ * 用于前端外客户详情的响应体组建
  *
  * @author zgh
  * @create_at 2022-08-31

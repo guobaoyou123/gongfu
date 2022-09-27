@@ -59,6 +59,7 @@ public class SalesContractBase implements Serializable {
         @JoinColumn(name = "created_by", referencedColumnName = "code", insertable = false, updatable = false)
     })
     private OperatorBase operator;
+
     /**
      * 客户公司编码
      */

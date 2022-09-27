@@ -159,21 +159,6 @@ public class TContractRecord {
     private BigDecimal facePrice;
 
     /**
-     * 单采数量
-     */
-    private BigDecimal singlePurchaseAmount;
-
-    /**
-     * 未完成的询价单的数量
-     */
-    private BigDecimal inquiryAmount;
-
-    /**
-     * 生成采购合同的数量
-     */
-    private BigDecimal contractAmount;
-
-    /**
      * 本单位正在途
      */
     private BigDecimal tranNum;

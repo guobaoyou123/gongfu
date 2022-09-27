@@ -950,7 +950,27 @@ public class CompanyService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    @Cacheable(value = "customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#name")
+    public  List<TCompanyBaseInformation> findAllCustomer(String name,String companyCode,String operator){
+        QCompany qCompany = QCompany.company;
+        QCompTrad qCompTrad= QCompTrad.compTrad;
 
+        JPAQuery<Company> query = queryFactory.selectDistinct(qCompany).from(qCompany).leftJoin(qCompTrad)
+            .on(qCompany.code.eq(qCompTrad.compTradId.compBuyer));
+        if (!name.equals("")) {
+            query.where(qCompany.nameInCN.like("%"+name+"%").or(qCompany.shortNameInCN.like("%"+name+"%")));
+        }
+        query.where(qCompTrad.compTradId.compSaler.eq(companyCode));
+        if(!operator.equals("000")){
+            query.where(qCompTrad.salerBelongTo.like("%"+operator+",%"));
+        }
+        query.where(qCompany.state.eq(Availability.ENABLED));
+        List<Company> companies = query.orderBy(qCompany.code.desc())
+            .fetch();
+        return companies.stream()
+            .map(companyMapper::toBaseInformation)
+            .collect(Collectors.toList());
     }
 }
