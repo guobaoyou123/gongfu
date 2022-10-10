@@ -3,12 +3,10 @@ package com.linzhi.gongfu.entity;
 import com.linzhi.gongfu.enumeration.ContractState;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -21,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "purchase_contract_base")
-public class PurchaseContractDetail {
+public class PurchaseContractBase implements Serializable {
     /**
      * 合同唯一id
      */
@@ -99,4 +97,13 @@ public class PurchaseContractDetail {
      */
     @Column(name = "paired_code")
     private String pairedCode;
+
+    /**
+     * 销售合同信息
+     */
+    @OneToOne
+    @JoinColumns({
+        @JoinColumn(name = "sales_contract_id", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private SalesContractBase salesContractBase;
 }
