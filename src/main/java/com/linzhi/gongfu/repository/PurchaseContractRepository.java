@@ -6,6 +6,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+
 /**
  * 采购合同；列表的Repository
  *
@@ -25,7 +26,7 @@ public interface PurchaseContractRepository
         "from purchase_contract_base c ,purchase_contract_rev  r  " +
         "where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  " +
         "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) " +
-        "  and  c.state ='1' " ,
+        "  and  c.state ='1' ",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode);
 
@@ -94,7 +95,7 @@ public interface PurchaseContractRepository
         "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
-    List<PurchaseContractList> listContracts(String compId, String operator,  String state);
+    List<PurchaseContractList> listContracts(String compId, String operator, String state);
 
     /**
      * 合同列表

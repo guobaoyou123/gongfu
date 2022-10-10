@@ -1,22 +1,19 @@
 package com.linzhi.gongfu.security;
 
-import java.io.IOException;
-import java.util.Objects;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.linzhi.gongfu.infrastructure.HttpServletJsonResponseWrapper;
 import com.linzhi.gongfu.util.URLTools;
 import com.linzhi.gongfu.vo.VBaseResponse;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * 用于处理操作员成功完成登出系统的响应的处理器
@@ -32,7 +29,7 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler {
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-            throws IOException, ServletException {
+        throws IOException, ServletException {
         try {
             String tokenHeader = request.getHeader("Authorization");
             String requestDomain = URLTools.extractSubdomainName(request.getHeader("CompanyDomain"));

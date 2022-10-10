@@ -7,6 +7,7 @@ import javax.persistence.Converter;
 
 /**
  * 转换枚举型申请采购状态到数据库的char类型字段
+ *
  * @author zhangguanghua
  * @create_at 2022-07-19
  */

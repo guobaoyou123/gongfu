@@ -39,39 +39,33 @@ public class VInquiryRequest {
     public static class VProduct {
 
         /**
+         * 服务列表(销售合同用)
+         */
+        List<VService> services;
+        /**
          * 产品序号
          */
         private int code;
-
         /**
          * 价格
          */
         private BigDecimal price;
-
         /**
          * 税率
          */
         private BigDecimal vatRate;
-
         /**
          * 数量
          */
         private BigDecimal amount;
-
         /**
          * 计价单位(销售合同用)
          */
         private String chargeUnit;
-
         /**
          * 与系统计价单位的比例(销售合同用)
          */
         private BigDecimal ratio;
-
-        /**
-         * 服务列表(销售合同用)
-         */
-        List<VService> services;
     }
 
     @Data

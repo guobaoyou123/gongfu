@@ -5,7 +5,6 @@ import com.linzhi.gongfu.entity.CompTrad;
 import com.linzhi.gongfu.entity.CompTradId;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.TaxMode;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;

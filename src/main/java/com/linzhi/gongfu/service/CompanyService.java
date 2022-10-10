@@ -572,8 +572,8 @@ public class CompanyService {
      * @param operators 操作员编码（以逗号隔开）
      */
     @Caching(evict = {
-        @CacheEvict(value = "Enrolled_Supplier_detail;1800", key = "#compBuyer+'-'+#compSaler",condition = "#type=='1'"),
-        @CacheEvict(value = "customerDetail;1800", key = "#compSaler+'-'+#compBuyer",condition = "#type=='2'"),
+        @CacheEvict(value = "Enrolled_Supplier_detail;1800", key = "#compBuyer+'-'+#compSaler", condition = "#type=='1'"),
+        @CacheEvict(value = "customerDetail;1800", key = "#compSaler+'-'+#compBuyer", condition = "#type=='2'"),
 
     })
     @Transactional
@@ -813,7 +813,7 @@ public class CompanyService {
         JPAQuery<Company> query = queryFactory.selectDistinct(qCompany)
             .from(qCompany);
         query.leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
-        if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER) ) {
+        if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)) {
             query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compBuyer));
             query.where(qCompTrad.compTradId.compSaler.eq(salerCode));
         } else {
@@ -877,12 +877,12 @@ public class CompanyService {
                     enrolledCompanyRepository.save(enrolledCompany1);
                     enrolledCompany = Optional.of(enrolledCompany1);
                 }
-                if ( companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER)) {
+                if (companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER)) {
                     maxCode = companyRepository.findSupplierMaxCode(companyRole.getSign(), companyCode);
-                    maxCode = maxCode==null?"101":maxCode;
-                } else if ( companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)) {
+                    maxCode = maxCode == null ? "101" : maxCode;
+                } else if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)) {
                     maxCode = companyRepository.findCustomerMaxCode(companyRole.getSign(), companyCode);
-                    maxCode = maxCode==null?"201":maxCode;
+                    maxCode = maxCode == null ? "201" : maxCode;
                 }
                 code = companyCode + maxCode;
                 company = Company.builder()
@@ -915,7 +915,7 @@ public class CompanyService {
             company.setEmail(foreignCompany.getEmail());
             company.setPhone(foreignCompany.getPhone());
             companyRepository.save(company);
-            CompTrad compTrade= compTradeRepository.findById(compTradId).orElse(null);
+            CompTrad compTrade = compTradeRepository.findById(compTradId).orElse(null);
             if (compTrade != null) {
                 if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER))
                     compTrade.setSalerBelongTo(foreignCompany.getOperators());
@@ -925,7 +925,7 @@ public class CompanyService {
                     .compTradId(compTradId)
                     .taxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED)
                     .state(Availability.ENABLED)
-                    .salerBelongTo(companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)? foreignCompany.getOperators() : null)
+                    .salerBelongTo(companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER) ? foreignCompany.getOperators() : null)
                     .build();
             }
             //保存价税模式
@@ -952,19 +952,26 @@ public class CompanyService {
         }
     }
 
+    /**
+     * 查找所有的客户
+     * @param name 客户公司名称
+     * @param companyCode 本单位公司编码
+     * @param operator 操作员编码
+     * @return 客户列表
+     */
     @Cacheable(value = "customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#name")
-    public  List<TCompanyBaseInformation> findAllCustomer(String name,String companyCode,String operator){
+    public List<TCompanyBaseInformation> findAllCustomer(String name, String companyCode, String operator) {
         QCompany qCompany = QCompany.company;
-        QCompTrad qCompTrad= QCompTrad.compTrad;
+        QCompTrad qCompTrad = QCompTrad.compTrad;
 
         JPAQuery<Company> query = queryFactory.selectDistinct(qCompany).from(qCompany).leftJoin(qCompTrad)
             .on(qCompany.code.eq(qCompTrad.compTradId.compBuyer));
         if (!name.equals("")) {
-            query.where(qCompany.nameInCN.like("%"+name+"%").or(qCompany.shortNameInCN.like("%"+name+"%")));
+            query.where(qCompany.nameInCN.like("%" + name + "%").or(qCompany.shortNameInCN.like("%" + name + "%")));
         }
         query.where(qCompTrad.compTradId.compSaler.eq(companyCode));
-        if(!operator.equals("000")){
-            query.where(qCompTrad.salerBelongTo.like("%"+operator+",%"));
+        if (!operator.equals("000")) {
+            query.where(qCompTrad.salerBelongTo.like("%" + operator + ",%"));
         }
         query.where(qCompany.state.eq(Availability.ENABLED));
         List<Company> companies = query.orderBy(qCompany.code.desc())

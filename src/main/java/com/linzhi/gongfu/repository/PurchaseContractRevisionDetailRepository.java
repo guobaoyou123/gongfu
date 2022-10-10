@@ -7,12 +7,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 /**
  * 采购合同详细信息的Repository
  *
@@ -23,33 +25,14 @@ public interface PurchaseContractRevisionDetailRepository
     extends CrudRepository<PurchaseContractRevisionDetail, PurchaseContractRevisionId>, QuerydslPredicateExecutor<PurchaseContractRevisionDetail> {
 
     /**
-     * 合同详情
-     *
-     * @param revision 版本号
-     * @param id       合同主键
-     * @return 合同详情
-     */
-    @Query(value = "select r.*,\n" +
-        "b.code as code ,b.sales_contract_id as salesContractId,b.buyer_comp as buyer_comp,b.buyer_comp_name as buyer_comp_name,b.created_by_comp as created_by_comp,b.created_by as created_by,b.saler_comp as saler_comp,b.saler_comp_name as saler_comp_name,b.state as state,\n" +
-        "o.name as createdByName,a.code as salesContractCode ,re.order_code as salesOrderCode, \n" +
-        "pre.total_price as previousUntaxedTotal,pre.total_price_vat as previousTaxedTotal  \n" +
-        " from purchase_contract_rev r \n" +
-        "left join purchase_contract_base b on b.id = r.id\n" +
-        "left join comp_operator o on o.dc_comp_id=b.created_by_comp and o.code=b.created_by\n" +
-        "left join purchase_contract_base a on a.id = b.sales_contract_id\n" +
-        "left join purchase_contract_rev re on re.id=b.id and re.revision = (select MAX(e.revision) from purchase_contract_rev e  where e.id = re.id)\n" +
-        "left join purchase_contract_rev pre on pre.id=re.id and pre.revision = (re.revision-1) \n" +
-        "where r.revision=?1 and r.id=?2", nativeQuery = true)
-    Optional<PurchaseContractRevisionDetail> getDetail(int revision, String id);
-
-    /**
-     * 合同版本号列表
+     * 根据合同编码和版本号查找合同详情
      *
      * @param id 合同主键
-     * @return 合同版本号列表
+     * @return 合同详情
      */
-    @Query(value = "select d.purchaseContractRevisionId.revision as revision,d.createdAt as createdAt from PurchaseContractRevisionDetail d where d.purchaseContractRevisionId.id=?1")
-    List<Map<String, Object>> listRevision(String id);
+    @Transactional(readOnly = true)
+    Optional<PurchaseContractRevisionDetail> getPurchaseContractRevisionDetailByPurchaseContractRevisionId(PurchaseContractRevisionId id);
+
 
     /**
      * 更新合同总价
@@ -63,7 +46,7 @@ public interface PurchaseContractRevisionDetailRepository
      * @param revision      版本号
      */
     @Modifying
-    @Query(value = "update   contract_rev  set total_price=?1 ,total_price_vat=?2,vat=?3 ,modified_at=?4,modified_by=?5 where  id=?6 and revision=?7 ",
+    @Query(value = "update   purchase_contract_rev  set total_price=?1 ,total_price_vat=?2,vat=?3 ,modified_at=?4,modified_by=?5 where  id=?6 and revision=?7 ",
         nativeQuery = true)
     void updateContract(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, LocalDateTime localDateTime, String operator, String id, int revision);
 

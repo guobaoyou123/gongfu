@@ -2,16 +2,12 @@ package com.linzhi.gongfu.repository;
 
 
 import com.linzhi.gongfu.entity.SalesContractRevision;
-import com.linzhi.gongfu.entity.SalesContractRevisionDetail;
 import com.linzhi.gongfu.entity.SalesContractRevisionId;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -45,7 +41,7 @@ public interface SalesContractRevisionRepository
         "from sales_contract_base c ,sales_contract_rev  r  " +
         "where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  " +
         "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) " +
-        "  and  c.state ='1' " ,
+        "  and  c.state ='1' ",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode);
 
@@ -64,4 +60,13 @@ public interface SalesContractRevisionRepository
         " and c.id <> ?3",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode, String contractId);
+
+    /**
+     * 查找合同版本详情
+     * @param id 系统合同主键
+     * @return 合同版本详情
+     */
+    @Query(value = "select  s.orderCode from SalesContractRevision s " +
+        "where s.salesContractRevisionId.id=?1 and s.salesContractRevisionId.revision=(select max(sa.salesContractRevisionId.revision) from SalesContractRevision sa where sa.salesContractRevisionId.id=s.salesContractRevisionId.id )")
+   Optional<SalesContractRevision> getSalesContractRevision(String id);
 }

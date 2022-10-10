@@ -90,7 +90,7 @@ public class VPContractPageResponse extends VBaseResponse {
         private String salesContractNo;
 
         /**
-         *创建时间
+         * 创建时间
          */
         private String createdAt;
 

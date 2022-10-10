@@ -25,13 +25,13 @@ public enum CompanyRole {
         this.sign = sign;
     }
 
-    public String getSign() {
-        return sign;
-    }
-
     public static Optional<CompanyRole> valueBySign(String sign) {
         return Arrays.stream(CompanyRole.values())
-                .filter(role -> role.getSign().equals(sign))
-                .findFirst();
+            .filter(role -> role.getSign().equals(sign))
+            .findFirst();
+    }
+
+    public String getSign() {
+        return sign;
     }
 }

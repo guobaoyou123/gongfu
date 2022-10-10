@@ -1,12 +1,12 @@
 package com.linzhi.gongfu.security.token;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
-
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
 
 /**
  * 用于保存操作员非登录请求时提供的令牌进行验证的登录信息
@@ -19,7 +19,7 @@ public class OperatorAuthenticationToken extends AbstractAuthenticationToken {
     private final String token;
 
     public OperatorAuthenticationToken(String domain, String token,
-            Collection<? extends GrantedAuthority> authorities) {
+                                       Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
         this.domain = domain;
         this.token = token;
@@ -56,7 +56,7 @@ public class OperatorAuthenticationToken extends AbstractAuthenticationToken {
      */
     @Override
     public Object getPrincipal() {
-        return new String[] { this.domain, this.token };
+        return new String[]{this.domain, this.token};
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.linzhi.gongfu.enumeration;
 
 public enum InquiryType {
-    INQUIRY_LIST('0'),  QUOTATION('1');
+    INQUIRY_LIST('0'), QUOTATION('1');
 
     private final char type;
 

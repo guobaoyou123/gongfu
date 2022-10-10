@@ -1,10 +1,5 @@
 package com.linzhi.gongfu.security;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.stream.Collectors;
-
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.OperatorId;
@@ -18,7 +13,8 @@ import com.linzhi.gongfu.security.token.OperatorAuthenticationToken;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.OperatorService;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -29,8 +25,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * 对操作员登录后的正常会话请求提供的会话Token进行处理的认证处理器
@@ -56,12 +54,12 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
             String[] principals = (String[]) authentication.getPrincipal();
             var session = tokenStore.fetch(principals[0], principals[1]);
             var operator = companyService.findCompanyInformationByHostname(principals[0])
-                    .map(TCompanyBaseInformation::getCode)
-                    .map(companyCode -> OperatorId.builder().companyCode(companyCode)
-                            .operatorCode(session.getOperatorCode())
-                            .build())
-                    .flatMap(operatorService::findOperatorByID)
-                    .orElseThrow(UnexistOperatorException::new);
+                .map(TCompanyBaseInformation::getCode)
+                .map(companyCode -> OperatorId.builder().companyCode(companyCode)
+                    .operatorCode(session.getOperatorCode())
+                    .build())
+                .flatMap(operatorService::findOperatorByID)
+                .orElseThrow(UnexistOperatorException::new);
             return createSuccessAuthentication(session, operator, authentication);
         } catch (NonexistentTokenException e) {
             log.error("操作员的会话Token没有找到，会话可能已过期或者被伪造。");
@@ -89,26 +87,26 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
      * @return 代表认证成功的会话Token
      */
     private OperatorSessionToken createSuccessAuthentication(Session session, TOperatorInfo operator,
-            Authentication authentication) {
+                                                             Authentication authentication) {
         var privileges = new ArrayList<GrantedAuthority>();
         privileges.add(new SimpleGrantedAuthority("ROLE_OPERATOR"));
         if (operator.getAdmin().equals(Whether.YES)) {
             privileges.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
         var sceneCodes = session.getScenes().stream()
-                .map(Scene::getCode)
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+            .map(Scene::getCode)
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
         privileges.addAll(sceneCodes);
         var sessionToken = new OperatorSessionToken(
-                operator.getCode(),
-                operator.getName(),
-                operator.getCompanyCode(),
-                operator.getCompanyName(),
-                operator.getCompanyDomain(),
-                session.getToken(),
-                session.getExpriesAt(),
-                privileges);
+            operator.getCode(),
+            operator.getName(),
+            operator.getCompanyCode(),
+            operator.getCompanyName(),
+            operator.getCompanyDomain(),
+            session.getToken(),
+            session.getExpriesAt(),
+            privileges);
         sessionToken.setDetails(authentication);
         return sessionToken;
     }
@@ -130,7 +128,7 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
      */
     private OperatorSessionToken createAnonymousAuthentication() {
         var sessionToken = new OperatorSessionToken("-1", "Anonymous", "-1", "Anonymous", "NOWHERE", "Anonymous",
-                LocalDateTime.of(2099, 12, 31, 23, 59), Collections.emptyList());
+            LocalDateTime.of(2099, 12, 31, 23, 59), Collections.emptyList());
         return sessionToken;
     }
 }

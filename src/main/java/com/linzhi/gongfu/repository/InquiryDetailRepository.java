@@ -4,6 +4,7 @@ import com.linzhi.gongfu.entity.InquiryDetail;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
+
 /**
  * 询价单详情的Repository
  *

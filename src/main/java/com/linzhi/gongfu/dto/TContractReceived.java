@@ -39,9 +39,15 @@ public class TContractReceived {
     private String chargeUnit;
 
     /**
-     * 收货（发货）数量
+     * 收货数量
      */
     private BigDecimal received;
+
+
+    /**
+     * 发货数量
+     */
+    private BigDecimal delivered;
 
     /**
      * 产品数量

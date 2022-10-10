@@ -2,13 +2,13 @@ package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.SalesContractRecordTemp;
 import com.linzhi.gongfu.entity.SalesContractRecordTempId;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+
 /**
  * 销售合同临时明细的Repository
  *
@@ -42,7 +42,7 @@ public interface SalesContractRecordTempRepository
      */
     @Modifying
     @Query("delete from SalesContractRecordTemp as c  where c.salesContractRecordTempId.contractId=?1 and c.salesContractRecordTempId.code in ?2")
-    void deleteProducts(String id,List<Integer> code);
+    void deleteProducts(String id, List<Integer> code);
 
     /**
      * 删除合同明细中全部的临时记录

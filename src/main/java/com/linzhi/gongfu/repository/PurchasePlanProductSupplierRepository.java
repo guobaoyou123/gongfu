@@ -10,6 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+
 /**
  * 采购计划供应商的Repository
  *
@@ -63,8 +64,8 @@ public interface PurchasePlanProductSupplierRepository extends CrudRepository<Pu
      * 查询最大序号
      *
      * @param productId 产品主键
-     * @param planCode 采购计划编码
-     * @param dcCompId 单位编码
+     * @param planCode  采购计划编码
+     * @param dcCompId  单位编码
      * @return 最大序号
      */
     @Query("select  max(p.serial)+1 from PurchasePlanProductSupplier p where p.purchasePlanProductSupplierId.productId=?1 and p.purchasePlanProductSupplierId.planCode=?2 and  p.purchasePlanProductSupplierId.dcCompId=?3")

@@ -15,6 +15,7 @@ public interface ContractRecordMapper {
 
     /**
      * 将获取到的采购合同明细转换成可供使用的合同明细
+     *
      * @param contractRecord 采购合同明细
      * @return 可供使用的合同明细
      */
@@ -39,6 +40,7 @@ public interface ContractRecordMapper {
 
     /**
      * 将获取到的采购合同临时明细转换成可供使用的临时合同明细
+     *
      * @param contractRecordTemp 采购合同临时明细
      * @return 可供使用的临时合同明细
      */
@@ -70,6 +72,7 @@ public interface ContractRecordMapper {
 
     /**
      * 将合同明细转换成临时明细
+     *
      * @param contractRecord 合同明细
      * @return 临时明细
      */
@@ -98,6 +101,7 @@ public interface ContractRecordMapper {
 
     /**
      * 将临时合同明细转换为合同明细
+     *
      * @param contractRecord 临时合同明细
      * @return 合同明细
      */
@@ -117,6 +121,7 @@ public interface ContractRecordMapper {
 
     /**
      * 将获取的产品预览信息 转换成可供使用的产品预览信息
+     *
      * @param contractRecordPreview 产品预览信息
      * @return 可供使用的产品预览信息
      */
@@ -126,6 +131,7 @@ public interface ContractRecordMapper {
 
     /**
      * 将可供使用的产品预览信息 转换成前台展示的产品预览信息
+     *
      * @param tContractRecordPreview 可供使用的产品预览信息
      * @return 前台展示的产品预览信息
      */
@@ -135,6 +141,7 @@ public interface ContractRecordMapper {
 
     /**
      * 将从数据库中查找到的销售合同明细转换为可供使用的销售合同明细
+     *
      * @param contractRecord 销售合同明细
      * @return 可供使用的销售合同明细
      */
@@ -163,6 +170,7 @@ public interface ContractRecordMapper {
 
     /**
      * 将从数据库中查找到的临时销售合同明细转换为可供使用的临时销售合同明细
+     *
      * @param contractRecordTemp 临时销售合同明细
      * @return 可供使用的临时销售合同明细
      */
@@ -200,6 +208,7 @@ public interface ContractRecordMapper {
 
     /**
      * 将产品明细实体转换为产品临时明细
+     *
      * @param contractRecord 产品明细实体
      * @return 产品临时明细实体
      */
@@ -228,6 +237,7 @@ public interface ContractRecordMapper {
 
     /**
      * 將销售合同临时明细转换为合同明细
+     *
      * @param contractRecord 临时明细
      * @return 合同明细
      */

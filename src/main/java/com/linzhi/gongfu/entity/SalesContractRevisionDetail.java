@@ -209,7 +209,7 @@ public class SalesContractRevisionDetail implements Serializable {
     /**
      * 合同明细
      */
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumns({
         @JoinColumn(name = "contract_id", referencedColumnName = "id", insertable = false, updatable = false),
         @JoinColumn(name = "revision", referencedColumnName = "revision", insertable = false, updatable = false)

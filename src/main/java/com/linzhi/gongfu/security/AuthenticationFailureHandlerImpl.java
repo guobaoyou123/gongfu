@@ -28,15 +28,15 @@ public class AuthenticationFailureHandlerImpl implements AuthenticationFailureHa
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         log.debug("操作员登录被拒绝：[{}] {}", exception.getClass().getSimpleName(), exception.getMessage());
 
-        if(exception.getClass().getSimpleName().equals("NoFoundPasswordException")){
-           var  failureResponse = VAuthenticationResponse.builder()
+        if (exception.getClass().getSimpleName().equals("NoFoundPasswordException")) {
+            var failureResponse = VAuthenticationResponse.builder()
                 .code(402)
-               .operatorCode(request.getParameter("code"))
+                .operatorCode(request.getParameter("code"))
                 .message("需要重新设置密码")
                 .build();
             HttpServletJsonResponseWrapper.wrap(response).write(200, failureResponse);
-        }else{
-            var  failureResponse   = VBaseResponse.builder()
+        } else {
+            var failureResponse = VBaseResponse.builder()
                 .code(403)
                 .message("Access Denied")
                 .build();

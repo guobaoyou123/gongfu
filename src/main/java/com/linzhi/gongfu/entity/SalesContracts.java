@@ -87,6 +87,12 @@ public class SalesContracts {
     private String customerContractNo;
 
     /**
+     * 客户单位编码
+     */
+    @Column
+    private String buyerCompCode;
+
+    /**
      * 客户名称
      */
     @Column

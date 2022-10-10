@@ -1,11 +1,5 @@
 package com.linzhi.gongfu.security;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.entity.Session;
@@ -14,12 +8,16 @@ import com.linzhi.gongfu.mapper.SceneMapper;
 import com.linzhi.gongfu.security.exception.NonexistentTokenException;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.OperatorService;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import lombok.RequiredArgsConstructor;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 在Spring Security中用于管理用户令牌的功能类
@@ -34,6 +32,15 @@ public final class TokenStore {
     private final OperatorService operatorService;
     private final RedisTemplate<String, Session> sessionTemplate;
     private final SceneMapper sceneMapper;
+
+    /**
+     * 生成一个基于UUID算法的用户令牌
+     *
+     * @return 代表用户令牌的UUID字符串
+     */
+    public static String generateToken() {
+        return UUID.randomUUID().toString();
+    }
 
     /**
      * 将给定的令牌组装成Redis存储键
@@ -73,15 +80,6 @@ public final class TokenStore {
     }
 
     /**
-     * 生成一个基于UUID算法的用户令牌
-     *
-     * @return 代表用户令牌的UUID字符串
-     */
-    public static String generateToken() {
-        return UUID.randomUUID().toString();
-    }
-
-    /**
      * 生成指定用户的会话信息，并将其保存到Redis中
      *
      * @param operatorCode 用户的操作员编号
@@ -96,27 +94,27 @@ public final class TokenStore {
         Assert.notNull(token, "提供的操作员令牌为空白。");
         var operation = sessionTemplate.opsForValue();
         companyService.findCompanyInformationByHostname(domain)
-                .map(TCompanyBaseInformation::getCode)
-                .map(code -> OperatorId.builder().companyCode(code).operatorCode(operatorCode)
-                        .build())
-                .flatMap(operatorService::findOperatorByID)
-                .ifPresent(operator -> {
-                    var session = Session.builder()
-                            .token(token)
-                            .operatorCode(operator.getCode())
-                            .operatorName(operator.getName())
-                            .companyCode(operator.getCompanyCode())
-                            .companyName(operator.getCompanyName())
-                            .admin(operator.getAdmin().equals(Whether.YES))
-                            .scenes(sceneMapper.toEntities(operator.getScenes()))
-                            .expriesAt(LocalDateTime.now().plus(expiresAfter, unit.toChronoUnit()))
-                            .build();
-                    operation.set(
-                            assembleKey(domain, token),
-                            session,
-                            expiresAfter,
-                            unit);
-                });
+            .map(TCompanyBaseInformation::getCode)
+            .map(code -> OperatorId.builder().companyCode(code).operatorCode(operatorCode)
+                .build())
+            .flatMap(operatorService::findOperatorByID)
+            .ifPresent(operator -> {
+                var session = Session.builder()
+                    .token(token)
+                    .operatorCode(operator.getCode())
+                    .operatorName(operator.getName())
+                    .companyCode(operator.getCompanyCode())
+                    .companyName(operator.getCompanyName())
+                    .admin(operator.getAdmin().equals(Whether.YES))
+                    .scenes(sceneMapper.toEntities(operator.getScenes()))
+                    .expriesAt(LocalDateTime.now().plus(expiresAfter, unit.toChronoUnit()))
+                    .build();
+                operation.set(
+                    assembleKey(domain, token),
+                    session,
+                    expiresAfter,
+                    unit);
+            });
     }
 
     /**
@@ -132,8 +130,8 @@ public final class TokenStore {
         var operation = sessionTemplate.opsForValue();
         var tokenKey = assembleKey(domain, token);
         return Optional.of(tokenKey)
-                .map(operation::get)
-                .orElseThrow(NonexistentTokenException::new);
+            .map(operation::get)
+            .orElseThrow(NonexistentTokenException::new);
     }
 
     /**
@@ -151,12 +149,12 @@ public final class TokenStore {
         var operation = sessionTemplate.opsForValue();
         var tokenKey = assembleKey(domain, token);
         var renewedSession = Optional.of(tokenKey)
-                .map(operation::get)
-                .map(session -> session.withExpriesAt(session.getExpriesAt().plus(expiresAfter, unit.toChronoUnit())))
-                .orElseThrow(NonexistentTokenException::new);
+            .map(operation::get)
+            .map(session -> session.withExpriesAt(session.getExpriesAt().plus(expiresAfter, unit.toChronoUnit())))
+            .orElseThrow(NonexistentTokenException::new);
         operation.set(
-                tokenKey,
-                renewedSession,
-                Duration.between(LocalDateTime.now(), renewedSession.getExpriesAt()));
+            tokenKey,
+            renewedSession,
+            Duration.between(LocalDateTime.now(), renewedSession.getExpriesAt()));
     }
 }

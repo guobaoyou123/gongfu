@@ -4,6 +4,7 @@ import com.linzhi.gongfu.entity.CompTaxModel;
 import com.linzhi.gongfu.entity.CompTradId;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
+
 /**
  * 交易税模式的Repository
  *

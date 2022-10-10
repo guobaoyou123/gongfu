@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -1243,6 +1244,7 @@ public class ContractController {
      * @return 返回合同详情
      */
     @GetMapping("/contract/sales/{id}/{revision}")
+    @Transactional(readOnly = true)
     public VPContractDetailResponse salesContractDetail(
         @PathVariable("id") String id,
         @PathVariable("revision") Integer revision
@@ -1379,7 +1381,7 @@ public class ContractController {
     }
 
     /**
-     * 判断采购合同号是否重复
+     * 判断销售合同号是否重复
      *
      * @param contractNo 本单位销售合同号
      * @return 是否重复信息
@@ -1390,6 +1392,26 @@ public class ContractController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var flag = salesContractService.changeContractNoRepeated(contractNo.orElse(""), session.getSession().getCompanyCode(), "");
+        return VBaseResponse.builder()
+            .code(flag ? 200 : 201)
+            .message(flag ? "数据不重复" : "数据重复")
+            .build();
+    }
+
+    /**
+     * 判断销售合同号是否重复
+     *
+     * @param contractNo 本单位销售合同号
+     * @param id         销售合同编码
+     * @return 是否重复信息
+     */
+    @GetMapping("/contract/sales/{id}/contractNo")
+    public VBaseResponse changeSalesContractNoRepeated(@RequestParam("contractNo") Optional<String> contractNo,
+                                                       @PathVariable String id) {
+
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var flag = salesContractService.changeContractNoRepeated(contractNo.orElse(""), session.getSession().getCompanyCode(), id);
         return VBaseResponse.builder()
             .code(flag ? 200 : 201)
             .message(flag ? "数据不重复" : "数据重复")
@@ -1418,8 +1440,8 @@ public class ContractController {
      * 销售合同导出产品明细
      *
      * @param id       合同id
-     * @param revision   版本
-     * @param type       类型 0-客户自定义代码 1-产品源代码
+     * @param revision 版本
+     * @param type     类型 0-客户自定义代码 1-产品源代码
      * @param response HttpServletResponse
      */
     @GetMapping("/contract/sales/{id}/{revision}/products/export")
@@ -1430,7 +1452,7 @@ public class ContractController {
         HttpServletResponse response
     ) {
 
-        List<LinkedHashMap<String, Object>> database = salesContractService.exportProduct(id, revision,type);
+        List<LinkedHashMap<String, Object>> database = salesContractService.exportProduct(id, revision, type);
         ExcelUtil.exportToExcel(response, id + "销售合同明细表", database);
     }
 
@@ -1652,6 +1674,23 @@ public class ContractController {
     }
 
     /**
+     * 查询采购合同中已收货产品列表
+     *
+     * @param id 合同主键
+     * @return 产品列表
+     */
+    // TODO: 2022/6/2   需要重新完善
+    @GetMapping("/contract/sales/{id}/delivered")
+    public VDeliveredResponse getDeliveredList(@PathVariable String id) {
+        var products = salesContractService.getReceivedList(id);
+        return VDeliveredResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .products(products)
+            .build();
+    }
+
+    /**
      * 保存收回临时记录
      *
      * @param deliveryTempRequests 收回临时记录列表
@@ -1671,18 +1710,5 @@ public class ContractController {
             .code(200)
             .message("保存成功")
             .build();
-    }
-
-    /**
-     * 保存单采数量
-     * @param id 合同主键
-     * @param revision 版本号
-     * @param singlePurchaseAmounts 单采数量列表
-     * @return 返回成功或者失败信息
-     */
-    @PostMapping("/contract/sales/{id}/{revision}/singlePurchase")
-    public VBaseResponse saveSinglePurchaseAmount(@PathVariable("id") String id,@PathVariable("revision") Integer revision,@RequestBody List<VSinglePurchaseRequest> singlePurchaseAmounts){
-
-        return  VBaseResponse.builder().build();
     }
 }

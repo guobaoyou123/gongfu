@@ -1,8 +1,8 @@
 package com.linzhi.gongfu.converter;
 
-import javax.persistence.Converter;
-
 import com.linzhi.gongfu.enumeration.CompanyRole;
+
+import javax.persistence.Converter;
 
 /**
  * 转换公司基本信息中的公司角色枚举类型到数据库VARCHAR类型字段的转换器

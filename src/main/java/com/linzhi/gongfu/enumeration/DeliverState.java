@@ -1,4 +1,5 @@
 package com.linzhi.gongfu.enumeration;
+
 /**
  * 平台所记录的货运记录状态
  *
@@ -6,7 +7,7 @@ package com.linzhi.gongfu.enumeration;
  * @created_at 2022-05-31
  */
 public enum DeliverState {
-   PENDING('0'), PROCESSED('1');
+    PENDING('0'), PROCESSED('1');
 
     private final char state;
 

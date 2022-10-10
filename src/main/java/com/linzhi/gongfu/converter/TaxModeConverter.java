@@ -6,6 +6,7 @@ import javax.persistence.Converter;
 
 /**
  * 转换枚举型税模式值到数据库的char类型字段
+ *
  * @author xutao
  * @create_at 2021-12-23
  */

@@ -1,9 +1,11 @@
 package com.linzhi.gongfu.util;
 
-import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +18,7 @@ import java.util.*;
 public abstract class ExcelUtil {
     /**
      * 将Excel内容转换list
+     *
      * @param file 文件
      * @return 返回list
      */
@@ -44,12 +47,12 @@ public abstract class ExcelUtil {
                     Cell cell = row1.getCell(j);
                     if (cell != null) {
                         CellType cellType = cell.getCellType();
-                        if(cellType == CellType.NUMERIC){
+                        if (cellType == CellType.NUMERIC) {
                             double numericCellValue = cell.getNumericCellValue();//获取数字类型的单元格中的数据NUMERIC
                             //stripTrailingZeros()：去除末尾多余的0，toPlainString()：输出时不用科学计数法
                             String s = new BigDecimal(String.valueOf(numericCellValue)).stripTrailingZeros().toPlainString();
                             map.put(colName[j], s);
-                        }else if(cellType == CellType.STRING){
+                        } else if (cellType == CellType.STRING) {
                             map.put(colName[j], cell.getStringCellValue());
                         }
                     }
@@ -62,6 +65,7 @@ public abstract class ExcelUtil {
 
     /**
      * 导出集合到excel
+     *
      * @param name 文件名称
      * @param list 数据列表
      */
@@ -84,11 +88,11 @@ public abstract class ExcelUtil {
             if (list.size() > 0) {
                 for (String i : list.get(0).keySet()) {
                     //新建第一行
-                   HSSFCell cell =  hssfRow.createCell(j++);
+                    HSSFCell cell = hssfRow.createCell(j++);
                     cell.setCellValue(i);
                     cell.setCellStyle(cellStyle);
                     hssfSheet.autoSizeColumn(j);
-                    hssfSheet.setColumnWidth(j,hssfSheet.getColumnWidth(j)*17/10);
+                    hssfSheet.setColumnWidth(j, hssfSheet.getColumnWidth(j) * 17 / 10);
                 }
                 //将数据放入表中
                 for (int i = 0; i < list.size(); i++) {
@@ -138,6 +142,7 @@ public abstract class ExcelUtil {
 
     /**
      * 解析Excel日期格式
+     *
      * @param dVal 日期
      * @return 日期
      */

@@ -74,6 +74,6 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
 
     @Query(value = "select c.*  from comp_base c \n" +
         "left join comp_trade t on t.comp_buyer = c.code\n" +
-        "where t.comp_saler=?1 and t.saler_belong_to like ?2",nativeQuery = true)
-    List<Company> findCustomers(String companyCode,String operator);
+        "where t.comp_saler=?1 and t.saler_belong_to like ?2", nativeQuery = true)
+    List<Company> findCustomers(String companyCode, String operator);
 }

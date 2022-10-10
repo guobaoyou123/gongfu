@@ -1,18 +1,7 @@
 package com.linzhi.gongfu.security;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.linzhi.gongfu.security.token.OperatorAuthenticationToken;
 import com.linzhi.gongfu.util.URLTools;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,6 +14,15 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+
 /**
  * 用于解析用户请求中携带的Authorization头，并使用其完成登录的过滤器
  *
@@ -33,33 +31,33 @@ import org.springframework.security.web.util.matcher.AnyRequestMatcher;
  */
 public final class SessionLoginProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
-    private final   String  url [] = {"/api-docs", "/login", "/host", "/menus","/strings","/password"};
+    private final String url[] = {"/api-docs", "/login", "/host", "/menus", "/strings", "/password"};
 
     public SessionLoginProcessingFilter(AuthenticationFailureHandler failureHandler,
-            AuthenticationManager authenticationManager) {
+                                        AuthenticationManager authenticationManager) {
         super(AnyRequestMatcher.INSTANCE, authenticationManager);
         setAuthenticationFailureHandler(failureHandler);
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException, IOException, ServletException {
-       String requestURI =  request.getRequestURI();
+        throws AuthenticationException, IOException, ServletException {
+        String requestURI = request.getRequestURI();
         Optional<String> domainName = Optional.ofNullable(request.getHeader("CompanyDomain"))
             .or(() -> Optional.ofNullable(request.getParameter("host")))
             .map(URLTools::extractSubdomainName);
         final var token = domainName.isPresent() ? obtainToken(request, URLTools.isRunningLocally(domainName.get()))
             : null;
-       if(!Arrays.stream(url).toList().contains(requestURI) && token==null){
-           throw new AuthenticationServiceException("用户会话过期");
-       }
+        if (!Arrays.stream(url).toList().contains(requestURI) && token == null) {
+            throw new AuthenticationServiceException("用户会话过期");
+        }
         var requestToken = new OperatorAuthenticationToken(domainName.orElse(null), token);
         return this.getAuthenticationManager().authenticate(requestToken);
     }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-            Authentication authResult) throws IOException, ServletException {
+                                            Authentication authResult) throws IOException, ServletException {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authResult);
         SecurityContextHolder.setContext(context);

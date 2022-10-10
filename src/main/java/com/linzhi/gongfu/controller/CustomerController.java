@@ -15,7 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -275,7 +275,7 @@ public class CustomerController {
             .getContext()
             .getAuthentication();
         var flag = companyService.modifyTradeState(
-            Arrays.asList(code),
+            List.of(code),
             state.getState().equals("1") ? Availability.ENABLED : Availability.DISABLED,
             session.getSession().getCompanyCode(),
             CompanyRole.EXTERIOR_CUSTOMER
@@ -293,19 +293,21 @@ public class CustomerController {
 
     /**
      * 查询所有我负责的客户列表
+     *
      * @param name 客户公司名称
      * @return 客户列表
      */
     @GetMapping("/customers")
-    public VCustomersResponse findCustomers(@RequestParam("name") Optional<String> name){
+    public VCustomersResponse findCustomers(@RequestParam("name") Optional<String> name) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
         var customers = companyService.findAllCustomer(
-            name.orElse(""),
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode()
-        ).stream().map(companyMapper::toPreloadCustomer)
+                name.orElse(""),
+                session.getSession().getCompanyCode(),
+                session.getSession().getOperatorCode()
+            ).stream()
+            .map(companyMapper::toPreloadCustomer)
             .toList();
         return VCustomersResponse.builder()
             .code(200)

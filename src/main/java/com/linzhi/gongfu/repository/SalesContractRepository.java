@@ -1,16 +1,16 @@
 package com.linzhi.gongfu.repository;
 
 
-import com.linzhi.gongfu.entity.*;
+import com.linzhi.gongfu.entity.SalesContractBase;
 import com.linzhi.gongfu.enumeration.ContractState;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
-
 import java.util.List;
 import java.util.Optional;
+
 /**
  * 销售合同基础信息的Repository
  *
@@ -40,7 +40,7 @@ public interface SalesContractRepository
      * @param id    合同主键
      */
     @Modifying
-    @Query(value = "update SalesContractBase c set c.state=?1 where c.id=?2")
+    @Query(value = "update SalesContractBase c set c.state=?1,c.pairedCode=null where c.id=?2")
     void updateContractState(ContractState state, String id);
 
     /**
@@ -52,4 +52,25 @@ public interface SalesContractRepository
      */
     @Query(value = "select  c.id from sales_contract_base c ,sales_contract_rev  r  where  c.created_by_comp =?1   and c.id = r.id   and r.fingerprint =?2 and r.revision=(select max(revision) from sales_contract_rev v where v.id = r.id) ", nativeQuery = true)
     List<String> findContractId(String dcCompId, String sequenceCode);
+
+    /**
+     * 查找与之相同的未配对的销售合同配对码
+     * @param fingerprint 指纹
+     * @return 配对码
+     */
+    @Query(value = "select top 1 paired_code   from sales_contract_base b\n" +
+        "left join sales_contract_rev br on br.id = b.id and br.revision = (select max(revision) from sales_contract_rev r where r.id = b.id)\n" +
+        "where br.fingerprint = ?1 and b.paired_code not in (select paired_code from purchase_contract_base where state = '1')",nativeQuery = true)
+    Optional<String> findPairedCode(String fingerprint);
+
+    /**
+     * 查找与之相同的未配对的销售合同配对码
+     * @param contractId 采购合同主键
+     * @param revision 版本号
+     * @return 配对码
+     */
+    @Query(value = "select top 1 paired_code   from sales_contract_base b\n" +
+        "left join sales_contract_rev br on br.id = b.id and br.revision = (select max(revision) from sales_contract_rev r where r.id = b.id)\n" +
+        "where br.fingerprint = (select fingerprint  from purchase_contract_rev where id = ?1 and revision =?2) and b.paired_code not in (select paired_code from purchase_contract_rev where state = '1')",nativeQuery = true)
+    Optional<String> findPairedCode(String contractId,int revision);
 }

@@ -1,15 +1,14 @@
 package com.linzhi.gongfu.proxy;
 
+import com.linzhi.gongfu.entity.Company;
+import com.linzhi.gongfu.enumeration.CompanyRole;
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import com.linzhi.gongfu.entity.Company;
-import com.linzhi.gongfu.enumeration.CompanyRole;
-
-import lombok.Getter;
 
 /**
  * 公司信息的代理对象，用于对公司信息DO进行扩展
@@ -43,9 +42,9 @@ public class CompanyProxy {
     public List<CompanyRole> roles() {
         var splitedRoles = company.getRole().split(",");
         return Arrays.stream(splitedRoles)
-                .map(CompanyRole::valueBySign)
-                .map(Optional::get)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            .map(CompanyRole::valueBySign)
+            .map(Optional::get)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 }

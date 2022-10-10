@@ -29,7 +29,7 @@ public class TContractRecordPreview {
     private BigDecimal delivered;
 
     /**
-     *  已收货或者收回数量
+     * 已收货或者收回数量
      */
     private BigDecimal received;
 

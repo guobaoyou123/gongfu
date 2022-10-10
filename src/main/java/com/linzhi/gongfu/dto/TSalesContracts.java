@@ -1,6 +1,5 @@
 package com.linzhi.gongfu.dto;
 
-import com.linzhi.gongfu.enumeration.ContractState;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -12,7 +11,6 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 public class TSalesContracts {
-
 
 
     /**
@@ -80,7 +78,6 @@ public class TSalesContracts {
      * 确认价税合计
      */
     private BigDecimal confirmTaxedTotal;
-
 
 
 }

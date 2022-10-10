@@ -1,9 +1,5 @@
 package com.linzhi.gongfu.security;
 
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.dto.TScene;
@@ -15,8 +11,12 @@ import com.linzhi.gongfu.security.token.OperatorLoginRequestToken;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
 import com.linzhi.gongfu.service.OperatorService;
-
-import org.springframework.security.authentication.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,8 +26,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 对操作员的登录请求Token进行处理的认证处理器
@@ -54,12 +55,12 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
                 throw new BadCredentialsException("操作员试图使用空白密码登录。");
             }
             var operator = companyService.findCompanyInformationByHostname(principals[1])
-                    .map(TCompanyBaseInformation::getCode)
-                    .map(companyCode -> OperatorId.builder().operatorCode(principals[0]).companyCode(companyCode)
-                            .build())
-                    .flatMap(operatorService::findOperatorByID)
-                    .orElseThrow(() -> new UsernameNotFoundException("请求的操作员不存在"));
-            if(operator.getChanged().equals(Whether.NO)){
+                .map(TCompanyBaseInformation::getCode)
+                .map(companyCode -> OperatorId.builder().operatorCode(principals[0]).companyCode(companyCode)
+                    .build())
+                .flatMap(operatorService::findOperatorByID)
+                .orElseThrow(() -> new UsernameNotFoundException("请求的操作员不存在"));
+            if (operator.getChanged().equals(Whether.NO)) {
                 log.info("操作员 [{}@{}] 需要重新设置密码。", principals[0], principals[1]);
                 throw new NoFoundPasswordException();
             }
@@ -100,19 +101,19 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
             privileges.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
         var sceneCodes = operator.getScenes().stream()
-                .map(TScene::getCode)
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+            .map(TScene::getCode)
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
         privileges.addAll(sceneCodes);
         OperatorSessionToken sessionToken = new OperatorSessionToken(
-                operator.getCode(),
-                operator.getName(),
-                operator.getCompanyCode(),
-                operator.getCompanyName(),
-                operator.getCompanyDomain(),
-                null,
-                null,
-                privileges);
+            operator.getCode(),
+            operator.getName(),
+            operator.getCompanyCode(),
+            operator.getCompanyName(),
+            operator.getCompanyDomain(),
+            null,
+            null,
+            privileges);
         sessionToken.setDetails(authentication);
         return sessionToken;
     }

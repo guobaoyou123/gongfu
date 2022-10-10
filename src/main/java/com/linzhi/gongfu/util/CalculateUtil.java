@@ -15,7 +15,7 @@ public abstract class CalculateUtil {
      * @param vatRate 税率
      * @return 未税单价
      */
-    public static  BigDecimal calculateUntaxedUnitPrice(BigDecimal price, BigDecimal vatRate) {
+    public static BigDecimal calculateUntaxedUnitPrice(BigDecimal price, BigDecimal vatRate) {
         return price.divide(new BigDecimal("1").add(vatRate), 4, RoundingMode.HALF_UP);
     }
 
@@ -61,7 +61,7 @@ public abstract class CalculateUtil {
      * @param discount 折扣
      * @return 折扣后小计
      */
-    public static  BigDecimal calculateDiscountedSubtotal(BigDecimal price, BigDecimal discount, BigDecimal amount) {
+    public static BigDecimal calculateDiscountedSubtotal(BigDecimal price, BigDecimal discount, BigDecimal amount) {
         return price.multiply(new BigDecimal("1").subtract(discount)).multiply(amount).setScale(2, RoundingMode.HALF_UP);
     }
 }

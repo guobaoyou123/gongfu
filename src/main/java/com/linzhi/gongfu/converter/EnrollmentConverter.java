@@ -1,8 +1,8 @@
 package com.linzhi.gongfu.converter;
 
-import javax.persistence.Converter;
-
 import com.linzhi.gongfu.enumeration.Enrollment;
+
+import javax.persistence.Converter;
 
 /**
  * 转换是否入格状态枚举类型到数据库的char型字段值

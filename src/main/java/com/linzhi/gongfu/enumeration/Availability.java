@@ -2,6 +2,7 @@ package com.linzhi.gongfu.enumeration;
 
 /**
  * 用于表示数据库中使用char型字段记录可用状态的枚举
+ *
  * @author xutao
  * @create_at 2021-12-22
  */

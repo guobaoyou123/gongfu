@@ -22,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -62,6 +61,8 @@ public class SalesContractService {
     private final DeliverRecordMapper deliverRecordMapper;
     private final ImportProductTempRepository importProductTempRepository;
     private final ContractRecordPreviewRepository contractRecordPreviewRepository;
+    private final ContractReceivedRepository contractReceivedRepository;
+    private final PurchaseContractBaseRepository purchaseContractBaseRepository;
 
     /**
      * 查看合同列表
@@ -82,7 +83,7 @@ public class SalesContractService {
 
         List<TContract> tContractList = listContracts(companyCode, operator, state);
         if (!customerCode.equals("")) {
-            tContractList = tContractList.stream().filter(tContract -> tContract.getSalerComp().equals(customerCode)).toList();
+            tContractList = tContractList.stream().filter(tContract -> tContract.getBuyerComp().equals(customerCode)).toList();
         }
         if (!startTime.equals("") && !endTime.equals("")) {
             LocalDateTime startTimes = LocalDate.parse(startTime, DateType.YYYYMMDD.getType()).atStartOfDay();
@@ -150,6 +151,13 @@ public class SalesContractService {
                 .map(contractRecordMapper::toTContractRecord)
                 .toList());
         }
+        if (revision > 1) {
+            SalesContractRevision perSalesContractRevision = salesContractRevisionDetail.getSalesContractRevisions().stream().filter(
+                s -> s.getSalesContractRevisionId().getRevision() == (revision - 1)
+            ).toList().get(0);
+            contractRevision.get().setPreviousTaxedTotal(perSalesContractRevision.getTotalPriceVat());
+            contractRevision.get().setPreviousUntaxedTotal(perSalesContractRevision.getTotalPrice());
+        }
         return contractRevision.map(contractMapper::toContractDetail).orElse(null);
     }
 
@@ -162,15 +170,15 @@ public class SalesContractService {
      */
     public boolean judgeContractRev(String id, Integer revision) {
         //合同详情
-        SalesContractRevisionDetail salesContractRevisionDetail = getSalesContractRevisionDetail(id,revision);
+        SalesContractRevisionDetail salesContractRevisionDetail = getSalesContractRevisionDetail(id, revision);
         //获取版本号为revision 的版本基础详情
         SalesContractRevision contractRevision = salesContractRevisionDetail.getSalesContractRevisions().stream()
-            .filter(s->s.getSalesContractRevisionId().getRevision().intValue()==revision.intValue())
+            .filter(s -> s.getSalesContractRevisionId().getRevision().intValue() == revision.intValue())
             .toList().get(0);
         SalesContractRevision perContractRevision = salesContractRevisionDetail.getSalesContractRevisions().stream()
-            .filter(s->s.getSalesContractRevisionId().getRevision().intValue()==(revision.intValue()-1))
-            .toList().get(0);;
-        List<SalesContractRecordTemp> contractRecordTemps =salesContractRevisionDetail.getContractRecordTemps();
+            .filter(s -> s.getSalesContractRevisionId().getRevision() == (revision - 1))
+            .toList().get(0);
+        List<SalesContractRecordTemp> contractRecordTemps = salesContractRevisionDetail.getContractRecordTemps();
         StringBuilder fingerprint = new StringBuilder(contractRevision.getOfferMode() + "-");
         for (SalesContractRecordTemp contractRecordTemp : contractRecordTemps) {
 
@@ -522,12 +530,17 @@ public class SalesContractService {
         try {
             SalesContractRevisionDetail contractRevisionDetail = getSalesContractRevisionDetail(id, revision);
             List<SalesContractRecord> salesContractRecords = contractRevisionDetail.getContractRecords();
+            if (salesContractRecords != null && salesContractRecords.size() > 0) {
+                List<SalesContractRecordTemp> contractRecordTemps = salesContractRecords
+                    .stream().map(contractRecordMapper::toContractRecordTemp).toList();
+                salesContractRecordTempRepository.saveAll(contractRecordTemps);
+            }
             SalesContractRevision contractRevision = Optional.of(contractRevisionDetail)
                 .map(contractMapper::toContractRevision)
                 .orElseThrow(() -> new IOException("不存在该合同"));
             if (contractRevisionDetail.getSalesContractBase().getState().equals(ContractState.UN_FINISHED))
                 throw new Exception("该合同已经是未确认的，不可再次修改");
-            salesContractRepository.updateContractState(ContractState.UN_FINISHED, id);
+
             contractRevision.getSalesContractRevisionId().setRevision(revision + 1);
             contractRevision.setCreatedAt(LocalDateTime.now());
             contractRevision.setFingerprint(null);
@@ -536,11 +549,7 @@ public class SalesContractService {
             contractRevision.setModifiedAt(LocalDateTime.now());
             contractRevision.setModifiedBy(operator);
             salesContractRevisionRepository.save(contractRevision);
-            if (salesContractRecords != null && salesContractRecords.size() > 0) {
-                List<SalesContractRecordTemp> contractRecordTemps = salesContractRecords
-                    .stream().map(contractRecordMapper::toContractRecordTemp).toList();
-                salesContractRecordTempRepository.saveAll(contractRecordTemps);
-            }
+            salesContractRepository.updateContractState(ContractState.UN_FINISHED, id);
             return revision + 1;
         } catch (Exception e) {
             e.printStackTrace();
@@ -580,18 +589,19 @@ public class SalesContractService {
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         try {
             var contract = getSalesContractDetail(id, revision);
-            contract.getProducts().forEach(record -> {
-                LinkedHashMap<String, Object> m = new LinkedHashMap<>();
-                m.put("产品代码", record.getCode());
-                if (contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode() + "")) {
-                    m.put("单价（未税）", record.getPrice());
-                } else {
-                    m.put("单价（含税）", record.getPriceVat());
-                }
-                m.put("数量", record.getAmount());
-                list.add(m);
-            });
-            if (list.size() == 0) {
+            if (contract.getProducts() != null && contract.getProducts().size() > 0) {
+                contract.getProducts().forEach(record -> {
+                    LinkedHashMap<String, Object> m = new LinkedHashMap<>();
+                    m.put("产品代码", record.getCode());
+                    if (contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode() + "")) {
+                        m.put("单价（未税）", record.getPrice());
+                    } else {
+                        m.put("单价（含税）", record.getPriceVat());
+                    }
+                    m.put("数量", record.getAmount());
+                    list.add(m);
+                });
+            } else {
                 LinkedHashMap<String, Object> m = new LinkedHashMap<>();
                 m.put("产品代码", "");
                 if (contract.getOfferMode().equals(TaxMode.UNTAXED.getTaxMode() + "")) {
@@ -663,6 +673,8 @@ public class SalesContractService {
         try {
             //查询合同详情
             SalesContractRevisionDetail salesContractRevisionDetail = getSalesContractRevisionDetail(contractId, revision);
+            var contractRecordTempList = salesContractRevisionDetail.getContractRecordTemps();
+            var contractRecords = salesContractRevisionDetail.getContractRecords();
             //合同版本详情
             SalesContractRevision salesContractRevision = Optional.of(salesContractRevisionDetail)
                 .map(contractMapper::toContractRevision)
@@ -675,9 +687,9 @@ public class SalesContractService {
             List<SalesContractRecordTemp> contractRecordTemps;
             //合同明细
             if (salesContractRevisionDetail.getSalesContractBase().getState().equals(ContractState.UN_FINISHED)) {
-                contractRecordTemps = salesContractRevisionDetail.getContractRecordTemps();
+                contractRecordTemps = contractRecordTempList;
             } else {
-                contractRecordTemps = salesContractRevisionDetail.getContractRecords()
+                contractRecordTemps = contractRecords
                     .stream().map(contractRecordMapper::toContractRecordTemp).toList();
             }
             //合同编码最大号
@@ -825,16 +837,25 @@ public class SalesContractService {
      * @param revision 版本号
      * @return 合同详情
      */
+
     @Cacheable(value = "sales_contract_revision_detail;1800", key = "#id+'-'+#revision")
     public SalesContractRevisionDetail getSalesContractRevisionDetail(String id, int revision) {
-        return salesContractRevisionDetailRepository
-            .getSalesContractRevisionDetailBySalesContractRevisionId(
-                SalesContractRevisionId.builder()
-                    .id(id)
-                    .revision(revision)
-                    .build()
-            );
+        return salesContractRevisionDetailRepository.getSalesContractRevisionDetailBySalesContractRevisionId(
+            SalesContractRevisionId.builder()
+                .id(id)
+                .revision(revision)
+                .build()
+        ).orElse(null);
     }
+
+    public Map<String, Object> findTaxModelAndEnCode(String id, int revision) {
+        Map<String, Object> map = new HashMap<>();
+        var contract = getSalesContractRevisionDetail(id, revision);
+        map.put("taxMode", contract.getOfferMode());
+        map.put("encode", contract.getSalesContractBase().getCode());
+        return map;
+    }
+
 
     /**
      * 查询合同是否重复（产品种类和数量）
@@ -872,7 +893,6 @@ public class SalesContractService {
             contractRecordTemps.stream()
                 .map(contractRecord ->
                     contractRecord.getProductId() + "-"
-                        + contractRecord.getChargeUnit() + "-"
                         + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP)
                 ).toList(),
             salesContractRevisionDetail.getSalesContractBase().getSalerComp(),
@@ -970,15 +990,18 @@ public class SalesContractService {
             salesContractRecordTempRepository.deleteProducts(id);
             contractRevision.setConfirmedAt(LocalDateTime.now());
             contractRevision.setConfirmedBy(operator);
-            contractBase.setState(ContractState.FINISHED);
-            //保存合同
-            salesContractRepository.save(contractBase);
             contractRevision.setFingerprint(str);
             salesContractRevisionRepository.save(contractRevision);
 
             //将收回记录录保存到货运信息表中
             if (generateContractRequest.getReceivedRecords() != null && generateContractRequest.getReceivedRecords().size() > 0)
                 saveDelivery(id, revision, companyCode, operator, generateContractRequest.getReceivedRecords());
+
+            contractBase.setState(ContractState.FINISHED);
+
+            contractBase.setPairedCode(findPairedCode(str,companyCode,0,null));
+            //保存合同
+            salesContractRepository.save(contractBase);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1070,7 +1093,6 @@ public class SalesContractService {
         return records.stream().map(contractRecord -> {
                 contractRecord.setPriceVat(contractRecord.getPriceVat() == null ? null : contractRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP));
                 return contractRecord.getProductId() + "-"
-                    + contractRecord.getChargeUnit() + "-"
                     + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP);
             }
 
@@ -1087,7 +1109,8 @@ public class SalesContractService {
      */
     public void saveDelivery(String id, Integer revision, String companyCode, String operator, List<VPContractRequest.VReceivedRecord> list) {
         // TODO: 2022/6/1 需要完善货运记录 库存等问题
-        List<SalesContractRecord> contractRecords = salesContractRecordRepository.findContractRecordsBySalesContractRecordId_ContractIdAndSalesContractRecordId_Revision(id, revision);
+        SalesContractRevisionDetail contractRevisionDetail = getSalesContractRevisionDetail(id, revision);
+        List<SalesContractRecord> contractRecords = contractRevisionDetail.getContractRecords();
         Map<String, SalesContractRecord> map = new HashMap<>();
         contractRecords.forEach(contractRecord -> map.put(contractRecord.getProductId(), contractRecord));
         List<DeliverRecord> deliverRecords = new ArrayList<>();
@@ -1170,6 +1193,7 @@ public class SalesContractService {
                 .id(id)
                 .revision(revision)
                 .build());
+            contractDetail.setPairedCode(findPairedCode(null,companyCode,revision-1,id));
         }
         salesContractRepository.save(contractDetail);
         salesContractRecordTempRepository.deleteProducts(id);
@@ -1224,6 +1248,7 @@ public class SalesContractService {
             }
             //将合同状态设置为撤销
             salesContractBase.setState(ContractState.CANCELLATION);
+            salesContractRepository.save(salesContractBase);
             //保存退回记录
             saveDelivery(id, companyCode, operator);
         } catch (Exception e) {
@@ -1303,7 +1328,7 @@ public class SalesContractService {
                     .orElseThrow(() -> new IOException("请求的产品不存在"));
                 SalesContractRecordTemp contractRecordTemp = createContractRecordTemp(id, 1, maxCode, product,
                     StringUtils.isNotBlank(importProductTemp.getPrice()) ? new BigDecimal(importProductTemp.getPrice()) : null,
-                    contract.getOfferMode().equals("1") ? TaxMode.INCLUDED : TaxMode.UNTAXED,
+                    (contract.getOfferMode().getTaxMode()+"").equals("1") ? TaxMode.INCLUDED : TaxMode.UNTAXED,
                     new BigDecimal(importProductTemp.getAmount()), contract.getVatProductRate() != null ? contract.getVatProductRate() : goods.getRate(), 0);
                 contractRecordTemps.add(contractRecordTemp);
                 maxCode++;
@@ -1414,18 +1439,43 @@ public class SalesContractService {
 
     }
 
-
-    @Transactional
-    public void  saveSinglePurchaseAmount(String id, Integer revision, List<VSinglePurchaseRequest> singlePurchases){
-        try {
-
-            List<SalesContractRecord> list = salesContractRecordRepository
-                .findContractRecordsBySalesContractRecordId_ContractIdAndSalesContractRecordId_Revision(id,revision);
-
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+    /**
+     * 查询采购合同中已收货物产品列表
+     *
+     * @param id 合同主键
+     * @return 产品列表
+     */
+    // TODO: 2022/6/2   需要重新完善
+    public List<VDeliveredResponse.VProduct> getReceivedList(String id) {
+        return contractReceivedRepository.findContractDeliveredList(id)
+            .stream().map(contractMapper::toTContractDelivered)
+            .map(contractMapper::toVDeliveredProduct)
+            .toList();
     }
 
+    /**
+     * 生成合同配对码
+     * @param fingerprint 指纹
+     * @param companyCode 单位编码
+     * @param revision 版本号
+     * @param salesContractId 销售合同编码
+     * @return 配对码
+     */
+    public String findPairedCode(String fingerprint,String companyCode,int revision,String salesContractId){
+        String pairedCode ="";
+        if(revision>0){
+            pairedCode= purchaseContractBaseRepository.findPairedCode(salesContractId,revision)
+                .orElse("");
+        }else{
+            //查找与之相同的客户的采购合同
+             pairedCode = purchaseContractBaseRepository.findPairedCode(fingerprint)
+                .orElse("");
+        }
+        if(pairedCode.equals("")){
+            //生成自己的配对码
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyMMddhhssmm");
+            pairedCode= companyCode+UUID.randomUUID().toString().substring(0, 8)+dtf.format(LocalDateTime.now());
+        }
+        return pairedCode;
+    }
 }

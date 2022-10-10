@@ -1,15 +1,13 @@
 package com.linzhi.gongfu.infrastructure;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import com.querydsl.jpa.impl.JPAQueryFactory;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import lombok.RequiredArgsConstructor;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  * 配置QueryDSL所要使用的JPAQueryFactory。

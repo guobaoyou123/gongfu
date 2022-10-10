@@ -11,7 +11,8 @@ import java.util.Random;
 public class RNGUtil {
     /**
      * 获取随机字符串 0-9
-     * @param length    长度
+     *
+     * @param length 长度
      * @return 随机数
      */
     public static String getNumber(int length) {
@@ -26,7 +27,8 @@ public class RNGUtil {
 
     /**
      * 获取随机字符串 a-z
-     * @param length    长度
+     *
+     * @param length 长度
      * @return 随机数
      */
     public static String getLowerLetter(int length) {

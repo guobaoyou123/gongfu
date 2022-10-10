@@ -9,7 +9,6 @@ import org.springframework.data.redis.cache.RedisCacheWriter;
 
 /**
  * 自定义RedisCache，用于模糊删除缓存数据
- *
  */
 public class CustomizedRedisCache extends RedisCache {
     private static final String WILD_CARD = "*";

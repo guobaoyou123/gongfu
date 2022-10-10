@@ -36,7 +36,7 @@ public class VCustomersResponse extends VBaseResponse {
         /**
          * 排序
          */
-        private  Integer sort;
+        private Integer sort;
     }
 
 }

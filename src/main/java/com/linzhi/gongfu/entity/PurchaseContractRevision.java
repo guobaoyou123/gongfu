@@ -206,11 +206,4 @@ public class PurchaseContractRevision implements Serializable {
      */
     @Column(name = "contact_code", length = 20)
     private String contactCode;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumns({
-        @JoinColumn(name = "contract_id", referencedColumnName = "id", insertable = true, updatable = true),
-        @JoinColumn(name = "revision", referencedColumnName = "revision", insertable = true, updatable = true)
-    })
-    private List<PurchaseContractRecord> contractRecords;
 }

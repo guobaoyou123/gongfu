@@ -2,9 +2,9 @@ package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
-import com.linzhi.gongfu.service.PurchaseContractService;
 import com.linzhi.gongfu.service.EximportService;
 import com.linzhi.gongfu.service.InquiryService;
+import com.linzhi.gongfu.service.PurchaseContractService;
 import com.linzhi.gongfu.service.SalesContractService;
 import com.linzhi.gongfu.vo.VBaseResponse;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
@@ -126,13 +126,13 @@ public class EximportController {
                 session.getSession().getCompanyCode(),
                 session.getSession().getOperatorCode()
             );
-        } else  if (type.equals("2")) {
+        } else if (type.equals("2")) {
             map = contractService.saveImportProducts(
                 id,
                 session.getSession().getCompanyCode(),
                 session.getSession().getOperatorCode(), 1
             );
-        }else{
+        } else {
             map = salesContractService.saveImportProducts(
                 id,
                 session.getSession().getCompanyCode(),
@@ -185,15 +185,12 @@ public class EximportController {
             var inquiry = inquiryService.getInquiry(id).orElseThrow(() -> new IOException("没有从数据库中找到该询价单"));
             map.put("taxMode", inquiry.getOfferMode());
             map.put("encode", inquiry.getCode());
-        } else if(type.equals("2")){
-            var contract = contractService.getContractRevisionDetail(id, 1)
-                .orElseThrow(() -> new IOException("未从数据库中找到该合同"));
+        } else if (type.equals("2")) {
+            var contract = contractService.getContractRevisionDetail(id, 1);
             map.put("taxMode", contract.getOfferMode());
-            map.put("encode", contract.getCode());
-        }else{
-            var contract = salesContractService.getSalesContractRevisionDetail(id, 1);
-            map.put("taxMode", contract.getOfferMode());
-            map.put("encode", contract.getSalesContractBase().getCode());
+            map.put("encode", contract.getPurchaseContractBase().getCode());
+        } else {
+            map = salesContractService.findTaxModelAndEnCode(id, 1);
         }
         return map;
     }

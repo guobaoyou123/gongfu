@@ -79,6 +79,10 @@ public class VPContractRequest {
      * 退回产品列表
      */
     private List<DeliveryRecord> deliveryRecords;
+    /**
+     * 收回产品列表
+     */
+    private List<VReceivedRecord> receivedRecords;
 
     @Data
     public static class DeliveryRecord {
@@ -92,11 +96,6 @@ public class VPContractRequest {
          */
         private BigDecimal returnAmount;
     }
-
-    /**
-     * 收回产品列表
-     */
-    private List<VReceivedRecord> receivedRecords;
 
     @Data
     public static class VReceivedRecord {
