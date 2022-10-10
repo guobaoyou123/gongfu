@@ -4,19 +4,16 @@ import com.linzhi.gongfu.enumeration.InquiryState;
 import com.linzhi.gongfu.enumeration.InquiryType;
 import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * 询价单表
- */
 @Builder
 @Setter
 @Getter
@@ -51,8 +48,6 @@ public class Inquiry {
      */
     @Column(name = "contract_code", length = 40)
     private String contractCode;
-    @Column(name = "orderCode", updatable = false, insertable = false)
-    private String orderCode;
 
     /**
      * 类型（0-询价单 1-报价当）
@@ -64,16 +59,6 @@ public class Inquiry {
      */
     @Column(name = "sales_contract_id", length = 50)
     private String salesContractId;
-    /*
-     * 对应销售合同记录系统编码
-     */
-    @Column(name = "salesContractCode", updatable = false, insertable = false)
-    private String salesContractCode;
-    /*
-     * 对应销售合同记录中本单位编码
-     */
-    @Column(name = "salesOrderCode", updatable = false, insertable = false)
-    private String salesOrderCode;
 
     /**
      * 所属单位编码
@@ -85,8 +70,6 @@ public class Inquiry {
      */
     @Column(name = "created_by", length = 20)
     private String createdBy;
-    @Column(name = "createdByName", updatable = false, insertable = false)
-    private String createdByName;
     /**
      * 客户公司编码
      */
@@ -176,4 +159,9 @@ public class Inquiry {
      */
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "inquiry_id", referencedColumnName = "id", insertable = true, updatable = true)
+    @NotFound(action = NotFoundAction.IGNORE)
+    private List<InquiryRecord> records;
 }

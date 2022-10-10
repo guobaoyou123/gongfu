@@ -25,7 +25,7 @@ public interface PurchaseContractRepository
     @Query(value = "select  count(distinct c.id) " +
         "from purchase_contract_base c ,purchase_contract_rev  r  " +
         "where  c.created_by_comp=?1 and c.id = r.id and r.order_code=?2  " +
-        "  and r.revision = (select max(revision) from contract_rev re where re.id=r.id) " +
+        "  and r.revision = (select max(revision) from purchase_contract_rev re where re.id=r.id) " +
         "  and  c.state ='1' ",
         nativeQuery = true)
     int findByOrderCode(String dcCompId, String orderCode);

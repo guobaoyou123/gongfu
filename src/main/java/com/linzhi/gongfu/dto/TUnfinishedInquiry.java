@@ -1,4 +1,4 @@
-package com.linzhi.gongfu.entity;
+package com.linzhi.gongfu.dto;
 
 import lombok.*;
 
@@ -7,20 +7,21 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.math.BigDecimal;
 
-@Builder
-@Setter
-@Getter
-@ToString
+/**
+ * 未完成的询价单信信息
+ */
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-public class UnfinishedInquiry {
-    @Id
+@Setter
+@Getter
+public class TUnfinishedInquiry {
+
     private String id;
-    @Column
+
     private String code;
-    @Column
+
     private BigDecimal totalPriceVat;
-    @Column
-    private String counts;
+
+    private Long counts;
 }

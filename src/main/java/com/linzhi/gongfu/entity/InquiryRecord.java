@@ -56,7 +56,7 @@ public class InquiryRecord {
     /**
      * 品牌名称
      */
-    @Column
+    @Column(name = "brand")
     private String brand;
     /**
      * 税率

@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PurchaseContractService {
 
     private final PurchaseContractRepository purchaseContractRepository;
-    private final InquiryDetailRepository inquiryDetailRepository;
+    private final InquiryRepository inquiryDetailRepository;
     private final InquiryRecordRepository inquiryRecordRepository;
     private final AddressRepository addressRepository;
     private final CompContactsRepository compContactsRepository;
@@ -75,19 +75,18 @@ public class PurchaseContractService {
     /**
      * 查询合同是否重复（产品种类和数量）
      *
-     * @param inquiryId 询价单id
-     * @return 返回 true 或者 false
+     * @param inquiryId 询价单主键
+     * @return 返回 合同号
      */
     public Optional<String> getContractProductRepeat(String inquiryId) throws IOException {
-        //查询询价单详情
-        Inquiry inquiry = inquiryService.getInquiry(inquiryId).orElseThrow(() -> new IOException("数据库中找不到该询价单"));
+        Inquiry inquiry = inquiryDetailRepository.findById(inquiryId).orElseThrow(()->new IOException("为获取到数据"));
+
         //询价单名称
-        List<InquiryRecord> records = inquiryRecordRepository.findInquiryRecordTwins(inquiryId);
+        List<Map<String,Object>> records = inquiryRecordRepository.findInquiryRecordTwins(inquiry.getId());
         //形成指纹
         String str = createSequenceCode(
-            records.stream().map(inquiryRecord -> inquiryRecord.getProductId() + "-"
-                + inquiryRecord.getChargeUnit() + "-"
-                + inquiryRecord.getAmount().setScale(4, RoundingMode.HALF_UP)).toList(),
+            records.stream().map(inquiryRecord -> inquiryRecord.get("product_id").toString() + "-"
+                + (new BigDecimal(inquiryRecord.get("quantity").toString())).setScale(4, RoundingMode.HALF_UP)).toList(),
             inquiry.getSalerComp(),
             inquiry.getBuyerComp(), inquiry.getOfferMode()
         );
@@ -99,22 +98,21 @@ public class PurchaseContractService {
 
     /**
      * 生成采购合同
-     *
      * @param generateContractRequest 参数
+     * @param companyCode 单位编码
+     * @param operatorName 操作员姓名
+     * @param operator 操作员编码
      * @return 返回成功或者失败
      */
     @Caching(evict = {
         @CacheEvict(value = "inquiry_List;1800", key = "#companyCode+'_'+'*'"),
         @CacheEvict(value = "inquiry_detail;1800", key = "#generateContractRequest.inquiryId"),
-        @CacheEvict(value = "inquiry_record_List;1800", key = "#generateContractRequest.inquiryId"),
         @CacheEvict(value = "purchase_contract_List;1800", key = "#companyCode+'_'+'*'")
     })
     @Transactional
     public Boolean saveContract(VPContractRequest generateContractRequest, String companyCode, String operatorName, String operator) {
         try {
-            //查询询价单详情
-            InquiryDetail inquiry = inquiryDetailRepository.findById(generateContractRequest.getInquiryId())
-                .orElseThrow(() -> new IOException("数据库中找不到该询价单"));
+            Inquiry inquiry = inquiryDetailRepository.findById(generateContractRequest.getInquiryId()).orElseThrow(()->new IOException("为获取到数据"));
             if (inquiry.getState().equals(InquiryState.FINISHED))
                 return false;
             //合同编号

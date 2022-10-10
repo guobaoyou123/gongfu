@@ -1,12 +1,13 @@
 package com.linzhi.gongfu.repository;
 
-
+import com.linzhi.gongfu.dto.TUnfinishedInquiry;
 import com.linzhi.gongfu.entity.Inquiry;
 import com.linzhi.gongfu.enumeration.InquiryState;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,49 +15,23 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 询价单的Repository
+ * 询价单详情的Repository
  *
  * @author zgh
  * @create_at 2022-09-20
  */
-public interface InquiryRepository
-    extends CrudRepository<Inquiry, String>, QuerydslPredicateExecutor<Inquiry> {
+public interface InquiryRepository extends CrudRepository<Inquiry, String>, QuerydslPredicateExecutor<Inquiry> {
     /**
-     * 询价单列表
+     * 获取最大编码
      *
-     * @param compId   单位编码
-     * @param operator 操作员编码
-     * @param type     类型
-     * @param state    状态
-     * @return 询价单列表
+     * @param dcCompId  单位编码
+     * @param createdBy 操作员编码
+     * @return 最大编码
      */
-    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode  from   inquiry_base b\n" +
-        "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
-        "left join purchase_contract_base c on c.id = b.sales_contract_id\n" +
-        "left join purchase_contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from purchase_contract_rev  where id = r.id)\n" +
-        "left join purchase_contract_rev d on d.id = b.contract_id  and d.revision in (select max(revision) from purchase_contract_rev  where id = d.id)\n" +
-
-        " where  b.created_by_comp=?1 and b.created_by=?2 and b.type=?3 and b.state=?4 order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
+    @Query(value = "select  right(('000'+cast((cast(max(right(code,3)) as int)+1) as varchar)),3) from inquiry_base  where  created_by_comp=?1 and created_by=?2\n" +
+        "             and DateDiff(dd,created_at,GETDATE())=0 ",
         nativeQuery = true)
-    List<Inquiry> listInquiries(String compId, String operator, String type, String state);
-
-    /**
-     * 询价单列表
-     *
-     * @param compId 单位编码
-     * @param type   类型
-     * @param state  状态
-     * @return 询价单列表
-     */
-    @Query(value = "select  b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode from   inquiry_base b\n" +
-        "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
-        "left join purchase_contract_base c on c.id = b.sales_contract_id\n" +
-        "left join purchase_contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from purchase_contract_rev  where id = r.id)\n" +
-        "left join purchase_contract_rev d on d.id = b.contract_id  and d.revision in (select max(revision) from purchase_contract_rev  where id = d.id)\n" +
-
-        " where   b.created_by_comp=?1 and b.type=?2 and b.state=?3 order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
-        nativeQuery = true)
-    List<Inquiry> listInquiries(String compId, String type, String state);
+    String getMaxCode(String dcCompId, String createdBy);
 
     /**
      * 更新总金额
@@ -73,22 +48,6 @@ public interface InquiryRepository
     void updateInquiry(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, BigDecimal discountTotalPrice, String id);
 
     /**
-     * 询价单详情
-     *
-     * @param id 询价单主键
-     * @return 询价单详情
-     */
-    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as orderCode from   inquiry_base b\n" +
-        "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
-        "left join purchase_contract_base c on c.id = b.sales_contract_id\n" +
-        "left join sales_contract_rev r on r.id = b.sales_contract_id  and r.revision in (select max(revision) from sales_contract_rev  where id = r.id)\n" +
-        "left join purchase_contract_rev d on d.id = b.contract_id  and d.revision in (select max(revision) from purchase_contract_rev  where id = d.id)\n" +
-
-        " where   b.id=?1 ",
-        nativeQuery = true)
-    Optional<Inquiry> findInquiryById(String id);
-
-    /**
      * 更新询价单状态
      *
      * @param deletedAt    删除时间
@@ -96,8 +55,23 @@ public interface InquiryRepository
      * @param id           询价单主键
      */
     @Modifying
-    @Query(value = "update   Inquiry i set i.deletedAt=?1,i.state=?2 where i.id=?3")
+    @Query(value = "update   Inquiries i set i.deletedAt=?1,i.state=?2 where i.id=?3")
     void removeInquiry(LocalDateTime deletedAt, InquiryState inquiryState, String id);
 
+    /**
+     * 未完成的询价单列表
+     *
+     * @param companyCode  单位编码
+     * @param operator     操作员编码
+     * @param supplierCode 供应商编码
+     * @return 未完成询价单主键
+     */
+    @Query(value = "select new com.linzhi.gongfu.dto.TUnfinishedInquiry(b.id,b.code,b.totalPriceVat,count (distinct r.productId)) from Inquiry b" +
+        " left join InquiryRecord  r on r.inquiryRecordId.inquiryId=b.id " +
+        " where b.createdByComp=?1 and b.createdBy=?2 and b.salerComp=?3 and b.state=com.linzhi.gongfu.enumeration.InquiryState.UN_FINISHED " +
+        " group by  b.id,b.code,b.totalPriceVat")
+    List<TUnfinishedInquiry> listUnfinishedInquiries(String companyCode, String operator, String supplierCode);
 
+    @Transactional(readOnly = true)
+    Optional<Inquiry> findById(String id);
 }

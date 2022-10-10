@@ -1,8 +1,9 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TInquiry;
+import com.linzhi.gongfu.dto.TUnfinishedInquiry;
+import com.linzhi.gongfu.entity.Inquiries;
 import com.linzhi.gongfu.entity.Inquiry;
-import com.linzhi.gongfu.entity.UnfinishedInquiry;
 import com.linzhi.gongfu.vo.VInquiryDetailResponse;
 import com.linzhi.gongfu.vo.VInquiryListResponse;
 import com.linzhi.gongfu.vo.VInquiryPageResponse;
@@ -23,7 +24,7 @@ public interface InquiryMapper {
     @Mapping(target = "createdAt", expression = "java(com.linzhi.gongfu.util.DateConverter.dateFormat(inquiry.getCreatedAt()))")
     @Mapping(target = "type", expression = "java(String.valueOf(inquiry.getType().getType()))")
     @Mapping(target = "state", expression = "java(String.valueOf(inquiry.getState().getState()))")
-    TInquiry toInquiryList(Inquiry inquiry);
+    TInquiry toInquiryList(Inquiries inquiry);
 
     /**
      * 转换询价单列表
@@ -74,6 +75,7 @@ public interface InquiryMapper {
     @Mapping(target = "confirmedAt", expression = "java(inquiry.getConfirmedAt()!=null?com.linzhi.gongfu.util.DateConverter.dateFormat(inquiry.getConfirmedAt()):null)")
     @Mapping(target = "state", expression = "java(String.valueOf(inquiry.getState().getState()))")
     @Mapping(target = "offerMode", expression = "java(String.valueOf(inquiry.getOfferMode().getTaxMode()))")
+    @Mapping(target = "records",source = "records")
     TInquiry toInquiryDetail(Inquiry inquiry);
 
     /**
@@ -106,7 +108,8 @@ public interface InquiryMapper {
     VInquiryDetailResponse.VInquiry toVInquiryDetail(TInquiry tInquiry);
 
 
-    TInquiry toUnfinishedTInquiry(UnfinishedInquiry unfinishedInquiry);
+
+    TInquiry toUnfinishedTInquiry(TUnfinishedInquiry unfinishedInquiry);
 
     @Mapping(target = "id", source = "id")
     @Mapping(target = "code", source = "id")

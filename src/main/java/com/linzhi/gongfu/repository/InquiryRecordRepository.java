@@ -8,6 +8,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 询价单的Repository
@@ -26,15 +27,6 @@ public interface InquiryRecordRepository
     @Query(value = "select  max(code)  from inquiry_record  where  inquiry_id=?1 ",
         nativeQuery = true)
     String findMaxCode(String inquiryId);
-
-    /**
-     * 删除询价单明细
-     *
-     * @param inquiryId 询价单主键
-     */
-    @Modifying
-    @Query("delete from InquiryRecord as c  where c.inquiryRecordId.inquiryId=?1 ")
-    void deleteProduct(String inquiryId);
 
     /**
      * 根据明细编码删除询价单明细
@@ -56,25 +48,16 @@ public interface InquiryRecordRepository
     void deleteProducts(String inquiryId);
 
     /**
-     * 查找询价单明细
-     *
-     * @param inquiryId 询价单主键
-     * @return 询价单明细列表
-     */
-    @Query(value = "select  *  from inquiry_record  where  inquiry_id=?1  order by product_id ,quantity  ",
-        nativeQuery = true)
-    List<InquiryRecord> findInquiryRecord(String inquiryId);
-
-    /**
      * 查找询价单孪生明细
      *
      * @param inquiryId 询价单主键
      * @return 询价单明细列表
      */
-    @Query(value = "select *  from \n" +
-        "(select  product_id,count(quantity) as quantity ,max(charge_unit) as charge_unit,max(vat_rate) as vat_rate   from inquiry_record  where  inquiry_id=?1   group by product_id ) \n" +
+    @Query(value = "select d.*  from \n" +
+        "(select  product_id,count(quantity) as quantity  " +
+        " from inquiry_record  where  inquiry_id = ?1   group by product_id ) \n" +
         "as d \n" +
-        "  order by product_id ",
+        "  order by d.product_id ",
         nativeQuery = true)
-    List<InquiryRecord> findInquiryRecordTwins(String inquiryId);
+    List<Map<String,Object>> findInquiryRecordTwins(String inquiryId);
 }

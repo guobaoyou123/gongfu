@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.controller;
 
+import com.linzhi.gongfu.entity.Inquiry;
 import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.enumeration.ContractState;
 import com.linzhi.gongfu.mapper.*;
@@ -485,7 +486,7 @@ public class ContractController {
      * @return 返回询价单详细信息
      */
     @GetMapping("/contract/purchase/inquiry/{id}")
-    public VInquiryDetailResponse inquiryDetail(@PathVariable("id") Optional<String> id) {
+    public VInquiryDetailResponse inquiryDetail(@PathVariable("id") Optional<String> id){
 
         var inquiry = id.map(inquiryService::getInquiryDetail)
             .map(inquiryMapper::toVInquiryDetail);
@@ -642,6 +643,7 @@ public class ContractController {
             .getContext().getAuthentication();
         var flag = true;
         String contractCodes = "";
+        //Inquiry inquiry = inquiryService.getInquiry(contractRequest.getInquiryId());
         //判断是否需要进行判断是否有重复的合同
         if (!contractRequest.isEnforce())
             contractCodes = purchaseContractService.getContractProductRepeat(contractRequest.getInquiryId()).orElse("");

@@ -9,6 +9,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -73,4 +74,14 @@ public interface SalesContractRepository
         "left join sales_contract_rev br on br.id = b.id and br.revision = (select max(revision) from sales_contract_rev r where r.id = b.id)\n" +
         "where br.fingerprint = (select fingerprint  from purchase_contract_rev where id = ?1 and revision =?2) and b.paired_code not in (select paired_code from purchase_contract_rev where state = '1')",nativeQuery = true)
     Optional<String> findPairedCode(String contractId,int revision);
+
+    /**
+     * 查找销售销售合同单位合同号，系统编码
+     * @param id
+     * @return 销售销售合同单位合同号，系统编码
+     */
+    @Query(value = "select b.code ,br.order_code from sales_contract_base b " +
+        "left join sales_contract_rev br on br.id = b.id and br.revision = (select max(revision) from sales_contract_rev r where r.id = b.id)" +
+        "where b.id = ?1",nativeQuery = true)
+    Map<String,Object> findSalesCode(String id);
 }
