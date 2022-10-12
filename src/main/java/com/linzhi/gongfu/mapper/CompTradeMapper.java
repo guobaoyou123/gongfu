@@ -2,7 +2,7 @@ package com.linzhi.gongfu.mapper;
 
 
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
-import com.linzhi.gongfu.entity.CompTrad;
+import com.linzhi.gongfu.entity.CompTrade;
 import com.linzhi.gongfu.vo.VSuppliersPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -40,6 +40,6 @@ public interface CompTradeMapper {
     @Mapping(target = "authBrands", source = "authBrands")
     @Mapping(target = "manageBrands", source = "manageBrands")
     @Mapping(target = "state", expression = "java(String.valueOf(compTrad.getSalerCompanys().getState().getState()))")
-    TCompanyIncludeBrand toSuppliersIncludeBrand(CompTrad compTrad);
+    TCompanyIncludeBrand toSuppliersIncludeBrand(CompTrade compTrad);
 
 }

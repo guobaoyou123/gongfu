@@ -35,7 +35,7 @@ public class PlanService {
     private final TemporaryPlanRepository temporaryPlanRepository;
     private final TemporaryPlanMapper temporaryPlanMapper;
     private final ProductRepository productRepository;
-    private final CompTradBrandRepository compTradBrandRepository;
+    private final CompTradeBrandRepository compTradBrandRepository;
     private final PurchasePlanRepository purchasePlanRepository;
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
     private final CompanyRepository companyRepository;
@@ -322,28 +322,28 @@ public class PlanService {
      */
     public Map<String, List<Company>> findSuppliersByBrandsAndCompBuyer(List<String> brands, String compBuyer, List<String> suppliers) {
         //查询这几个牌子的供应商有哪些
-        List<CompTradBrand> compTradBrands = compTradBrandRepository.findCompTradBrandByCompTradBrandId_BrandCodeInAndCompTradBrandId_CompBuyerAndCompany_StateOrderBySortDesc(brands, compBuyer, Availability.ENABLED);
+        List<CompTradeBrand> compTradBrands = compTradBrandRepository.findCompTradeBrandByCompTradeBrandId_BrandCodeInAndCompTradeBrandId_CompBuyerAndCompany_StateOrderBySortDesc(brands, compBuyer, Availability.ENABLED);
         Map<String, List<Company>> NoIncludeCompMap = new HashMap<>();
         Map<String, List<Company>> IncludeCompMap = new HashMap<>();
-        List<CompTradBrand> compTradIncludeCompList = compTradBrands.stream()
+        List<CompTradeBrand> compTradIncludeCompList = compTradBrands.stream()
             .filter(compTradBrand -> suppliers.contains(compTradBrand.getCompany().getCode())).toList();
-        List<CompTradBrand> compTradNoIncludeCompList = compTradBrands.stream()
+        List<CompTradeBrand> compTradNoIncludeCompList = compTradBrands.stream()
             .filter(compTradBrand -> !suppliers.contains(compTradBrand.getCompany().getCode())).toList();
         compTradNoIncludeCompList
             .forEach(compTradBrand -> {
-                List<Company> list = NoIncludeCompMap.get(compTradBrand.getCompTradBrandId().getBrandCode());
+                List<Company> list = NoIncludeCompMap.get(compTradBrand.getCompTradeBrandId().getBrandCode());
                 if (list == null)
                     list = new ArrayList<>();
                 list.add(compTradBrand.getCompany());
-                NoIncludeCompMap.put(compTradBrand.getCompTradBrandId().getBrandCode(), list);
+                NoIncludeCompMap.put(compTradBrand.getCompTradeBrandId().getBrandCode(), list);
             });
         compTradIncludeCompList
             .forEach(compTradBrand -> {
-                List<Company> list = IncludeCompMap.get(compTradBrand.getCompTradBrandId().getBrandCode());
+                List<Company> list = IncludeCompMap.get(compTradBrand.getCompTradeBrandId().getBrandCode());
                 if (list == null)
                     list = new ArrayList<>();
                 list.add(compTradBrand.getCompany());
-                IncludeCompMap.put(compTradBrand.getCompTradBrandId().getBrandCode(), list);
+                IncludeCompMap.put(compTradBrand.getCompTradeBrandId().getBrandCode(), list);
             });
         brands.forEach(s -> {
             List<Company> list = IncludeCompMap.get(s);

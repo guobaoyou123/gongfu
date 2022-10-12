@@ -42,12 +42,12 @@ public class CompanyService {
     private final CompanyMapper companyMapper;
     private final CompanyRepository companyRepository;
     private final CompTradeRepository compTradeRepository;
-    private final CompTradDetailRepository compTradDetailRepository;
+    private final CompTradeDetailRepository compTradDetailRepository;
     private final CompTradeMapper compTradeMapper;
     private final JPAQueryFactory queryFactory;
     private final BrandMapper brandMapper;
     private final AddressService addressService;
-    private final CompTradBrandRepository compTradBrandRepository;
+    private final CompTradeBrandRepository compTradBrandRepository;
     private final CompVisibleRepository compVisibleRepository;
     private final CompInvitationCodeRepository compInvitationCodeRepository;
     private final CompTradeApplyRepository compTradeApplyRepository;
@@ -79,7 +79,7 @@ public class CompanyService {
                                                                 Optional<String> pageSize
     ) {
 
-        List<CompTrad> compTradList = listSuppliersByCompTradIdCompBuyerAndState(id, Availability.ENABLED);
+        List<CompTrade> compTradList = listSuppliersByCompTradIdCompBuyerAndState(id, Availability.ENABLED);
         List<TCompanyIncludeBrand> tCompanyIncludeBrandList = compTradList.stream()
             .map(compTradeMapper::toSuppliersIncludeBrand)
             .filter(t -> t.getState().equals("1"))
@@ -131,8 +131,8 @@ public class CompanyService {
      * @return 供应商税模式列表
      */
     @Cacheable(value = "SupplierAndBrand;1800", unless = "#result == null", key = "#compBuyer")
-    public List<CompTrad> listSuppliersByCompTradIdCompBuyerAndState(String compBuyer, Availability state) {
-        return compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(compBuyer, state);
+    public List<CompTrade> listSuppliersByCompTradIdCompBuyerAndState(String compBuyer, Availability state) {
+        return compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndState(compBuyer, state);
     }
 
     /**
@@ -197,7 +197,7 @@ public class CompanyService {
     @Cacheable(value = "supplierDetail;1800", unless = "#result == null ", key = "#companyCode+'-'+#code")
     public VForeignSupplierResponse.VSupplier getForeignSupplierDetail(String code, String companyCode) throws IOException {
 
-        var trade = compTradeRepository.findById(CompTradId.builder()
+        var trade = compTradeRepository.findById(CompTradeId.builder()
             .compSaler(code)
             .compBuyer(companyCode)
             .build()
@@ -208,7 +208,7 @@ public class CompanyService {
             .map(brandMapper::toBrand)
             .map(brandMapper::toSupplierBrandPreload)
             .toList();
-        VForeignSupplierResponse.VSupplier vSupplier = Optional.of(trade).map(CompTrad::getSalerCompanys)
+        VForeignSupplierResponse.VSupplier vSupplier = Optional.of(trade).map(CompTrade::getSalerCompanys)
             .map(companyMapper::toBaseInformation)
             .map(companyMapper::toSupplierDetail).orElseThrow();
         vSupplier.setBrands(brands);
@@ -264,8 +264,8 @@ public class CompanyService {
                 .map(Company::getCode)
                 .toList();
             if (outSuppliers.size() > 0) {
-                List<CompTrad> compTradList = compTradeRepository
-                    .findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(companyCode, outSuppliers);
+                List<CompTrade> compTradList = compTradeRepository
+                    .findCompTradesByCompTradeId_CompBuyerAndCompTradeId_CompSalerIn(companyCode, outSuppliers);
                 if (compTradList.size() > 0) {
                     map.put("code", 201);
                     map.put("companyName", "UNKNOWN");
@@ -441,7 +441,7 @@ public class CompanyService {
         var company = getEnrolledCompanyDetail(enrolledCode)
             .orElseThrow(() -> new IOException("未从数据库找到"));
         //是否为供应商
-        var compTrad1 = compTradeRepository.findById(CompTradId.builder()
+        var compTrad1 = compTradeRepository.findById(CompTradeId.builder()
             .compSaler(enrolledCode)
             .compBuyer(companyCode)
             .build()
@@ -449,7 +449,7 @@ public class CompanyService {
         if (compTrad1.isPresent())
             company.setIsSupplier(true);
         //是否为客户
-        var compTrad2 = compTradeRepository.findById(CompTradId.builder()
+        var compTrad2 = compTradeRepository.findById(CompTradeId.builder()
             .compSaler(companyCode)
             .compBuyer(enrolledCode)
             .build()
@@ -548,7 +548,7 @@ public class CompanyService {
      */
     @Cacheable(value = "Enrolled_Supplier_detail;1800", key = "#companyCode+'-'+#code", unless = "#result == null ")
     public Optional<TEnrolledTradeCompany> enrolledSupplier(String code, String companyCode) throws IOException {
-        EnrolledTrade enrolledSupplier = enrolledTradeRepository.findById(CompTradId.builder()
+        EnrolledTrade enrolledSupplier = enrolledTradeRepository.findById(CompTradeId.builder()
             .compSaler(code)
             .compBuyer(companyCode)
             .build()).orElseThrow(() -> new IOException("未从数据库找到"));
@@ -582,7 +582,7 @@ public class CompanyService {
             if (type.equals("1")) {
                 compTradeRepository.updateCompTradeBuyer(
                     operators.equals("") ? null : operators,
-                    CompTradId.builder()
+                    CompTradeId.builder()
                         .compBuyer(compBuyer)
                         .compSaler(compSaler)
                         .build()
@@ -590,7 +590,7 @@ public class CompanyService {
             } else {
                 compTradeRepository.updateCompTradeSaler(
                     operators.equals("") ? null : operators,
-                    CompTradId.builder()
+                    CompTradeId.builder()
                         .compBuyer(compBuyer)
                         .compSaler(compSaler)
                         .build()
@@ -611,7 +611,7 @@ public class CompanyService {
      */
     @Cacheable(value = "customerDetail;1800", key = "#companyCode+'-'+#code", unless = "#result == null ")
     public Optional<TEnrolledTradeCompany> enrolledCustomer(String code, String companyCode) throws IOException {
-        EnrolledTrade enrolledSupplier = enrolledTradeRepository.findById(CompTradId.builder()
+        EnrolledTrade enrolledSupplier = enrolledTradeRepository.findById(CompTradeId.builder()
             .compSaler(companyCode)
             .compBuyer(code)
             .build()).orElseThrow(() -> new IOException("未从数据库找到"));
@@ -645,9 +645,9 @@ public class CompanyService {
     public void modifyTradeBrands(String compSaler, String compBuyer, List<String> brands) {
         try {
             compTradBrandRepository.deleteCompTradBrand(compBuyer, compSaler);
-            List<CompTradBrand> compTradBrands = new ArrayList<>();
-            brands.forEach(s -> compTradBrands.add(CompTradBrand.builder()
-                .compTradBrandId(CompTradBrandId.builder()
+            List<CompTradeBrand> compTradBrands = new ArrayList<>();
+            brands.forEach(s -> compTradBrands.add(CompTradeBrand.builder()
+                .compTradeBrandId(CompTradeBrandId.builder()
                     .brandCode(s)
                     .compSaler(compSaler)
                     .compBuyer(compBuyer)
@@ -674,14 +674,14 @@ public class CompanyService {
     @Transactional
     public String modifyTradeTaxModel(String compSaler, String compBuyer, String taxModel) {
         try {
-            CompTradDetail compTradDetail = compTradDetailRepository.findById(CompTradId
+            CompTradBase compTradDetail = compTradDetailRepository.findById(CompTradeId
                 .builder()
                 .compSaler(compSaler)
                 .compBuyer(compBuyer)
                 .build()).orElseThrow(() -> new IOException("没有从数据库中找到该数据"));
             compTradeRepository.updateTaxModel(
                 taxModel.equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED,
-                CompTradId.builder()
+                CompTradeId.builder()
                     .compBuyer(compBuyer)
                     .compSaler(compSaler)
                     .build());
@@ -752,7 +752,7 @@ public class CompanyService {
     @Cacheable(value = "customerDetail;1800", unless = "#result == null ", key = "#companyCode+'-'+#code")
     public VForeignCustomerResponse.VCustomer getForeignCustomerDetail(String code, String companyCode) throws IOException {
 
-        var trade = compTradeRepository.findById(CompTradId.builder()
+        var trade = compTradeRepository.findById(CompTradeId.builder()
             .compSaler(companyCode)
             .compBuyer(code)
             .build()
@@ -763,7 +763,7 @@ public class CompanyService {
             .map(brandMapper::toBrand)
             .map(brandMapper::toCustomerBrandPreload)
             .toList();
-        VForeignCustomerResponse.VCustomer vCustomer = Optional.of(trade).map(CompTrad::getBuyerCompanys)
+        VForeignCustomerResponse.VCustomer vCustomer = Optional.of(trade).map(CompTrade::getBuyerCompanys)
             .map(companyMapper::toBaseInformation)
             .map(companyMapper::toVCustomer).orElseThrow();
         vCustomer.setBrands(brands);
@@ -897,7 +897,7 @@ public class CompanyService {
                 company = companyRepository.findById(code).orElseThrow(() -> new IOException("从数据库搜索不到该供应商"));
                 compTradBrandRepository.deleteCompTradBrand(companyCode, code);
             }
-            CompTradId compTradId = CompTradId.builder()
+            CompTradeId compTradId = CompTradeId.builder()
                 .compBuyer(companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER) ? companyCode : code)
                 .compSaler(companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER) ? code : companyCode)
                 .build();
@@ -915,14 +915,14 @@ public class CompanyService {
             company.setEmail(foreignCompany.getEmail());
             company.setPhone(foreignCompany.getPhone());
             companyRepository.save(company);
-            CompTrad compTrade = compTradeRepository.findById(compTradId).orElse(null);
+            CompTrade compTrade = compTradeRepository.findById(compTradId).orElse(null);
             if (compTrade != null) {
                 if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER))
                     compTrade.setSalerBelongTo(foreignCompany.getOperators());
                 compTrade.setTaxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED);
             } else {
-                compTrade = CompTrad.builder()
-                    .compTradId(compTradId)
+                compTrade = CompTrade.builder()
+                    .compTradeId(compTradId)
                     .taxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED)
                     .state(Availability.ENABLED)
                     .salerBelongTo(companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER) ? foreignCompany.getOperators() : null)
@@ -930,12 +930,12 @@ public class CompanyService {
             }
             //保存价税模式
             compTradeRepository.save(compTrade);
-            List<CompTradBrand> compTradBrands = new ArrayList<>();
+            List<CompTradeBrand> compTradBrands = new ArrayList<>();
             foreignCompany.getBrands().
                 forEach(s -> compTradBrands.add(
-                        CompTradBrand.builder()
-                            .compTradBrandId(
-                                CompTradBrandId.builder()
+                        CompTradeBrand.builder()
+                            .compTradeBrandId(
+                                CompTradeBrandId.builder()
                                     .brandCode(s)
                                     .compBuyer(compTradId.getCompBuyer())
                                     .compSaler(compTradId.getCompSaler())

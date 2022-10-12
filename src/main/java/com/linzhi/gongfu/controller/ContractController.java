@@ -1330,7 +1330,7 @@ public class ContractController {
     }
 
     /**
-     * 采购合同删除产品
+     * 销售合同删除产品
      *
      * @param codes    明细序列号列表
      * @param id       合同主键

@@ -567,7 +567,7 @@ public class PurchaseContractService {
                 supplier.getNameInCN(),
                 null,
                 ContractState.UN_FINISHED);
-            CompTaxModel taxModel = compTaxModelRepository.findById(CompTradId.builder()
+            CompTaxModel taxModel = compTaxModelRepository.findById(CompTradeId.builder()
                 .compSaler(supplierCode)
                 .compBuyer(companyCode)
                 .build()).orElseThrow(() -> new IOException("从数据库中没有查询到"));

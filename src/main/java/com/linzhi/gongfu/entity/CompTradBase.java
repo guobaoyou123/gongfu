@@ -24,12 +24,12 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Entity
 @Table(name = "comp_trade")
-public class CompTradDetail implements Serializable {
+public class CompTradBase implements Serializable {
     /**
      * 主键：卖方编号+买方编号
      */
     @EmbeddedId
-    private CompTradId compTradId;
+    private CompTradeId compTradeId;
 
     /**
      * 税模式（0：不含税，1：含税）

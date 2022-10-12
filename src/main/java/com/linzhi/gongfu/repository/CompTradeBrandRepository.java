@@ -1,7 +1,7 @@
 package com.linzhi.gongfu.repository;
 
-import com.linzhi.gongfu.entity.CompTradBrand;
-import com.linzhi.gongfu.entity.CompTradBrandId;
+import com.linzhi.gongfu.entity.CompTradeBrand;
+import com.linzhi.gongfu.entity.CompTradeBrandId;
 import com.linzhi.gongfu.enumeration.Availability;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,7 +16,7 @@ import java.util.List;
  * @author zgh
  * @create_at 2022-01-21
  */
-public interface CompTradBrandRepository extends CrudRepository<CompTradBrand, CompTradBrandId>, QuerydslPredicateExecutor<CompTradBrand> {
+public interface CompTradeBrandRepository extends CrudRepository<CompTradeBrand, CompTradeBrandId>, QuerydslPredicateExecutor<CompTradeBrand> {
     /**
      * 根据品牌查找供应商
      *
@@ -25,7 +25,7 @@ public interface CompTradBrandRepository extends CrudRepository<CompTradBrand, C
      * @param state     状态
      * @return 供应商列表
      */
-    List<CompTradBrand> findCompTradBrandByCompTradBrandId_BrandCodeInAndCompTradBrandId_CompBuyerAndCompany_StateOrderBySortDesc(List<String> brandCode, String compBuyer, Availability state);
+    List<CompTradeBrand> findCompTradeBrandByCompTradeBrandId_BrandCodeInAndCompTradeBrandId_CompBuyerAndCompany_StateOrderBySortDesc(List<String> brandCode, String compBuyer, Availability state);
 
     /**
      * 删除交易品牌

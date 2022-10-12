@@ -44,8 +44,8 @@ public class CompTradeApplyService {
     private final CompInvitationCodeRepository compInvitationCodeRepository;
 
     private final CompTradeApplyMapper compTradeApplyMapper;
-    private final CompTradDetailRepository compTradDetailRepository;
-    private final CompTradBrandRepository compTradBrandRepository;
+    private final CompTradeDetailRepository compTradDetailRepository;
+    private final CompTradeBrandRepository compTradBrandRepository;
     private final BlacklistRepository blacklistRepository;
     private final EnrolledCompanyRepository enrolledCompanyRepository;
     private final CompTradeRepository compTradeRepository;
@@ -92,7 +92,7 @@ public class CompTradeApplyService {
             //查询本单位基础信息
             EnrolledCompany enrolledCompany = enrolledCompanyRepository.findById(companyCode).orElseThrow(() -> new IOException("未从数据库找到公司信息"));
             //申请记录编码 SQCG-申请单位-被申请单位-时间-随机数
-            // 生成申请采购记录
+            //生成申请采购记录
             CompTradeApply compTradeApply1 = CompTradeApply.builder()
                 .code("SQCG-" + companyCode + "-" + vTradeApplyRequest.getApplyCompCode() + "-" + UUID.randomUUID().toString().substring(0, 8))
                 .createdCompBy(companyCode)
@@ -172,9 +172,9 @@ public class CompTradeApplyService {
             compTradeApply.setState(TradeApply.AGREE);
             compTradeApplyRepository.save(compTradeApply);
             //生成交易信息
-            CompTradDetail compTrad = CompTradDetail.builder()
-                .compTradId(
-                    CompTradId.builder()
+            CompTradBase compTrad = CompTradBase.builder()
+                .compTradeId(
+                    CompTradeId.builder()
                         .compSaler(companyCode)
                         .compBuyer(compTradeApply.getCreatedCompBy())
                         .build()
@@ -184,10 +184,10 @@ public class CompTradeApplyService {
                 .salerBelongTo(StringUtils.join(vTradeApplyConsentRequest.getAuthorizedOperator(), ","))
                 .build();
             compTradDetailRepository.save(compTrad);
-            List<CompTradBrand> compTradBrands = new ArrayList<>();
+            List<CompTradeBrand> compTradBrands = new ArrayList<>();
             vTradeApplyConsentRequest.getBrandCodes().forEach(s -> {
-                CompTradBrand compTradBrand = CompTradBrand.builder()
-                    .compTradBrandId(CompTradBrandId.builder()
+                CompTradeBrand compTradBrand = CompTradeBrand.builder()
+                    .compTradeBrandId(CompTradeBrandId.builder()
                         .compBuyer(compTradeApply.getCreatedCompBy())
                         .compSaler(companyCode)
                         .brandCode(s)
@@ -366,7 +366,7 @@ public class CompTradeApplyService {
         //判断该申请记录是否通过
         if (compTradeApply.getState().equals(TradeApply.AGREE)) {
             //查询交易品牌和税模式
-            CompTrad compTrad = compTradeRepository.findById(CompTradId.builder()
+            CompTrade compTrad = compTradeRepository.findById(CompTradeId.builder()
                 .compBuyer(compTradeApply.getCreatedCompBy())
                 .compSaler(compTradeApply.getHandledCompBy())
                 .build()).orElseThrow(() -> new IOException("未从数据库中找到交易信息"));

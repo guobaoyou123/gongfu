@@ -236,7 +236,7 @@ public class SalesContractService {
                 companyCode,
                 companyName,
                 ContractState.UN_FINISHED);
-            CompTaxModel taxModel = compTaxModelRepository.findById(CompTradId.builder()
+            CompTaxModel taxModel = compTaxModelRepository.findById(CompTradeId.builder()
                 .compSaler(companyCode)
                 .compBuyer(customerCode)
                 .build()).orElseThrow(() -> new IOException("从数据库中没有查询到"));
@@ -1347,7 +1347,12 @@ public class SalesContractService {
         return resultMap;
     }
 
-
+    /**
+     * 计算总价
+     * @param list 销售明细列表
+     * @param salesContractRevision 销售合同版本详情
+     * @param operator 操作员编码
+     */
     public void countSum(List<SalesContractRecordTemp> list, SalesContractRevision salesContractRevision, String operator) {
         //判断产品列表中的产品是否都有价格
         List<SalesContractRecordTemp> list1 = list.stream()

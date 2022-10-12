@@ -28,7 +28,7 @@ public class EnrolledTrade implements Serializable {
      * 主键：卖方编号+买方编号
      */
     @EmbeddedId
-    private CompTradId compTradId;
+    private CompTradeId compTradId;
 
     /**
      * 税模式（0：不含税，1：含税）

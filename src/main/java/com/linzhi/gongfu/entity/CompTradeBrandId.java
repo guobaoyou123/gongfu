@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
-public class CompTradBrandId implements Serializable {
+public class CompTradeBrandId implements Serializable {
 
     @Column(name = "comp_saler", length = 40, nullable = false)
     @NonNull

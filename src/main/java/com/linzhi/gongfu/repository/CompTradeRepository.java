@@ -1,8 +1,8 @@
 package com.linzhi.gongfu.repository;
 
 
-import com.linzhi.gongfu.entity.CompTrad;
-import com.linzhi.gongfu.entity.CompTradId;
+import com.linzhi.gongfu.entity.CompTrade;
+import com.linzhi.gongfu.entity.CompTradeId;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.TaxMode;
 import org.springframework.data.jpa.repository.Modifying;
@@ -20,7 +20,7 @@ import java.util.List;
  * @create_at 2022-01-27
  */
 public interface CompTradeRepository
-    extends CrudRepository<CompTrad, CompTradId>, QuerydslPredicateExecutor<CompTrad> {
+    extends CrudRepository<CompTrade, CompTradeId>, QuerydslPredicateExecutor<CompTrade> {
 
     /**
      * 查找供应商列表
@@ -29,7 +29,7 @@ public interface CompTradeRepository
      * @param state     状态
      * @return 供应商列表
      */
-    List<CompTrad> findSuppliersByCompTradId_CompBuyerAndState(@Param("compBuyer") String compBuyer, @Param("state") Availability state);
+    List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndState(@Param("compBuyer") String compBuyer, @Param("state") Availability state);
 
     /**
      * 查找交易列表
@@ -38,7 +38,7 @@ public interface CompTradeRepository
      * @param compSuppliers 卖方编码列表
      * @return 交易列表
      */
-    List<CompTrad> findCompTradsByCompTradId_CompBuyerAndCompTradId_CompSalerIn(String compBuyer, List<String> compSuppliers);
+    List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndCompTradeId_CompSalerIn(String compBuyer, List<String> compSuppliers);
 
     /**
      * 更改买方所属操作员
@@ -48,8 +48,8 @@ public interface CompTradeRepository
      */
 
     @Modifying
-    @Query("UPDATE CompTrad  c set c.buyerBelongTo=?1 where c.compTradId=?2")
-    void updateCompTradeBuyer(String operators, CompTradId compTradId);
+    @Query("UPDATE CompTrade  c set c.buyerBelongTo=?1 where c.compTradeId=?2")
+    void updateCompTradeBuyer(String operators, CompTradeId compTradId);
 
     /**
      * 更改交易信息状态
@@ -59,7 +59,7 @@ public interface CompTradeRepository
      * @param compSalers 卖方单位编码列表
      */
     @Modifying
-    @Query("UPDATE CompTrad  c set c.state=?1 where c.compTradId.compBuyer=?2 and c.compTradId.compSaler in ?3")
+    @Query("UPDATE CompTrade  c set c.state=?1 where c.compTradeId.compBuyer=?2 and c.compTradeId.compSaler in ?3")
     void updateCompTradeState(Availability state, String compBuyer, List<String> compSalers);
 
     /**
@@ -70,7 +70,7 @@ public interface CompTradeRepository
      * @param compSaler  卖方单位编码
      */
     @Modifying
-    @Query("UPDATE CompTrad  c set c.state=?1 where c.compTradId.compBuyer in ?2 and c.compTradId.compSaler = ?3")
+    @Query("UPDATE CompTrade  c set c.state=?1 where c.compTradeId.compBuyer in ?2 and c.compTradeId.compSaler = ?3")
     void updateCompTradeState(Availability state, List<String> compBuyers, String compSaler);
 
     /**
@@ -80,8 +80,8 @@ public interface CompTradeRepository
      * @param compTradId 主键
      */
     @Modifying
-    @Query("UPDATE CompTrad  c set c.salerBelongTo=?1 where c.compTradId=?2")
-    void updateCompTradeSaler(String operators, CompTradId compTradId);
+    @Query("UPDATE CompTrade  c set c.salerBelongTo=?1 where c.compTradeId=?2")
+    void updateCompTradeSaler(String operators, CompTradeId compTradId);
 
     /**
      * 更新交易中的报价模式
@@ -90,6 +90,6 @@ public interface CompTradeRepository
      * @param compTradId 交易主键
      */
     @Modifying
-    @Query("UPDATE CompTrad  c set c.taxModel=?1 where c.compTradId=?2")
-    void updateTaxModel(TaxMode taxMode, CompTradId compTradId);
+    @Query("UPDATE CompTrade  c set c.taxModel=?1 where c.compTradeId=?2")
+    void updateTaxModel(TaxMode taxMode, CompTradeId compTradId);
 }

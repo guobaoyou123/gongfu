@@ -15,10 +15,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Entity
 @Table(name = "comp_trade_brand")
-public class CompTradBrand implements Serializable {
+public class CompTradeBrand implements Serializable {
 
     @EmbeddedId
-    private CompTradBrandId compTradBrandId;
+    private CompTradeBrandId compTradeBrandId;
 
     @Column
     private Integer sort;

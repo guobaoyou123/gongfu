@@ -6,6 +6,7 @@ import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.InquiryMapper;
 import com.linzhi.gongfu.repository.*;
+import com.linzhi.gongfu.util.CalculateUtil;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VInquiryRequest;
 import com.linzhi.gongfu.vo.VUnfinishedInquiryListResponse;
@@ -112,9 +113,9 @@ public class InquiryService {
                 salesContract = contractRepository.findById(purchasePlan.get().getSalesId()).orElseThrow(() -> new IOException("数据库中找不到该销售合同"));
             }
             //查询每个供应商税模式对本单位设置的税模式
-            List<CompTrad> compTades = compTradeRepository.findSuppliersByCompTradId_CompBuyerAndState(companyCode, Availability.ENABLED);
-            Map<String, CompTrad> compTradMap = new HashMap<>();
-            compTades.forEach(compTrad -> compTradMap.put(compTrad.getCompTradId().getCompSaler(), compTrad));
+            List<CompTrade> compTades = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndState(companyCode, Availability.ENABLED);
+            Map<String, CompTrade> compTradMap = new HashMap<>();
+            compTades.forEach(compTrad -> compTradMap.put(compTrad.getCompTradeId().getCompSaler(), compTrad));
             //查出向每个供应商询价商品且询价数量>0的有哪些
             purchasePlan.get().getProduct().forEach(purchasePlanProduct -> purchasePlanProduct.getSalers().forEach(supplier -> {
                 if (supplier.getDemand().intValue() > 0) {
@@ -345,7 +346,7 @@ public class InquiryService {
             String supplierName = supplier.getNameInCN();
             List<String> inquiryCodes = getInquiryCode(maxCode, operator, companyCode, supplier.getRole().equals(CompanyRole.EXTERIOR_SUPPLIER.getSign()) ? supplier.getEncode() : supplierCode);
             //税模式
-            CompTaxModel taxModel = compTaxModelRepository.findById(CompTradId.builder()
+            CompTaxModel taxModel = compTaxModelRepository.findById(CompTradeId.builder()
                 .compSaler(supplierCode)
                 .compBuyer(companyCode)
                 .build()).orElseThrow(() -> new IOException("从数据库中没有查询到"));
@@ -356,7 +357,6 @@ public class InquiryService {
                     companyCode,
                     operator,
                     companyName,
-
                     supplierCode,
                     supplierName,
                     taxMode, null, null
@@ -401,7 +401,7 @@ public class InquiryService {
             ).orElseThrow(() -> new IOException("请求的货物税率不存在"));
             //保存产品
             InquiryRecord record = getInquiryRecord(product, id, maxCode, amount, goods.getRate(), price, inquiry.getOfferMode());
-          //  inquiryRecordRepository.save(record);
+            inquiryRecordRepository.save(record);
             inquiryRecordList.add(record);
             return countSum(inquiryRecordList, id);
         } catch (Exception e) {
@@ -476,10 +476,10 @@ public class InquiryService {
             .chargeUnit(product.getChargeUnit())
             .stockTime(0)
             .vatRate(taxRates)
-            .price(price != null ? taxMode.equals(TaxMode.UNTAXED) ? price : calculateUntaxedUnitPrice(price, taxRates) : null)
-            .priceVat(price != null ? taxMode.equals(TaxMode.INCLUDED) ? price : calculateTaxedUnitPrice(price, taxRates) : null)
-            .totalPrice(price != null ? taxMode.equals(TaxMode.UNTAXED) ? calculateSubtotal(price, amount) : calculateSubtotal(calculateUntaxedUnitPrice(price, taxRates), amount) : null)
-            .totalPriceVat(price != null ? taxMode.equals(TaxMode.INCLUDED) ? calculateSubtotal(price, amount) : calculateSubtotal(calculateTaxedUnitPrice(price, taxRates), amount) : null)
+            .price(price != null ? taxMode.equals(TaxMode.UNTAXED) ? price : CalculateUtil.calculateUntaxedUnitPrice(price, taxRates) : null)
+            .priceVat(price != null ? taxMode.equals(TaxMode.INCLUDED) ? price : CalculateUtil.calculateTaxedUnitPrice(price, taxRates) : null)
+            .totalPrice(price != null ? taxMode.equals(TaxMode.UNTAXED) ? CalculateUtil.calculateSubtotal(price, amount) : CalculateUtil.calculateSubtotal(CalculateUtil.calculateUntaxedUnitPrice(price, taxRates), amount) : null)
+            .totalPriceVat(price != null ? taxMode.equals(TaxMode.INCLUDED) ? CalculateUtil.calculateSubtotal(price, amount) : CalculateUtil.calculateSubtotal(CalculateUtil.calculateTaxedUnitPrice(price, taxRates), amount) : null)
             .build();
     }
 
@@ -519,8 +519,7 @@ public class InquiryService {
      * @param id                    询价单主键
      * @return 返回成功或者失败
      */
-    @Caching(evict = {@CacheEvict(value = "inquiry_detail;1800", key = "#id")
-    })
+    @CacheEvict(value = "inquiry_detail;1800", key = "#id")
     @Transactional
     public Boolean modifyInquiry(VInquiryRequest vModifyInquiryRequest, String id) {
         try {
@@ -562,10 +561,10 @@ public class InquiryService {
                             record.setTotalPrice(null);
                             record.setTotalPriceVat(null);
                         } else if (vProduct.getPrice() != null && vProduct.getPrice().intValue() >= 0) {
-                            record.setPrice(inquiry.getOfferMode().equals(TaxMode.UNTAXED) ? vProduct.getPrice() : calculateUntaxedUnitPrice(vProduct.getPrice(), record.getVatRate()));
-                            record.setPriceVat(inquiry.getOfferMode().equals(TaxMode.INCLUDED) ? vProduct.getPrice() : calculateTaxedUnitPrice(vProduct.getPrice(), record.getVatRate()));
-                            record.setTotalPrice(calculateSubtotal(record.getPrice(), record.getAmount()));
-                            record.setTotalPriceVat(calculateSubtotal(record.getPriceVat(), record.getAmount()));
+                            record.setPrice(inquiry.getOfferMode().equals(TaxMode.UNTAXED) ? vProduct.getPrice() : CalculateUtil.calculateUntaxedUnitPrice(vProduct.getPrice(), record.getVatRate()));
+                            record.setPriceVat(inquiry.getOfferMode().equals(TaxMode.INCLUDED) ? vProduct.getPrice() : CalculateUtil.calculateTaxedUnitPrice(vProduct.getPrice(), record.getVatRate()));
+                            record.setTotalPrice(CalculateUtil.calculateSubtotal(record.getPrice(), record.getAmount()));
+                            record.setTotalPriceVat(CalculateUtil.calculateSubtotal(record.getPriceVat(), record.getAmount()));
                         }
                     }
                 }));
@@ -648,8 +647,7 @@ public class InquiryService {
      * @param operator    操作员编码
      * @return 返回成功或者失败信息
      */
-    @Caching(evict = {@CacheEvict(value = "inquiry_detail;1800", key = "#id")
-    })
+    @CacheEvict(value = "inquiry_detail;1800", key = "#id")
     @Transactional
     public Map<String, Object> saveImportProducts(String id, String companyCode, String operator) {
         Map<String, Object> resultMap = new HashMap<>();
@@ -687,7 +685,6 @@ public class InquiryService {
             }
             //删除原有的产品明细
             importProductTempRepository.deleteProduct(id, companyCode, operator);
-            //  inquiryRecords=countRecord(inquiryRecords,inquiry.getOfferMode());
             inquiryRecordRepository.saveAll(inquiryRecords);
             if (countSum(inquiryRecords, id))
                 resultMap.put("code", 200);
@@ -762,40 +759,4 @@ public class InquiryService {
         list.add(inquiryCode);
         return list;
     }
-
-
-    /**
-     * 计算未税单价
-     *
-     * @param price   单价
-     * @param vatRate 税率
-     * @return 未税单价
-     */
-    public BigDecimal calculateUntaxedUnitPrice(BigDecimal price, BigDecimal vatRate) {
-        return price.divide(new BigDecimal("1").add(vatRate), 4, RoundingMode.HALF_UP);
-    }
-
-    /**
-     * 计算含税单价
-     *
-     * @param price   单价
-     * @param vatRate 税率
-     * @return 含税单价
-     */
-    public BigDecimal calculateTaxedUnitPrice(BigDecimal price, BigDecimal vatRate) {
-        return price.multiply(new BigDecimal("1").add(vatRate)).setScale(4, RoundingMode.HALF_UP);
-    }
-
-    /**
-     * 计算小计
-     *
-     * @param price  单价
-     * @param amount 数量
-     * @return 小计
-     */
-    public BigDecimal calculateSubtotal(BigDecimal price, BigDecimal amount) {
-        return price.multiply(amount).setScale(2, RoundingMode.HALF_UP);
-    }
-
-
 }
