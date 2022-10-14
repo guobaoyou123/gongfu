@@ -24,7 +24,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Entity
 @Table(name = "comp_trade")
-public class CompTradBase implements Serializable {
+public class CompTradeBase implements Serializable {
     /**
      * 主键：卖方编号+买方编号
      */

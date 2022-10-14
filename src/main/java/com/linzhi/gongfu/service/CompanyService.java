@@ -145,15 +145,15 @@ public class CompanyService {
     @Cacheable(value = "suppliers_brands;1800", unless = "#result == null")
     public List<TCompanyBaseInformation> listSuppliersByBrands(List<String> brands, String id) {
         QCompany qCompany = QCompany.company;
-        QCompTradBrand qCompTradBrand = QCompTradBrand.compTradBrand;
+        QCompTradeBrand qCompTradeBrand = QCompTradeBrand.compTradeBrand;
 
-        JPAQuery<Company> query = queryFactory.selectDistinct(qCompany).from(qCompTradBrand).leftJoin(qCompany)
-            .on(qCompany.code.eq(qCompTradBrand.compTradBrandId.compSaler));
+        JPAQuery<Company> query = queryFactory.selectDistinct(qCompany).from(qCompTradeBrand).leftJoin(qCompany)
+            .on(qCompany.code.eq(qCompTradeBrand.compTradeBrandId.compSaler));
         if (brands.size() > 0) {
-            query.where(qCompTradBrand.compTradBrandId.brandCode.in(brands));
+            query.where(qCompTradeBrand.compTradeBrandId.brandCode.in(brands));
         }
         if (!id.isEmpty()) {
-            query.where(qCompTradBrand.compTradBrandId.compBuyer.eq(id));
+            query.where(qCompTradeBrand.compTradeBrandId.compBuyer.eq(id));
         }
         query.where(qCompany.state.eq(Availability.ENABLED));
         List<Company> companies = query.orderBy(qCompany.code.desc())
@@ -172,13 +172,13 @@ public class CompanyService {
     @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ", key = "#companyCode")
     public List<TCompanyBaseInformation> listForeignSuppliers(String companyCode) {
         QCompany qCompany = QCompany.company;
-        QCompTrad qCompTrad = QCompTrad.compTrad;
+        QCompTrade qCompTrade = QCompTrade.compTrade;
         QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
-        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany, qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrad)
-            .on(qCompany.code.eq(qCompTrad.compTradId.compSaler))
+        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany, qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrade)
+            .on(qCompany.code.eq(qCompTrade.compTradeId.compSaler))
             .leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
         query.where
-            (qCompTrad.compTradId.compBuyer.eq(companyCode)
+            (qCompTrade.compTradeId.compBuyer.eq(companyCode)
                 .and(qCompany.role.eq(CompanyRole.EXTERIOR_SUPPLIER.getSign())));
         List<Tuple> companies = query.orderBy(qCompany.code.desc())
             .fetch();
@@ -674,7 +674,7 @@ public class CompanyService {
     @Transactional
     public String modifyTradeTaxModel(String compSaler, String compBuyer, String taxModel) {
         try {
-            CompTradBase compTradDetail = compTradDetailRepository.findById(CompTradeId
+            CompTradeBase compTradDetail = compTradDetailRepository.findById(CompTradeId
                 .builder()
                 .compSaler(compSaler)
                 .compBuyer(compBuyer)
@@ -722,16 +722,16 @@ public class CompanyService {
     @Cacheable(value = "Foreign_Customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#state+'-'+#name")
     public List<TCompanyBaseInformation> listForeignCustomers(String companyCode, String operator, Whether isAdmin, String name, String state) {
         QCompany qCompany = QCompany.company;
-        QCompTrad qCompTrad = QCompTrad.compTrad;
+        QCompTrade qCompTrade = QCompTrade.compTrade;
         QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
-        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany, qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrad)
-            .on(qCompany.code.eq(qCompTrad.compTradId.compBuyer))
+        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany, qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrade)
+            .on(qCompany.code.eq(qCompTrade.compTradeId.compBuyer))
             .leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
         query.where
-            (qCompTrad.compTradId.compSaler.eq(companyCode)
+            (qCompTrade.compTradeId.compSaler.eq(companyCode)
                 .and(qCompany.role.eq(CompanyRole.EXTERIOR_CUSTOMER.getSign())));
         if (isAdmin.equals(Whether.NO))
-            query.where(qCompTrad.salerBelongTo.contains(operator));
+            query.where(qCompTrade.salerBelongTo.contains(operator));
         if (!name.equals(""))
             query.where(qCompany.nameInCN.like("%" + name + "%"));
         query.where(qCompany.state.eq(state.equals("1") ? Availability.ENABLED : Availability.DISABLED));
@@ -808,17 +808,17 @@ public class CompanyService {
         Map<String, Object> map = new HashMap<>();
         //判重
         QCompany qCompany = QCompany.company;
-        QCompTrad qCompTrad = QCompTrad.compTrad;
+        QCompTrade qCompTrade = QCompTrade.compTrade;
         QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
         JPAQuery<Company> query = queryFactory.selectDistinct(qCompany)
             .from(qCompany);
         query.leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
         if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER)) {
-            query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compBuyer));
-            query.where(qCompTrad.compTradId.compSaler.eq(salerCode));
+            query.leftJoin(qCompTrade).on(qCompany.code.eq(qCompTrade.compTradeId.compBuyer));
+            query.where(qCompTrade.compTradeId.compSaler.eq(salerCode));
         } else {
-            query.leftJoin(qCompTrad).on(qCompany.code.eq(qCompTrad.compTradId.compSaler));
-            query.where(qCompTrad.compTradId.compBuyer.eq(buyerCode));
+            query.leftJoin(qCompTrade).on(qCompany.code.eq(qCompTrade.compTradeId.compSaler));
+            query.where(qCompTrade.compTradeId.compBuyer.eq(buyerCode));
         }
         query.where(qEnrolledCompany.USCI.eq(usci));
         query.where(qCompany.role.eq(companyRole.getSign()));
@@ -962,16 +962,16 @@ public class CompanyService {
     @Cacheable(value = "customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#name")
     public List<TCompanyBaseInformation> findAllCustomer(String name, String companyCode, String operator) {
         QCompany qCompany = QCompany.company;
-        QCompTrad qCompTrad = QCompTrad.compTrad;
+        QCompTrade qCompTrade = QCompTrade.compTrade;
 
-        JPAQuery<Company> query = queryFactory.selectDistinct(qCompany).from(qCompany).leftJoin(qCompTrad)
-            .on(qCompany.code.eq(qCompTrad.compTradId.compBuyer));
+        JPAQuery<Company> query = queryFactory.selectDistinct(qCompany).from(qCompany).leftJoin(qCompTrade)
+            .on(qCompany.code.eq(qCompTrade.compTradeId.compBuyer));
         if (!name.equals("")) {
             query.where(qCompany.nameInCN.like("%" + name + "%").or(qCompany.shortNameInCN.like("%" + name + "%")));
         }
-        query.where(qCompTrad.compTradId.compSaler.eq(companyCode));
+        query.where(qCompTrade.compTradeId.compSaler.eq(companyCode));
         if (!operator.equals("000")) {
-            query.where(qCompTrad.salerBelongTo.like("%" + operator + ",%"));
+            query.where(qCompTrade.salerBelongTo.like("%" + operator + ",%"));
         }
         query.where(qCompany.state.eq(Availability.ENABLED));
         List<Company> companies = query.orderBy(qCompany.code.desc())

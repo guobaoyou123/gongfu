@@ -993,7 +993,7 @@ public class SalesContractService {
             contractRevision.setFingerprint(str);
             salesContractRevisionRepository.save(contractRevision);
 
-            //将收回记录录保存到货运信息表中
+            //将收回记录保存到货运信息表中
             if (generateContractRequest.getReceivedRecords() != null && generateContractRequest.getReceivedRecords().size() > 0)
                 saveDelivery(id, revision, companyCode, operator, generateContractRequest.getReceivedRecords());
 
@@ -1091,7 +1091,7 @@ public class SalesContractService {
         }
 
         return records.stream().map(contractRecord -> {
-                contractRecord.setPriceVat(contractRecord.getPriceVat() == null ? null : contractRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP));
+              //  contractRecord.setPriceVat(contractRecord.getPriceVat() == null ? null : contractRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP));
                 return contractRecord.getProductId() + "-"
                     + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP);
             }

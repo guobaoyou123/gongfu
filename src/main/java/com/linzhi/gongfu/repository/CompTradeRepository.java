@@ -44,12 +44,12 @@ public interface CompTradeRepository
      * 更改买方所属操作员
      *
      * @param operators  操作员编码（以逗号隔开）
-     * @param compTradId 主键
+     * @param compTradeId 主键
      */
 
     @Modifying
     @Query("UPDATE CompTrade  c set c.buyerBelongTo=?1 where c.compTradeId=?2")
-    void updateCompTradeBuyer(String operators, CompTradeId compTradId);
+    void updateCompTradeBuyer(String operators, CompTradeId compTradeId);
 
     /**
      * 更改交易信息状态
@@ -77,19 +77,19 @@ public interface CompTradeRepository
      * 更改卖方所属操作员
      *
      * @param operators  操作员编码（以逗号隔开）
-     * @param compTradId 主键
+     * @param compTradeId 主键
      */
     @Modifying
     @Query("UPDATE CompTrade  c set c.salerBelongTo=?1 where c.compTradeId=?2")
-    void updateCompTradeSaler(String operators, CompTradeId compTradId);
+    void updateCompTradeSaler(String operators, CompTradeId compTradeId);
 
     /**
      * 更新交易中的报价模式
      *
      * @param taxMode    报价模式
-     * @param compTradId 交易主键
+     * @param compTradeId 交易主键
      */
     @Modifying
     @Query("UPDATE CompTrade  c set c.taxModel=?1 where c.compTradeId=?2")
-    void updateTaxModel(TaxMode taxMode, CompTradeId compTradId);
+    void updateTaxModel(TaxMode taxMode, CompTradeId compTradeId);
 }

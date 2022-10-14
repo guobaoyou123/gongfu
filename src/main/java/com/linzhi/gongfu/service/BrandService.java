@@ -146,12 +146,12 @@ public class BrandService {
     @Cacheable(value = "brands_company;1800", unless = "#result == null")
     public List<TBrand> listBrandsBySuppliers(List<String> company, String id) {
         QDcBrand qDcBrand = QDcBrand.dcBrand;
-        QCompTradBrand compTradBrand = QCompTradBrand.compTradBrand;
-        JPAQuery<DcBrand> query = queryFactory.selectDistinct(qDcBrand).from(compTradBrand)
-            .leftJoin(qDcBrand).on(qDcBrand.code.eq(compTradBrand.compTradBrandId.brandCode));
-        query.where(compTradBrand.compTradBrandId.compBuyer.eq(id));
+        QCompTradeBrand compTradeBrand = QCompTradeBrand.compTradeBrand;
+        JPAQuery<DcBrand> query = queryFactory.selectDistinct(qDcBrand).from(compTradeBrand)
+            .leftJoin(qDcBrand).on(qDcBrand.code.eq(compTradeBrand.compTradeBrandId.brandCode));
+        query.where(compTradeBrand.compTradeBrandId.compBuyer.eq(id));
         if (company.size() > 0)
-            query.where(compTradBrand.compTradBrandId.compSaler.in(company));
+            query.where(compTradeBrand.compTradeBrandId.compSaler.in(company));
         query.orderBy(qDcBrand.sort.desc());
         List<DcBrand> dcBrands = query.fetch();
 

@@ -172,7 +172,7 @@ public class CompTradeApplyService {
             compTradeApply.setState(TradeApply.AGREE);
             compTradeApplyRepository.save(compTradeApply);
             //生成交易信息
-            CompTradBase compTrad = CompTradBase.builder()
+            CompTradeBase compTrad = CompTradeBase.builder()
                 .compTradeId(
                     CompTradeId.builder()
                         .compSaler(companyCode)

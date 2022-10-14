@@ -1,7 +1,7 @@
 package com.linzhi.gongfu.repository;
 
 
-import com.linzhi.gongfu.entity.CompTradBase;
+import com.linzhi.gongfu.entity.CompTradeBase;
 import com.linzhi.gongfu.entity.CompTradeId;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
@@ -12,7 +12,7 @@ import org.springframework.data.repository.CrudRepository;
  * @author zgh
  * @create_at 2022-01-21
  */
-public interface CompTradeDetailRepository extends CrudRepository<CompTradBase, CompTradeId>, QuerydslPredicateExecutor<CompTradBase> {
+public interface CompTradeDetailRepository extends CrudRepository<CompTradeBase, CompTradeId>, QuerydslPredicateExecutor<CompTradeBase> {
 
 
 }

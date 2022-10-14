@@ -21,8 +21,8 @@ public interface EnrolledTradeRepository
      */
     @Cacheable(value = "Enrolled_Supplier_List;1800", key = "#companyCode", unless = "#result == null ")
     @Query(value = "select new  com.linzhi.gongfu.dto.TEnrolledTradeCompanies(b.code,b.nameInCN  ,b.shortNameInCN  ,c.USCI)  from Company b " +
-        "INNER JOIN  EnrolledCompany c on c.id=b.code LEFT JOIN CompTrade t on t.compTradId.compSaler=b.code" +
-        " where t.compTradId.compBuyer=?1 and  b.role='1' ")
+        "INNER JOIN  EnrolledCompany c on c.id=b.code LEFT JOIN CompTrade t on t.compTradeId.compSaler=b.code" +
+        " where t.compTradeId.compBuyer=?1 and  b.role='1' ")
     List<TEnrolledTradeCompanies> findEnrolledSupplierList(String companyCode);
 
     /**
@@ -33,7 +33,7 @@ public interface EnrolledTradeRepository
      */
     @Cacheable(value = "Enrolled_Customer_List;1800", key = "#companyCode", unless = "#result == null ")
     @Query(value = "select new  com.linzhi.gongfu.dto.TEnrolledTradeCompanies(b.code,b.nameInCN  ,b.shortNameInCN  ,c.USCI)  from Company b " +
-        "INNER JOIN  EnrolledCompany c on c.id=b.code LEFT JOIN CompTrade t on t.compTradId.compBuyer=b.code" +
-        " where t.compTradId.compSaler=?1 and  b.role='1' ")
+        "INNER JOIN  EnrolledCompany c on c.id=b.code LEFT JOIN CompTrade t on t.compTradeId.compBuyer=b.code" +
+        " where t.compTradeId.compSaler=?1 and  b.role='1' ")
     List<TEnrolledTradeCompanies> findEnrolledCustomerList(String companyCode);
 }
