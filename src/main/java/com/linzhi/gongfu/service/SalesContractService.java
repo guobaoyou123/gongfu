@@ -585,7 +585,8 @@ public class SalesContractService {
      * @param revision 版本
      * @return 产品列表
      */
-    public List<LinkedHashMap<String, Object>> exportProductTemplate(String id, Integer revision) {
+    public Map<String,Object> exportProductTemplate(String id, Integer revision) {
+        Map<String,Object> map = new HashMap<>();
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         try {
             var contract = getSalesContractDetail(id, revision);
@@ -612,10 +613,12 @@ public class SalesContractService {
                 m.put("数量", "");
                 list.add(m);
             }
+            map.put("list",list);
+            map.put("code",contract.getCode());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
+        return map;
     }
 
     /**
@@ -625,7 +628,8 @@ public class SalesContractService {
      * @param revision 版本
      * @return 产品列表
      */
-    public List<LinkedHashMap<String, Object>> exportProduct(String id, Integer revision, String type) {
+    public Map<String,Object> exportProduct(String id, Integer revision, String type) {
+        Map<String,Object> map = new HashMap<>();
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         try {
             var contract = getSalesContractDetail(id, revision);
@@ -651,11 +655,12 @@ public class SalesContractService {
                 }
                 list.add(m);
             });
-
+            map.put("list",list);
+            map.put("code",contract.getCode());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
+        return map;
     }
 
     /**

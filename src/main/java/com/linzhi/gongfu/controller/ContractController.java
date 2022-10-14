@@ -1,6 +1,6 @@
 package com.linzhi.gongfu.controller;
 
-import com.linzhi.gongfu.entity.Inquiry;
+
 import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.enumeration.ContractState;
 import com.linzhi.gongfu.mapper.*;
@@ -777,7 +777,7 @@ public class ContractController {
         boolean repetitive = false;
         //查询采购合同
         var contract = purchaseContractService.getPurchaseContractDetail(id, revision);
-        //如果合同版本号大于1且状态为未完成，需要判断是否已上一版内容一致
+        //如果合同版本号大于1且状态为未完成，需要判断是否与上一版内容一致
         if (revision > 1 && contract.getState().equals(ContractState.UN_FINISHED.getState() + ""))
             repetitive = purchaseContractService.judgeContractRev(id, revision);
         return VPContractDetailResponse.builder()
@@ -975,8 +975,10 @@ public class ContractController {
         HttpServletResponse response
     ) {
 
-        List<LinkedHashMap<String, Object>> database = purchaseContractService.exportProductTemplate(id, revision);
-        ExcelUtil.exportToExcel(response, id + "采购合同明细表", database);
+        var map = purchaseContractService.exportProductTemplate(id, revision);
+        List<LinkedHashMap<String, Object>> database = (List<LinkedHashMap<String, Object>>) map.get("list");
+        String code = (String) map.get("code");
+        ExcelUtil.exportToExcel(response, code + "采购合同明细表", database);
     }
 
     /**
@@ -992,8 +994,10 @@ public class ContractController {
         HttpServletResponse response
     ) {
 
-        List<LinkedHashMap<String, Object>> database = purchaseContractService.exportProduct(id, revision);
-        ExcelUtil.exportToExcel(response, id + "采购合同明细表", database);
+        var map = purchaseContractService.exportProduct(id, revision);
+        List<LinkedHashMap<String, Object>> database = (List<LinkedHashMap<String, Object>>) map.get("list");
+        String code = (String) map.get("code");
+        ExcelUtil.exportToExcel(response, code + "采购合同明细表", database);
     }
 
     /**
@@ -1433,8 +1437,10 @@ public class ContractController {
         HttpServletResponse response
     ) {
 
-        List<LinkedHashMap<String, Object>> database = salesContractService.exportProductTemplate(id, revision);
-        ExcelUtil.exportToExcel(response, id + "销售合同明细表", database);
+        var map = purchaseContractService.exportProductTemplate(id, revision);
+        List<LinkedHashMap<String, Object>> database = (List<LinkedHashMap<String, Object>>) map.get("list");
+        String code = (String) map.get("code");
+        ExcelUtil.exportToExcel(response, code + "销售合同明细表", database);
 
     }
 
@@ -1454,8 +1460,10 @@ public class ContractController {
         HttpServletResponse response
     ) {
 
-        List<LinkedHashMap<String, Object>> database = salesContractService.exportProduct(id, revision, type);
-        ExcelUtil.exportToExcel(response, id + "销售合同明细表", database);
+        var map =salesContractService.exportProduct(id, revision, type);
+        List<LinkedHashMap<String, Object>> database = (List<LinkedHashMap<String, Object>>) map.get("list");
+        String code = (String) map.get("code");
+        ExcelUtil.exportToExcel(response, code + "销售合同明细表", database);
     }
 
     /**
