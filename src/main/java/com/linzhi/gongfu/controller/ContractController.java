@@ -1446,11 +1446,11 @@ public class ContractController {
      * @param type     类型 0-客户自定义代码 1-产品源代码
      * @param response HttpServletResponse
      */
-    @GetMapping("/contract/sales/{id}/{revision}/products/export")
+    @GetMapping("/contract/sales/{id}/{revision}/products/export/{type}")
     public void exportSalesContractProduct(
         @PathVariable String id,
         @PathVariable Integer revision,
-        @RequestParam("type") String type,
+        @PathVariable String type,
         HttpServletResponse response
     ) {
 
