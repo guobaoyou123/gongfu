@@ -495,8 +495,8 @@ public class CompanyService {
                 findCompInvitationCodeByCompInvitationCodeId_DcCompId(companyCode);
             //如何不为空，将原来的邀请码删除
             compInvitationCode.ifPresent(invitationCode -> compInvitationCodeRepository.deleteById(invitationCode.getCompInvitationCodeId()));
-            //邀请码的格式（单位编码——uuid随机编码）
-            String InvitationCode = companyCode + "-" + UUID.randomUUID().toString().substring(0, 8);
+            //邀请码的格式（单位编码——随机4位数）
+            String InvitationCode = companyCode +(int)((Math.random()*9+1)*1000);
             //保存数据
             compInvitationCodeRepository.save(
                 CompInvitationCode.builder()

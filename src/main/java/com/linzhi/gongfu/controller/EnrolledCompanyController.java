@@ -112,7 +112,7 @@ public class EnrolledCompanyController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        //查询格友单位详情
+        //查询格友单位详情                                                                                                                                                                                                                                                                                                                            T
         var company = compTradeApplyService.getRefuseEnrolledCompanyDetail(
                 code, session.getSession().getCompanyCode())
             .orElseThrow(() -> new IOException("未从数据库找到"));
@@ -195,6 +195,8 @@ public class EnrolledCompanyController {
             .applies(page.getContent())
             .build();
     }
+
+    
 
     /**
      * 同意申请
