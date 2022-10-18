@@ -196,7 +196,27 @@ public class EnrolledCompanyController {
             .build();
     }
 
-    
+    /**
+     * 查看待处理数量
+     *
+     * @param name     公司名称
+     * @return 待处理申请数量
+     */
+    @GetMapping("/enrolled/company/apply/amount")
+    public VTradeApplyAmountResponse pageTradeApplyAmount(@RequestParam("name") Optional<String> name) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+        var amount = compTradeApplyService.tradeApplyAmount(
+            name.orElse(""),
+            session.getSession().getCompanyCode()
+        );
+        return VTradeApplyAmountResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .amount(amount)
+            .build();
+    }
 
     /**
      * 同意申请

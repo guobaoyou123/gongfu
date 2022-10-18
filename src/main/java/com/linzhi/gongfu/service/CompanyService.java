@@ -42,7 +42,7 @@ public class CompanyService {
     private final CompanyMapper companyMapper;
     private final CompanyRepository companyRepository;
     private final CompTradeRepository compTradeRepository;
-    private final CompTradeDetailRepository compTradDetailRepository;
+    private final CompTradeBaseRepository compTradeBaseRepository;
     private final CompTradeMapper compTradeMapper;
     private final JPAQueryFactory queryFactory;
     private final BrandMapper brandMapper;
@@ -169,22 +169,38 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回外供应商列表
      */
-    @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ", key = "#companyCode")
-    public List<TCompanyBaseInformation> listForeignSuppliers(String companyCode) {
-        QCompany qCompany = QCompany.company;
-        QCompTrade qCompTrade = QCompTrade.compTrade;
-        QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
-        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany, qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrade)
-            .on(qCompany.code.eq(qCompTrade.compTradeId.compSaler))
-            .leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
-        query.where
-            (qCompTrade.compTradeId.compBuyer.eq(companyCode)
-                .and(qCompany.role.eq(CompanyRole.EXTERIOR_SUPPLIER.getSign())));
-        List<Tuple> companies = query.orderBy(qCompany.code.desc())
-            .fetch();
-        return companies.stream()
-            .map(companyMapper::toForeignCompany)
+   // @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ", key = "#companyCode")
+    public List<VForeignSuppliersResponse.VForeignSupplier> listForeignSuppliers(String companyCode) {
+
+        List<TCompanyList> list = compTradeRepository.findForginCompany(companyCode);
+        Map<String,Set<String>> brandMap = new HashMap<>();
+        Map<String,Set<String>> operatorMap = new HashMap<>();
+        list.forEach(tCompanyList -> {
+            Set<String> brand = brandMap.get(tCompanyList.getCode());
+            Set<String> operator = operatorMap.get(tCompanyList.getCode());
+            if(brand==null){
+                brand= new HashSet<>();
+            }
+            if(operator==null){
+                operator= new HashSet<>();
+            }
+            brand.add(tCompanyList.getBrand());
+            operator.add(tCompanyList.getOperator());
+            brandMap.put(tCompanyList.getCode(),brand);
+            operatorMap.put(tCompanyList.getCode(),operator);
+        });
+        List<VForeignSuppliersResponse.VForeignSupplier> suppliers = list.stream().map(companyMapper::toForeignSupplier).collect(Collectors.toSet()).stream()
+            .sorted(Comparator.comparing(VForeignSuppliersResponse.VForeignSupplier::getEncode))
+            .map(s->{
+                s.setOperators(operatorMap.get(s.getCode()));
+                s.setBrands(brandMap.get(s.getCode()));
+                return s;
+            })
             .toList();
+
+        return  suppliers;
+
+
     }
 
     /**
@@ -674,7 +690,7 @@ public class CompanyService {
     @Transactional
     public String modifyTradeTaxModel(String compSaler, String compBuyer, String taxModel) {
         try {
-            CompTradeBase compTradDetail = compTradDetailRepository.findById(CompTradeId
+            CompTradeBase compTradDetail = compTradeBaseRepository.findById(CompTradeId
                 .builder()
                 .compSaler(compSaler)
                 .compBuyer(compBuyer)
@@ -721,25 +737,12 @@ public class CompanyService {
      */
     @Cacheable(value = "Foreign_Customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#state+'-'+#name")
     public List<TCompanyBaseInformation> listForeignCustomers(String companyCode, String operator, Whether isAdmin, String name, String state) {
-        QCompany qCompany = QCompany.company;
-        QCompTrade qCompTrade = QCompTrade.compTrade;
-        QEnrolledCompany qEnrolledCompany = QEnrolledCompany.enrolledCompany;
-        JPAQuery<Tuple> query = queryFactory.selectDistinct(qCompany, qEnrolledCompany.USCI).from(qCompany).leftJoin(qCompTrade)
-            .on(qCompany.code.eq(qCompTrade.compTradeId.compBuyer))
-            .leftJoin(qEnrolledCompany).on(qEnrolledCompany.id.eq(qCompany.identityCode));
-        query.where
-            (qCompTrade.compTradeId.compSaler.eq(companyCode)
-                .and(qCompany.role.eq(CompanyRole.EXTERIOR_CUSTOMER.getSign())));
-        if (isAdmin.equals(Whether.NO))
-            query.where(qCompTrade.salerBelongTo.contains(operator));
-        if (!name.equals(""))
-            query.where(qCompany.nameInCN.like("%" + name + "%"));
-        query.where(qCompany.state.eq(state.equals("1") ? Availability.ENABLED : Availability.DISABLED));
-        List<Tuple> companies = query.orderBy(qCompany.code.desc())
-            .fetch();
-        return companies.stream()
+        return  compTradeRepository.findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc
+                (companyCode,CompanyRole.EXTERIOR_SUPPLIER.getSign(),Availability.ENABLED)
+            .stream()
             .map(companyMapper::toForeignCompany)
             .toList();
+
     }
 
     /**
@@ -915,13 +918,13 @@ public class CompanyService {
             company.setEmail(foreignCompany.getEmail());
             company.setPhone(foreignCompany.getPhone());
             companyRepository.save(company);
-            CompTrade compTrade = compTradeRepository.findById(compTradId).orElse(null);
+            CompTradeBase compTrade = compTradeBaseRepository.findById(compTradId).orElse(null);
             if (compTrade != null) {
                 if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER))
                     compTrade.setSalerBelongTo(foreignCompany.getOperators());
                 compTrade.setTaxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED);
             } else {
-                compTrade = CompTrade.builder()
+                compTrade = CompTradeBase.builder()
                     .compTradeId(compTradId)
                     .taxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED)
                     .state(Availability.ENABLED)
@@ -929,7 +932,7 @@ public class CompanyService {
                     .build();
             }
             //保存价税模式
-            compTradeRepository.save(compTrade);
+            compTradeBaseRepository.save(compTrade);
             List<CompTradeBrand> compTradBrands = new ArrayList<>();
             foreignCompany.getBrands().
                 forEach(s -> compTradBrands.add(
