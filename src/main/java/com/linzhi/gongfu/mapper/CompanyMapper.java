@@ -1,8 +1,10 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
+import com.linzhi.gongfu.dto.TCompanyList;
 import com.linzhi.gongfu.dto.TEnrolledTradeCompanies;
 import com.linzhi.gongfu.dto.TEnrolledTradeCompany;
+import com.linzhi.gongfu.entity.CompTrade;
 import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.entity.EnrolledTrade;
@@ -48,16 +50,14 @@ public interface CompanyMapper {
     /**
      * 将获取到的外部供应商或者客户公司信息，转换成可供使用的外部供应商或者客户公司基础信息
      *
-     * @param tuple 已经获取的外部供应商或者客户公司全部信息
+     * @param compTrade 已经获取的外部供应商或者客户公司全部信息
      * @return 外部供应商或者客户公司简要基础信息
      */
-    @Mapping(target = "code", expression = "java(tuple.get(0,Company.class).getCode())")
-    @Mapping(target = "encode", expression = "java(tuple.get(0,Company.class).getEncode())")
-    @Mapping(target = "name", expression = "java(tuple.get(0,Company.class).getNameInCN())")
-    @Mapping(target = "shortName", expression = "java(tuple.get(0,Company.class).getShortNameInCN())")
-    @Mapping(target = "USCI", expression = "java(tuple.get(1,String.class))")
-    @Mapping(target = "state", expression = "java(tuple.get(0,Company.class).getState().getState()+\"\")")
-    TCompanyBaseInformation toForeignCompany(Tuple tuple);
+    @Mapping(target = "code", source = "compTrade.salerCompanys.code")
+    @Mapping(target = "encode", source = "compTrade.salerCompanys.encode")
+    @Mapping(target = "shortName", source = "compTrade.salerCompanys.shortNameInCN")
+    @Mapping(target = "state", expression = "java(compTrade.getState().getState()+\"\")")
+    TCompanyBaseInformation toForeignCompany(CompTrade compTrade);
 
     /**
      * 将获取到的入格公司可见信息，转换成可供使用的可见公司基础信息
@@ -128,10 +128,10 @@ public interface CompanyMapper {
      * @param company 外供应商的公司全部信息
      * @return 外供应商公司简要基础信息
      */
-    @Mapping(target = "companyName", source = "name")
     @Mapping(target = "companyShortName", source = "shortName")
-    @Mapping(target = "usci", source = "USCI")
-    VForeignSuppliersResponse.VForeignSupplier toForeignSupplier(TCompanyBaseInformation company);
+    @Mapping(target = "encode", source = "enCode")
+    @Mapping(target = "state",expression = "java(String.valueOf(company.getState().getState()))")
+    VForeignSuppliersResponse.VForeignSupplier toForeignSupplier(TCompanyList company);
 
     /**
      * 将获取到的外供应商公司信息，转换成可供使用的公司基础信息

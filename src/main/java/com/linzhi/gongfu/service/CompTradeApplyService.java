@@ -44,7 +44,7 @@ public class CompTradeApplyService {
     private final CompInvitationCodeRepository compInvitationCodeRepository;
 
     private final CompTradeApplyMapper compTradeApplyMapper;
-    private final CompTradeDetailRepository compTradDetailRepository;
+    private final CompTradeBaseRepository compTradDetailRepository;
     private final CompTradeBrandRepository compTradBrandRepository;
     private final BlacklistRepository blacklistRepository;
     private final EnrolledCompanyRepository enrolledCompanyRepository;
@@ -147,6 +147,19 @@ public class CompTradeApplyService {
 
         return PageTools.listConvertToPage(compTradeApplies, pageable);
     }
+
+    /**
+     * 查找待处理申请数量
+     * @param name 格友公司名称
+     * @param companyCode 本单位编码
+     * @return  待处理申请数量
+     */
+    public int tradeApplyAmount(String name,String companyCode){
+        return compTradeApplyRepository.findByHandledCompByAndStateAndTypeOrderByCreatedAtDesc(companyCode, TradeApply.APPLYING, "1")
+            .stream().filter(compTradeApply -> compTradeApply.getCreatedCompany().getNameInCN().contains(name))
+            .toList().size();
+    }
+
 
     /**
      * 同意申请采购

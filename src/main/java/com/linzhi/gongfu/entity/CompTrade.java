@@ -48,6 +48,7 @@ public class CompTrade implements Serializable {
     @JoinColumn(name = "comp_saler", referencedColumnName = "code", insertable = false, updatable = false)
     private Company salerCompanys;
 
+
     /**
      * 客户
      */

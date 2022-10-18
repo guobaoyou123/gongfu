@@ -12,7 +12,7 @@ import org.springframework.data.repository.CrudRepository;
  * @author zgh
  * @create_at 2022-01-21
  */
-public interface CompTradeDetailRepository extends CrudRepository<CompTradeBase, CompTradeId>, QuerydslPredicateExecutor<CompTradeBase> {
+public interface CompTradeBaseRepository extends CrudRepository<CompTradeBase, CompTradeId>, QuerydslPredicateExecutor<CompTradeBase> {
 
 
 }

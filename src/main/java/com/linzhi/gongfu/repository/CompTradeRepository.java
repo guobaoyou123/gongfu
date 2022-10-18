@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.repository;
 
 
+import com.linzhi.gongfu.dto.TCompanyList;
 import com.linzhi.gongfu.entity.CompTrade;
 import com.linzhi.gongfu.entity.CompTradeId;
 import com.linzhi.gongfu.enumeration.Availability;
@@ -92,4 +93,18 @@ public interface CompTradeRepository
     @Modifying
     @Query("UPDATE CompTrade  c set c.taxModel=?1 where c.compTradeId=?2")
     void updateTaxModel(TaxMode taxMode, CompTradeId compTradeId);
+
+
+    List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateOrderBySalerCompanys_codeAsc(String buyerCode,String role,Availability state);
+
+    List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(String salerCode,String roler,Availability state);
+
+    @Query(value = "select distinct new  com.linzhi.gongfu.dto.TCompanyList(b.code,b.encode,b.shortNameInCN ,o.name,db.name,t.state) from Company b \n" +
+        "left join CompTrade t on t.compTradeId.compSaler= b.code\n" +
+        "left join CompTradeBrand tb on tb.compTradeBrandId.compSaler=b.code and tb.compTradeBrandId.compBuyer= t.compTradeId.compBuyer \n" +
+        "left join DcBrand db on db.code = tb.compTradeBrandId.brandCode\n" +
+        "left join Operator o on o.identity.operatorCode in (t.buyerBelongTo)\n" +
+        "where  b.role='6' and t.compTradeId.compBuyer=?1 order by b.code asc ")
+    List<TCompanyList> findForginCompany(String companyCode);
+
 }

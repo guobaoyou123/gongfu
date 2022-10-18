@@ -106,4 +106,14 @@ public class TCompanyBaseInformation implements Serializable {
      * 可见内容
      */
     private String content;
+
+    /**
+     * 可见品牌
+     */
+    private String brand;
+
+    /**
+     *
+     */
+    private String operator;
 }

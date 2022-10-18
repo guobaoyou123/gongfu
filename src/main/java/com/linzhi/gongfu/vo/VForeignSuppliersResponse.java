@@ -6,6 +6,7 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 用于响应前端外供应商列表的请求
@@ -54,5 +55,14 @@ public class VForeignSuppliersResponse extends VBaseResponse {
          */
         private String state;
 
+        /**
+         * 所属操作员名称
+         */
+        private Set<String> operators;
+
+        /**
+         * 经营品牌名称
+         */
+        private Set<String> brands;
     }
 }
