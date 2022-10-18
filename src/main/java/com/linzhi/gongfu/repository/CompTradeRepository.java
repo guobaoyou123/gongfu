@@ -99,7 +99,7 @@ public interface CompTradeRepository
 
     List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(String salerCode,String roler,Availability state);
 
-    @Query(value = "select distinct new  com.linzhi.gongfu.dto.TCompanyList(b.code,b.encode,b.shortNameInCN ,o.name,db.name,t.state) from Company b \n" +
+    @Query(value = "select distinct new  com.linzhi.gongfu.dto.TCompanyList(b.code,b.encode,b.shortNameInCN ,o.identity.operatorCode,o.name,db.code,db.name,t.state) from Company b \n" +
         "left join CompTrade t on t.compTradeId.compSaler= b.code\n" +
         "left join CompTradeBrand tb on tb.compTradeBrandId.compSaler=b.code and tb.compTradeBrandId.compBuyer= t.compTradeId.compBuyer \n" +
         "left join DcBrand db on db.code = tb.compTradeBrandId.brandCode\n" +

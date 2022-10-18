@@ -55,14 +55,23 @@ public class VForeignSuppliersResponse extends VBaseResponse {
          */
         private String state;
 
-        /**
-         * 所属操作员名称
-         */
-        private Set<String> operators;
 
         /**
          * 经营品牌名称
          */
-        private Set<String> brands;
+        private Set<VBrand> brands;
+    }
+
+    @Data
+    public static class VBrand {
+        /**
+         * 编码
+         */
+        private String code;
+
+        /**
+         * 名称
+         */
+        private String name;
     }
 }

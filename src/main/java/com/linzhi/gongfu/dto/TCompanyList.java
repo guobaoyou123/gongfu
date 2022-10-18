@@ -22,7 +22,11 @@ public class TCompanyList {
 
     private String operator;
 
+    private String operatorName;
+
     private String brand;
+
+    private String brandName;
 
     private Availability state;
 }

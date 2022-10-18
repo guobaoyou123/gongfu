@@ -173,26 +173,24 @@ public class CompanyService {
     public List<VForeignSuppliersResponse.VForeignSupplier> listForeignSuppliers(String companyCode) {
 
         List<TCompanyList> list = compTradeRepository.findForginCompany(companyCode);
-        Map<String,Set<String>> brandMap = new HashMap<>();
-        Map<String,Set<String>> operatorMap = new HashMap<>();
+        Map<String,Set<VForeignSuppliersResponse.VBrand>> brandMap = new HashMap<>();
         list.forEach(tCompanyList -> {
-            Set<String> brand = brandMap.get(tCompanyList.getCode());
-            Set<String> operator = operatorMap.get(tCompanyList.getCode());
+            Set<VForeignSuppliersResponse.VBrand> brand = brandMap.get(tCompanyList.getCode());
+
             if(brand==null){
                 brand= new HashSet<>();
             }
-            if(operator==null){
-                operator= new HashSet<>();
+            if(tCompanyList.getBrand()!=null){
+                VForeignSuppliersResponse.VBrand vBrand = new VForeignSuppliersResponse.VBrand();
+                vBrand.setCode(tCompanyList.getBrand());
+                vBrand.setName(tCompanyList.getBrandName());
+                brand.add(vBrand);
+                brandMap.put(tCompanyList.getCode(),brand);
             }
-            brand.add(tCompanyList.getBrand());
-            operator.add(tCompanyList.getOperator());
-            brandMap.put(tCompanyList.getCode(),brand);
-            operatorMap.put(tCompanyList.getCode(),operator);
         });
         List<VForeignSuppliersResponse.VForeignSupplier> suppliers = list.stream().map(companyMapper::toForeignSupplier).collect(Collectors.toSet()).stream()
             .sorted(Comparator.comparing(VForeignSuppliersResponse.VForeignSupplier::getEncode))
             .map(s->{
-                s.setOperators(operatorMap.get(s.getCode()));
                 s.setBrands(brandMap.get(s.getCode()));
                 return s;
             })
