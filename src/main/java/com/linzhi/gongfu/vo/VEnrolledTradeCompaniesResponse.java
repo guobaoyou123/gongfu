@@ -55,5 +55,41 @@ public class VEnrolledTradeCompaniesResponse extends VBaseResponse {
          */
         private String usci;
 
+        /**
+         * 经营品牌名称
+         */
+        private List<VBrand> brands;
+
+        /**
+         * 授权操作员
+         */
+        private List<VOperator> operators;
+    }
+
+    @Data
+    public static class VBrand {
+        /**
+         * 编码
+         */
+        private String code;
+
+        /**
+         * 名称
+         */
+        private String name;
+    }
+
+
+    @Data
+    public static class VOperator {
+        /**
+         * 编码
+         */
+        private String code;
+
+        /**
+         * 名称
+         */
+        private String name;
     }
 }

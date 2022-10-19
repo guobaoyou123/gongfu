@@ -188,13 +188,13 @@ public interface CompanyMapper {
     /**
      * 明确可以成功获取到入格供应商或者客户公司基础信息时，向预获取响应转换
      *
-     * @param tEnrolledTradeCompanies 入格供应商或者客户单位公司基础信息
+     * @param tCompanyList 入格供应商或者客户单位公司基础信息
      * @return 入格供应商或者客户公司基本信息预获取响应
      */
-    @Mapping(target = "companyName", source = "nameInCN")
-    @Mapping(target = "companyShortName", source = "shortNameInCN")
-    @Mapping(target = "usci", source = "USCI")
-    VEnrolledTradeCompaniesResponse.VEnrolledTradeCompany toVEnrolledTradeCompanies(TEnrolledTradeCompanies tEnrolledTradeCompanies);
+    @Mapping(target = "companyShortName", source = "shortName")
+    @Mapping(target = "brands",source = "brands")
+    @Mapping(target = "operators",source = "operators")
+    VEnrolledTradeCompaniesResponse.VEnrolledTradeCompany toVEnrolledTradeCompanies(TCompanyList tCompanyList);
 
 
     /**

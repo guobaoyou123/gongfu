@@ -517,15 +517,47 @@ public class CompanyService {
      * @param type        类型 1-内供应商 2-内客户
      * @return 内供应商列表
      */
-    public Page<TEnrolledTradeCompanies> pageEnrolledTradeCompanies(String name, int pageNum, int pageSize, String companyCode, String type) {
-        List<TEnrolledTradeCompanies> list;
+    public Page<TCompanyList> pageEnrolledTradeCompanies(String name, int pageNum, int pageSize, String companyCode, String type) {
+        List<TCompanyList> list;
         if (type.equals("1")) {
-            list = enrolledTradeRepository.findEnrolledSupplierList(companyCode);
+            list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(companyCode,CompanyRole.SUPPLIER.getSign())
+                .stream()
+                .map(compTradeMapper::toSupplier)
+                .toList();
         } else {
-            list = enrolledTradeRepository.findEnrolledCustomerList(companyCode);
+            list = compTradeRepository.findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(companyCode,CompanyRole.SUPPLIER.getSign(),Availability.ENABLED).stream()
+                .map(compTradeMapper::toCustomer)
+                .toList();
         }
+        List<OperatorBase> operatorList = operatorDetailRepository.findOperatorByIdentity_CompanyCodeAndState(companyCode, Availability.ENABLED);
+        Map<String, TOperatorInfo> map = new HashMap<>();
+        operatorList.forEach(o -> {
+            map.put(o.getIdentity().getOperatorCode(), Optional.of(o).map(operatorMapper::toOperatorDetailDTO).get());
+        });
+        list.forEach(t -> {
+
+            if (StringUtils.isNotBlank(t.getBuyerBelongTo())&&type.equals("1")) {
+                List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
+                for (String s : t.getBuyerBelongTo().split(",")) {
+                    if (map.get(s) != null) {
+                        tOperatorInfos.add(map.get(s));
+                    }
+                }
+                t.setOperators(tOperatorInfos);
+            }
+
+            if (StringUtils.isNotBlank(t.getSalerBelongTo())&&type.equals("2")) {
+                List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
+                for (String s : t.getSalerBelongTo().split(",")) {
+                    if (map.get(s) != null) {
+                        tOperatorInfos.add(map.get(s));
+                    }
+                }
+                t.setOperators(tOperatorInfos);
+            }
+        });
         return PageTools.listConvertToPage(
-            list.stream().filter(tEnrolledSuppliers -> tEnrolledSuppliers.getNameInCN().contains(name))
+            list.stream().filter(t -> t.getShortName().contains(name))
                 .toList(),
             PageRequest.of(pageNum, pageSize)
         );
