@@ -13,6 +13,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 交易信息的Repository
@@ -94,17 +95,40 @@ public interface CompTradeRepository
     @Query("UPDATE CompTrade  c set c.taxModel=?1 where c.compTradeId=?2")
     void updateTaxModel(TaxMode taxMode, CompTradeId compTradeId);
 
+    /**
+     * 查询外供应
+     * @param role 角色
+     * @param buyerCode 单位编号
+     * @return 返回供应商列表
+     */
+    List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(String buyerCode,String role);
 
-    List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateOrderBySalerCompanys_codeAsc(String buyerCode,String role,Availability state);
+    /**
+     * 内供应列表
+     * @param role 角色
+     * @param buyerCode 单位编号
+     * @param state 状态
+     * @param operator 操作员编号
+     * @return 返回供应商列表
+     */
+    List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateAndBuyerBelongToContainsOrderBySalerCompanys_codeAsc(String buyerCode,String role,Availability state,String operator);
 
-    List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(String salerCode,String roler,Availability state);
+    /**
+     * 查询内客户或者外客户列表
+     * @param role 角色
+     * @param salerCode 单位编号
+     * @param state 状态
+     * @return 返回客户列表
+     */
+    List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(String salerCode,String role,Availability state);
 
-    @Query(value = "select distinct new  com.linzhi.gongfu.dto.TCompanyList(b.code,b.encode,b.shortNameInCN ,o.identity.operatorCode,o.name,db.code,db.name,t.state) from Company b \n" +
-        "left join CompTrade t on t.compTradeId.compSaler= b.code\n" +
-        "left join CompTradeBrand tb on tb.compTradeBrandId.compSaler=b.code and tb.compTradeBrandId.compBuyer= t.compTradeId.compBuyer \n" +
-        "left join DcBrand db on db.code = tb.compTradeBrandId.brandCode\n" +
-        "left join Operator o on o.identity.operatorCode in (t.buyerBelongTo)\n" +
-        "where  b.role='6' and t.compTradeId.compBuyer=?1 order by b.code asc ")
-    List<TCompanyList> findForginCompany(String companyCode);
-
+    /**
+     * 查询内客户或者外客户列表
+     * @param salerCode 单位编号
+     * @param role 角色
+     * @param operator 操作员编号
+     * @param state 状态
+     * @return 返回客户列表
+     */
+    List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateAndSalerBelongToContainsOrderByBuyerCompanys_codeAsc(String salerCode,String role,Availability state,String operator);
 }

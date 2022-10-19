@@ -10,10 +10,10 @@ import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
-import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -169,34 +169,12 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回外供应商列表
      */
-   // @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ", key = "#companyCode")
-    public List<VForeignSuppliersResponse.VForeignSupplier> listForeignSuppliers(String companyCode) {
-
-        List<TCompanyList> list = compTradeRepository.findForginCompany(companyCode);
-        Map<String,Set<VForeignSuppliersResponse.VBrand>> brandMap = new HashMap<>();
-        list.forEach(tCompanyList -> {
-            Set<VForeignSuppliersResponse.VBrand> brand = brandMap.get(tCompanyList.getCode());
-
-            if(brand==null){
-                brand= new HashSet<>();
-            }
-            if(tCompanyList.getBrand()!=null){
-                VForeignSuppliersResponse.VBrand vBrand = new VForeignSuppliersResponse.VBrand();
-                vBrand.setCode(tCompanyList.getBrand());
-                vBrand.setName(tCompanyList.getBrandName());
-                brand.add(vBrand);
-                brandMap.put(tCompanyList.getCode(),brand);
-            }
-        });
-        List<VForeignSuppliersResponse.VForeignSupplier> suppliers = list.stream().map(companyMapper::toForeignSupplier).collect(Collectors.toSet()).stream()
-            .sorted(Comparator.comparing(VForeignSuppliersResponse.VForeignSupplier::getEncode))
-            .map(s->{
-                s.setBrands(brandMap.get(s.getCode()));
-                return s;
-            })
+    @Cacheable(value = "Foreign_Supplier_List;1800", unless = "#result == null ", key = "#companyCode")
+    public List<TCompanyList> listForeignSuppliers(String companyCode) {
+        return compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(companyCode, CompanyRole.EXTERIOR_SUPPLIER.getSign())
+            .stream()
+            .map(compTradeMapper::toSupplier)
             .toList();
-
-        return  suppliers;
 
 
     }
@@ -510,7 +488,7 @@ public class CompanyService {
             //如何不为空，将原来的邀请码删除
             compInvitationCode.ifPresent(invitationCode -> compInvitationCodeRepository.deleteById(invitationCode.getCompInvitationCodeId()));
             //邀请码的格式（单位编码——随机4位数）
-            String InvitationCode = companyCode +(int)((Math.random()*9+1)*1000);
+            String InvitationCode = companyCode + (int) ((Math.random() * 9 + 1) * 1000);
             //保存数据
             compInvitationCodeRepository.save(
                 CompInvitationCode.builder()
@@ -717,7 +695,7 @@ public class CompanyService {
      * @return 外客户列表
      * @throws IOException 异常
      */
-    public Page<TCompanyBaseInformation> pageForeignCustomers(String companyCode, String operator, String name, Integer pageNum, Integer pageSize, String state) throws IOException {
+    public Page<TCompanyList> pageForeignCustomers(String companyCode, String operator, String name, Integer pageNum, Integer pageSize, String state) throws IOException {
         OperatorBase operatorDetail = operatorDetailRepository.findById(OperatorId.builder()
             .operatorCode(operator)
             .companyCode(companyCode)
@@ -733,13 +711,39 @@ public class CompanyService {
      * @param name        公司名称
      * @return 返回外客户列表
      */
-    @Cacheable(value = "Foreign_Customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#state+'-'+#name")
-    public List<TCompanyBaseInformation> listForeignCustomers(String companyCode, String operator, Whether isAdmin, String name, String state) {
-        return  compTradeRepository.findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc
-                (companyCode,CompanyRole.EXTERIOR_SUPPLIER.getSign(),Availability.ENABLED)
-            .stream()
-            .map(companyMapper::toForeignCompany)
-            .toList();
+     @Cacheable(value = "Foreign_Customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#state+'-'+#name")
+    public List<TCompanyList> listForeignCustomers(String companyCode, String operator, Whether isAdmin, String name, String state) {
+
+        List<TCompanyList> list;
+        if (isAdmin.equals(Whether.YES)) {
+            list = compTradeRepository.findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(companyCode, CompanyRole.EXTERIOR_CUSTOMER.getSign(), state.equals("0") ? Availability.DISABLED : Availability.ENABLED)
+                .stream().map(compTradeMapper::toCustomer)
+                .toList();
+            List<OperatorBase> operatorList = operatorDetailRepository.findOperatorByIdentity_CompanyCodeAndState(companyCode, Availability.ENABLED);
+            Map<String, TOperatorInfo> map = new HashMap<>();
+            operatorList.forEach(o -> {
+                map.put(o.getIdentity().getOperatorCode(), Optional.of(o).map(operatorMapper::toOperatorDetailDTO).get());
+            });
+            list.forEach(t -> {
+
+                if (StringUtils.isNotBlank(t.getSalerBelongTo())) {
+                    List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
+                    for (String s : t.getSalerBelongTo().split(",")) {
+                        if (map.get(s) != null) {
+                            tOperatorInfos.add(map.get(s));
+                        }
+                    }
+                    t.setOperators(tOperatorInfos);
+                }
+
+            });
+        } else {
+            list = compTradeRepository.findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateAndSalerBelongToContainsOrderByBuyerCompanys_codeAsc(companyCode, CompanyRole.EXTERIOR_CUSTOMER.getSign(), state.equals("0") ? Availability.DISABLED : Availability.ENABLED, operator)
+                .stream().map(compTradeMapper::toCustomer)
+                .toList();
+        }
+
+        return list.stream().filter(t -> t.getShortName().contains(name)).toList();
 
     }
 
@@ -955,9 +959,10 @@ public class CompanyService {
 
     /**
      * 查找所有的客户
-     * @param name 客户公司名称
+     *
+     * @param name        客户公司名称
      * @param companyCode 本单位公司编码
-     * @param operator 操作员编码
+     * @param operator    操作员编码
      * @return 客户列表
      */
     @Cacheable(value = "customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#name")

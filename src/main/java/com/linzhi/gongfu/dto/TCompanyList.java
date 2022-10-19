@@ -3,6 +3,9 @@ package com.linzhi.gongfu.dto;
 import com.linzhi.gongfu.enumeration.Availability;
 import lombok.*;
 
+import javax.persistence.Column;
+import java.util.List;
+
 
 /**
  * 客户或者供应商列表信息
@@ -14,19 +17,42 @@ import lombok.*;
 @Getter
 public class TCompanyList {
 
+    /**
+     * 系统编码
+     */
     private String code;
 
+    /**
+     * 前端显示编码
+     */
     private String enCode;
 
+    /**
+     * 公司简称
+     */
     private String shortName;
 
-    private String operator;
+    /**
+     * 状态
+     */
+    private String state;
 
-    private String operatorName;
+    /**
+     * 卖方所属操作员
+     */
+    private String salerBelongTo;
 
-    private String brand;
+    /**
+     * 买方所属操作员
+     */
+    private String buyerBelongTo;
+    /**
+     * 可见品牌
+     */
+    private List<TBrand> brands;
 
-    private String brandName;
-
-    private Availability state;
+    /**
+     *授权操作员
+     */
+    private List<TOperatorInfo> operators;
 }

@@ -99,7 +99,7 @@ public class SuppliersController {
         return VForeignSuppliersResponse.builder()
             .code(200)
             .message("获取供应商列表成功")
-            .suppliers(list)
+            .suppliers(list.stream().map(companyMapper::toForeignSupplier).toList())
             .build();
     }
 

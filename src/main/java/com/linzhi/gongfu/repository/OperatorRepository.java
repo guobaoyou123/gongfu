@@ -39,4 +39,6 @@ public interface OperatorRepository extends CrudRepository<Operator, OperatorId>
      */
     List<Operator> findOperatorByIdentity_CompanyCodeAndIdentity_OperatorCodeIn(String companyCode, List<String> operators);
 
+
+
 }

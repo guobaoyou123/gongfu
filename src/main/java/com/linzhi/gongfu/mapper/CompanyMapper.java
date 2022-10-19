@@ -130,7 +130,8 @@ public interface CompanyMapper {
      */
     @Mapping(target = "companyShortName", source = "shortName")
     @Mapping(target = "encode", source = "enCode")
-    @Mapping(target = "state",expression = "java(String.valueOf(company.getState().getState()))")
+    @Mapping(target = "state",source = "state")
+    @Mapping(target = "brands",source = "brands")
     VForeignSuppliersResponse.VForeignSupplier toForeignSupplier(TCompanyList company);
 
     /**
@@ -251,11 +252,11 @@ public interface CompanyMapper {
      * @param company 外客户的公司全部信息
      * @return 外客户公司简要基础信息
      */
-    @Mapping(target = "companyName", source = "name")
     @Mapping(target = "companyShortName", source = "shortName")
-    @Mapping(target = "usci", source = "USCI")
-    VForeignCustomerPageResponse.VForeignCustomer toVForeignCustomer(TCompanyBaseInformation company);
-
+    @Mapping(target = "encode", source = "enCode")
+    @Mapping(target = "brands",source = "brands")
+    @Mapping(target = "operators",source = "operators")
+    VForeignCustomerPageResponse.VForeignCustomer toVForeignCustomer(TCompanyList company);
     /**
      * 将获取到的外供应商公司信息，转换成可供使用的公司基础信息
      *

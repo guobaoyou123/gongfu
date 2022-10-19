@@ -1,7 +1,9 @@
 package com.linzhi.gongfu.mapper;
 
 
+import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
+import com.linzhi.gongfu.dto.TCompanyList;
 import com.linzhi.gongfu.entity.CompTrade;
 import com.linzhi.gongfu.vo.VSuppliersPageResponse;
 import org.mapstruct.Mapper;
@@ -42,4 +44,27 @@ public interface CompTradeMapper {
     @Mapping(target = "state", expression = "java(String.valueOf(compTrad.getSalerCompanys().getState().getState()))")
     TCompanyIncludeBrand toSuppliersIncludeBrand(CompTrade compTrad);
 
+    /**
+     * 将获取到的交易信息内容转换成可供使用的供应商信息
+     * @param compTrade 交易信息
+     * @return 供应商公司信息
+     */
+    @Mapping(target = "code",source = "salerCompanys.code")
+    @Mapping(target = "enCode",source = "salerCompanys.encode")
+    @Mapping(target = "shortName",source = "salerCompanys.shortNameInCN")
+    @Mapping(target = "state", expression = "java(String.valueOf(compTrade.getSalerCompanys().getState().getState()))")
+    @Mapping(target = "brands", source = "manageBrands")
+    TCompanyList toSupplier(CompTrade compTrade);
+
+    /**
+     * 将获取到的交易信息内容转换成可供使用的客户信息
+     * @param compTrade 交易信息
+     * @return 客户公司信息
+     */
+    @Mapping(target = "code",source = "buyerCompanys.code")
+    @Mapping(target = "enCode",source = "buyerCompanys.encode")
+    @Mapping(target = "shortName",source = "buyerCompanys.shortNameInCN")
+    @Mapping(target = "state", expression = "java(String.valueOf(compTrade.getSalerCompanys().getState().getState()))")
+    @Mapping(target = "brands", source = "manageBrands")
+    TCompanyList toCustomer(CompTrade compTrade);
 }

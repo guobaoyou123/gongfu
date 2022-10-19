@@ -59,7 +59,7 @@ public class VForeignSuppliersResponse extends VBaseResponse {
         /**
          * 经营品牌名称
          */
-        private Set<VBrand> brands;
+        private List<VBrand> brands;
     }
 
     @Data

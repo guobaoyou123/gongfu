@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.repository;
 
 
+import com.linzhi.gongfu.entity.Operator;
 import com.linzhi.gongfu.entity.OperatorBase;
 import com.linzhi.gongfu.entity.OperatorId;
 import com.linzhi.gongfu.enumeration.Availability;
@@ -55,4 +56,13 @@ public interface OperatorBaseRepository extends CrudRepository<OperatorBase, Ope
         String companyCode,
         String operator
     );
+
+    /**
+     * 操作员列表
+     *
+     * @param state       状态
+     * @param companyCode 单位编码
+     * @return 操作员列表
+     */
+    List<OperatorBase> findOperatorByIdentity_CompanyCodeAndState(String companyCode, Availability state);
 }
