@@ -186,9 +186,7 @@ public class EximportController {
             map.put("taxMode", inquiry.getOfferMode());
             map.put("encode", inquiry.getCode());
         } else if (type.equals("2")) {
-            var contract = contractService.getContractRevisionDetail(id, 1);
-            map.put("taxMode", contract.getOfferMode());
-            map.put("encode", contract.getPurchaseContractBase().getCode());
+            map = contractService.findTaxModelAndEnCode(id, 1);
         } else {
             map = salesContractService.findTaxModelAndEnCode(id, 1);
         }
