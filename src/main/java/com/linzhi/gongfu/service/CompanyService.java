@@ -668,7 +668,7 @@ public class CompanyService {
     @Transactional
     public void modifyTradeBrands(String compSaler, String compBuyer, List<String> brands) {
         try {
-            compTradBrandRepository.deleteCompTradBrand(compBuyer, compSaler);
+            compTradBrandRepository.deleteCompTradeBrandByCompTradeBrandId_CompBuyerAndAndCompTradeBrandId_CompSaler(compBuyer, compSaler);
             List<CompTradeBrand> compTradBrands = new ArrayList<>();
             brands.forEach(s -> compTradBrands.add(CompTradeBrand.builder()
                 .compTradeBrandId(CompTradeBrandId.builder()
@@ -932,7 +932,7 @@ public class CompanyService {
                     .build();
             } else {
                 company = companyRepository.findById(code).orElseThrow(() -> new IOException("从数据库搜索不到该供应商"));
-                compTradBrandRepository.deleteCompTradBrand(companyCode, code);
+                compTradBrandRepository.deleteCompTradeBrandByCompTradeBrandId_CompBuyerAndAndCompTradeBrandId_CompSaler(code, companyCode);
             }
             CompTradeId compTradId = CompTradeId.builder()
                 .compBuyer(companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER) ? companyCode : code)
@@ -954,8 +954,8 @@ public class CompanyService {
             companyRepository.save(company);
             CompTradeBase compTrade = compTradeBaseRepository.findById(compTradId).orElse(null);
             if (compTrade != null) {
-                if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER))
-                    compTrade.setSalerBelongTo(foreignCompany.getOperators());
+                /*if (companyRole.equals(CompanyRole.EXTERIOR_CUSTOMER))
+                    compTrade.setSalerBelongTo(foreignCompany.getOperators());*/
                 compTrade.setTaxModel(foreignCompany.getTaxMode().equals("0") ? TaxMode.UNTAXED : TaxMode.INCLUDED);
             } else {
                 compTrade = CompTradeBase.builder()
