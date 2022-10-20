@@ -33,6 +33,7 @@ public interface ContractMapper {
     @Mapping(target = "createdAt", expression = "java(com.linzhi.gongfu.util.DateConverter.dateFormat(contract.getCreatedAt()))")
     @Mapping(target = "state", expression = "java(String.valueOf(contract.getState().getState()))")
     @Mapping(target = "salerCompName", source = "salerCompNameShort")
+    @Mapping(target = "paired", expression = "java(contract.getPaired()==null?false:true)")
     TContract toContractList(PurchaseContractList contract);
 
     /**

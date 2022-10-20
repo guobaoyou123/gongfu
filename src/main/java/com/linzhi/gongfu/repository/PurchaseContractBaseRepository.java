@@ -49,7 +49,7 @@ public interface PurchaseContractBaseRepository
      */
     @Query(value = "select top 1 paired_code   from purchase_contract_base b\n" +
         "left join purchase_contract_rev br on br.id = b.id and br.revision = (select max(revision) from purchase_contract_rev r where r.id = b.id)\n" +
-        "where br.fingerprint = ?1 and b.paired_code not in (select paired_code from sales_contract_base where state = '1')",nativeQuery = true)
+        "where br.fingerprint = ?1 and b.paired_code not in (select paired_code from sales_contract_base where state = '1' and paired_code<>null)",nativeQuery = true)
     Optional<String> findPairedCode(String fingerprint);
 
     /**
@@ -60,6 +60,6 @@ public interface PurchaseContractBaseRepository
      */
     @Query(value = "select top 1 paired_code   from purchase_contract_base b\n" +
         "left join purchase_contract_rev br on br.id = b.id and br.revision = (select max(revision) from purchase_contract_rev r where r.id = b.id)\n" +
-        "where br.fingerprint = (select fingerprint  from sales_contract_rev where id = ?1 and revision =?2) and b.paired_code not in (select paired_code from sales_contract_base where state = '1')",nativeQuery = true)
+        "where br.fingerprint = (select fingerprint  from sales_contract_rev where id = ?1 and revision =?2) and b.paired_code not in (select paired_code from sales_contract_base where state = '1' and paired_code<>null)",nativeQuery = true)
     Optional<String> findPairedCode(String salesContractId,int revision);
 }

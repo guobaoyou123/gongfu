@@ -70,7 +70,7 @@ public interface PurchaseContractRepository
         "end as category,\n" +
         "d.confirm_total_price_vat as confirmTaxedTotal, \n" +
         " d.total_price_vat  as taxedTotal,\n" +
-        " cb.chi_short  as salerCompNameShort\n" +
+        " cb.chi_short  as salerCompNameShort, p.paired_code as paired\n" +
         " from   purchase_contract_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join comp_base cb on  b.saler_comp = cb.code \n" +
@@ -79,6 +79,7 @@ public interface PurchaseContractRepository
         "left join purchase_contract_rev d on d.id = b.id  and d.revision in (select max(revision) from purchase_contract_rev  where id = d.id)\n" +
         "left join purchase_contract_record_temp t on t.contract_id = d.id\n" +
         "left join purchase_contract_record_rev v on v.contract_id = d.id and v.revision = d.revision\n" +
+        "left join sales_contract_base p on b.paired_code=p.paired_code\n "+
         " where  b.created_by_comp=?1 and b.created_by=?2  and b.state=?3 \n" +
         "group by b.id,o.name \n" +
         "      ,b.code\n" +
@@ -92,7 +93,7 @@ public interface PurchaseContractRepository
         "      ,b.created_at\n" +
         "      ,b.paired_code\n" +
         "      ,b.state ,c.code ,r.order_code ,d.order_code,d.saler_order_code ,d.revision,  \n" +
-        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
+        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short,p.paired_code\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
     List<PurchaseContractList> listContracts(String compId, String operator, String state);
@@ -110,7 +111,7 @@ public interface PurchaseContractRepository
         "end as category,\n" +
         "d.confirm_total_price_vat as confirmTaxedTotal, \n" +
         " d.total_price_vat  as taxedTotal,\n" +
-        " cb.chi_short  as salerCompNameShort\n" +
+        " cb.chi_short  as salerCompNameShort, p.paired_code as paired\n" +
         " from   purchase_contract_base b\n" +
         "left join comp_operator o on b.created_by_comp = o.dc_comp_id and b.created_by = o.code\n" +
         "left join comp_base cb on  b.saler_comp = cb.code\n" +
@@ -119,6 +120,7 @@ public interface PurchaseContractRepository
         "left join purchase_contract_rev d on d.id = b.id  and d.revision in (select max(revision) from purchase_contract_rev  where id = d.id)\n" +
         "left join purchase_contract_record_temp t on t.contract_id = d.id\n" +
         "left join purchase_contract_record_rev v on v.contract_id = d.id and v.revision = d.revision\n" +
+        "left join sales_contract_base p on b.paired_code=p.paired_code\n "+
         " where  b.created_by_comp=?1   and b.state=?2 \n" +
         "group by b.id,o.name \n" +
         "      ,b.code\n" +
@@ -132,7 +134,7 @@ public interface PurchaseContractRepository
         "      ,b.created_at\n" +
         "      ,b.paired_code\n" +
         "      ,b.state ,c.code ,r.order_code ,d.order_code ,d.saler_order_code,d.revision,  \n" +
-        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short\n" +
+        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short,p.paired_code\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
     List<PurchaseContractList> listContracts(String compId, String state);

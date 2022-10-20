@@ -474,7 +474,6 @@ public class PurchaseContractService {
         });
 
         return recordList.stream().map(contractRecord -> {
-                contractRecord.setPriceVat(contractRecord.getPriceVat() == null ? null : contractRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP));
                 return contractRecord.getProductId() + "-"
                     + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP);
             }
@@ -1658,7 +1657,7 @@ public class PurchaseContractService {
      */
     public String findPairedCode(String fingerprint,String companyCode,int revision,String contractId){
         String pairedCode ;
-        if(revision>0){
+        if(fingerprint==null){
             pairedCode= salesContractRepository.findPairedCode(contractId,revision)
                 .orElse("");
         }else{
