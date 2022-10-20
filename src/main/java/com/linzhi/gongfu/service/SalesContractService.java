@@ -1074,8 +1074,26 @@ public class SalesContractService {
      * @return 返回字符串列表
      */
     private List<String> recordSort(List<SalesContractRecord> records) {
+         //去重，将相同的产品进行累加
+        Map<String,SalesContractRecord> map = new HashMap<>();
+        for (SalesContractRecord record : records) {
+            if (map.get(record.getProductId()) != null) {
+                SalesContractRecord p = map.get(record.getProductId());
+                p.setAmount(record.getAmount().add(p.getAmount()));
+            } else {
+                map.put(record.getProductId(), record);
+            }
+        }
+
+        List<SalesContractRecord> recordList = new ArrayList<>();
+
+        for(String key : map.keySet()){
+
+            recordList.add(map.get(key));
+
+        }
         //进行排序
-        records.sort((o1, o2) -> {
+        recordList.sort((o1, o2) -> {
             if (o1.getProductId().compareTo(o2.getProductId()) == 0) {
                 if (o1.getAmount().doubleValue() < o2.getAmount().doubleValue()) {
                     return -1;
@@ -1085,19 +1103,8 @@ public class SalesContractService {
             }
             return o1.getProductId().compareTo(o2.getProductId());
         });
-
-        // 将相同的产品进行累加
-        for (int i = 0; i < records.size() - 1; i++) {
-            if (records.get(i).getProductId().equals(records.get(i + 1).getProductId())) {
-                records.get(i).setAmount(records.get(i).getAmount().add(records.get(i + 1).getAmount()));
-                records.remove(i + 1);
-                i = i - 1;
-            }
-        }
-
-        return records.stream().map(contractRecord -> {
-              //  contractRecord.setPriceVat(contractRecord.getPriceVat() == null ? null : contractRecord.getPriceVat().setScale(4, RoundingMode.HALF_UP));
-                return contractRecord.getProductId() + "-"
+        return recordList.stream().map(contractRecord -> {
+               return contractRecord.getProductId() + "-"
                     + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP);
             }
 
@@ -1473,7 +1480,7 @@ public class SalesContractService {
      */
     public String findPairedCode(String fingerprint,String companyCode,int revision,String salesContractId){
         String pairedCode ="";
-        if(revision>0){
+        if(fingerprint==null){
             pairedCode= purchaseContractBaseRepository.findPairedCode(salesContractId,revision)
                 .orElse("");
         }else{
