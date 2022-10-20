@@ -154,4 +154,10 @@ public class PurchaseContractList {
      */
     @Column(name = "confirmTaxedTotal", updatable = false, insertable = false)
     private BigDecimal confirmTaxedTotal;
+
+    /**
+     * 是否配对
+     */
+    @Column
+    private String paired;
 }
