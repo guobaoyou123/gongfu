@@ -473,10 +473,8 @@ public class PurchaseContractService {
             return o1.getProductId().compareTo(o2.getProductId());
         });
 
-        return recordList.stream().map(contractRecord -> {
-                return contractRecord.getProductId() + "-"
-                    + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP);
-            }
+        return recordList.stream().map(contractRecord -> contractRecord.getProductId() + "-"
+            + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP)
 
         ).toList();
     }
@@ -1671,5 +1669,19 @@ public class PurchaseContractService {
             pairedCode= companyCode+UUID.randomUUID().toString().substring(0, 8)+dtf.format(LocalDateTime.now());
         }
         return pairedCode;
+    }
+
+    /**
+     * 查找税模式和合同编号
+     * @param id 合同主键
+     * @param revision 版本号
+     * @return 返回税模式和合同编号
+     */
+    public Map<String, Object> findTaxModelAndEnCode(String id, int revision) {
+        Map<String, Object> map = new HashMap<>();
+        var contract = getContractRevisionDetail(id, revision);
+        map.put("taxMode", contract.getOfferMode());
+        map.put("encode", contract.getPurchaseContractBase().getCode());
+        return map;
     }
 }

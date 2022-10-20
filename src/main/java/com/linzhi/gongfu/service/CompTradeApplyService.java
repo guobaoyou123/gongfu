@@ -176,7 +176,7 @@ public class CompTradeApplyService {
         @CacheEvict(value = "trade_apply_history_List;1800", key = "#compTradeApply.handledCompBy"),
         @CacheEvict(value = "trade_apply_detail;1800", key = "#compTradeApply.code"),
         @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'"),
-        @CacheEvict(value = "Enrolled_Supplier_List;1800", key = "#compTradeApply.handledCompBy+'-1")
+        @CacheEvict(value = "Enrolled_Supplier_List;1800", key = "#compTradeApply.handledCompBy+'-'+1")
     })
     public boolean consentApply(CompTradeApply compTradeApply, String companyCode, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest) {
         try {

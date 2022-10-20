@@ -853,6 +853,12 @@ public class SalesContractService {
         ).orElse(null);
     }
 
+    /**
+     * 查找税模式和合同编号
+     * @param id 合同主键
+     * @param revision 版本号
+     * @return 返回税模式和合同编号
+     */
     public Map<String, Object> findTaxModelAndEnCode(String id, int revision) {
         Map<String, Object> map = new HashMap<>();
         var contract = getSalesContractRevisionDetail(id, revision);
@@ -1103,10 +1109,8 @@ public class SalesContractService {
             }
             return o1.getProductId().compareTo(o2.getProductId());
         });
-        return recordList.stream().map(contractRecord -> {
-               return contractRecord.getProductId() + "-"
-                    + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP);
-            }
+        return recordList.stream().map(contractRecord -> contractRecord.getProductId() + "-"
+             + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP)
 
         ).toList();
     }
@@ -1479,7 +1483,7 @@ public class SalesContractService {
      * @return 配对码
      */
     public String findPairedCode(String fingerprint,String companyCode,int revision,String salesContractId){
-        String pairedCode ="";
+        String pairedCode;
         if(fingerprint==null){
             pairedCode= purchaseContractBaseRepository.findPairedCode(salesContractId,revision)
                 .orElse("");
