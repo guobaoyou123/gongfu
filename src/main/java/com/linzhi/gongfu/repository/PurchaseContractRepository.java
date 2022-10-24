@@ -64,7 +64,7 @@ public interface PurchaseContractRepository
      * @param state    状态
      * @return 合同列表
      */
-    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code ,d.revision as revision,d.saler_order_code as supplierContractNo ," +
+    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code ,d.revision as revision,pv.order_code as supplierContractNo ," +
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +
         "end as category,\n" +
@@ -80,6 +80,7 @@ public interface PurchaseContractRepository
         "left join purchase_contract_record_temp t on t.contract_id = d.id\n" +
         "left join purchase_contract_record_rev v on v.contract_id = d.id and v.revision = d.revision\n" +
         "left join sales_contract_base p on b.paired_code=p.paired_code\n "+
+        "left join sales_contract_rev pv on pv.id = p.id and pv.revision in (select max(revision) from sales_contract_rev  where id = pv.id)\n "+
         " where  b.created_by_comp=?1 and b.created_by=?2  and b.state=?3 \n" +
         "group by b.id,o.name \n" +
         "      ,b.code\n" +
@@ -93,7 +94,7 @@ public interface PurchaseContractRepository
         "      ,b.created_at\n" +
         "      ,b.paired_code\n" +
         "      ,b.state ,c.code ,r.order_code ,d.order_code,d.saler_order_code ,d.revision,  \n" +
-        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short,p.paired_code\n" +
+        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short,p.paired_code,pv.order_code\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
     List<PurchaseContractList> listContracts(String compId, String operator, String state);
@@ -105,7 +106,7 @@ public interface PurchaseContractRepository
      * @param state  状态
      * @return 合同列表
      */
-    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code,d.revision as revision ,d.saler_order_code as supplierContractNo ," +
+    @Query(value = "select b.*,o.name as createdByName ,c.code as salesContractCode,r.order_code as salesOrderCode,d.order_code as order_code,d.revision as revision ,pv.order_code as supplierContractNo ," +
         "case b.state when '0' then count(distinct t.product_id)\n" +
         "else  count(distinct v.product_id)\n" +
         "end as category,\n" +
@@ -121,6 +122,7 @@ public interface PurchaseContractRepository
         "left join purchase_contract_record_temp t on t.contract_id = d.id\n" +
         "left join purchase_contract_record_rev v on v.contract_id = d.id and v.revision = d.revision\n" +
         "left join sales_contract_base p on b.paired_code=p.paired_code\n "+
+        "left join sales_contract_rev pv on pv.id = p.id and pv.revision in (select max(revision) from sales_contract_rev  where id = pv.id)\n "+
         " where  b.created_by_comp=?1   and b.state=?2 \n" +
         "group by b.id,o.name \n" +
         "      ,b.code\n" +
@@ -134,7 +136,7 @@ public interface PurchaseContractRepository
         "      ,b.created_at\n" +
         "      ,b.paired_code\n" +
         "      ,b.state ,c.code ,r.order_code ,d.order_code ,d.saler_order_code,d.revision,  \n" +
-        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short,p.paired_code\n" +
+        "   d.confirm_total_price_vat,d.total_price_vat,cb.chi_short,p.paired_code,pv.order_code\n" +
         "order by b.created_at desc,cast(RIGHT(b.code,3) as int )  desc ",
         nativeQuery = true)
     List<PurchaseContractList> listContracts(String compId, String state);
