@@ -53,6 +53,7 @@ public interface ContractMapper {
     @Mapping(target = "contractNo", source = "orderCode")
     @Mapping(target = "taxedTotal", source = "taxedTotal")
     @Mapping(target = "confirmTaxedTotal", source = "confirmTaxedTotal")
+    @Mapping(target = "customerContractNo",source = "customerContractNo")
     VPContractPageResponse.VContract toContractPage(TContract tContract);
 
     /**
@@ -178,6 +179,7 @@ public interface ContractMapper {
     @Mapping(target = "buyerCompName", source = "buyerCompName")
     @Mapping(target = "state", expression = "java(String.valueOf(contract.getState().getState()))")
     @Mapping(target = "paired", expression = "java(contract.getPaired()==null?false:true)")
+    @Mapping(target = "customerContractNo",source = "customerContractNo")
     TContract toContractList(SalesContracts contract);
 
     /**

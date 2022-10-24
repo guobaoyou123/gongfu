@@ -1029,11 +1029,11 @@ public class SalesContractService {
      */
     public SalesContractRevision modifyContractRevisionDetail(SalesContractRevision contractRevision, VPContractRequest generateContractRequest, String companyCode) throws IOException {
         contractRevision.setOrderCode(generateContractRequest.getContactNo());
-        contractRevision.setBuyerOrderCode(generateContractRequest.getSupplierNo());
-        //供应商联系人
-        contractRevision.setSalerContactName(generateContractRequest.getSupplierContactName());
-        //供应商联系人电话
-        contractRevision.setSalerContactPhone(generateContractRequest.getSupplierContactPhone());
+        contractRevision.setBuyerOrderCode(generateContractRequest.getCustomerNo());
+        //客户联系人
+        contractRevision.setBuyerContactName(generateContractRequest.getCustomerContactName());
+        //客户联系人电话
+        contractRevision.setBuyerContactPhone(generateContractRequest.getCustomerContactPhone());
         //地址
         if (StringUtils.isNotBlank(generateContractRequest.getAddressCode())) {
             //查找地址
