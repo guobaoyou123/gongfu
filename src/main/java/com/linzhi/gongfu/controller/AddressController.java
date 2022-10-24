@@ -134,7 +134,8 @@ public class AddressController {
             session.getSession().getCompanyCode(),
             areaCode.orElseGet(String::new),
             address.orElseGet(String::new),
-            state.orElseGet(String::new)
+            state.orElseGet(String::new),
+            session.getSession().getOperatorCode()
         );
         return VAddressResponse.builder()
             .code(200)
@@ -171,7 +172,8 @@ public class AddressController {
         }
         var map = addressService.saveAddress(
             address.orElseGet(VAddressRequest::new),
-            session.getSession().getCompanyCode()
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
         );
         return VBaseResponse.builder()
             .code((int) map.get("code"))
@@ -272,7 +274,7 @@ public class AddressController {
         var list = addressService.listContacts(
             session.getSession().getOperatorCode(),
             session.getSession().getCompanyCode(),
-            code, state
+            code, state,session.getSession().getIsAdmin()
         );
         return VCompContactsResponse.builder()
             .code(200)

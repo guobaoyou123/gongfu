@@ -61,4 +61,9 @@ public class Address implements Serializable {
     @Column(length = 1)
     private Availability state;
 
+    /**
+     * 创建者
+     */
+    @Column(name = "created_by", length = 10)
+    private String createdBy;
 }

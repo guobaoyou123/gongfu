@@ -25,6 +25,7 @@ public interface AddressMapper {
     @Mapping(target = "disabled", constant = "false")
     @Mapping(target = "flag", expression = "java(address.getFlag().getState()=='0'?false:true)")
     @Mapping(target = "state", expression = "java(String.valueOf(address.getState().getState()))")
+    @Mapping(target = "createdBy",source = "createdBy")
     TAddress toAddress(Address address);
 
     /**
@@ -33,5 +34,6 @@ public interface AddressMapper {
      * @param tAddress 地址基础信息
      * @return 地址基本信息预获取响应
      */
+    @Mapping(target = "readOnly",expression = "java(tAddress.getCreatedBy().equals(\"0\")?false:true)")
     VAddressResponse.VAddress toPreloadAddress(TAddress tAddress);
 }

@@ -60,4 +60,9 @@ public class TAddress {
      * 排序
      */
     private int sort;
+
+    /**
+     * 创建者
+     */
+    private String createdBy;
 }

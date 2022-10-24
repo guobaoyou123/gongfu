@@ -65,5 +65,10 @@ public class VAddressResponse extends VBaseResponse {
          * 排序
          */
         private int sort;
+
+        /**
+         * 是否可编辑(0,停用;1,启用)
+         */
+        private Boolean readOnly;
     }
 }
