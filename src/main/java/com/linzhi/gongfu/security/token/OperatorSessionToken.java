@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.security.token;
 
+import com.linzhi.gongfu.enumeration.Whether;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +31,7 @@ public class OperatorSessionToken extends AbstractAuthenticationToken {
      * @param companyName  操作员所属公司名称，名称不限定必须是中文或者其他语言
      * @param domain       操作员所属公司使用的二级域名称
      * @param token        操作员登录会话令牌
+     * @param isAdmin        操作员是否为管理员
      * @param expiresAt    操作员登录会话过期时间
      * @param authories    操作员所拥有的权限列表
      */
@@ -40,6 +42,7 @@ public class OperatorSessionToken extends AbstractAuthenticationToken {
         String companyName,
         String domain,
         String token,
+        Whether isAdmin,
         LocalDateTime expiresAt,
         Collection<? extends GrantedAuthority> authories) {
         super(authories);
@@ -49,6 +52,7 @@ public class OperatorSessionToken extends AbstractAuthenticationToken {
             .companyCode(companyCode)
             .companyName(companyName)
             .domain(domain)
+            .isAdmin(isAdmin)
             .token(token)
             .expiresAt(expiresAt)
             .build();
@@ -99,6 +103,7 @@ public class OperatorSessionToken extends AbstractAuthenticationToken {
         private final String companyName;
         private final String domain;
         private String token;
+        private final Whether isAdmin;
         private LocalDateTime expiresAt;
     }
 }

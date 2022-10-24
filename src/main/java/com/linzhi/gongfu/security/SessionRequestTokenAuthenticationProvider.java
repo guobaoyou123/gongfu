@@ -105,6 +105,7 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
             operator.getCompanyName(),
             operator.getCompanyDomain(),
             session.getToken(),
+            operator.getAdmin(),
             session.getExpriesAt(),
             privileges);
         sessionToken.setDetails(authentication);
@@ -127,7 +128,7 @@ public final class SessionRequestTokenAuthenticationProvider implements Authenti
      * @return 代表匿名用户的空白Token
      */
     private OperatorSessionToken createAnonymousAuthentication() {
-        var sessionToken = new OperatorSessionToken("-1", "Anonymous", "-1", "Anonymous", "NOWHERE", "Anonymous",
+        var sessionToken = new OperatorSessionToken("-1", "Anonymous", "-1", "Anonymous", "NOWHERE", "Anonymous",Whether.NO,
             LocalDateTime.of(2099, 12, 31, 23, 59), Collections.emptyList());
         return sessionToken;
     }

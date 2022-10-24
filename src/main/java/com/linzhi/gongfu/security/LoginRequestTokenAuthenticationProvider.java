@@ -112,6 +112,7 @@ public final class LoginRequestTokenAuthenticationProvider implements Authentica
             operator.getCompanyName(),
             operator.getCompanyDomain(),
             null,
+            operator.getAdmin(),
             null,
             privileges);
         sessionToken.setDetails(authentication);
