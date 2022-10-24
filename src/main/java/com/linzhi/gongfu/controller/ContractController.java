@@ -978,7 +978,7 @@ public class ContractController {
         var map = purchaseContractService.exportProductTemplate(id, revision);
         List<LinkedHashMap<String, Object>> database = (List<LinkedHashMap<String, Object>>) map.get("list");
         String code = (String) map.get("code");
-        ExcelUtil.exportToExcel(response, code + "采购合同明细表", database);
+        ExcelUtil.exportToExcel(response,  "采购合同"+code, database);
     }
 
     /**
@@ -1440,7 +1440,7 @@ public class ContractController {
         var map = salesContractService.exportProductTemplate(id, revision);
         List<LinkedHashMap<String, Object>> database = (List<LinkedHashMap<String, Object>>) map.get("list");
         String code = (String) map.get("code");
-        ExcelUtil.exportToExcel(response, code + "销售合同明细表", database);
+        ExcelUtil.exportToExcel(response, "销售合同"+code, database);
 
     }
 

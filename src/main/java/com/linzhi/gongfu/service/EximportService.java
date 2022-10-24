@@ -71,6 +71,7 @@ public class EximportService {
         Map<String, Object> resultMap = new HashMap<>();
         try {
             importProductTempRepository.deleteProduct(id, companyCode, operator);
+
             List<Map<String, Object>> list = ExcelUtil.excelToList(file);
             List<ImportProductTemp> importProductTemps = new ArrayList<>();
             for (int i = 0; i < list.size(); i++) {

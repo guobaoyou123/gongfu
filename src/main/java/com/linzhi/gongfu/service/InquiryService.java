@@ -317,12 +317,25 @@ public class InquiryService {
     /**
      * 查询询价单
      *
-     * @param id 询价单编码
+     * @param id 询价单主键
      * @return 询价单信息
      */
     @Cacheable(value = "inquiry_detail;1800", key = "#id")
     public Inquiry getInquiry(String id) throws IOException {
         return inquiryDetailRepository.findById(id).orElseThrow(()->new IOException("未查询到数据"));
+    }
+
+    /**
+     * 查找税模式和询价单编号
+     * @param id  询价单主键
+     * @return 返回税模式和合同编号
+     */
+    public Map<String, Object> findTaxModelAndEnCode(String id) throws IOException {
+        Map<String, Object> map = new HashMap<>();
+        var inquiry = getInquiry(id);
+        map.put("taxMode", inquiry.getOfferMode());
+        map.put("encode", inquiry.getCode());
+        return map;
     }
 
     /**

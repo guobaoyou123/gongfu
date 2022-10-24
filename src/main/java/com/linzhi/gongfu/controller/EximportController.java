@@ -45,6 +45,8 @@ public class EximportController {
     public VImportProductTempResponse importProduct(@RequestParam("products") MultipartFile file, @PathVariable String id, @PathVariable String type) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
+        String filename=    file.getOriginalFilename();
+
         var maps = findTaxModelAndEnCode(id, type);
         var map = eximportService.importProduct(
             file,
@@ -57,6 +59,12 @@ public class EximportController {
             return VImportProductTempResponse.builder()
                 .code((int) map.get("code"))
                 .message((String) map.get("message"))
+                .build();
+       String  sysName =  (type.equals("1")?"询价单":type.equals("2")?"采购合同":"销售合同")+maps.get("encode");
+        if(!sysName.equals(filename))
+            return VImportProductTempResponse.builder()
+                .code(203)
+                .message("导入失败，导入文件名称错误，请以"+(type.equals("1")?"询价单+询价单号":type.equals("2")?"采购合同+合同号":"销售合同+销售合同号")+"格式命名，具体格式请仿照导出的产品模板")
                 .build();
         return eximportService.getVImportProductTempResponse(
             id,
@@ -180,11 +188,9 @@ public class EximportController {
      * @throws IOException 异常
      */
     public Map<String, Object> findTaxModelAndEnCode(String id, String type) throws IOException {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map;
         if (type.equals("1")) {
-            var inquiry = inquiryService.getInquiry(id);
-            map.put("taxMode", inquiry.getOfferMode());
-            map.put("encode", inquiry.getCode());
+            map = inquiryService.findTaxModelAndEnCode(id);
         } else if (type.equals("2")) {
             map = contractService.findTaxModelAndEnCode(id, 1);
         } else {

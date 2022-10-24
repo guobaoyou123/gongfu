@@ -36,7 +36,7 @@ public interface SalesContractsRepository
         "left join sales_contract_record_temp t on t.contract_id = d.id " +
         "left join comp_base cb on  b.buyer_comp = cb.code \n" +
         "left join purchase_contract_base p on b.paired_code=p.paired_code" +
-        " where b.created_by_comp=?1 and b.created_by=?2 and b.state =?3   group by  b.id,b.code,d.revision,d.order_code,o.code,o.name, b.created_at,b.state,p.id,d.buyer_order_code,b.buyer_comp ,cb.chi_short,d.total_price_vat,d.confirm_total_price_vat) c order  by c.createdAt desc \n", nativeQuery = true)
+        " where b.created_by_comp=?1 and b.created_by=?2 and b.state =?3   group by  b.id,b.code,d.revision,d.order_code,o.code,o.name, b.created_at,b.state,p.id,d.buyer_order_code,b.buyer_comp ,cb.chi_short,d.total_price_vat,d.confirm_total_price_vat) c order  by c.createdAt ,cast(RIGHT(c.code,3) as int ) desc \n", nativeQuery = true)
     List<SalesContracts> listContracts(String compId, String operator, String state);
 
     /**
@@ -58,7 +58,7 @@ public interface SalesContractsRepository
         "left join comp_base cb on  b.buyer_comp = cb.code \n" +
         "left join sales_contract_record_temp t on t.contract_id = d.id " +
         "left join purchase_contract_base p on b.paired_code=p.paired_code" +
-        " where b.created_by_comp=?1  and b.state =?2   group by  b.id,b.code,d.revision,d.order_code,o.code,o.name, b.created_at,b.state,p.id,d.buyer_order_code,b.buyer_comp ,cb.chi_short,d.total_price_vat,d.confirm_total_price_vat) c order  by c.createdAt desc \n", nativeQuery = true)
+        " where b.created_by_comp=?1  and b.state =?2   group by  b.id,b.code,d.revision,d.order_code,o.code,o.name, b.created_at,b.state,p.id,d.buyer_order_code,b.buyer_comp ,cb.chi_short,d.total_price_vat,d.confirm_total_price_vat) c order  by c.createdAt ,cast(RIGHT(c.code,3) as int ) desc \n", nativeQuery = true)
     List<SalesContracts> listContracts(String compId, String state);
 
 }
