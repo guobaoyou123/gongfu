@@ -998,7 +998,7 @@ public class CompanyService {
      * @return 客户列表
      */
     @Cacheable(value = "customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#operator+'-'+#name")
-    public List<TCompanyBaseInformation> findAllCustomer(String name, String companyCode, String operator) {
+    public List<TCompanyBaseInformation> findAllCustomer(String name, String companyCode, String operator,Whether isAdmin) {
         QCompany qCompany = QCompany.company;
         QCompTrade qCompTrade = QCompTrade.compTrade;
 
@@ -1008,7 +1008,7 @@ public class CompanyService {
             query.where(qCompany.nameInCN.like("%" + name + "%").or(qCompany.shortNameInCN.like("%" + name + "%")));
         }
         query.where(qCompTrade.compTradeId.compSaler.eq(companyCode));
-        if (!operator.equals("000")) {
+        if (isAdmin.equals(Whether.NO)) {
             query.where(qCompTrade.salerBelongTo.like("%" + operator + ",%"));
         }
         query.where(qCompany.state.eq(Availability.ENABLED));

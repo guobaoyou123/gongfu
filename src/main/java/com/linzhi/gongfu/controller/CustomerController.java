@@ -305,7 +305,8 @@ public class CustomerController {
         var customers = companyService.findAllCustomer(
                 name.orElse(""),
                 session.getSession().getCompanyCode(),
-                session.getSession().getOperatorCode()
+                session.getSession().getOperatorCode(),
+            session.getSession().getIsAdmin()
             ).stream()
             .map(companyMapper::toPreloadCustomer)
             .toList();
