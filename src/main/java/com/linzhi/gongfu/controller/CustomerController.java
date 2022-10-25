@@ -47,11 +47,11 @@ public class CustomerController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var page = companyService.pageEnrolledTradeCompanies(
+        var page = companyService.pageTradeCompanies(
             name.orElse(""),
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10),
-            session.getSession().getCompanyCode(), "2"
+            session.getSession().getCompanyCode(), "2",session.getSession().getIsAdmin(),"1", session.getSession().getOperatorCode(),CompanyRole.SUPPLIER.getSign()
         );
         return VEnrolledTradeCompaniesResponse.builder()
             .code(200)
@@ -172,13 +172,14 @@ public class CustomerController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
-        var page = companyService.pageForeignCustomers(
-            session.getSession().getCompanyCode(),
-            session.getSession().getOperatorCode(),
+        var page = companyService.pageTradeCompanies(
+
             name.orElse(""),
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10),
-            state.orElse("1")
+            session.getSession().getCompanyCode(),"2",session.getSession().getIsAdmin(),   state.orElse("1"),
+            session.getSession().getOperatorCode(),CompanyRole.EXTERIOR_CUSTOMER.getSign()
+
         );
         return VForeignCustomerPageResponse.builder()
             .code(200)

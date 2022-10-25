@@ -6,6 +6,7 @@ import com.linzhi.gongfu.entity.CompTrade;
 import com.linzhi.gongfu.entity.CompTradeId;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.enumeration.TaxMode;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -101,6 +102,7 @@ public interface CompTradeRepository
      * @param buyerCode 单位编号
      * @return 返回供应商列表
      */
+    @Cacheable(value = "Supplier_List;1800", unless = "#result == null ", key = "#buyerCode+'-'+#role")
     List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(String buyerCode,String role);
 
     /**
@@ -111,6 +113,7 @@ public interface CompTradeRepository
      * @param operator 操作员编号
      * @return 返回供应商列表
      */
+    @Cacheable(value = "Supplier_List;1800", unless = "#result == null ", key = "#buyerCode+'-'+#role+'-'+#operator")
     List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateAndBuyerBelongToContainsOrderBySalerCompanys_codeAsc(String buyerCode,String role,Availability state,String operator);
 
     /**
@@ -120,6 +123,7 @@ public interface CompTradeRepository
      * @param state 状态
      * @return 返回客户列表
      */
+    @Cacheable(value = "Customer_List;1800", unless = "#result == null ", key = "#salerCode+'-'+#role+-'+#state.state")
     List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(String salerCode,String role,Availability state);
 
     /**
@@ -130,5 +134,6 @@ public interface CompTradeRepository
      * @param state 状态
      * @return 返回客户列表
      */
+    @Cacheable(value = "Customer_List;1800", unless = "#result == null ", key = "#salerCode+'-'+#role+'-'+#operator+'-'+#state.state")
     List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateAndSalerBelongToContainsOrderByBuyerCompanys_codeAsc(String salerCode,String role,Availability state,String operator);
 }

@@ -298,7 +298,7 @@ public class CompanyController {
     /**
      * 查询有采购权限的操作员列表
      *
-     * @param privilege 权限类型 1-采购
+     * @param privilege 权限类型 1-采购 2-销售
      * @return 操作员列表
      */
     @GetMapping("/company/operators/{privilege}")
