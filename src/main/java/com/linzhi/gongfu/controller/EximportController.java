@@ -45,7 +45,9 @@ public class EximportController {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         String filename = file.getOriginalFilename();
-
+        if(filename!=null){
+            filename =  filename.substring(0,filename.lastIndexOf("."));
+        }
         var maps = findTaxModelAndEnCode(id, type);
         var map = eximportService.importProduct(
             file,
