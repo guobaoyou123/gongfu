@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -102,7 +103,7 @@ public interface CompTradeRepository
      * @param buyerCode 单位编号
      * @return 返回供应商列表
      */
-    @Cacheable(value = "Supplier_List;1800", unless = "#result == null ", key = "#buyerCode+'-'+#role")
+    @Transactional(readOnly = true)
     List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(String buyerCode,String role);
 
     /**
@@ -113,7 +114,7 @@ public interface CompTradeRepository
      * @param operator 操作员编号
      * @return 返回供应商列表
      */
-    @Cacheable(value = "Supplier_List;1800", unless = "#result == null ", key = "#buyerCode+'-'+#role+'-'+#operator")
+    @Transactional(readOnly = true)
     List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateAndBuyerBelongToContainsOrderBySalerCompanys_codeAsc(String buyerCode,String role,Availability state,String operator);
 
     /**
@@ -123,7 +124,7 @@ public interface CompTradeRepository
      * @param state 状态
      * @return 返回客户列表
      */
-    @Cacheable(value = "Customer_List;1800", unless = "#result == null ", key = "#salerCode+'-'+#role+'-'+#state.state")
+    @Transactional(readOnly = true)
     List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(String salerCode,String role,Availability state);
 
     /**
@@ -134,6 +135,7 @@ public interface CompTradeRepository
      * @param state 状态
      * @return 返回客户列表
      */
-    @Cacheable(value = "Customer_List;1800", unless = "#result == null ", key = "#salerCode+'-'+#role+'-'+#operator+'-'+#state.state")
+
+    @Transactional(readOnly = true)
     List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateAndSalerBelongToContainsOrderByBuyerCompanys_codeAsc(String salerCode,String role,Availability state,String operator);
 }

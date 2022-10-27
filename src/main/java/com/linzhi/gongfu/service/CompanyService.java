@@ -169,6 +169,7 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回外供应商列表
      */
+    @Cacheable(value = "Supplier_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#CompanyRole.EXTERIOR_SUPPLIER.getSign()")
     public List<TCompanyList> listForeignSuppliers(String companyCode) {
         return compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(companyCode, CompanyRole.EXTERIOR_SUPPLIER.getSign())
             .stream()
@@ -521,7 +522,7 @@ public class CompanyService {
      */
     public Page<TCompanyList> pageTradeCompanies(String name, int pageNum, int pageSize, String companyCode, String type,Whether isAdmin,String state,String operator,String role) {
         return PageTools.listConvertToPage(
-            listTradeCompanies(companyCode,operator,isAdmin,name,state,role, type),
+            type.equals("1")?listSuppliers(companyCode,operator,isAdmin,name,state,role):listCustomers(companyCode,operator,isAdmin,name,state,role),
             PageRequest.of(pageNum, pageSize)
         );
     }
@@ -684,7 +685,7 @@ public class CompanyService {
     }
 
     /**
-     * 查找外客户或者内客户或者内供应商列表
+     * 查找外客户或者内客户列表
      *
      * @param companyCode 单位id
      * @param operator    操作员编码
@@ -692,46 +693,20 @@ public class CompanyService {
      * @param companyRole   角色
      * @return 返回外客户列表
      */
-
-     public List<TCompanyList> listTradeCompanies(String companyCode, String operator, Whether isAdmin, String name, String state,String  companyRole,String type) {
+    @Cacheable(value = "Customer_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#companyRole+'-'+#operator+'-'+#state+'-'+#name")
+     public List<TCompanyList> listCustomers(String companyCode, String operator, Whether isAdmin, String name, String state,String  companyRole) {
 
          List<TCompanyList> list = null;
-         if (type.equals("1")&&isAdmin.equals(Whether.YES)) {
-             list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(companyCode,companyRole)
-                 .stream()
-                 .map(compTradeMapper::toSupplier)
-                 .toList();
-         } else if(type.equals("1")&&isAdmin.equals(Whether.NO)){
-             list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateAndBuyerBelongToContainsOrderBySalerCompanys_codeAsc(companyCode,companyRole,state.equals("1")?Availability.ENABLED:Availability.DISABLED,operator).stream()
-                 .map(compTradeMapper::toSupplier)
-                 .toList();
-         }else if(type.equals("2")&&isAdmin.equals(Whether.YES)){
+         if(isAdmin.equals(Whether.YES)){
              list = compTradeRepository.findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(companyCode,companyRole,state.equals("1")?Availability.ENABLED:Availability.DISABLED).stream()
                  .map(compTradeMapper::toCustomer)
                  .toList();
-         }else if(type.equals("2")&&isAdmin.equals(Whether.NO)){
-             list = compTradeRepository.findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateAndSalerBelongToContainsOrderByBuyerCompanys_codeAsc(companyCode,companyRole,state.equals("1")?Availability.ENABLED:Availability.DISABLED,operator).stream()
-                 .map(compTradeMapper::toCustomer)
-                 .toList();
-         }
-         if(isAdmin.equals(Whether.YES)){
              List<OperatorBase> operatorList = operatorDetailRepository.findOperatorByIdentity_CompanyCodeAndState(companyCode, state.equals("1")?Availability.ENABLED:Availability.DISABLED);
              Map<String, TOperatorInfo> map = new HashMap<>();
              operatorList.forEach(o -> map.put(o.getIdentity().getOperatorCode(), Optional.of(o).map(operatorMapper::toOperatorDetailDTO).get()));
              if(list!=null){
                  list.forEach(t -> {
-
-                     if (StringUtils.isNotBlank(t.getBuyerBelongTo())&&type.equals("1")) {
-                         List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
-                         for (String s : t.getBuyerBelongTo().split(",")) {
-                             if (map.get(s) != null) {
-                                 tOperatorInfos.add(map.get(s));
-                             }
-                         }
-                         t.setOperators(tOperatorInfos);
-                     }
-
-                     if (StringUtils.isNotBlank(t.getSalerBelongTo())&&type.equals("2")) {
+                     if (StringUtils.isNotBlank(t.getSalerBelongTo())) {
                          List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
                          for (String s : t.getSalerBelongTo().split(",")) {
                              if (map.get(s) != null) {
@@ -742,10 +717,58 @@ public class CompanyService {
                      }
                  });
              }
-
+         }else{
+             list = compTradeRepository.findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateAndSalerBelongToContainsOrderByBuyerCompanys_codeAsc(companyCode,companyRole,state.equals("1")?Availability.ENABLED:Availability.DISABLED,operator).stream()
+                 .map(compTradeMapper::toCustomer)
+                 .toList();
          }
-
          return list!=null?list.stream().filter(t -> t.getShortName().contains(name)).toList():null;
+
+    }
+    /**
+     * 查找内供应商列表
+     *
+     * @param companyCode 单位id
+     * @param operator    操作员编码
+     * @param name        公司名称
+     * @param companyRole   角色
+     * @return 返回外客户列表
+     */
+    @Cacheable(value = "Supplier_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#companyRole+'-'+#operator+'-'+#name")
+    public List<TCompanyList> listSuppliers(String companyCode, String operator, Whether isAdmin, String name, String state,String  companyRole) {
+
+        List<TCompanyList> list = null;
+        if (isAdmin.equals(Whether.YES)) {
+            list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(companyCode,companyRole)
+                .stream()
+                .map(compTradeMapper::toSupplier)
+                .toList();
+            List<OperatorBase> operatorList = operatorDetailRepository.findOperatorByIdentity_CompanyCodeAndState(companyCode, state.equals("1")?Availability.ENABLED:Availability.DISABLED);
+            Map<String, TOperatorInfo> map = new HashMap<>();
+            operatorList.forEach(o -> map.put(o.getIdentity().getOperatorCode(), Optional.of(o).map(operatorMapper::toOperatorDetailDTO).get()));
+            if(list!=null){
+                list.forEach(t -> {
+
+                    if (StringUtils.isNotBlank(t.getBuyerBelongTo())) {
+                        List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
+                        for (String s : t.getBuyerBelongTo().split(",")) {
+                            if (map.get(s) != null) {
+                                tOperatorInfos.add(map.get(s));
+                            }
+                        }
+                        t.setOperators(tOperatorInfos);
+                    }
+
+                });
+            }
+
+        } else{
+            list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateAndBuyerBelongToContainsOrderBySalerCompanys_codeAsc(companyCode,companyRole,state.equals("1")?Availability.ENABLED:Availability.DISABLED,operator).stream()
+                .map(compTradeMapper::toSupplier)
+                .toList();
+        }
+
+        return list!=null?list.stream().filter(t -> t.getShortName().contains(name)).toList():null;
 
     }
 
