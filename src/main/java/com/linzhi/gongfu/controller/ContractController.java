@@ -568,7 +568,7 @@ public class ContractController {
     public void exportProduct(@PathVariable String id, HttpServletResponse response) {
 
         List<LinkedHashMap<String, Object>> database = inquiryService.exportProduct(id);
-        ExcelUtil.exportToExcel(response, id + "询价单明细表", database);
+        ExcelUtil.exportToExcel(response, "询价单"+id, database);
     }
 
     /**
