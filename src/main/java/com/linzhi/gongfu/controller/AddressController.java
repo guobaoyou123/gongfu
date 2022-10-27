@@ -274,7 +274,7 @@ public class AddressController {
         var list = addressService.listContacts(
             session.getSession().getOperatorCode(),
             session.getSession().getCompanyCode(),
-            code, state,session.getSession().getIsAdmin()
+            code, state, session.getSession().getIsAdmin()
         );
         return VCompContactsResponse.builder()
             .code(200)

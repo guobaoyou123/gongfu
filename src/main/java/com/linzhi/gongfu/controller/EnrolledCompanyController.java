@@ -199,7 +199,7 @@ public class EnrolledCompanyController {
     /**
      * 查看待处理数量
      *
-     * @param name     公司名称
+     * @param name 公司名称
      * @return 待处理申请数量
      */
     @GetMapping("/enrolled/company/apply/amount")

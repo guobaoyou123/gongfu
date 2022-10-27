@@ -54,7 +54,7 @@ public class InquiryService {
     private final PurchasePlanProductRepository purchasePlanProductRepository;
     private final PurchasePlanRepository purchasePlanRepository;
     private final CompTaxModelRepository compTaxModelRepository;
-    private final  SalesContractRepository salesContractRepository;
+    private final SalesContractRepository salesContractRepository;
 
     /**
      * 判断询价单中的金额 是否为null
@@ -205,7 +205,7 @@ public class InquiryService {
      * @param state       状态
      * @return 返回询价列表
      */
-     @Cacheable(value = "inquiry_List;1800", key = "#companyCode+'_'+#operator+'_'+#state")
+    @Cacheable(value = "inquiry_List;1800", key = "#companyCode+'_'+#operator+'_'+#state")
     public List<TInquiry> listInquiries(String companyCode, String operator, String state) {
         try {
             //查询操作员信息
@@ -291,7 +291,7 @@ public class InquiryService {
      * @param id 询价单主键
      * @return 返回询价单详情
      */
-    public TInquiry getInquiryDetail(String id){
+    public TInquiry getInquiryDetail(String id) {
         try {
             Inquiry inquiry = getInquiry(id);
             List<InquiryRecord> records = inquiry.getRecords();
@@ -301,13 +301,13 @@ public class InquiryService {
             tInquiry.setTotalPrice(judgeInquiryMoney(tInquiry.getTotalPrice(), records));
             tInquiry.setTotalPriceVat(judgeInquiryMoney(tInquiry.getTotalPriceVat(), records));
             //查找销售合同信息
-            if(tInquiry.getSalesContractId()!=null && !("").equals(tInquiry.getSalesContractId())){
-                Map<String, Object> map= salesContractRepository.findSalesCode(id);
+            if (tInquiry.getSalesContractId() != null && !("").equals(tInquiry.getSalesContractId())) {
+                Map<String, Object> map = salesContractRepository.findSalesCode(id);
                 tInquiry.setSalesContractCode(map.get("code").toString());
                 tInquiry.setSalerOrderCode(map.get("order_code").toString());
             }
             return tInquiry;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -322,12 +322,13 @@ public class InquiryService {
      */
     @Cacheable(value = "inquiry_detail;1800", key = "#id")
     public Inquiry getInquiry(String id) throws IOException {
-        return inquiryDetailRepository.findById(id).orElseThrow(()->new IOException("未查询到数据"));
+        return inquiryDetailRepository.findById(id).orElseThrow(() -> new IOException("未查询到数据"));
     }
 
     /**
      * 查找税模式和询价单编号
-     * @param id  询价单主键
+     *
+     * @param id 询价单主键
      * @return 返回税模式和合同编号
      */
     public Map<String, Object> findTaxModelAndEnCode(String id) throws IOException {
@@ -399,7 +400,7 @@ public class InquiryService {
         try {
             //查询询价单
             Inquiry inquiry = getInquiry(id);
-            List<InquiryRecord> inquiryRecordList =inquiry.getRecords();
+            List<InquiryRecord> inquiryRecordList = inquiry.getRecords();
             //查询明细最大顺序号
             String maxCode = inquiryRecordRepository.findMaxCode(id);
             if (maxCode == null)

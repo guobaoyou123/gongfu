@@ -265,7 +265,7 @@ public class SuppliersController {
             name.orElse(""),
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10),
-            session.getSession().getCompanyCode(), "1",session.getSession().getIsAdmin(), "1",session.getSession().getOperatorCode(),CompanyRole.SUPPLIER.getSign()
+            session.getSession().getCompanyCode(), "1", session.getSession().getIsAdmin(), "1", session.getSession().getOperatorCode(), CompanyRole.SUPPLIER.getSign()
         );
         return VEnrolledTradeCompaniesResponse.builder()
             .code(200)

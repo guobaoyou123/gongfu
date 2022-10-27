@@ -585,8 +585,8 @@ public class SalesContractService {
      * @param revision 版本
      * @return 产品列表
      */
-    public Map<String,Object> exportProductTemplate(String id, Integer revision) {
-        Map<String,Object> map = new HashMap<>();
+    public Map<String, Object> exportProductTemplate(String id, Integer revision) {
+        Map<String, Object> map = new HashMap<>();
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         try {
             var contract = getSalesContractDetail(id, revision);
@@ -613,8 +613,8 @@ public class SalesContractService {
                 m.put("数量", "");
                 list.add(m);
             }
-            map.put("list",list);
-            map.put("code",contract.getCode());
+            map.put("list", list);
+            map.put("code", contract.getCode());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -628,8 +628,8 @@ public class SalesContractService {
      * @param revision 版本
      * @return 产品列表
      */
-    public Map<String,Object> exportProduct(String id, Integer revision, String type) {
-        Map<String,Object> map = new HashMap<>();
+    public Map<String, Object> exportProduct(String id, Integer revision, String type) {
+        Map<String, Object> map = new HashMap<>();
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         try {
             var contract = getSalesContractDetail(id, revision);
@@ -655,8 +655,8 @@ public class SalesContractService {
                 }
                 list.add(m);
             });
-            map.put("list",list);
-            map.put("code",contract.getCode());
+            map.put("list", list);
+            map.put("code", contract.getCode());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -855,7 +855,8 @@ public class SalesContractService {
 
     /**
      * 查找税模式和合同编号
-     * @param id 合同主键
+     *
+     * @param id       合同主键
      * @param revision 版本号
      * @return 返回税模式和合同编号
      */
@@ -1010,7 +1011,7 @@ public class SalesContractService {
 
             contractBase.setState(ContractState.FINISHED);
 
-            contractBase.setPairedCode(findPairedCode(str,companyCode,0,null));
+            contractBase.setPairedCode(findPairedCode(str, companyCode, 0, null));
             //保存合同
             salesContractRepository.save(contractBase);
         } catch (Exception e) {
@@ -1080,8 +1081,8 @@ public class SalesContractService {
      * @return 返回字符串列表
      */
     private List<String> recordSort(List<SalesContractRecord> records) {
-         //去重，将相同的产品进行累加
-        Map<String,SalesContractRecord> map = new HashMap<>();
+        //去重，将相同的产品进行累加
+        Map<String, SalesContractRecord> map = new HashMap<>();
         for (SalesContractRecord record : records) {
             if (map.get(record.getProductId()) != null) {
                 SalesContractRecord p = map.get(record.getProductId());
@@ -1093,7 +1094,7 @@ public class SalesContractService {
 
         List<SalesContractRecord> recordList = new ArrayList<>();
 
-        for(String key : map.keySet()){
+        for (String key : map.keySet()) {
 
             recordList.add(map.get(key));
 
@@ -1110,7 +1111,7 @@ public class SalesContractService {
             return o1.getProductId().compareTo(o2.getProductId());
         });
         return recordList.stream().map(contractRecord -> contractRecord.getProductId() + "-"
-             + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP)
+            + contractRecord.getAmount().setScale(4, RoundingMode.HALF_UP)
 
         ).toList();
     }
@@ -1209,7 +1210,7 @@ public class SalesContractService {
                 .id(id)
                 .revision(revision)
                 .build());
-            contractDetail.setPairedCode(findPairedCode(null,companyCode,revision-1,id));
+            contractDetail.setPairedCode(findPairedCode(null, companyCode, revision - 1, id));
         }
         salesContractRepository.save(contractDetail);
         salesContractRecordTempRepository.deleteProducts(id);
@@ -1344,7 +1345,7 @@ public class SalesContractService {
                     .orElseThrow(() -> new IOException("请求的产品不存在"));
                 SalesContractRecordTemp contractRecordTemp = createContractRecordTemp(id, 1, maxCode, product,
                     StringUtils.isNotBlank(importProductTemp.getPrice()) ? new BigDecimal(importProductTemp.getPrice()) : null,
-                    (contract.getOfferMode().getTaxMode()+"").equals("1") ? TaxMode.INCLUDED : TaxMode.UNTAXED,
+                    (contract.getOfferMode().getTaxMode() + "").equals("1") ? TaxMode.INCLUDED : TaxMode.UNTAXED,
                     new BigDecimal(importProductTemp.getAmount()), contract.getVatProductRate() != null ? contract.getVatProductRate() : goods.getRate(), 0);
                 contractRecordTemps.add(contractRecordTemp);
                 maxCode++;
@@ -1365,9 +1366,10 @@ public class SalesContractService {
 
     /**
      * 计算总价
-     * @param list 销售明细列表
+     *
+     * @param list                  销售明细列表
      * @param salesContractRevision 销售合同版本详情
-     * @param operator 操作员编码
+     * @param operator              操作员编码
      */
     public void countSum(List<SalesContractRecordTemp> list, SalesContractRevision salesContractRevision, String operator) {
         //判断产品列表中的产品是否都有价格
@@ -1476,26 +1478,27 @@ public class SalesContractService {
 
     /**
      * 生成合同配对码
-     * @param fingerprint 指纹
-     * @param companyCode 单位编码
-     * @param revision 版本号
+     *
+     * @param fingerprint     指纹
+     * @param companyCode     单位编码
+     * @param revision        版本号
      * @param salesContractId 销售合同编码
      * @return 配对码
      */
-    public String findPairedCode(String fingerprint,String companyCode,int revision,String salesContractId){
+    public String findPairedCode(String fingerprint, String companyCode, int revision, String salesContractId) {
         String pairedCode;
-        if(fingerprint==null){
-            pairedCode= purchaseContractBaseRepository.findPairedCode(salesContractId,revision)
+        if (fingerprint == null) {
+            pairedCode = purchaseContractBaseRepository.findPairedCode(salesContractId, revision)
                 .orElse("");
-        }else{
+        } else {
             //查找与之相同的客户的采购合同
-             pairedCode = purchaseContractBaseRepository.findPairedCode(fingerprint)
+            pairedCode = purchaseContractBaseRepository.findPairedCode(fingerprint)
                 .orElse("");
         }
-        if(pairedCode.equals("")){
+        if (pairedCode.equals("")) {
             //生成自己的配对码
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyMMddhhssmm");
-            pairedCode= companyCode+UUID.randomUUID().toString().substring(0, 8)+dtf.format(LocalDateTime.now());
+            pairedCode = companyCode + UUID.randomUUID().toString().substring(0, 8) + dtf.format(LocalDateTime.now());
         }
         return pairedCode;
     }

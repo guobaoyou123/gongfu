@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +44,7 @@ public class EximportController {
     public VImportProductTempResponse importProduct(@RequestParam("products") MultipartFile file, @PathVariable String id, @PathVariable String type) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        String filename=    file.getOriginalFilename();
+        String filename = file.getOriginalFilename();
 
         var maps = findTaxModelAndEnCode(id, type);
         var map = eximportService.importProduct(
@@ -60,11 +59,11 @@ public class EximportController {
                 .code((int) map.get("code"))
                 .message((String) map.get("message"))
                 .build();
-       String  sysName =  (type.equals("1")?"询价单":type.equals("2")?"采购合同":"销售合同")+maps.get("encode");
-        if(!sysName.equals(filename))
+        String sysName = (type.equals("1") ? "询价单" : type.equals("2") ? "采购合同" : "销售合同") + maps.get("encode");
+        if (!sysName.equals(filename))
             return VImportProductTempResponse.builder()
                 .code(203)
-                .message("导入失败，导入文件名称错误，请以"+(type.equals("1")?"询价单+询价单号":type.equals("2")?"采购合同+合同号":"销售合同+销售合同号")+"格式命名，具体格式请仿照导出的产品模板")
+                .message("导入失败，导入文件名称错误，请以" + (type.equals("1") ? "询价单+询价单号" : type.equals("2") ? "采购合同+合同号" : "销售合同+销售合同号") + "格式命名，具体格式请仿照导出的产品模板")
                 .build();
         return eximportService.getVImportProductTempResponse(
             id,

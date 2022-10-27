@@ -150,11 +150,12 @@ public class CompTradeApplyService {
 
     /**
      * 查找待处理申请数量
-     * @param name 格友公司名称
+     *
+     * @param name        格友公司名称
      * @param companyCode 本单位编码
-     * @return  待处理申请数量
+     * @return 待处理申请数量
      */
-    public int tradeApplyAmount(String name,String companyCode){
+    public int tradeApplyAmount(String name, String companyCode) {
         return compTradeApplyRepository.findByHandledCompByAndStateAndTypeOrderByCreatedAtDesc(companyCode, TradeApply.APPLYING, "1")
             .stream().filter(compTradeApply -> compTradeApply.getCreatedCompany().getNameInCN().contains(name))
             .toList().size();

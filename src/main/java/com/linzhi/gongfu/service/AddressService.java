@@ -173,14 +173,14 @@ public class AddressService {
      * @param state       状态
      * @return 返回地址信息（包括禁用区域）
      */
-    public List<TAddress> listTAddresses(String companyCode, String areaCode, String addresses, String state,String operator) {
+    public List<TAddress> listTAddresses(String companyCode, String areaCode, String addresses, String state, String operator) {
         //根据条件查询地址信息
         List<TAddress> tAddresses = listAddresses(companyCode, areaCode, addresses, state).stream()
             .map(addressMapper::toAddress)
             .map(tAddress -> {
-                if(operator.equals(tAddress.getCreatedBy())) {
+                if (operator.equals(tAddress.getCreatedBy())) {
                     tAddress.setCreatedBy("1");
-                }else {
+                } else {
                     tAddress.setCreatedBy("0");
                 }
                 return tAddress;
@@ -247,7 +247,7 @@ public class AddressService {
      */
     @CacheEvict(value = "Addresses_compId;1800", allEntries = true)
     @Transactional
-    public Map<String, Object> saveAddress(VAddressRequest vAddress, String companyCode,String operator) {
+    public Map<String, Object> saveAddress(VAddressRequest vAddress, String companyCode, String operator) {
         Map<String, Object> map = new HashMap<>();
         try {
             String code = addressRepository.findMaxCode(companyCode);
@@ -399,7 +399,7 @@ public class AddressService {
      * @return 返回联系人列表
      */
     @Cacheable(value = "Contacts_List;1800", key = "#companyCode+'-'+#operator")
-    public List<TCompContacts> listContacts(String operator, String companyCode, String addressCode, String state,Whether isAdmin) {
+    public List<TCompContacts> listContacts(String operator, String companyCode, String addressCode, String state, Whether isAdmin) {
         List<CompContacts> list;
         if (isAdmin.equals(Whether.YES)) {
             list = compContactsRepository.findCompContactsByCompContactsId_AddrCodeAndCompContactsId_DcCompIdAndStateOrderByContCompName(

@@ -51,7 +51,7 @@ public class CustomerController {
             name.orElse(""),
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10),
-            session.getSession().getCompanyCode(), "2",session.getSession().getIsAdmin(),"1", session.getSession().getOperatorCode(),CompanyRole.SUPPLIER.getSign()
+            session.getSession().getCompanyCode(), "2", session.getSession().getIsAdmin(), "1", session.getSession().getOperatorCode(), CompanyRole.SUPPLIER.getSign()
         );
         return VEnrolledTradeCompaniesResponse.builder()
             .code(200)
@@ -177,8 +177,8 @@ public class CustomerController {
             name.orElse(""),
             pageNum.map(PageTools::verificationPageNum).orElse(0),
             pageSize.map(PageTools::verificationPageSize).orElse(10),
-            session.getSession().getCompanyCode(),"2",session.getSession().getIsAdmin(),   state.orElse("1"),
-            session.getSession().getOperatorCode(),CompanyRole.EXTERIOR_CUSTOMER.getSign()
+            session.getSession().getCompanyCode(), "2", session.getSession().getIsAdmin(), state.orElse("1"),
+            session.getSession().getOperatorCode(), CompanyRole.EXTERIOR_CUSTOMER.getSign()
 
         );
         return VForeignCustomerPageResponse.builder()
@@ -307,7 +307,7 @@ public class CustomerController {
                 name.orElse(""),
                 session.getSession().getCompanyCode(),
                 session.getSession().getOperatorCode(),
-            session.getSession().getIsAdmin()
+                session.getSession().getIsAdmin()
             ).stream()
             .map(companyMapper::toPreloadCustomer)
             .toList();
