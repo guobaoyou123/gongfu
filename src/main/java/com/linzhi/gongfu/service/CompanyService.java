@@ -561,7 +561,11 @@ public class CompanyService {
     @Caching(evict = {
         @CacheEvict(value = "Supplier_detail;1800", key = "#compBuyer+'-'+#compSaler", condition = "#type=='1'"),
         @CacheEvict(value = "Customer_detail;1800", key = "#compSaler+'-'+#compBuyer", condition = "#type=='2'"),
-
+        @CacheEvict(value = "Supplier_List;1800", key = "#compBuyer+'*'", condition = "#type=='1'"),
+        @CacheEvict(value = "SupplierAndBrand;1800", key = "#compBuyer", condition = "#type=='1'"),
+        @CacheEvict(value = "brands_company;1800", key = "#compBuyer", condition = "#type=='1'"),
+        @CacheEvict(value = "Customer_List;1800", key = "#compSaler+'*'", condition = "#type=='2'"),
+        @CacheEvict(value = "Customer_List_All;1800", key = "#compSaler+'*'", condition = "#type=='2'")
     })
     @Transactional
     public void authorizedOperator(String compSaler, String compBuyer, String operators, String type) {
@@ -713,33 +717,35 @@ public class CompanyService {
          if(isAdmin.equals(Whether.YES)){
              List<OperatorBase> operatorList = operatorDetailRepository.findOperatorByIdentity_CompanyCodeAndState(companyCode, state.equals("1")?Availability.ENABLED:Availability.DISABLED);
              Map<String, TOperatorInfo> map = new HashMap<>();
-             operatorList.forEach(o -> {
-                 map.put(o.getIdentity().getOperatorCode(), Optional.of(o).map(operatorMapper::toOperatorDetailDTO).get());
-             });
-             list.forEach(t -> {
+             operatorList.forEach(o -> map.put(o.getIdentity().getOperatorCode(), Optional.of(o).map(operatorMapper::toOperatorDetailDTO).get()));
+             if(list!=null){
+                 list.forEach(t -> {
 
-                 if (StringUtils.isNotBlank(t.getBuyerBelongTo())&&type.equals("1")) {
-                     List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
-                     for (String s : t.getBuyerBelongTo().split(",")) {
-                         if (map.get(s) != null) {
-                             tOperatorInfos.add(map.get(s));
+                     if (StringUtils.isNotBlank(t.getBuyerBelongTo())&&type.equals("1")) {
+                         List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
+                         for (String s : t.getBuyerBelongTo().split(",")) {
+                             if (map.get(s) != null) {
+                                 tOperatorInfos.add(map.get(s));
+                             }
                          }
+                         t.setOperators(tOperatorInfos);
                      }
-                     t.setOperators(tOperatorInfos);
-                 }
 
-                 if (StringUtils.isNotBlank(t.getSalerBelongTo())&&type.equals("2")) {
-                     List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
-                     for (String s : t.getSalerBelongTo().split(",")) {
-                         if (map.get(s) != null) {
-                             tOperatorInfos.add(map.get(s));
+                     if (StringUtils.isNotBlank(t.getSalerBelongTo())&&type.equals("2")) {
+                         List<TOperatorInfo> tOperatorInfos = new ArrayList<>();
+                         for (String s : t.getSalerBelongTo().split(",")) {
+                             if (map.get(s) != null) {
+                                 tOperatorInfos.add(map.get(s));
+                             }
                          }
+                         t.setOperators(tOperatorInfos);
                      }
-                     t.setOperators(tOperatorInfos);
-                 }
-             });
+                 });
+             }
+
          }
-        return list.stream().filter(t -> t.getShortName().contains(name)).toList();
+
+         return list!=null?list.stream().filter(t -> t.getShortName().contains(name)).toList():null;
 
     }
 
@@ -843,7 +849,7 @@ public class CompanyService {
      * @param companyRole    角色
      */
     @Caching(evict = {@CacheEvict(value = "suppliers_brands;1800", key = "'*'+#companyCode", condition = "#companyRole.getSign().equals('6')"),
-        @CacheEvict(value = "Supplier_List;1800", key = "#companyCode", condition = "#companyRole.getSign().equals('6')"),
+        @CacheEvict(value = "Supplier_List;1800", key = "#companyCode+'-'+#companyRole.getSign()", condition = "#companyRole.getSign().equals('6')"),
         @CacheEvict(value = "brands_company;1800", key = "'*'+#companyCode", condition = "#companyRole.getSign().equals('6')"),
         @CacheEvict(value = "SupplierAndBrand;1800", key = "#companyCode", condition = "#companyRole.getSign().equals('6')"),
         @CacheEvict(value = "Supplier_detail;1800", key = "#companyCode+'-'+#code", condition = "#code != null && #companyRole.getSign().equals('6')"),

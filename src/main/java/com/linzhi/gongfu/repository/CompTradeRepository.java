@@ -123,7 +123,7 @@ public interface CompTradeRepository
      * @param state 状态
      * @return 返回客户列表
      */
-    @Cacheable(value = "Customer_List;1800", unless = "#result == null ", key = "#salerCode+'-'+#role+-'+#state.state")
+    @Cacheable(value = "Customer_List;1800", unless = "#result == null ", key = "#salerCode+'-'+#role+'-'+#state.state")
     List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateOrderByBuyerCompanys_codeAsc(String salerCode,String role,Availability state);
 
     /**
