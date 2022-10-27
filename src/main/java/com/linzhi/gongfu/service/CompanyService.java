@@ -169,11 +169,11 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回外供应商列表
      */
-    @Cacheable(value = "Supplier_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#CompanyRole.EXTERIOR_SUPPLIER.getSign()")
-    public List<TCompanyList> listForeignSuppliers(String companyCode) {
-        return compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(companyCode, CompanyRole.EXTERIOR_SUPPLIER.getSign())
+    public List<VForeignSuppliersResponse.VForeignSupplier> listForeignSuppliers(String companyCode) {
+
+        return listSuppliers(companyCode,"",Whether.NO,"",null,CompanyRole.EXTERIOR_SUPPLIER.getSign()+"")
             .stream()
-            .map(compTradeMapper::toSupplier)
+            .map(companyMapper::toForeignSupplier)
             .toList();
     }
 
@@ -763,9 +763,17 @@ public class CompanyService {
             }
 
         } else {
-            list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateAndBuyerBelongToContainsOrderBySalerCompanys_codeAsc(companyCode, companyRole, state.equals("1") ? Availability.ENABLED : Availability.DISABLED, operator).stream()
-                .map(compTradeMapper::toSupplier)
-                .toList();
+            if(companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER.getSign())){
+                list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(companyCode, companyRole)
+                    .stream()
+                    .map(compTradeMapper::toSupplier)
+                    .toList();
+            }else{
+                list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateAndBuyerBelongToContainsOrderBySalerCompanys_codeAsc(companyCode, companyRole, state.equals("1") ? Availability.ENABLED : Availability.DISABLED, operator).stream()
+                    .map(compTradeMapper::toSupplier)
+                    .toList();
+            }
+
         }
 
         return list != null ? list.stream().filter(t -> t.getShortName().contains(name)).toList() : null;
