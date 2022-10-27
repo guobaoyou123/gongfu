@@ -169,9 +169,9 @@ public class CompanyService {
      * @param companyCode 单位id
      * @return 返回外供应商列表
      */
-    public List<VForeignSuppliersResponse.VForeignSupplier> listForeignSuppliers(String companyCode) {
+    public List<VForeignSuppliersResponse.VForeignSupplier> listForeignSuppliers(String companyCode,String state) {
 
-        return listSuppliers(companyCode,"",Whether.NO,"",null,CompanyRole.EXTERIOR_SUPPLIER.getSign()+"")
+        return listSuppliers(companyCode,"",Whether.NO,"",state,CompanyRole.EXTERIOR_SUPPLIER.getSign()+"")
             .stream()
             .map(companyMapper::toForeignSupplier)
             .toList();
@@ -734,12 +734,12 @@ public class CompanyService {
      * @param companyRole 角色
      * @return 返回外客户列表
      */
-    @Cacheable(value = "Supplier_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#companyRole+'-'+#operator+'-'+#name")
+    @Cacheable(value = "Supplier_List;1800", unless = "#result == null ", key = "#companyCode+'-'+#companyRole+'-'+#operator+'-'+#state+'-'+#name")
     public List<TCompanyList> listSuppliers(String companyCode, String operator, Whether isAdmin, String name, String state, String companyRole) {
 
         List<TCompanyList> list = null;
         if (isAdmin.equals(Whether.YES)) {
-            list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(companyCode, companyRole)
+            list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateOrderBySalerCompanys_codeAsc(companyCode, companyRole, state.equals("1") ? Availability.ENABLED : Availability.DISABLED)
                 .stream()
                 .map(compTradeMapper::toSupplier)
                 .toList();
@@ -764,7 +764,7 @@ public class CompanyService {
 
         } else {
             if(companyRole.equals(CompanyRole.EXTERIOR_SUPPLIER.getSign())){
-                list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(companyCode, companyRole)
+                list = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateOrderBySalerCompanys_codeAsc(companyCode, companyRole, state.equals("1") ? Availability.ENABLED : Availability.DISABLED)
                     .stream()
                     .map(compTradeMapper::toSupplier)
                     .toList();

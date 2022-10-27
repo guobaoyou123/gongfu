@@ -89,12 +89,12 @@ public class SuppliersController {
      * @return 外供应商列表
      */
     @GetMapping("/suppliers")
-    public VForeignSuppliersResponse foreignSuppliers() {
+    public VForeignSuppliersResponse foreignSuppliers(@RequestParam("state") Optional<String> state) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
         var list = companyService.listForeignSuppliers(
-            session.getSession().getCompanyCode()
+            session.getSession().getCompanyCode(),state.orElse("1")
         );
         return VForeignSuppliersResponse.builder()
             .code(200)

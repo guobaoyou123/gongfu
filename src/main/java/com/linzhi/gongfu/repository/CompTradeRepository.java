@@ -104,7 +104,7 @@ public interface CompTradeRepository
      * @return 返回供应商列表
      */
     @Transactional(readOnly = true)
-    List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleOrderBySalerCompanys_codeAsc(String buyerCode,String role);
+    List<CompTrade> findCompTradesByCompTradeId_CompBuyerAndSalerCompanys_RoleAndStateOrderBySalerCompanys_codeAsc(String buyerCode,String role,Availability state);
 
     /**
      * 内供应列表
