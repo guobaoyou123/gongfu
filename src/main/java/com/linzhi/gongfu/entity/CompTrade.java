@@ -6,6 +6,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -67,7 +68,7 @@ public class CompTrade implements Serializable {
     }, inverseJoinColumns = {
         @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
-    private Set<DcBrand> manageBrands;
+    private List<DcBrand> manageBrands;
 
     /**
      * 授权品牌
@@ -79,7 +80,7 @@ public class CompTrade implements Serializable {
     }, inverseJoinColumns = {
         @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
-    private Set<DcBrand> authBrands;
+    private List<DcBrand> authBrands;
 
     /**
      * 自营品牌
@@ -91,7 +92,7 @@ public class CompTrade implements Serializable {
     }, inverseJoinColumns = {
         @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
-    private Set<DcBrand> selfSupportBrands;
+    private List<DcBrand> selfSupportBrands;
 
     /**
      * 卖方所属操作员

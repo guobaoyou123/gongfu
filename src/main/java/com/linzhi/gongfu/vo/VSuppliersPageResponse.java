@@ -55,7 +55,7 @@ public class VSuppliersPageResponse extends VBaseResponse {
          * 自营品牌
          */
         @Singular
-        private Set<VBrand> brands;
+        private List<VBrand> brands;
     }
 
     @Data

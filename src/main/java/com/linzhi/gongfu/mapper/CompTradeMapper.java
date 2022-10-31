@@ -1,7 +1,6 @@
 package com.linzhi.gongfu.mapper;
 
 
-import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyIncludeBrand;
 import com.linzhi.gongfu.dto.TCompanyList;
 import com.linzhi.gongfu.entity.CompTrade;
