@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
@@ -58,13 +59,9 @@ public class AddressService {
             .map(administrativeAreaMapper::toDo)
             .toList();
         List<DisabledArea> disabledAreaList = listDisabledAreas(companyCode);
-        Map<String, DisabledArea> disabledAreaMap = new HashMap<>();
-        disabledAreaList.forEach(disabledArea ->
-            disabledAreaMap.put(
-                disabledArea.getDisabledAreaId().getCode(),
-                disabledArea
-            )
-        );
+        Map<String,DisabledArea> disabledAreaMap = disabledAreaList
+            .stream()
+            .collect(Collectors.toMap(d->d.getDisabledAreaId().getCode(),DisabledArea->DisabledArea));
         list.forEach(tArea -> {
             DisabledArea disabledArea = disabledAreaMap.get(tArea.getCode());
             if (disabledArea != null)

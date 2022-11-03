@@ -701,8 +701,9 @@ public class CompanyService {
                 .map(compTradeMapper::toCustomer)
                 .toList();
             List<OperatorBase> operatorList = operatorDetailRepository.findOperatorByIdentity_CompanyCodeAndState(companyCode, state.equals("1") ? Availability.ENABLED : Availability.DISABLED);
-            Map<String, TOperatorInfo> map = new HashMap<>();
-            operatorList.forEach(o -> map.put(o.getIdentity().getOperatorCode(), Optional.of(o).map(operatorMapper::toOperatorDetailDTO).get()));
+            Map<String, TOperatorInfo> map =
+                operatorList.stream().collect(Collectors.toMap(
+                   o->o.getIdentity().getOperatorCode(),o->Optional.of(o).map(operatorMapper::toOperatorDetailDTO).get()));
             if (list != null) {
                 list.forEach(t -> {
                     if (StringUtils.isNotBlank(t.getSalerBelongTo())) {
