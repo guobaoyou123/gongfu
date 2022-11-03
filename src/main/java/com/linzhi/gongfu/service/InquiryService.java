@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * 采购询价信息处理及业务服务
@@ -114,8 +115,7 @@ public class InquiryService {
             }
             //查询每个供应商税模式对本单位设置的税模式
             List<CompTrade> compTades = compTradeRepository.findCompTradesByCompTradeId_CompBuyerAndState(companyCode, Availability.ENABLED);
-            Map<String, CompTrade> compTradMap = new HashMap<>();
-            compTades.forEach(compTrad -> compTradMap.put(compTrad.getCompTradeId().getCompSaler(), compTrad));
+            Map<String, CompTrade> compTradMap = compTades.stream().collect(Collectors.toMap(c->c.getCompTradeId().getCompSaler(),CompTrade->CompTrade));
             //查出向每个供应商询价商品且询价数量>0的有哪些
             purchasePlan.get().getProduct().forEach(purchasePlanProduct -> purchasePlanProduct.getSalers().forEach(supplier -> {
                 if (supplier.getDemand().intValue() > 0) {
@@ -393,8 +393,7 @@ public class InquiryService {
      * @param amount    数量
      * @return 返回成功或者失败信息
      */
-    @Caching(evict = {@CacheEvict(value = "inquiry_detail;1800", key = "#id")
-    })
+    @CacheEvict(value = "inquiry_detail;1800", key = "#id")
     @Transactional
     public Boolean saveInquiryProduct(String id, String productId, BigDecimal price, BigDecimal amount) {
         try {
@@ -415,13 +414,36 @@ public class InquiryService {
             ).orElseThrow(() -> new IOException("请求的货物税率不存在"));
             //保存产品
             InquiryRecord record = getInquiryRecord(product, id, maxCode, amount, goods.getRate(), price, inquiry.getOfferMode());
-            inquiryRecordRepository.save(record);
             inquiryRecordList.add(record);
-            return countSum(inquiryRecordList, id);
+            inquiry.setRecords(inquiryRecordList);
+
+            //重新计算价格
+            BigDecimal totalPrice = new BigDecimal("0");
+            BigDecimal totalPriceVat = new BigDecimal("0");
+            BigDecimal vat;
+            if ((inquiry.getTotalPrice()!=null && record.getPrice()!=null)||(inquiry.getTotalPrice()==null && record.getPrice()!=null&&inquiry.getRecords().size()==1)) {
+                for (InquiryRecord inquiryRecord : inquiryRecordList) {
+                    totalPrice = totalPrice.add(inquiryRecord.getTotalPrice());
+                    totalPriceVat = totalPriceVat.add(inquiryRecord.getTotalPriceVat());
+                }
+                vat = totalPriceVat.setScale(2, RoundingMode.HALF_UP).subtract(totalPrice.setScale(2, RoundingMode.HALF_UP));
+
+            } else {
+                totalPrice = null;
+                totalPriceVat = null;
+                vat = null;
+            }
+            inquiry.setVat(vat);
+            inquiry.setTotalPrice(totalPrice == null ? null : totalPrice.setScale(2, RoundingMode.HALF_UP));
+            inquiry.setTotalPriceVat(totalPriceVat == null ? null : totalPriceVat.setScale(2, RoundingMode.HALF_UP));
+            inquiry.setDiscountedTotalPrice(totalPrice == null ? null : totalPrice.setScale(2, RoundingMode.HALF_UP));
+            inquiryDetailRepository.save(inquiry);
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+
     }
 
     /**

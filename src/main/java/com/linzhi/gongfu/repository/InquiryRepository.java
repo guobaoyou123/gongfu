@@ -43,8 +43,7 @@ public interface InquiryRepository extends CrudRepository<Inquiry, String>, Quer
      * @param id                 询价单主键
      */
     @Modifying
-    @Query(value = "update   inquiry_base  set total_price=?1 ,total_price_vat=?2,vat=?3 ,discount_total_price=?4 where  id=?5 ",
-        nativeQuery = true)
+    @Query(value = "update   Inquiry i  set i.totalPrice=?1 ,i.totalPriceVat=?2,i.vat=?3 ,i.discountedTotalPrice=?4 where  i.id=?5 ")
     void updateInquiry(BigDecimal totalPrice, BigDecimal totalPriceVat, BigDecimal vat, BigDecimal discountTotalPrice, String id);
 
     /**
