@@ -389,42 +389,10 @@ public class SalesContractService {
             );
             //保存合同明
             salesContractRecordTempRepository.save(contractRecordTemp);
-           /* //计算价格，如果产品单价为null，则不计算，并将总金额设置为null
-            if (price == null) {
-                contractRevision.setTotalPrice(null);
-                contractRevision.setTotalPriceVat(null);
-                contractRevision.setVat(null);
-            }
-            //如果产品单位不为null,并且产品总金额也不为null,将该条明细总金额 累加到总的总金额中
-            if (contractRevision.getTotalPrice() != null && price != null) {
-                recordTemps.add(contractRecordTemp);
-                //重新计算价格
-                BigDecimal totalPrice = new BigDecimal("0");
-                BigDecimal totalPriceVat = new BigDecimal("0");
-                BigDecimal vat;
-                for (SalesContractRecordTemp t : recordTemps) {
-
-                    totalPrice = totalPrice.add(t.getTotalPrice());
-                    totalPriceVat = totalPriceVat.add(t.getTotalPriceVat());
-
-                };
-                vat = totalPriceVat.setScale(2, RoundingMode.HALF_UP).subtract(totalPrice.setScale(2, RoundingMode.HALF_UP));
-                contractRevision.setTotalPrice(totalPrice);
-                contractRevision.setTotalPriceVat(totalPriceVat);
-                contractRevision.setVat(vat);
-            }
-            //如果 总金额为null  ,产品单价不为null,并且是第一次添加产品的将产品总金额更新到合同中
-            if (contractRevision.getTotalPrice() == null && price != null && contractRecordTemp.getSalesContractRecordTempId().getCode() == 1) {
-                contractRevision.setTotalPrice(contractRecordTemp.getTotalPrice());
-                contractRevision.setTotalPriceVat(contractRecordTemp.getTotalPriceVat());
-                contractRevision.setVat(contractRecordTemp.getTotalPriceVat().subtract(contractRecordTemp.getTotalPrice()).setScale(2, RoundingMode.HALF_UP));
-            }
-            contractRevision.setModifiedAt(LocalDateTime.now());
-            contractRevision.setModifiedBy(operator);
-            //保存合同
-            salesContractRevisionRepository.save(contractRevision);*/
             recordTemps.add(contractRecordTemp);
-            countSum(recordTemps,contractRevision,operator);
+            var flag =  countSum(recordTemps,contractRevision,operator);
+            if(!flag)
+                throw new Exception("更新总价失败");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -506,7 +474,9 @@ public class SalesContractService {
                 .filter(s -> !codes.contains(s.getSalesContractRecordTempId().getCode()))
                 .toList();
             //计算总价
-            countSum(list, salesContractRevision, operator);
+            var flag =   countSum(list, salesContractRevision, operator);
+            if(!flag)
+                throw new Exception("更新总价失败");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1366,7 +1336,9 @@ public class SalesContractService {
             importProductTempRepository.deleteProduct(id, companyCode, operator);
             salesContractRecordTempRepository.saveAll(contractRecordTemps);
             //计算总价
-            countSum(contractRecordTemps, contract.getSalesContractRevisions().stream().filter(s -> s.getSalesContractRevisionId().getRevision() == revision).toList().get(0), operator);
+            var flag =    countSum(contractRecordTemps, contract.getSalesContractRevisions().stream().filter(s -> s.getSalesContractRevisionId().getRevision() == revision).toList().get(0), operator);
+            if(!flag)
+                throw new Exception("更新总价失败");
             resultMap.put("code", 200);
             resultMap.put("message", "保存成功");
         } catch (Exception e) {
@@ -1383,27 +1355,32 @@ public class SalesContractService {
      * @param salesContractRevision 销售合同版本详情
      * @param operator              操作员编码
      */
-    public void countSum(List<SalesContractRecordTemp> list, SalesContractRevision salesContractRevision, String operator) {
+    public boolean countSum(List<SalesContractRecordTemp> list, SalesContractRevision salesContractRevision, String operator) {
         //判断产品列表中的产品是否都有价格
         List<SalesContractRecordTemp> list1 = list.stream()
             .filter(s -> s.getTotalPrice() == null)
             .toList();
         //list的长度为0，表示产品都有价格，需要计算总金额
         if (list1.size() == 0) {
-            BigDecimal totalPrice = new BigDecimal("0");
-            BigDecimal totalPriceVat = new BigDecimal("0");
-            for (SalesContractRecordTemp t : list) {
-                totalPrice = totalPrice.add(t.getTotalPrice());
-                totalPriceVat = totalPriceVat.add(t.getTotalPriceVat());
+            try {
+                BigDecimal totalPrice = new BigDecimal("0");
+                BigDecimal totalPriceVat = new BigDecimal("0");
+                for (SalesContractRecordTemp t : list) {
+                    totalPrice = totalPrice.add(t.getTotalPrice());
+                    totalPriceVat = totalPriceVat.add(t.getTotalPriceVat());
+                }
+                BigDecimal vat = totalPriceVat.subtract(totalPrice).setScale(2, RoundingMode.HALF_UP);
+                salesContractRevision.setTotalPrice(totalPrice);
+                salesContractRevision.setTotalPriceVat(totalPriceVat);
+                salesContractRevision.setVat(vat);
+                salesContractRevision.setModifiedBy(operator);
+                salesContractRevision.setModifiedAt(LocalDateTime.now());
+                salesContractRevisionRepository.save(salesContractRevision);
+            }catch (Exception e){
+                return false;
             }
-            BigDecimal vat = totalPriceVat.subtract(totalPrice).setScale(2, RoundingMode.HALF_UP);
-            salesContractRevision.setTotalPrice(totalPrice);
-            salesContractRevision.setTotalPriceVat(totalPriceVat);
-            salesContractRevision.setVat(vat);
-            salesContractRevision.setModifiedBy(operator);
-            salesContractRevision.setModifiedAt(LocalDateTime.now());
-            salesContractRevisionRepository.save(salesContractRevision);
         }
+        return  true;
     }
 
     /**
