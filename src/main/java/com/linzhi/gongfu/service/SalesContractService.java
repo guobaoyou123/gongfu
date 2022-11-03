@@ -362,6 +362,7 @@ public class SalesContractService {
                 .id(id)
                 .revision(revision)
                 .build()).orElseThrow(() -> new IOException("数据库中未查询到该数据"));
+            List<SalesContractRecordTemp> recordTemps = getSalesContractRevisionDetail(id,revision).getContractRecordTemps();
             //查询明细最大顺序号
             String maxCode = salesContractRecordTempRepository.findMaxCode(id);
             if (maxCode == null)
@@ -388,7 +389,7 @@ public class SalesContractService {
             );
             //保存合同明
             salesContractRecordTempRepository.save(contractRecordTemp);
-            //计算价格，如果产品单价为null，则不计算，并将总金额设置为null
+           /* //计算价格，如果产品单价为null，则不计算，并将总金额设置为null
             if (price == null) {
                 contractRevision.setTotalPrice(null);
                 contractRevision.setTotalPriceVat(null);
@@ -396,9 +397,18 @@ public class SalesContractService {
             }
             //如果产品单位不为null,并且产品总金额也不为null,将该条明细总金额 累加到总的总金额中
             if (contractRevision.getTotalPrice() != null && price != null) {
-                BigDecimal totalPrice = contractRevision.getTotalPrice().add(contractRecordTemp.getTotalPrice());
-                BigDecimal totalPriceVat = contractRevision.getTotalPriceVat().add(contractRecordTemp.getTotalPriceVat());
-                BigDecimal vat = totalPriceVat.subtract(totalPrice).setScale(2, RoundingMode.HALF_UP);
+                recordTemps.add(contractRecordTemp);
+                //重新计算价格
+                BigDecimal totalPrice = new BigDecimal("0");
+                BigDecimal totalPriceVat = new BigDecimal("0");
+                BigDecimal vat;
+                for (SalesContractRecordTemp t : recordTemps) {
+
+                    totalPrice = totalPrice.add(t.getTotalPrice());
+                    totalPriceVat = totalPriceVat.add(t.getTotalPriceVat());
+
+                };
+                vat = totalPriceVat.setScale(2, RoundingMode.HALF_UP).subtract(totalPrice.setScale(2, RoundingMode.HALF_UP));
                 contractRevision.setTotalPrice(totalPrice);
                 contractRevision.setTotalPriceVat(totalPriceVat);
                 contractRevision.setVat(vat);
@@ -412,7 +422,9 @@ public class SalesContractService {
             contractRevision.setModifiedAt(LocalDateTime.now());
             contractRevision.setModifiedBy(operator);
             //保存合同
-            salesContractRevisionRepository.save(contractRevision);
+            salesContractRevisionRepository.save(contractRevision);*/
+            recordTemps.add(contractRecordTemp);
+            countSum(recordTemps,contractRevision,operator);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
