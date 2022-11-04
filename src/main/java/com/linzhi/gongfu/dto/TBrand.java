@@ -31,7 +31,6 @@ public class TBrand implements Serializable {
      */
     private String name;
 
-
     /**
      * 排序
      */
@@ -56,4 +55,9 @@ public class TBrand implements Serializable {
      * 品牌方
      */
     private List<CompBrandOwner> compBrandOwner;
+
+    /**
+     * 优选供应商
+     */
+    List<TPreferenceSupplier> suppliers;
 }
