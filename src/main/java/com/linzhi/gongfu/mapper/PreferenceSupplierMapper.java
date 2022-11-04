@@ -28,7 +28,7 @@ public interface PreferenceSupplierMapper {
      * @return 优选供应商信息
      */
     @Mapping(target = "code", source= "company.code")
-    @Mapping(target = "encode", source= "company.encode")
+    @Mapping(target = "encode", expression = "java(preferenceSupplier.getCompany().getEncode()==null?preferenceSupplier.getCompany().getCode():preferenceSupplier.getCompany().getEncode())")
     @Mapping(target = "name", source= "company.shortNameInCN")
     @Mapping(target = "sort", source= "sort")
     TPreferenceSupplier toPreferenceSupplier(PreferenceSupplier preferenceSupplier);

@@ -6,6 +6,7 @@ import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.PageTools;
+import com.linzhi.gongfu.vo.VPreferenceSupplierRequest;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,7 +40,7 @@ public class BrandService {
     private final DcBrandRepository dcBrandRepository;
     private final ViewBrandRepository viewBrandRepository;
     private final JPAQueryFactory queryFactory;
-
+    private final PreferenceSupplierRepository preferenceSupplierRepository;
     /**
      * 根据本单位id,页码，页数，获取品牌信息
      *
@@ -182,6 +184,7 @@ public class BrandService {
         @CacheEvict(value = "company_brand_List;1800",key = "#companyCode"),
         @CacheEvict(value = "brands_ID;1800", key = "#companyCode")
     })
+    @Transactional
     public void saveManagementBrands(List<String> brands,String companyCode){
         try{
             //删除原有数据
@@ -201,4 +204,30 @@ public class BrandService {
         }
 
     }
+
+    /**
+     * 设置优选供应商
+     * @param brandCode 品牌编码
+     * @param suppliers 优选供应商编码
+     * @param companyCode 本单位编码
+     */
+    @Transactional
+    public void savePreferenceSupplier(String brandCode, List<String> suppliers, String companyCode){
+        try {
+            preferenceSupplierRepository.deleteByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCode(companyCode,brandCode);
+            List<PreferenceSupplier> preferenceSuppliers = new ArrayList<>();
+            suppliers.forEach(s -> preferenceSuppliers.add(PreferenceSupplier.builder()
+                    .preferenceSupplierId(PreferenceSupplierId.builder()
+                        .brandCode(brandCode)
+                        .compCode(companyCode)
+                        .supplierCode(s)
+                        .build())
+                    .sort(1)
+                .build()));
+            preferenceSupplierRepository.saveAll(preferenceSuppliers);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
 }

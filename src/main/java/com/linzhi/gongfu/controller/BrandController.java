@@ -151,4 +151,22 @@ public class BrandController {
             .build();
     }
 
+    /**
+     * 设置优选供应商
+     * @param suppliers 供应商列表编码
+     * @return 返回成功信息
+     */
+    @PostMapping("/brands/supplier/optimization")
+    public VBaseResponse savePreferenceSupplier(@RequestBody Optional<VPreferenceSupplierRequest> suppliers){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        brandService.savePreferenceSupplier(
+            suppliers.orElseThrow().getBrand(),
+            suppliers.orElseThrow().getSuppliers(),
+            session.getSession().getCompanyCode());
+        return VBaseResponse.builder()
+            .code(200)
+            .message("设置成功")
+            .build();
+    }
 }
