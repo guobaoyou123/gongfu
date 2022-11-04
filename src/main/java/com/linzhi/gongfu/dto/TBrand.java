@@ -31,6 +31,7 @@ public class TBrand implements Serializable {
      */
     private String name;
 
+
     /**
      * 排序
      */

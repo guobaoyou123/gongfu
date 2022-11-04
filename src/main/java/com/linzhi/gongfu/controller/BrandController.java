@@ -3,13 +3,13 @@ package com.linzhi.gongfu.controller;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.BrandService;
+import com.linzhi.gongfu.vo.VBaseResponse;
 import com.linzhi.gongfu.vo.VBrandPageResponse;
+import com.linzhi.gongfu.vo.VBrandsRequest;
 import com.linzhi.gongfu.vo.VDcBrandResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,4 +118,21 @@ public class BrandController {
             )
             .build();
     }
+
+    /**
+     * 设置经营品牌
+     * @param brandCodes 品牌编码列表
+     * @return 返回成功信息
+     */
+    @PostMapping("/brands/management")
+    public VBaseResponse savaManagementBrands(@RequestBody Optional<VBrandsRequest> brandCodes){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        brandService.saveManagementBrands(brandCodes.orElseThrow(()->new NullPointerException("参数为空")).getBrands(),session.getSession().getCompanyCode());
+        return VBaseResponse.builder()
+            .code(200)
+            .message("设置品牌成功")
+            .build();
+    }
+
 }

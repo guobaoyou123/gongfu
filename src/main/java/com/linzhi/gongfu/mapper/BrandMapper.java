@@ -5,10 +5,7 @@ import com.linzhi.gongfu.entity.Brand;
 import com.linzhi.gongfu.entity.CompAllowedBrand;
 import com.linzhi.gongfu.entity.DcBrand;
 import com.linzhi.gongfu.entity.ViewBrand;
-import com.linzhi.gongfu.vo.VBrandPageResponse;
-import com.linzhi.gongfu.vo.VDcBrandResponse;
-import com.linzhi.gongfu.vo.VForeignCustomerResponse;
-import com.linzhi.gongfu.vo.VForeignSupplierResponse;
+import com.linzhi.gongfu.vo.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -115,4 +112,5 @@ public interface BrandMapper {
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "name")
     VForeignCustomerResponse.VBrand toCustomerBrandPreload(TBrand brand);
+
 }

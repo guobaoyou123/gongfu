@@ -9,16 +9,16 @@ import com.linzhi.gongfu.util.PageTools;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.Cache;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -167,10 +167,40 @@ public class BrandService {
      * @param companyCode 本单位编码
      * @return 返回经营品牌列表
      */
+    @Cacheable(value = "company_brand_List;1800",key = "#companyCode")
     public List<TBrand> listBrandsByCompanyCode(String companyCode) {
         return compAllowedBrandRepository.findBrandsByCompAllowedBrandIdCompCode(companyCode)
             .stream().map(brandMapper::toCompAllowedBrandDTO)
             .toList();
+    }
+
+    /**
+     * 设置经营品牌
+     * @param brands 品牌编码列表
+     * @param companyCode 公司编码
+     */
+    @Caching(evict = {
+        @CacheEvict(value = "company_brand_List;1800",key = "#companyCode"),
+        @CacheEvict(value = "brands_ID;1800", key = "#companyCode")
+    })
+    public void saveManagementBrands(List<String> brands,String companyCode){
+        try{
+            //删除原有数据
+            compAllowedBrandRepository.deleteAllByCompAllowedBrandId_CompCode(companyCode);
+            List<CompAllowedBrand> compAllowedBrands =new ArrayList<>();
+            brands.forEach(b-> compAllowedBrands.add(CompAllowedBrand.builder()
+                    .compAllowedBrandId(
+                        CompAllowedBrandId.builder()
+                            .brandCode(b)
+                            .compCode(companyCode)
+                            .build()
+                    )
+                .build()));
+            compAllowedBrandRepository.saveAll(compAllowedBrands);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
 }
