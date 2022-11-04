@@ -39,5 +39,6 @@ public class CompAllowedBrand implements Serializable {
         @JoinColumn(name = "brand_code", referencedColumnName = "brand_code",insertable = false,updatable = false),
         @JoinColumn(name = "dc_comp_code", referencedColumnName = "comp_code",insertable = false,updatable = false)
     })
+    @OrderBy(" sort asc")
     private List<PreferenceSupplier>  suppliers;
 }

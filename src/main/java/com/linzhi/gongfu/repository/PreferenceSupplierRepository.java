@@ -13,4 +13,7 @@ public interface PreferenceSupplierRepository extends CrudRepository<PreferenceS
 
     @Modifying
     void deleteByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCode(String companyCode,String brandCode);
+
+
+    List<PreferenceSupplier> findByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCodeOrderBySortAsc(String companyCode,String brandCode);
 }

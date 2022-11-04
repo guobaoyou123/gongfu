@@ -122,7 +122,7 @@ public class BrandController {
      * @return 返回成功信息
      */
     @PostMapping("/brands/management")
-    public VBaseResponse savaManagementBrands(@RequestBody Optional<VBrandsRequest> brandCodes){
+    public VBaseResponse savaManagementBrands(@RequestBody Optional<VBrandsRequest> brandCodes) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         brandService.saveManagementBrands(brandCodes.orElseThrow(()->new NullPointerException("参数为空")).getBrands(),session.getSession().getCompanyCode());
@@ -157,12 +157,30 @@ public class BrandController {
      * @return 返回成功信息
      */
     @PostMapping("/brands/supplier/optimization")
-    public VBaseResponse savePreferenceSupplier(@RequestBody Optional<VPreferenceSupplierRequest> suppliers){
+    public VBaseResponse savePreferenceSupplier(@RequestBody Optional<VPreferenceSupplierRequest> suppliers) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         brandService.savePreferenceSupplier(
             suppliers.orElseThrow().getBrand(),
             suppliers.orElseThrow().getSuppliers(),
+            session.getSession().getCompanyCode());
+        return VBaseResponse.builder()
+            .code(200)
+            .message("设置成功")
+            .build();
+    }
+
+    /**
+     * 设置优选供应商排序
+     * @param suppliers 供应商排序列表
+     * @return 返回成功信息
+     */
+    @PostMapping("/brands/supplier/optimization/sort")
+    public VBaseResponse saveSupplierSort(@RequestBody Optional<VPreferenceSupplierRequest> suppliers) throws Exception {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        brandService.savePreferenceSupplierSort(suppliers.orElseThrow().getBrand(),
+            suppliers.orElseThrow().getSorts(),
             session.getSession().getCompanyCode());
         return VBaseResponse.builder()
             .code(200)

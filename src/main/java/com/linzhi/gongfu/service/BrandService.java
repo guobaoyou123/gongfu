@@ -185,7 +185,7 @@ public class BrandService {
         @CacheEvict(value = "brands_ID;1800", key = "#companyCode")
     })
     @Transactional
-    public void saveManagementBrands(List<String> brands,String companyCode){
+    public void saveManagementBrands(List<String> brands,String companyCode) throws Exception {
         try{
             //删除原有数据
             compAllowedBrandRepository.deleteAllByCompAllowedBrandId_CompCode(companyCode);
@@ -200,7 +200,7 @@ public class BrandService {
                 .build()));
             compAllowedBrandRepository.saveAll(compAllowedBrands);
         }catch (Exception e){
-            e.printStackTrace();
+            throw new  Exception();
         }
 
     }
@@ -212,21 +212,75 @@ public class BrandService {
      * @param companyCode 本单位编码
      */
     @Transactional
-    public void savePreferenceSupplier(String brandCode, List<String> suppliers, String companyCode){
+    public void savePreferenceSupplier(String brandCode, List<String> suppliers, String companyCode) throws Exception {
         try {
             preferenceSupplierRepository.deleteByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCode(companyCode,brandCode);
             List<PreferenceSupplier> preferenceSuppliers = new ArrayList<>();
-            suppliers.forEach(s -> preferenceSuppliers.add(PreferenceSupplier.builder()
+            final int[] i = {1};
+            suppliers.forEach(s -> {
+                preferenceSuppliers.add(PreferenceSupplier.builder()
                     .preferenceSupplierId(PreferenceSupplierId.builder()
                         .brandCode(brandCode)
                         .compCode(companyCode)
                         .supplierCode(s)
                         .build())
-                    .sort(1)
-                .build()));
+                    .sort(i[0])
+                .build());
+                i[0]++;
+            });
             preferenceSupplierRepository.saveAll(preferenceSuppliers);
         }catch (Exception e){
-            e.printStackTrace();
+            throw new  Exception();
+        }
+    }
+
+    /**
+     * 设置优选供应商排序
+     * @param brandCode 品牌编码
+     * @param suppliers 优选供应商编码
+     * @param companyCode 本单位编码
+     */
+    @CacheEvict(value = "company_brand_List;1800",key = "#companyCode")
+    @Transactional
+    public void savePreferenceSupplierSort(String brandCode, List<VPreferenceSupplierRequest.VSupplier> suppliers, String companyCode) throws Exception{
+        try {
+           var supplierCodes =  suppliers.stream().map(VPreferenceSupplierRequest.VSupplier::getCode).toList();
+            //移除排序已经变动的供应商
+            var preferences = preferenceSupplierRepository.findByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCodeOrderBySortAsc(companyCode,brandCode)
+                .stream()
+                .filter(s-> !supplierCodes.contains(s.getPreferenceSupplierId().getSupplierCode())).toList();
+            List<PreferenceSupplier> preferenceSuppliers = new ArrayList<>();
+            //重新排序
+            suppliers=suppliers.stream().sorted(Comparator.comparing(VPreferenceSupplierRequest.VSupplier::getSort)).toList();
+            for(int i = 0;i<suppliers.size();i++){
+                int sort,preSort=0;
+                sort = suppliers.get(i).getSort();
+                if(i>0){
+                    preSort= suppliers.get(i-1).getSort();
+                }
+
+                for (int j=0;j<sort-(preSort+1);j++){
+                    preferenceSuppliers.add(preferences.get(j));
+                }
+                preferences=preferences.stream().filter(s-> !preferenceSuppliers.contains(s)).toList();
+                preferenceSuppliers.add(PreferenceSupplier.builder()
+                    .preferenceSupplierId(PreferenceSupplierId.builder()
+                        .brandCode(brandCode)
+                        .compCode(companyCode)
+                        .supplierCode(suppliers.get(i).getCode())
+                        .build())
+                    .sort(suppliers.get(i).getSort())
+                    .build());
+            }
+            final int[] i = {1};
+            preferenceSuppliers.forEach(p->{
+                p.setSort(i[0]);
+                i[0]++;
+            });
+            //更新排序
+            preferenceSupplierRepository.saveAll(preferenceSuppliers);
+        }catch (Exception e){
+            throw new  Exception();
         }
     }
 
