@@ -32,8 +32,4 @@ public class PreferenceSupplier implements Serializable {
     @OneToOne
     @JoinColumn(name = "comp_saler", referencedColumnName = "code", insertable = false, updatable = false)
     private Company company;
-
-    @OneToOne
-    @JoinColumn(name = "brand_code", referencedColumnName = "code", insertable = false, updatable = false)
-    private DcBrand dcBrand;
 }

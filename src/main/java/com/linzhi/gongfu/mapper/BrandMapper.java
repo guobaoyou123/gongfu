@@ -17,7 +17,7 @@ import java.util.Set;
  * @author zgh
  * @create_at 2022-02-07
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {PreferenceSupplierMapper.class})
 public interface BrandMapper {
 
 
@@ -101,6 +101,7 @@ public interface BrandMapper {
     @Mapping(target = "code", source = "dcBrand.code")
     @Mapping(target = "name", source = "dcBrand.chiShort")
     @Mapping(target = "sort", source = "dcBrand.sort")
+    @Mapping(target = "suppliers", source = "suppliers")
     TBrand toCompAllowedBrandDTO(CompAllowedBrand allowedBrand);
 
     /**
@@ -113,4 +114,13 @@ public interface BrandMapper {
     @Mapping(target = "name", source = "name")
     VForeignCustomerResponse.VBrand toCustomerBrandPreload(TBrand brand);
 
+    /**
+     * 将获取的品牌优选供应商信息转换为前端展示的品牌优选供应详情
+     * @param tBrand 品牌优选供应商
+     * @return 品牌优选供应商详情
+     */
+    @Mapping(target = "code",source = "code")
+    @Mapping(target = "name",source = "name")
+    @Mapping(target = "suppliers",source = "suppliers")
+    VPreferenceSupplierResponse.VBrand toPreferenceSupplier(TBrand tBrand);
 }

@@ -9,7 +9,6 @@ import com.linzhi.gongfu.util.PageTools;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -202,5 +201,4 @@ public class BrandService {
         }
 
     }
-
 }

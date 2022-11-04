@@ -3,10 +3,7 @@ package com.linzhi.gongfu.controller;
 import com.linzhi.gongfu.mapper.BrandMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.BrandService;
-import com.linzhi.gongfu.vo.VBaseResponse;
-import com.linzhi.gongfu.vo.VBrandPageResponse;
-import com.linzhi.gongfu.vo.VBrandsRequest;
-import com.linzhi.gongfu.vo.VDcBrandResponse;
+import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -132,6 +129,25 @@ public class BrandController {
         return VBaseResponse.builder()
             .code(200)
             .message("设置品牌成功")
+            .build();
+    }
+
+    /**
+     * 获取品牌优选供应商列表
+     * @return 返回品牌优选供应商列表
+     */
+    @GetMapping("/brand/preference/supplier")
+    public VPreferenceSupplierResponse preferenceSuppliers(){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var list = brandService.listBrandsByCompanyCode(session.getSession().getCompanyCode())
+            .stream()
+            .map(brandMapper::toPreferenceSupplier)
+            .toList();
+        return  VPreferenceSupplierResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .brands(list)
             .build();
     }
 

@@ -8,7 +8,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 
 /**
- * 用于响应前端对于优选供应商列表的预加载请求
+ * 优选供应商列表的响应体
  *
  * @author zgh
  * @create_at 2022-11-04
@@ -40,6 +40,11 @@ public class VPreferenceSupplierResponse extends VBaseResponse {
         private String name;
 
         /**
+         * 排序
+         */
+        private int sort;
+
+        /**
          * 优选供应商列表
          */
         List<VSupplier> suppliers;
@@ -54,6 +59,11 @@ public class VPreferenceSupplierResponse extends VBaseResponse {
          * 编码
          */
         private String code;
+
+        /**
+         * 页面展示编号
+         */
+        private String encode;
 
         /**
          * 供应商名称

@@ -24,6 +24,11 @@ public class TPreferenceSupplier  {
     private String code;
 
     /**
+     * 展示的编号
+     */
+    private String encode;
+
+    /**
      * 供应商名称
      */
     private String name;
@@ -32,5 +37,5 @@ public class TPreferenceSupplier  {
     /**
      * 排序
      */
-    private Integer sort;
+    private int sort;
 }
