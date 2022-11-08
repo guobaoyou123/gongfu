@@ -2,6 +2,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TPreferenceSupplier;
 import com.linzhi.gongfu.entity.PreferenceSupplier;
+import com.linzhi.gongfu.vo.VPreferenceSupplierResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -28,8 +29,12 @@ public interface PreferenceSupplierMapper {
      * @return 优选供应商信息
      */
     @Mapping(target = "code", source= "company.code")
-    @Mapping(target = "encode", expression = "java(preferenceSupplier.getCompany().getEncode()==null?preferenceSupplier.getCompany().getCode():preferenceSupplier.getCompany().getEncode())")
     @Mapping(target = "name", source= "company.shortNameInCN")
     @Mapping(target = "sort", source= "sort")
     TPreferenceSupplier toPreferenceSupplier(PreferenceSupplier preferenceSupplier);
+
+
+    List<VPreferenceSupplierResponse.VSupplier> toVPreferenceSuppliers(List<TPreferenceSupplier> suppliers);
+
+    VPreferenceSupplierResponse.VSupplier toVPreferenceSupplier(TPreferenceSupplier supplier);
 }

@@ -20,7 +20,7 @@ public interface CompAllowedBrandRepository extends CrudRepository<CompAllowedBr
      * 查找单位允许经营品牌
      *
      * @param companyCode 单位编码
-     * @return
+     * @return 经营品牌列表
      */
     List<CompAllowedBrand> findBrandsByCompAllowedBrandIdCompCode(String companyCode);
 

@@ -114,7 +114,7 @@ public class BrandService {
     /**
      * 获取品牌信息
      *
-     * @return 供应商信息列表
+     * @return 品牌信息列表
      */
     @Cacheable(value = "brands;1800", unless = "#result == null")
     public Set<TBrand> listBrands() {
@@ -211,6 +211,7 @@ public class BrandService {
      * @param suppliers 优选供应商编码
      * @param companyCode 本单位编码
      */
+    @CacheEvict(value = "company_brand_List;1800",key = "#companyCode")
     @Transactional
     public void savePreferenceSupplier(String brandCode, List<String> suppliers, String companyCode) throws Exception {
         try {

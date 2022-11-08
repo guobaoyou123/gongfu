@@ -22,12 +22,6 @@ public class TPreferenceSupplier  {
      * 编号
      */
     private String code;
-
-    /**
-     * 展示的编号
-     */
-    private String encode;
-
     /**
      * 供应商名称
      */
