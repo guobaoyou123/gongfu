@@ -1,14 +1,13 @@
 package com.linzhi.gongfu.controller;
 
 
+import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.enumeration.ContractState;
+import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.mapper.*;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
-import com.linzhi.gongfu.service.InquiryService;
-import com.linzhi.gongfu.service.PlanService;
-import com.linzhi.gongfu.service.PurchaseContractService;
-import com.linzhi.gongfu.service.SalesContractService;
+import com.linzhi.gongfu.service.*;
 import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
@@ -45,7 +44,8 @@ public class ContractController {
     private final PurchaseContractService purchaseContractService;
     private final ContractMapper contractMapper;
     private final SalesContractService salesContractService;
-
+    private final OperatorService operatorService;
+    private final NotificationService notificationService;
     /**
      * 根据操作员编码、单位id查询该操作员的临时计划表
      *
@@ -1719,6 +1719,25 @@ public class ContractController {
         return VBaseResponse.builder()
             .code(200)
             .message("保存成功")
+            .build();
+    }
+
+    /**
+     * 呼叫（向供应商询价）
+     * @param id 询价单主键
+     * @return 返回成功信息
+     */
+    @PostMapping("/inquiry/call/{id}")
+    public VBaseResponse  inquiryPrice(@PathVariable String id) throws Exception {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        inquiryService.inquiryPrice(id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getCompanyName(),
+            session.getSession().getOperatorCode());
+        return  VBaseResponse.builder()
+            .message("呼叫成功")
+            .code(200)
             .build();
     }
 }

@@ -2,9 +2,11 @@ package com.linzhi.gongfu.service;
 
 
 import com.linzhi.gongfu.dto.TInquiry;
+import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.InquiryMapper;
+import com.linzhi.gongfu.mapper.InquiryRecordMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.util.CalculateUtil;
 import com.linzhi.gongfu.util.PageTools;
@@ -12,6 +14,7 @@ import com.linzhi.gongfu.vo.VInquiryRequest;
 import com.linzhi.gongfu.vo.VUnfinishedInquiryListResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -56,7 +59,10 @@ public class InquiryService {
     private final PurchasePlanRepository purchasePlanRepository;
     private final CompTaxModelRepository compTaxModelRepository;
     private final SalesContractRepository salesContractRepository;
-
+    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
+    private final NotificationInquiryRepository notificationInquiryRepository;
+    private final InquiryRecordMapper inquiryRecordMapper;
     /**
      * 判断询价单中的金额 是否为null
      *
@@ -795,4 +801,57 @@ public class InquiryService {
         list.add(inquiryCode);
         return list;
     }
+
+    /**
+     * 呼叫询价
+     * @param inquiryId 询价单主键
+     * @param companyCode 公司编码
+     * @param operatorCode 操作员编码
+     */
+    @Transactional
+    public void inquiryPrice(String inquiryId,String companyCode,String companyName,String operatorCode) throws Exception {
+        try {
+            Inquiry inquiry = getInquiry(inquiryId);
+            var supplierCode = inquiry.getSalerComp();
+            var records = inquiry.getRecords();
+            //查询对方负责本公司的操作员有哪些
+            var operators = compTradeRepository.findById(CompTradeId.builder()
+                    .compBuyer(companyCode)
+                    .compSaler(supplierCode)
+                .build()).orElseThrow(()->new IOException("未从数据库中查询到数据")).getSalerBelongTo();
+            if(operators==null) {
+                operators = "000";
+            }else if(!operators.contains("000")){
+                operators+=",000";
+            }
+            var number = notificationRepository.countNotificationByIdAndCreatedByAndCreatedCompByAndType(inquiryId,operatorCode,companyCode,NotificationType.INQUIRY_CALL)
+                .orElse(0);
+            //生成消息
+            var notification=   notificationService.createdNotification(companyCode,
+                companyName+"第"+(number.intValue()+1)+"次询价",
+                operatorCode,
+                NotificationType.INQUIRY_CALL,inquiryId,inquiry.getSalerComp(),null,operators.split(","));
+            notificationRepository.save(notification);
+            //报价明细
+             var offer= NotificationInquiry.builder()
+                 .messageCode(notification.getCode())
+                 .inquiryId(inquiryId)
+                 .offeredAt(LocalDateTime.now())
+                 .offerBy(operatorCode)
+                 .offerCompBy(companyCode)
+                 .state(OfferType.WAIT_OFFER)
+                 .offerMode(inquiry.getOfferMode())
+                 .build();
+             var offerRecords = records.stream().map(inquiryRecordMapper::toNotificationInquiryRecord)
+                 .map(s->{s.getNotificationInquiryRecordId().setMessageId(notification.getCode());
+                 return  s;}
+                 ).toList();
+            offer.setRecords(offerRecords);
+            notificationInquiryRepository.save(offer);
+        }catch (Exception e){
+            throw new Exception("呼叫失败");
+        }
+    }
+
+
 }

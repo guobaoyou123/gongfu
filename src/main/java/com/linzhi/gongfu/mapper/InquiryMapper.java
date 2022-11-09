@@ -108,12 +108,22 @@ public interface InquiryMapper {
     VInquiryDetailResponse.VInquiry toVInquiryDetail(TInquiry tInquiry);
 
 
-
+    /**
+     * 将获取的未完成的询价单转换成可供使用的未完的询价单
+     * @param unfinishedInquiry 未完成的询价单
+     * @return 可供使用的未完成的询价单
+     */
     TInquiry toUnfinishedTInquiry(TUnfinishedInquiry unfinishedInquiry);
 
+    /**
+     * 将获取的可使用的未完成询价单转换成前端需要的未完成询价单
+     * @param tInquiry 可使用的未完成的询价单
+     * @return 前端需要的未完成的询价单
+     */
     @Mapping(target = "id", source = "id")
     @Mapping(target = "code", source = "id")
     @Mapping(target = "taxedTotal", source = "totalPriceVat")
     @Mapping(target = "category", source = "counts")
     VUnfinishedInquiryListResponse.VInquiry toUnfinishedInquiry(TInquiry tInquiry);
+
 }

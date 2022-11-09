@@ -4,6 +4,8 @@ package com.linzhi.gongfu.entity;
 import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.Whether;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -87,5 +89,6 @@ public class Notification {
 
     @OneToMany
     @JoinColumn(name = "message_code", referencedColumnName = "code",insertable = true,updatable = true)
+    @NotFound(action= NotFoundAction.IGNORE)
     List<NotificationOperator> operatorList;
 }

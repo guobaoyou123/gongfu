@@ -2,6 +2,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TInquiryRecord;
 import com.linzhi.gongfu.entity.InquiryRecord;
+import com.linzhi.gongfu.entity.NotificationInquiryRecord;
 import com.linzhi.gongfu.vo.VInquiryDetailResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -41,5 +42,14 @@ public interface InquiryRecordMapper {
     @Mapping(target = "afterDiscountPriceVat", source = "discountedPriceVat")
     @Mapping(target = "totalAfterDiscountPriceVat", source = "totalDiscountedPriceVat")
     VInquiryDetailResponse.VProduct toVProductDo(TInquiryRecord record);
+
+
+    /**
+     * 将询价记录装换成报价记录
+     * @param inquiryRecord 询价记录
+     * @return 返回报价记录
+     */
+    @Mapping(target = "notificationInquiryRecordId.code",source = "inquiryRecordId.code")
+    NotificationInquiryRecord toNotificationInquiryRecord(InquiryRecord inquiryRecord);
 
 }

@@ -2,8 +2,11 @@ package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.InquiryState;
 import com.linzhi.gongfu.enumeration.InquiryType;
+import com.linzhi.gongfu.enumeration.OfferType;
 import com.linzhi.gongfu.enumeration.TaxMode;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -51,7 +54,7 @@ public class NotificationInquiry {
      * 报价状态（待报价0-待报价 1-已报价 2-已废弃 3-已经生成销售合同）
      */
     @Column
-    private String state;
+    private OfferType state;
     /**
      * 税模式（0-未税 1-含税）
      */
@@ -60,6 +63,11 @@ public class NotificationInquiry {
     /**
      * 报价时间
      */
-    @Column(name = "offer_at")
-    private LocalDateTime offerAt;
+    @Column(name = "offered_at")
+    private LocalDateTime offeredAt;
+
+    @OneToMany
+    @JoinColumn(name = "mess_code", referencedColumnName = "mess_code", insertable = true, updatable = true)
+    @NotFound(action= NotFoundAction.IGNORE)
+    List<NotificationInquiryRecord> records;
 }

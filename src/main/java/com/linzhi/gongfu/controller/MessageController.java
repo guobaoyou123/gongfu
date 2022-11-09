@@ -66,7 +66,8 @@ public class MessageController {
             .getContext().getAuthentication();
         var flag = notificationService.modifyNotification(
             session.getSession().getCompanyCode(),
-            notifications.orElseThrow(() -> new NullPointerException("数据为空")).getCodes()
+            notifications.orElseThrow(() -> new NullPointerException("数据为空")).getCodes(),
+            session.getSession().getOperatorCode()
         );
         return VBaseResponse.builder()
             .code(flag ? 200 : 500)

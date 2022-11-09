@@ -1,15 +1,10 @@
 package com.linzhi.gongfu.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.Whether;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 /**
  * 消息通知实体类
@@ -21,6 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @Entity
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "comp_message_operator")

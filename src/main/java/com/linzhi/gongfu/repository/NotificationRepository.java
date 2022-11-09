@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.Notification;
+import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.Whether;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,6 +9,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 消息通知的Repository
@@ -16,13 +18,13 @@ import java.util.List;
  * @create_at 2022-09-20
  */
 public interface NotificationRepository extends CrudRepository<Notification, String>, QuerydslPredicateExecutor<Notification> {
+
     /**
-     * 更新消息状态
-     *
-     * @param readed 已读
-     * @param codes  消息编码列表
+     * 根据询价单查询已经呼叫了几次
+     * @param id 询价单id
+     * @param createdBy 创建者
+     * @param CreatedCompBy 创建单位
+     * @return
      */
-    @Modifying
-    @Query(value = "update Notification as n set n.readed=?1 where n.code in ?2")
-    void updateNotificationState(Whether readed, List<String> codes);
+    Optional<Integer> countNotificationByIdAndCreatedByAndCreatedCompByAndType(String id, String createdBy, String CreatedCompBy, NotificationType type);
 }

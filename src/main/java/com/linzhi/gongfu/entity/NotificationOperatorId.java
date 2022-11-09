@@ -16,7 +16,6 @@ public class NotificationOperatorId implements Serializable {
     /**
      * 消息编码
      */
-
     @Column(name = "message_code", length = 50, nullable = false)
     @NotNull
     @NotBlank

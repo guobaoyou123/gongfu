@@ -130,7 +130,7 @@ public class EnrolledCompanyController {
      * @return 返回成功信息或者失败信息
      */
     @PostMapping("/enrolled/company/apply")
-    public VTradeApplyResponse tradeApply(@RequestBody Optional<VTradeApplyRequest> vTradeApplyRequest) {
+    public VTradeApplyResponse tradeApply(@RequestBody Optional<VTradeApplyRequest> vTradeApplyRequest) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -225,7 +225,7 @@ public class EnrolledCompanyController {
      * @return 返回成功或者失败信息
      */
     @PostMapping("/enrolled/company/apply/{code}/pass")
-    public VBaseResponse consentApply(@PathVariable String code, @RequestBody Optional<VTradeApplyConsentRequest> vTradeApplyConsentRequest) throws IOException {
+    public VBaseResponse consentApply(@PathVariable String code, @RequestBody Optional<VTradeApplyConsentRequest> vTradeApplyConsentRequest) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
@@ -270,7 +270,7 @@ public class EnrolledCompanyController {
     public VBaseResponse tradeApplyRefuse(
         @PathVariable String code,
         @RequestBody Optional<VTradeApplyRefuseRequest> vTradeApplyRefuseRequest
-    ) throws IOException {
+    ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();

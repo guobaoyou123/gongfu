@@ -13,6 +13,6 @@ import javax.persistence.Converter;
 @Converter(autoApply = true)
 public class OfferTypeConverter extends CharacterEnumerationConverter<OfferType> {
     public OfferTypeConverter() throws NoSuchMethodException {
-        super(OfferType.class, "getState");
+        super(OfferType.class, "getType");
     }
 }

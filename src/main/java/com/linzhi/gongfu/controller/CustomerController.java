@@ -129,7 +129,7 @@ public class CustomerController {
      * @return 返回成功或者失败信息
      */
     @PutMapping("/customer/{code}/taxmodel")
-    public VBaseResponse modifyTradeTaxModel(@PathVariable String code, @RequestBody Optional<VTradeInforRequest> taxModel) {
+    public VBaseResponse modifyTradeTaxModel(@PathVariable String code, @RequestBody Optional<VTradeInforRequest> taxModel) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
