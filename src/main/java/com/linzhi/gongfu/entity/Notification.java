@@ -5,13 +5,11 @@ import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.Whether;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 消息通知实体类
@@ -87,4 +85,7 @@ public class Notification {
     @Column(name = "operated_by", length = 50)
     private String operatedBy;
 
+    @OneToMany
+    @JoinColumn(name = "message_code", referencedColumnName = "code",insertable = true,updatable = true)
+    List<NotificationOperator> operatorList;
 }
