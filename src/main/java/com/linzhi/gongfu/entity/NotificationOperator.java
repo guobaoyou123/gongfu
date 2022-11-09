@@ -26,12 +26,8 @@ import java.time.LocalDateTime;
 @Table(name = "comp_message_operator")
 public class NotificationOperator {
 
-    @Id
-    @Column(length = 50, nullable = false)
-    @NotNull
-    @NotBlank
-    @NonNull
-    private String code;
+    @EmbeddedId
+    private NotificationOperatorId notificationOperatorId;
 
     /**
      * 已读时间
@@ -63,11 +59,4 @@ public class NotificationOperator {
     @Column(name = "readed")
     private Whether readed;
 
-    /**
-     * 关联消息基本信息
-     */
-    @OneToOne
-    @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
-    @JsonBackReference
-    private Notification notification;
 }
