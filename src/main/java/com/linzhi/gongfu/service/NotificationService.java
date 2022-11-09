@@ -1,6 +1,5 @@
 package com.linzhi.gongfu.service;
 
-import com.linzhi.gongfu.converter.WhetherConverter;
 import com.linzhi.gongfu.dto.TNotification;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.NotificationType;
@@ -78,9 +77,8 @@ public class NotificationService {
     }
 
     /**
-     * 生成消息信息
-     *
-     * @param companyCode      创建者单位编码
+     * 保存消息信息
+     *  @param companyCode      创建者单位编码
      * @param message          信息
      * @param operatorCode     创建者
      * @param type             类型
@@ -89,57 +87,11 @@ public class NotificationService {
      * @param scene            查看消息场景列表
      * @param pushOperatorCode 推送操作员编码列表
      */
-    @CacheEvict(value = "Notification_List;1800", key = "#pushComp+'-'+'*'")
     @Transactional
-    public String saveNotification(String companyCode, String message, String operatorCode, NotificationType type, String id, String pushComp, List<String> scene, String[] pushOperatorCode) throws Exception {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyMMdd");
+    public void saveNotification(String companyCode, String message, String operatorCode, NotificationType type, String id, String pushComp, List<String> scene, String[] pushOperatorCode) throws Exception {
         try{
-            Notification notification = Notification.builder()
-                .code("XXTZ-" + type.getType() + "-" + companyCode + "-" + operatorCode + "-" + dtf.format(LocalDateTime.now()) + "-" + UUID.randomUUID().toString().substring(0, 8))
-                .createdAt(LocalDateTime.now())
-                .id(id)
-                .createdBy(operatorCode)
-                .createdCompBy(companyCode)
-                .pushComp(pushComp)
-                .type(type)
-                .message(message)
-                .build();
-            List<NotificationOperator> notifications = new ArrayList<>();
-            int i = 1;
-            if (scene != null && scene.size() > 0) {
-                for (String s :
-                    scene) {
-                    var scence=NotificationOperator.builder()
-                        .notificationOperatorId(NotificationOperatorId.builder()
-                            .messageCode(notification.getCode())
-                            .code(i)
-                            .build())
-                        .pushComp(pushComp)
-                        .pushScene(s)
-                        .pushOperator(null)
-                        .readed(Whether.NO)
-                        .build();
-                    notifications.add(scence);
-                    i++;
-                }
-            } else {
-                for (String s : pushOperatorCode) {
-                    var operator = NotificationOperator.builder()
-                        .notificationOperatorId(NotificationOperatorId.builder()
-                            .messageCode(notification.getCode())
-                            .code(i)
-                            .build())
-                        .pushComp(pushComp)
-                        .pushScene(null)
-                        .pushOperator(s)
-                        .readed(Whether.NO)
-                        .build();
-                    notifications.add(operator);
-                }
-            }
-            notification.setOperatorList(notifications);
+          var notification=  createdNotification(companyCode,message,operatorCode,type,id,pushComp,scene,pushOperatorCode);
             notificationRepository.save(notification);
-            return  notification.getCode();
         }catch (Exception e){
             throw  new Exception("保存消息失败");
         }

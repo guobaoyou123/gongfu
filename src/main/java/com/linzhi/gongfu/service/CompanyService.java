@@ -55,7 +55,8 @@ public class CompanyService {
     private final OperatorRepository operatorRepository;
     private final OperatorMapper operatorMapper;
     private final OperatorBaseRepository operatorDetailRepository;
-
+    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
     /**
      * 根据给定的主机域名名称，获取对应的公司基本信息
      *
@@ -663,7 +664,7 @@ public class CompanyService {
         @CacheEvict(value = "Supplier_detail;1800", key = "#compBuyer+'-'+#compSaler")
     })
     @Transactional
-    public String modifyTradeTaxModel(String compSaler, String compBuyer, String taxModel) {
+    public void modifyTradeTaxModel(String compSaler, String compBuyer, String taxModel,String companyName,String operator) throws Exception {
         try {
             CompTradeBase compTradDetail = compTradeBaseRepository.findById(CompTradeId
                 .builder()
@@ -676,10 +677,21 @@ public class CompanyService {
                     .compBuyer(compBuyer)
                     .compSaler(compSaler)
                     .build());
-            return compTradDetail.getBuyerBelongTo() == null ? "000" : compTradDetail.getBuyerBelongTo();
+
+            var notification =  notificationService.createdNotification(
+                compSaler,
+                companyName+ "修改了你们之间的交易税模式，请前往入格供应商管理模块查看",
+                operator,
+                NotificationType.MODIFY_TRADE,
+                compBuyer,
+                compBuyer,
+                null,
+                (compTradDetail.getBuyerBelongTo() == null ? "000" : compTradDetail.getBuyerBelongTo().contains("000")?compTradDetail.getBuyerBelongTo():compTradDetail.getBuyerBelongTo()+",000").split(",")
+            );
+            notificationRepository.save(notification);
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            throw new Exception("修改报价交易失败");
         }
     }
 

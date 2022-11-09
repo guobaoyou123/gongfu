@@ -235,24 +235,12 @@ public class EnrolledCompanyController {
                 .code(500)
                 .message("操作失败")
                 .build();
-        var flag = compTradeApplyService.consentApply(
+        compTradeApplyService.consentApply(
             compTradeApply,
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
-            vTradeApplyConsentRequest.orElseThrow(() -> new NullPointerException("数据为空")));
-        if (!flag)
-            return VBaseResponse.builder()
-                .code(500)
-                .message("操作失败")
-                .build();
-        notificationService.saveNotification(session.getSession().getCompanyCode(),
-            session.getSession().getCompanyName() + "公司同意了您的申请采购的请求",
-            session.getSession().getOperatorCode(),
-            NotificationType.ENROLLED_APPLY_HISTORY,
-            compTradeApply.getCode(),
-            compTradeApply.getCreatedCompBy(),
-            null,
-            new String[]{compTradeApply.getCreatedBy()});
+            vTradeApplyConsentRequest.orElseThrow(() -> new NullPointerException("数据为空")),
+            session.getSession().getCompanyName());
         return VBaseResponse.builder()
             .code(200)
             .message("操作成功")
@@ -280,21 +268,9 @@ public class EnrolledCompanyController {
             session.getSession().getOperatorCode(),
             vTradeApplyRefuseRequest.orElseThrow().getRemark(),
             vTradeApplyRefuseRequest.orElseThrow().getState(),
-            compTradeApply
+            compTradeApply,
+            session.getSession().getCompanyName()
         );
-        if (!flag)
-            return VBaseResponse.builder()
-                .code(500)
-                .message("操作失败")
-                .build();
-        notificationService.saveNotification(session.getSession().getCompanyCode(),
-            session.getSession().getCompanyName() + "拒绝了您的申请采购的请求",
-            session.getSession().getOperatorCode(),
-            NotificationType.ENROLLED_APPLY_HISTORY,
-            compTradeApply.getCode(),
-            compTradeApply.getCreatedCompBy(),
-            null,
-            new String[]{compTradeApply.getCreatedBy()});
         return VBaseResponse.builder()
             .code(200)
             .message("操作成功")

@@ -6,6 +6,7 @@ import com.linzhi.gongfu.dto.TCompTradeApply;
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.Availability;
+import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.enumeration.TradeApply;
 import com.linzhi.gongfu.mapper.BlacklistMapper;
@@ -53,7 +54,8 @@ public class CompTradeApplyService {
     private final BlacklistMapper blacklistMapper;
     private final OperatorRepository operatorRepository;
     private final OperatorMapper operatorMapper;
-
+    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
     /**
      * 申请采购
      *
@@ -176,14 +178,13 @@ public class CompTradeApplyService {
         @CacheEvict(value = "trade_apply_List;1800", key = "#companyCode+'-'+1"),
         @CacheEvict(value = "trade_apply_history_List;1800", key = "#compTradeApply.handledCompBy"),
         @CacheEvict(value = "trade_apply_detail;1800", key = "#compTradeApply.code"),
-        @CacheEvict(value = "Notification_List;1800", key = "#compTradeApply.handledCompBy+ '-' + '*'"),
         @CacheEvict(value = "Supplier_List;1800", key = "#compTradeApply.handledCompBy+'*'"),
         @CacheEvict(value = "SupplierAndBrand;1800", key = "#compTradeApply.handledCompBy"),
         @CacheEvict(value = "brands_company;1800", key = "#compTradeApply.handledCompBy"),
         @CacheEvict(value = "Customer_List;1800", key = "#companyCode+'*'"),
         @CacheEvict(value = "Customer_List_All;1800", key = "#companyCode+'*'"),
     })
-    public boolean consentApply(CompTradeApply compTradeApply, String companyCode, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest) {
+    public void consentApply(CompTradeApply compTradeApply, String companyCode, String operatorCode, VTradeApplyConsentRequest vTradeApplyConsentRequest,String companyName) throws Exception {
         try {
             compTradeApply.setHandledBy(operatorCode);
             compTradeApply.setHandledAt(LocalDateTime.now());
@@ -215,11 +216,17 @@ public class CompTradeApplyService {
                 compTradBrands.add(compTradBrand);
             });
             compTradBrandRepository.saveAll(compTradBrands);
-
-            return true;
+            notificationRepository.save(notificationService.createdNotification(companyCode,
+                companyName+ "公司同意了您的申请采购的请求",
+                operatorCode,
+                NotificationType.ENROLLED_APPLY_HISTORY,
+                compTradeApply.getCode(),
+                compTradeApply.getCreatedCompBy(),
+                null,
+                new String[]{compTradeApply.getCreatedBy()}));
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            throw new Exception("数据保存失败");
         }
     }
 
@@ -255,7 +262,7 @@ public class CompTradeApplyService {
     @Transactional
     public boolean refuseApply(String companyCode,
                                String operatorCode, String remark,
-                               String state, CompTradeApply compTradeApply) {
+                               String state, CompTradeApply compTradeApply,String companyName) throws Exception {
         try {
             //拒绝申请的
             if (!compTradeApply.getState().equals(TradeApply.APPLYING) && state.equals("1"))
@@ -286,10 +293,20 @@ public class CompTradeApplyService {
             }
             compTradeApplyRepository.save(compTradeApply);
 
+            var notification = notificationService.createdNotification(
+                companyCode,
+                companyName+ "拒绝了您的申请采购的请求",
+                operatorCode,
+                NotificationType.ENROLLED_APPLY_HISTORY,
+                compTradeApply.getCode(),
+                compTradeApply.getCreatedCompBy(),
+                null,
+                new String[]{compTradeApply.getCreatedBy()});
+            notificationRepository.save(notification);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+           throw new Exception("操作失败");
         }
     }
 
