@@ -10,8 +10,6 @@ import com.linzhi.gongfu.repository.NotificationRepository;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -44,7 +42,6 @@ public class NotificationService {
      * @param scenes       场景列表
      * @return 返回消息列表
      */
-    @Cacheable(value = "Notification_List;1800", key = "#companyCode+'-'+#operatorCode+'-'+#readed.state+''", unless = "#result == null")
     public List<TNotification> listNotification(String companyCode, Whether readed, String operatorCode, List<String> scenes) {
         QNotification qNotification = QNotification.notification;
         QNotificationOperator qNotificationOperator = QNotificationOperator.notificationOperator;
@@ -65,7 +62,6 @@ public class NotificationService {
      * @param codes 消息通知编码
      * @return 返回 成功或者失败
      */
-    @CacheEvict(value = "Notification_List;1800", key = "#companyCode+'-'+'*'")
     @Transactional
     public boolean modifyNotification(String companyCode, List<String> codes,String operator) {
         try {
@@ -160,5 +156,5 @@ public class NotificationService {
             return  notification;
 
     }
-
+   
 }
