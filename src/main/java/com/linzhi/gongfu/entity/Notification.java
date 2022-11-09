@@ -84,18 +84,7 @@ public class Notification {
     /**
      * 推送场景
      */
-    @Column(name = "push_scene", length = 50)
-    private String pushScene;
+    @Column(name = "operated_by", length = 50)
+    private String operatedBy;
 
-    /**
-     * 推送人
-     */
-    @Column(name = "push_operator", length = 50)
-    private String pushOperator;
-
-    /**
-     * 是否已读
-     */
-    @Column(name = "readed")
-    private Whether readed;
 }
