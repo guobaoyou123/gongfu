@@ -67,7 +67,7 @@ public class NotificationInquiryRecord {
     /**
      * 是否可以报价
      */
-    @Column(name = "is_quote")
-    private Whether isQuote;
+    @Column(name = "is_offer")
+    private Whether isOffer;
 
 }

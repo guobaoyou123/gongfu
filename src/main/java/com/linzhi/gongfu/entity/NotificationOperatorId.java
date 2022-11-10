@@ -22,11 +22,12 @@ public class NotificationOperatorId implements Serializable {
     @Getter
     @Setter
     private String messageCode;
+
     /**
      * 序号
      */
-
     @Column(name = "code", nullable = false)
+    @NonNull
     @NotNull
     @NotBlank
     @Getter

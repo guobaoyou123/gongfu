@@ -61,11 +61,6 @@ public class VPreferenceSupplierResponse extends VBaseResponse {
         private String code;
 
         /**
-         * 页面展示编号
-         */
-        private String encode;
-
-        /**
          * 供应商名称
          */
         private String name;

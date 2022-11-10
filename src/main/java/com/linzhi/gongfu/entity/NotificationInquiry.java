@@ -66,8 +66,7 @@ public class NotificationInquiry {
     @Column(name = "offered_at")
     private LocalDateTime offeredAt;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "mess_code", referencedColumnName = "mess_code", insertable = true, updatable = true)
-    @NotFound(action= NotFoundAction.IGNORE)
     List<NotificationInquiryRecord> records;
 }

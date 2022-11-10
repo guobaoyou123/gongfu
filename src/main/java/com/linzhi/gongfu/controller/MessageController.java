@@ -5,6 +5,7 @@ import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.NotificationService;
 import com.linzhi.gongfu.vo.VBaseResponse;
+import com.linzhi.gongfu.vo.VNotificationResponse;
 import com.linzhi.gongfu.vo.VNotificationsRequest;
 import com.linzhi.gongfu.vo.VNotificationsResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -75,5 +77,23 @@ public class MessageController {
             .build();
     }
 
+    /**
+     * 查看消息详情
+     * @param code 消息编码
+     * @return 消息详情
+     */
+    @GetMapping("/message/{code}")
+    public VNotificationResponse getNotificationDetail(@PathVariable String code) throws IOException {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var notification = notificationService.getNotification(code,session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        return VNotificationResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .detail(Optional.of(notification).map(
+                notificationMapper::toVNotificationDetail).orElse(null))
+            .build();
+
+    }
 }
 

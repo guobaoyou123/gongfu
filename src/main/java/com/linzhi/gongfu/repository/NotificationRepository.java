@@ -27,4 +27,5 @@ public interface NotificationRepository extends CrudRepository<Notification, Str
      * @return
      */
     Optional<Integer> countNotificationByIdAndCreatedByAndCreatedCompByAndType(String id, String createdBy, String CreatedCompBy, NotificationType type);
+
 }

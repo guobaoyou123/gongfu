@@ -10,6 +10,7 @@ import org.hibernate.annotations.NotFoundAction;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,11 +23,11 @@ import java.util.List;
 @Builder
 @Setter
 @Getter
-@Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
 @Table(name = "comp_message")
-public class Notification {
+public class Notification  implements Serializable {
 
     @Id
     @Column(length = 50, nullable = false)
@@ -87,8 +88,7 @@ public class Notification {
     @Column(name = "operated_by", length = 50)
     private String operatedBy;
 
-    @OneToMany
-    @JoinColumn(name = "message_code", referencedColumnName = "code",insertable = true,updatable = true)
-    @NotFound(action= NotFoundAction.IGNORE)
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "message_code", referencedColumnName = "code", insertable = true, updatable = true)
     List<NotificationOperator> operatorList;
 }

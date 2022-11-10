@@ -5,6 +5,7 @@ import com.linzhi.gongfu.enumeration.Whether;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 /**
  * 消息通知实体类
@@ -15,10 +16,9 @@ import javax.persistence.*;
 @Builder
 @Setter
 @Getter
-@Entity
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
 @Table(name = "comp_message_operator")
 public class NotificationOperator {
 
@@ -29,7 +29,7 @@ public class NotificationOperator {
      * 已读时间
      */
     @Column(name = "readed_at", length = 50)
-    private String readedAt;
+    private LocalDateTime readedAt;
 
     /**
      * 推送单位

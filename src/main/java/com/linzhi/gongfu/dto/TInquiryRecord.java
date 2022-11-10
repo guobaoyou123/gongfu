@@ -133,4 +133,9 @@ public class TInquiryRecord {
      * 备货期
      */
     private int stockTime;
+
+    /**
+     * 是否报价
+     */
+    private boolean isOffer;
 }

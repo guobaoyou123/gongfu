@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.dto;
 
+import com.linzhi.gongfu.enumeration.Whether;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TProduct implements Serializable {
+
     /**
      * 产品唯一码
      */
@@ -93,4 +95,6 @@ public class TProduct implements Serializable {
      * 面价
      */
     private BigDecimal facePrice;
+
+
 }

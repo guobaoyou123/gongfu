@@ -4,7 +4,9 @@ import com.linzhi.gongfu.dto.TNotification;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.Whether;
+import com.linzhi.gongfu.mapper.NotificationInquiryMapper;
 import com.linzhi.gongfu.mapper.NotificationMapper;
+import com.linzhi.gongfu.repository.NotificationInquiryRepository;
 import com.linzhi.gongfu.repository.NotificationOperatorRepository;
 import com.linzhi.gongfu.repository.NotificationRepository;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -12,6 +14,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -32,6 +36,9 @@ public class NotificationService {
     private final NotificationOperatorRepository notificationOperatorRepository;
     private final JPAQueryFactory queryFactory;
     private final NotificationMapper notificationMapper;
+    private final NotificationInquiryRepository notificationInquiryRepository;
+    private final NotificationInquiryMapper notificationInquiryMapper;
+
 
     /**
      * 查询消息列表
@@ -87,7 +94,7 @@ public class NotificationService {
     public void saveNotification(String companyCode, String message, String operatorCode, NotificationType type, String id, String pushComp, List<String> scene, String[] pushOperatorCode) throws Exception {
         try{
           var notification=  createdNotification(companyCode,message,operatorCode,type,id,pushComp,scene,pushOperatorCode);
-            notificationRepository.save(notification);
+          notificationRepository.save(notification);
         }catch (Exception e){
             throw  new Exception("保存消息失败");
         }
@@ -156,5 +163,32 @@ public class NotificationService {
             return  notification;
 
     }
-   
+
+    /**
+     * 获取消息详情
+     * @param code 消息编码
+     * @param companyCode 公司编码
+     * @param operator 操作员编码
+     * @return 消息详情
+     * @throws IOException 异常
+     */
+    public TNotification getNotification(String code,String companyCode,String operator) throws IOException {
+        var notification = notificationRepository.findById(code)
+            .map(notificationMapper::toTNotificationDo).orElseThrow(()->new IOException("未查询到数据"));
+        var inquiry = notificationInquiryRepository.findById(code).orElse(null);
+        if(inquiry!=null){
+            notification.setTaxModel(inquiry.getOfferMode().getTaxMode()+"");
+            var products = inquiry.getRecords().stream()
+                .map(notificationInquiryMapper::toInquiryProduct)
+                .toList();
+            notification.setProducts(products);
+        }
+        var readed = notificationOperatorRepository.findByNotificationOperatorId_MessageCodeAndPushCompAndPushOperator(code,companyCode,operator).orElseThrow(()->new IOException("未查询到数据"));
+        if(readed.getReaded().equals(Whether.NO)) {
+            readed.setReaded(Whether.YES);
+            readed.setReadedAt(LocalDateTime.now());
+            notificationOperatorRepository.save(readed);
+        }
+        return notification;
+    }
 }

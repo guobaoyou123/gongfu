@@ -4,6 +4,7 @@ import com.linzhi.gongfu.dto.TInquiryRecord;
 import com.linzhi.gongfu.entity.InquiryRecord;
 import com.linzhi.gongfu.entity.NotificationInquiryRecord;
 import com.linzhi.gongfu.vo.VInquiryDetailResponse;
+import com.linzhi.gongfu.vo.VNotificationResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -52,4 +53,22 @@ public interface InquiryRecordMapper {
     @Mapping(target = "notificationInquiryRecordId.code",source = "inquiryRecordId.code")
     NotificationInquiryRecord toNotificationInquiryRecord(InquiryRecord inquiryRecord);
 
+    /**
+     * 将获取的可供使用的报价明细列表装换成页面展示的报价明细列表
+     * @param products 报价明细列表
+     * @return 前端展示的报价明细列表
+     */
+    List<VNotificationResponse.VProduct> totoVNotificationRecodeDetails(List<TInquiryRecord> products);
+
+    /**
+     * 将获取的可供使用的报价明细装换成页面展示的报价明细
+     * @param record 报价明细
+     * @return 前端展示的报价明细
+     */
+    @Mapping(target = "itemNo",source = "code")
+    @Mapping(target = "id",source = "productId")
+    @Mapping(target = "code",source = "productCode")
+    @Mapping(target = "describe",source = "productDescription")
+    @Mapping(target = "brandName",source = "brand")
+    VNotificationResponse.VProduct totoVNotificationRecodeDetail(TInquiryRecord record);
 }

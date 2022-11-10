@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 用于转移从数据库获取的消息通知
@@ -74,4 +75,14 @@ public class TNotification {
      * 是否已读
      */
     private Whether readed;
+
+    /**
+     * 税模式
+     */
+    private String taxModel;
+
+    /**
+     * 产品列表
+     */
+    List<TInquiryRecord> products;
 }
