@@ -245,39 +245,19 @@ public class BrandService {
     @Transactional
     public void savePreferenceSupplierSort(String brandCode, List<VPreferenceSupplierRequest.VSupplier> suppliers, String companyCode) throws Exception{
         try {
-           var supplierCodes =  suppliers.stream().map(VPreferenceSupplierRequest.VSupplier::getCode).toList();
-            //移除排序已经变动的供应商
-            var preferences = preferenceSupplierRepository.findByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCodeOrderBySortAsc(companyCode,brandCode)
-                .stream()
-                .filter(s-> !supplierCodes.contains(s.getPreferenceSupplierId().getSupplierCode())).toList();
             List<PreferenceSupplier> preferenceSuppliers = new ArrayList<>();
             //重新排序
             suppliers=suppliers.stream().sorted(Comparator.comparing(VPreferenceSupplierRequest.VSupplier::getSort)).toList();
             for(int i = 0;i<suppliers.size();i++){
-                int sort,preSort=0;
-                sort = suppliers.get(i).getSort();
-                if(i>0){
-                    preSort= suppliers.get(i-1).getSort();
-                }
-
-                for (int j=0;j<sort-(preSort+1);j++){
-                    preferenceSuppliers.add(preferences.get(j));
-                }
-                preferences=preferences.stream().filter(s-> !preferenceSuppliers.contains(s)).toList();
                 preferenceSuppliers.add(PreferenceSupplier.builder()
                     .preferenceSupplierId(PreferenceSupplierId.builder()
                         .brandCode(brandCode)
                         .compCode(companyCode)
                         .supplierCode(suppliers.get(i).getCode())
                         .build())
-                    .sort(suppliers.get(i).getSort())
+                    .sort(i+1)
                     .build());
             }
-            final int[] i = {1};
-            preferenceSuppliers.forEach(p->{
-                p.setSort(i[0]);
-                i[0]++;
-            });
             //更新排序
             preferenceSupplierRepository.saveAll(preferenceSuppliers);
         }catch (Exception e){
