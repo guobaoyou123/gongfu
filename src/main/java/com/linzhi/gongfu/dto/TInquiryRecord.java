@@ -137,5 +137,5 @@ public class TInquiryRecord {
     /**
      * 是否报价
      */
-    private boolean isOffer;
+    private String isOffer;
 }
