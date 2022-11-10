@@ -40,7 +40,7 @@ public class PlanService {
     private final PurchasePlanProductSupplierRepository purchasePlanProductSupplierRepository;
     private final CompanyRepository companyRepository;
     private final PurchasePlanProductRepository purchasePlanProductRepository;
-
+    private final PreferenceSupplierRepository preferenceSupplierRepository;
     /**
      * 根据单位id、操作员编码查询该操作员的临时采购计划列表
      *
@@ -323,45 +323,73 @@ public class PlanService {
     public Map<String, List<Company>> findSuppliersByBrandsAndCompBuyer(List<String> brands, String compBuyer, List<String> suppliers) {
         //查询这几个牌子的供应商有哪些
         List<CompTradeBrand> compTradBrands = compTradBrandRepository.findCompTradeBrandByCompTradeBrandId_BrandCodeInAndCompTradeBrandId_CompBuyerAndCompany_StateOrderBySortDesc(brands, compBuyer, Availability.ENABLED);
-        Map<String, List<Company>> NoIncludeCompMap = new HashMap<>();
-        Map<String, List<Company>> IncludeCompMap = new HashMap<>();
-        List<CompTradeBrand> compTradIncludeCompList = compTradBrands.stream()
-            .filter(compTradBrand -> suppliers.contains(compTradBrand.getCompany().getCode())).toList();
-        List<CompTradeBrand> compTradNoIncludeCompList = compTradBrands.stream()
-            .filter(compTradBrand -> !suppliers.contains(compTradBrand.getCompany().getCode())).toList();
-        compTradNoIncludeCompList
-            .forEach(compTradBrand -> {
-                List<Company> list = NoIncludeCompMap.get(compTradBrand.getCompTradeBrandId().getBrandCode());
-                if (list == null)
-                    list = new ArrayList<>();
-                list.add(compTradBrand.getCompany());
-                NoIncludeCompMap.put(compTradBrand.getCompTradeBrandId().getBrandCode(), list);
-            });
-        compTradIncludeCompList
-            .forEach(compTradBrand -> {
-                List<Company> list = IncludeCompMap.get(compTradBrand.getCompTradeBrandId().getBrandCode());
-                if (list == null)
-                    list = new ArrayList<>();
-                list.add(compTradBrand.getCompany());
-                IncludeCompMap.put(compTradBrand.getCompTradeBrandId().getBrandCode(), list);
-            });
-        brands.forEach(s -> {
-            List<Company> list = IncludeCompMap.get(s);
-            List<Company> noList = NoIncludeCompMap.get(s);
+        Map<String,List<Company>> compTradBrandsrMap = new HashMap<>();
+
+        //查询这个几个品牌的优选供应商有哪些
+        List<PreferenceSupplier> preferredSupplier = preferenceSupplierRepository.findByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCodeInOrderBySortAsc(compBuyer,brands);
+        Map<String,List<PreferenceSupplier>> preferredSupplierMap = preferredSupplier.stream().collect(Collectors.groupingBy(preferenceSupplier->preferenceSupplier.getPreferenceSupplierId().getBrandCode()));
+
+       //将不包含优选供应商的供应商进行根据品牌分组
+        compTradBrands.forEach(p->{
+            List<Company> list = compTradBrandsrMap.get(p.getCompTradeBrandId().getBrandCode());
             if (list == null)
                 list = new ArrayList<>();
-            if (noList == null)
-                noList = new ArrayList<>();
-            List<Company> finalHasList = list;
-            noList.forEach(company -> {
-                if (finalHasList.size() < 5)
-                    finalHasList.add(company);
-            });
+            List<Company> preList = preferredSupplierMap.get(p.getCompTradeBrandId().getBrandCode()).stream()
+                .map(PreferenceSupplier::getCompany).toList();
+            if(!preList.contains(p.getCompany())){
+                list.add(p.getCompany());
+                compTradBrandsrMap.put(p.getCompTradeBrandId().getBrandCode(), list);
+            }
+        });
+        //找出前五个供应商
+        Map<String, List<Company>> IncludeCompMap = new HashMap<>();
+        brands.forEach(s -> {
+            List<Company> preList =preferredSupplierMap.get(s).stream()
+                .sorted(Comparator.comparingInt(PreferenceSupplier::getSort))
+                .map(PreferenceSupplier::getCompany)
+                .collect(Collectors.toList());
+            //按照公司名称来排序
+            List<Company> noPrelist = compTradBrandsrMap.get(s).stream()
+                .sorted(Comparator.comparing(Company::getNameInCN))
+                .collect(Collectors.toList());
+            for (Company c:noPrelist) {
+                preList.add(c);
+            }
+
+            //选择的以及自动补齐的供应商列表
+            List<Company> finalHasList;
+            //将前端已经选择的供应商从优选供应商中筛选出来放入finalHasList列表
+            finalHasList=preList.stream().filter(company -> suppliers.contains(company.getCode())).collect(Collectors.toList());
+            //在优选供应商列表中筛选出没有选择的供应商列表
+            preList=preList.stream().filter(company -> !suppliers.contains(company.getCode()))
+                .collect(Collectors.toList());
+           /* //在不包含优选供应商的列表中筛选出前端选中的供应商放入finalHasList列表
+            finalHasList.addAll(noPrelist.stream().filter(company -> suppliers.contains(company.getCode())).toList());
+            //在不包含优选供应商的供应商列表中筛选出没有选择的供应商列表
+            preList.addAll(noPrelist.stream().filter(company -> !suppliers.contains(company.getCode())).toList());*/
+            //判断已经选择的数据是否超过五个,如果没有超过就从优选供应商中进行自动补齐
+            if(suppliers.size()==0){
+                finalHasList = new ArrayList<>();
+            }
+            if(finalHasList.size() < 5){
+                int i = 5-finalHasList.size();
+                for(int j =0;j<i;j++){
+                    finalHasList.add(preList.get(j));
+                }
+            }
             if (finalHasList.size() > 5)
                 for (int i = 5; i < finalHasList.size(); i++) {
                     finalHasList.remove(i);
                     i--;
                 }
+            /*for (int i =0;i<=preList.size();i++){
+                if (finalHasList.size() < 5)
+                    finalHasList.add(preList.get(i));
+            }
+            for (int i =0;i<=noPrelist.size();i++){
+                if (finalHasList.size() < 5)
+                    finalHasList.add(noPrelist.get(i));
+            }*/
             IncludeCompMap.put(s, finalHasList);
         });
         return IncludeCompMap;

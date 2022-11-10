@@ -34,4 +34,5 @@ public interface CompTradeBrandRepository extends CrudRepository<CompTradeBrand,
      * @param compSupplier 卖方
      */
     void deleteCompTradeBrandByCompTradeBrandId_CompBuyerAndAndCompTradeBrandId_CompSaler(String compBuyer, String compSupplier);
+
 }

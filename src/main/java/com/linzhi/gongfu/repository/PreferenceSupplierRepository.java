@@ -2,7 +2,6 @@ package com.linzhi.gongfu.repository;
 
 import com.linzhi.gongfu.entity.PreferenceSupplier;
 import com.linzhi.gongfu.entity.PreferenceSupplierId;
-import org.mapstruct.Mapping;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
@@ -14,6 +13,11 @@ public interface PreferenceSupplierRepository extends CrudRepository<PreferenceS
     @Modifying
     void deleteByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCode(String companyCode,String brandCode);
 
-
-    List<PreferenceSupplier> findByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCodeOrderBySortAsc(String companyCode,String brandCode);
+    /**
+     * 根据品牌编码列表查找有优选供应商
+     * @param companyCode 公司编码
+     * @param brands 品牌编码列表
+     * @return 优选供应商列表
+     */
+    List<PreferenceSupplier> findByPreferenceSupplierId_CompCodeAndPreferenceSupplierId_BrandCodeInOrderBySortAsc(String companyCode,List<String> brands);
 }
