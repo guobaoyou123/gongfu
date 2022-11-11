@@ -65,4 +65,11 @@ public interface OperatorBaseRepository extends CrudRepository<OperatorBase, Ope
      * @return 操作员列表
      */
     List<OperatorBase> findOperatorByIdentity_CompanyCodeAndState(String companyCode, Availability state);
+
+    @Query(value = "select o.* from comp_operator o\n" +
+        "left join dc_operator_scene s on s.dc_comp_id=o.dc_comp_id and s.operator_code = o.code\n" +
+        "left join dc_scene_menu m on s.scene_code =m.scene_code\n" +
+        "left join sys_menu me on me.code = m.menu_code\n" +
+        "where me.name=?1 and o.dc_comp_id=?2",nativeQuery = true)
+    List<OperatorBase> findByScene(String menuName , String compCode);
 }

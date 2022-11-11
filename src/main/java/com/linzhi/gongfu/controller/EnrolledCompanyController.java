@@ -145,10 +145,6 @@ public class EnrolledCompanyController {
                 .message(map.get("flag").equals("0") ? "操作失败" : "该格友已拒绝申请")
                 .applyCode(map.get("code"))
                 .build();
-        //查找有格友综合管理权限的场景
-        List<String> sceneList = sceneMenuRepository.findList("格友管理").stream()
-            .map(sceneMenu -> sceneMenu.getSceneMenuId().getSceneCode())
-            .toList();
         //消息通知
         notificationService.saveNotification(
             session.getSession().getCompanyCode(),
@@ -156,8 +152,7 @@ public class EnrolledCompanyController {
             session.getSession().getOperatorCode(),
             NotificationType.ENROLLED_APPLY,
             map.get("code"),
-            vTradeApplyRequest.get().getApplyCompCode(),
-            sceneList, null);
+            vTradeApplyRequest.get().getApplyCompCode());
 
         return VTradeApplyResponse.builder()
             .code(200)

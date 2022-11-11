@@ -222,8 +222,7 @@ public class CompTradeApplyService {
                 NotificationType.ENROLLED_APPLY_HISTORY,
                 compTradeApply.getCode(),
                 compTradeApply.getCreatedCompBy(),
-                null,
-                new String[]{compTradeApply.getCreatedBy()}));
+                Arrays.asList(new String[]{compTradeApply.getCreatedBy()})));
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("数据保存失败");
@@ -300,8 +299,7 @@ public class CompTradeApplyService {
                 NotificationType.ENROLLED_APPLY_HISTORY,
                 compTradeApply.getCode(),
                 compTradeApply.getCreatedCompBy(),
-                null,
-                new String[]{compTradeApply.getCreatedBy()});
+                Arrays.asList(new String[]{compTradeApply.getCreatedBy()}));
             notificationRepository.save(notification);
             return true;
         } catch (Exception e) {

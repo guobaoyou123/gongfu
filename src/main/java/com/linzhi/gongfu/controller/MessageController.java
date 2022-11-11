@@ -96,7 +96,21 @@ public class MessageController {
             .detail(Optional.of(notification).map(
                 notificationMapper::toVNotificationDetail).orElse(null))
             .build();
+    }
 
+    /**
+     * 获取未读的消息数量
+     * @return 消息数量
+     */
+    @GetMapping("/message/count")
+    public VNotificationResponse getMessageAmount(){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var scenes = session.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .toList();
+
+        return VNotificationResponse.builder().build();
     }
 }
 

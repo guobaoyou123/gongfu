@@ -9,6 +9,7 @@ import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.repository.NotificationInquiryRepository;
 import com.linzhi.gongfu.repository.NotificationOperatorRepository;
 import com.linzhi.gongfu.repository.NotificationRepository;
+import com.linzhi.gongfu.repository.OperatorBaseRepository;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * 前端菜单相关业务处理服务
@@ -38,7 +40,7 @@ public class NotificationService {
     private final NotificationMapper notificationMapper;
     private final NotificationInquiryRepository notificationInquiryRepository;
     private final NotificationInquiryMapper notificationInquiryMapper;
-
+    private final OperatorBaseRepository operatorBaseRepository;
 
     /**
      * 查询消息列表
@@ -57,12 +59,7 @@ public class NotificationService {
         query.where(qNotificationOperator.readed.eq(readed));
         query.where(qNotification.type.eq(type));
         query.where(qNotification.pushComp.eq(companyCode));
-        if(type.equals(NotificationType.ENROLLED_APPLY)){
-            query.where(qNotificationOperator.pushScene.in(scenes));
-        }else {
-            query.where(qNotificationOperator.pushOperator.eq(operatorCode));
-        }
-
+        query.where(qNotificationOperator.pushOperator.eq(operatorCode));
         query.orderBy(qNotification.createdAt.desc());
         return query.fetch().stream()
             .map(notificationMapper::toTNotificationDo)
@@ -86,20 +83,21 @@ public class NotificationService {
     }
 
     /**
-     * 保存消息信息
+     * 保存消息信息(申请采购类)
      *  @param companyCode      创建者单位编码
      * @param message          信息
      * @param operatorCode     创建者
      * @param type             类型
      * @param id               对应的消息主键
      * @param pushComp         推送单位
-     * @param scene            查看消息场景列表
-     * @param pushOperatorCode 推送操作员编码列表
      */
     @Transactional
-    public void saveNotification(String companyCode, String message, String operatorCode, NotificationType type, String id, String pushComp, List<String> scene, String[] pushOperatorCode) throws Exception {
+    public void saveNotification(String companyCode, String message, String operatorCode, NotificationType type, String id, String pushComp) throws Exception {
         try{
-          var notification=  createdNotification(companyCode,message,operatorCode,type,id,pushComp,scene,pushOperatorCode);
+            List<String> operators =    operatorBaseRepository.findByScene("格友综合管理",pushComp).stream()
+                    .map(p->p.getIdentity().getOperatorCode())
+                    .collect(Collectors.toList());
+          var notification=  createdNotification(companyCode,message,operatorCode,type,id,pushComp,operators);
           notificationRepository.save(notification);
         }catch (Exception e){
             throw  new Exception("保存消息失败");
@@ -117,10 +115,9 @@ public class NotificationService {
      * @param type             类型
      * @param id               对应的消息主键
      * @param pushComp         推送单位
-     * @param scene            查看消息场景列表
      * @param pushOperatorCode 推送操作员编码列表
      */
-    public Notification createdNotification(String companyCode, String message, String operatorCode, NotificationType type, String id, String pushComp, List<String> scene, String[] pushOperatorCode) {
+    public Notification createdNotification(String companyCode, String message, String operatorCode, NotificationType type, String id, String pushComp, List<String> pushOperatorCode) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyMMdd");
             Notification notification = Notification.builder()
                 .code("XXTZ-" + type.getType() + "-" + companyCode + "-" + operatorCode + "-" + dtf.format(LocalDateTime.now()) + "-" + UUID.randomUUID().toString().substring(0, 8))
@@ -134,23 +131,6 @@ public class NotificationService {
                 .build();
             List<NotificationOperator> notifications = new ArrayList<>();
             int i = 1;
-            if (scene != null && scene.size() > 0) {
-                for (String s :
-                    scene) {
-                    var scence=NotificationOperator.builder()
-                        .notificationOperatorId(NotificationOperatorId.builder()
-                            .messageCode(notification.getCode())
-                            .code(i)
-                            .build())
-                        .pushComp(pushComp)
-                        .pushScene(s)
-                        .pushOperator(null)
-                        .readed(Whether.NO)
-                        .build();
-                    notifications.add(scence);
-                    i++;
-                }
-            } else {
                 for (String s : pushOperatorCode) {
                     var operator = NotificationOperator.builder()
                         .notificationOperatorId(NotificationOperatorId.builder()
@@ -158,13 +138,12 @@ public class NotificationService {
                             .code(i)
                             .build())
                         .pushComp(pushComp)
-                        .pushScene(null)
                         .pushOperator(s)
                         .readed(Whether.NO)
                         .build();
                     notifications.add(operator);
                 }
-            }
+
             notification.setOperatorList(notifications);
             return  notification;
 

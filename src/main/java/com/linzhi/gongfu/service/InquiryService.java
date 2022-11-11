@@ -830,7 +830,7 @@ public class InquiryService {
             var notification=   notificationService.createdNotification(companyCode,
                 companyName+"第"+(number.intValue()+1)+"次询价",
                 operatorCode,
-                NotificationType.INQUIRY_CALL,inquiryId,inquiry.getSalerComp(),null,operators.split(","));
+                NotificationType.INQUIRY_CALL,inquiryId,inquiry.getSalerComp(), Arrays.asList(operators.split(",")));
             notificationRepository.save(notification);
             //报价明细
              var offer= NotificationInquiry.builder()

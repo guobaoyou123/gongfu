@@ -685,8 +685,7 @@ public class CompanyService {
                 NotificationType.MODIFY_TRADE,
                 compBuyer,
                 compBuyer,
-                null,
-                (compTradDetail.getBuyerBelongTo() == null ? "000" : compTradDetail.getBuyerBelongTo().contains("000")?compTradDetail.getBuyerBelongTo():compTradDetail.getBuyerBelongTo()+",000").split(",")
+                Arrays.asList((compTradDetail.getBuyerBelongTo() == null ? "000" : compTradDetail.getBuyerBelongTo().contains("000")?compTradDetail.getBuyerBelongTo():compTradDetail.getBuyerBelongTo()+",000").split(","))
             );
             notificationRepository.save(notification);
         } catch (Exception e) {
