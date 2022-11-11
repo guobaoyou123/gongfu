@@ -344,18 +344,19 @@ public class PlanService {
         //找出前五个供应商
         Map<String, List<Company>> IncludeCompMap = new HashMap<>();
         brands.forEach(s -> {
+            //该品牌的优选供应商列表
             List<Company> preList =preferredSupplierMap.get(s).stream()
                 .sorted(Comparator.comparingInt(PreferenceSupplier::getSort))
                 .map(PreferenceSupplier::getCompany)
                 .collect(Collectors.toList());
-            //按照公司名称来排序
+            //该品牌下排除优选供应商的供应商列表，按照公司名称来排序
             List<Company> noPrelist = compTradBrandsrMap.get(s).stream()
                 .sorted(Comparator.comparing(Company::getNameInCN))
                 .collect(Collectors.toList());
+            //将两列表合并
             for (Company c:noPrelist) {
                 preList.add(c);
             }
-
             //选择的以及自动补齐的供应商列表
             List<Company> finalHasList;
             //将前端已经选择的供应商从优选供应商中筛选出来放入finalHasList列表
@@ -363,10 +364,6 @@ public class PlanService {
             //在优选供应商列表中筛选出没有选择的供应商列表
             preList=preList.stream().filter(company -> !suppliers.contains(company.getCode()))
                 .collect(Collectors.toList());
-           /* //在不包含优选供应商的列表中筛选出前端选中的供应商放入finalHasList列表
-            finalHasList.addAll(noPrelist.stream().filter(company -> suppliers.contains(company.getCode())).toList());
-            //在不包含优选供应商的供应商列表中筛选出没有选择的供应商列表
-            preList.addAll(noPrelist.stream().filter(company -> !suppliers.contains(company.getCode())).toList());*/
             //判断已经选择的数据是否超过五个,如果没有超过就从优选供应商中进行自动补齐
             if(suppliers.size()==0){
                 finalHasList = new ArrayList<>();
@@ -377,19 +374,12 @@ public class PlanService {
                     finalHasList.add(preList.get(j));
                 }
             }
-            if (finalHasList.size() > 5)
+            if (finalHasList.size() > 5) {
                 for (int i = 5; i < finalHasList.size(); i++) {
                     finalHasList.remove(i);
                     i--;
                 }
-            /*for (int i =0;i<=preList.size();i++){
-                if (finalHasList.size() < 5)
-                    finalHasList.add(preList.get(i));
             }
-            for (int i =0;i<=noPrelist.size();i++){
-                if (finalHasList.size() < 5)
-                    finalHasList.add(noPrelist.get(i));
-            }*/
             IncludeCompMap.put(s, finalHasList);
         });
         return IncludeCompMap;
