@@ -69,4 +69,12 @@ public class NotificationInquiry {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "mess_code", referencedColumnName = "mess_code", insertable = true, updatable = true)
     List<NotificationInquiryRecord> records;
+
+    /**
+     * 报完价后对应推送给对方消息的消息编码
+     */
+    @Column(name = "offered_mess_code",length = 50, nullable = false)
+    @NotNull
+    @NotBlank
+    private String offeredMessCode;
 }
