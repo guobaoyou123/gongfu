@@ -1,5 +1,7 @@
 package com.linzhi.gongfu.controller;
 
+import com.linzhi.gongfu.converter.NotificationTypeConverter;
+import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
@@ -34,7 +36,8 @@ public class MessageController {
      * @return 返回消息通知列表
      */
     @GetMapping("/message/notification")
-    public VNotificationsResponse listNotifications(@RequestParam("state") Optional<String> state) {
+    public VNotificationsResponse listNotifications(@RequestParam("state") Optional<String> state,
+                                                    @RequestParam("type") Optional<String> type) throws NoSuchMethodException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var scenes = session.getAuthorities().stream()
@@ -44,7 +47,7 @@ public class MessageController {
             session.getSession().getCompanyCode(),
             state.orElseThrow(() -> new NullPointerException("数据为空")).equals("0") ? Whether.NO : Whether.YES,
             session.getSession().getOperatorCode(),
-            scenes
+            scenes, new NotificationTypeConverter().convertToEntityAttribute(type.orElse("0").toCharArray()[0])
         );
         return VNotificationsResponse.builder()
             .code(200)
@@ -82,11 +85,11 @@ public class MessageController {
      * @param code 消息编码
      * @return 消息详情
      */
-    @GetMapping("/message/{code}")
-    public VNotificationResponse getNotificationDetail(@PathVariable String code) throws IOException {
+    @GetMapping("/message/{code}/{type}")
+    public VNotificationResponse getNotificationDetail(@PathVariable String code,@PathVariable String type) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var notification = notificationService.getNotification(code,session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        var notification = notificationService.getNotification(code,session.getSession().getCompanyCode(),session.getSession().getOperatorCode(), type);
         return VNotificationResponse.builder()
             .code(200)
             .message("获取数据成功")

@@ -16,6 +16,10 @@ import java.util.Optional;
  */
 public interface NotificationInquiryRepository extends CrudRepository<NotificationInquiry, String>, QuerydslPredicateExecutor<NotificationInquiry> {
 
-
+    /**
+     * 根据报价后推送的消息编码查找报价信息
+     * @param messageCode 消息编码
+     * @return 报价详情
+     */
     Optional<NotificationInquiry> findByOfferedMessCode(String messageCode);
 }

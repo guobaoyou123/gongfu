@@ -49,14 +49,20 @@ public class NotificationService {
      * @param scenes       场景列表
      * @return 返回消息列表
      */
-    public List<TNotification> listNotification(String companyCode, Whether readed, String operatorCode, List<String> scenes) {
+    public List<TNotification> listNotification(String companyCode, Whether readed, String operatorCode, List<String> scenes,NotificationType type) {
         QNotification qNotification = QNotification.notification;
         QNotificationOperator qNotificationOperator = QNotificationOperator.notificationOperator;
         JPAQuery<Notification> query = queryFactory.select(qNotification).from(qNotification)
             .leftJoin(qNotificationOperator).on(qNotificationOperator.notificationOperatorId.messageCode.eq(qNotification.code));
         query.where(qNotificationOperator.readed.eq(readed));
+        query.where(qNotification.type.eq(type));
         query.where(qNotification.pushComp.eq(companyCode));
-        query.where(qNotificationOperator.pushOperator.eq(operatorCode).or(qNotificationOperator.pushScene.in(scenes)));
+        if(type.equals(NotificationType.ENROLLED_APPLY)){
+            query.where(qNotificationOperator.pushScene.in(scenes));
+        }else {
+            query.where(qNotificationOperator.pushOperator.eq(operatorCode));
+        }
+
         query.orderBy(qNotification.createdAt.desc());
         return query.fetch().stream()
             .map(notificationMapper::toTNotificationDo)
@@ -172,10 +178,16 @@ public class NotificationService {
      * @return 消息详情
      * @throws IOException 异常
      */
-    public TNotification getNotification(String code,String companyCode,String operator) throws IOException {
+    public TNotification getNotification(String code,String companyCode,String operator,String type) throws IOException {
         var notification = notificationRepository.findById(code)
             .map(notificationMapper::toTNotificationDo).orElseThrow(()->new IOException("未查询到数据"));
-        var inquiry = notificationInquiryRepository.findById(code).orElse(null);
+        NotificationInquiry inquiry = null;
+        if(type.equals(NotificationType.INQUIRY_CALL.getType()+"")){
+             inquiry = notificationInquiryRepository.findById(code).orElse(null);
+        }else if(type.equals(NotificationType.INQUIRY_RESPONSE.getType()+"")){
+             inquiry=notificationInquiryRepository.findByOfferedMessCode(code).orElse(null);
+        }
+
         if(inquiry!=null){
             notification.setTaxModel(inquiry.getOfferMode().getTaxMode()+"");
             var products = inquiry.getRecords().stream()

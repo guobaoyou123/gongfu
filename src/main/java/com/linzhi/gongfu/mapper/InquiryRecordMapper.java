@@ -51,6 +51,7 @@ public interface InquiryRecordMapper {
      * @return 返回报价记录
      */
     @Mapping(target = "notificationInquiryRecordId.code",source = "inquiryRecordId.code")
+    @Mapping(target = "price", ignore = true)
     NotificationInquiryRecord toNotificationInquiryRecord(InquiryRecord inquiryRecord);
 
     /**
@@ -70,5 +71,6 @@ public interface InquiryRecordMapper {
     @Mapping(target = "code",source = "productCode")
     @Mapping(target = "describe",source = "productDescription")
     @Mapping(target = "brandName",source = "brand")
+    @Mapping(target = "isOffer",expression = "java(record.getIsOffer()==null?true:record.getIsOffer().equals(\"1\")?true:false)")
     VNotificationResponse.VProduct totoVNotificationRecodeDetail(TInquiryRecord record);
 }
