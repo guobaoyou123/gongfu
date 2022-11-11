@@ -66,6 +66,12 @@ public interface OperatorBaseRepository extends CrudRepository<OperatorBase, Ope
      */
     List<OperatorBase> findOperatorByIdentity_CompanyCodeAndState(String companyCode, Availability state);
 
+    /**
+     * 根据菜单名称查询拥有该菜单权限的操作员
+     * @param menuName 菜单名称
+     * @param compCode 单位编码
+     * @return 操作员列表
+     */
     @Query(value = "select o.* from comp_operator o\n" +
         "left join dc_operator_scene s on s.dc_comp_id=o.dc_comp_id and s.operator_code = o.code\n" +
         "left join dc_scene_menu m on s.scene_code =m.scene_code\n" +

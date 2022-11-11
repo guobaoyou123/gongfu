@@ -6,10 +6,7 @@ import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.NotificationService;
-import com.linzhi.gongfu.vo.VBaseResponse;
-import com.linzhi.gongfu.vo.VNotificationResponse;
-import com.linzhi.gongfu.vo.VNotificationsRequest;
-import com.linzhi.gongfu.vo.VNotificationsResponse;
+import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -86,7 +83,7 @@ public class MessageController {
      * @return 消息详情
      */
     @GetMapping("/message/{code}/{type}")
-    public VNotificationResponse getNotificationDetail(@PathVariable String code,@PathVariable String type) throws IOException {
+    public VNotificationResponse getNotificationDetail(@PathVariable String code,@PathVariable String type) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var notification = notificationService.getNotification(code,session.getSession().getCompanyCode(),session.getSession().getOperatorCode(), type);
@@ -103,14 +100,34 @@ public class MessageController {
      * @return 消息数量
      */
     @GetMapping("/message/count")
-    public VNotificationResponse getMessageAmount(){
+    public VPNotificationAmountResponse getMessageAmount(){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var scenes = session.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .toList();
-
-        return VNotificationResponse.builder().build();
+        var count = notificationService.getMessageCount(session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        return VPNotificationAmountResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .amount(count)
+            .build();
     }
+
+    /**
+     * 锁定消息操作人,判断是否可以报价
+     *
+     * @return 返回成功或者失败信息
+     */
+    @GetMapping("/message/{code}/offered")
+    public VBaseResponse isOffered(@PathVariable String code) throws Exception {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var map = notificationService.isOffered(code,session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode());
+        return VBaseResponse.builder()
+            .code((Integer) map.get("code"))
+            .message((String) map.get("message"))
+            .build();
+    }
+
+
 }
 

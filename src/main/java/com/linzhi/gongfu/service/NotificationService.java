@@ -3,6 +3,7 @@ package com.linzhi.gongfu.service;
 import com.linzhi.gongfu.dto.TNotification;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.NotificationType;
+import com.linzhi.gongfu.enumeration.OfferType;
 import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.NotificationInquiryMapper;
 import com.linzhi.gongfu.mapper.NotificationMapper;
@@ -19,9 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +47,6 @@ public class NotificationService {
      * @param companyCode  本单位编码
      * @param readed       是否已读
      * @param operatorCode 操作员编码
-     * @param scenes       场景列表
      * @return 返回消息列表
      */
     public List<TNotification> listNotification(String companyCode, Whether readed, String operatorCode, List<String> scenes,NotificationType type) {
@@ -157,29 +155,75 @@ public class NotificationService {
      * @return 消息详情
      * @throws IOException 异常
      */
-    public TNotification getNotification(String code,String companyCode,String operator,String type) throws IOException {
-        var notification = notificationRepository.findById(code)
-            .map(notificationMapper::toTNotificationDo).orElseThrow(()->new IOException("未查询到数据"));
-        NotificationInquiry inquiry = null;
-        if(type.equals(NotificationType.INQUIRY_CALL.getType()+"")){
-             inquiry = notificationInquiryRepository.findById(code).orElse(null);
-        }else if(type.equals(NotificationType.INQUIRY_RESPONSE.getType()+"")){
-             inquiry=notificationInquiryRepository.findByOfferedMessCode(code).orElse(null);
+    @Transactional
+    public TNotification getNotification(String code,String companyCode,String operator,String type) throws Exception {
+        try {
+            var notification = notificationRepository.findById(code)
+                .map(notificationMapper::toTNotificationDo).orElseThrow(()->new IOException("未查询到数据"));
+            NotificationInquiry inquiry = null;
+            if(type.equals(NotificationType.INQUIRY_CALL.getType()+"")){
+                inquiry = notificationInquiryRepository.findById(code).orElse(null);
+            }else if(type.equals(NotificationType.INQUIRY_RESPONSE.getType()+"")){
+                inquiry=notificationInquiryRepository.findByOfferedMessCode(code).orElse(null);
+            }
+            if(inquiry!=null){
+                notification.setTaxModel(inquiry.getOfferMode().getTaxMode()+"");
+                var products = inquiry.getRecords().stream()
+                    .map(notificationInquiryMapper::toInquiryProduct)
+                    .toList();
+                notification.setProducts(products);
+            }
+            var readed = notificationOperatorRepository.findByNotificationOperatorId_MessageCodeAndPushCompAndPushOperator(code,companyCode,operator).orElseThrow(()->new IOException("未查询到数据"));
+            if(readed.getReaded().equals(Whether.NO)) {
+                readed.setReaded(Whether.YES);
+                readed.setReadedAt(LocalDateTime.now());
+                notificationOperatorRepository.save(readed);
+            }
+            return notification;
+        }catch (Exception e){
+            throw new Exception("数据异常");
         }
 
-        if(inquiry!=null){
-            notification.setTaxModel(inquiry.getOfferMode().getTaxMode()+"");
-            var products = inquiry.getRecords().stream()
-                .map(notificationInquiryMapper::toInquiryProduct)
-                .toList();
-            notification.setProducts(products);
+    }
+
+    /**
+     * 查询该操作员未读的消息有多少条
+     * @param companyCode 公司编码
+     * @param operatorCode 操作员编码
+     * @return 消息条数
+     */
+    public int getMessageCount(String companyCode,String operatorCode){
+        return  notificationOperatorRepository.countNotificationOperatorByPushCompAndAndPushOperatorAndReaded(companyCode,operatorCode,Whether.NO);
+    }
+
+    /**
+     * 查询该条消息是否正在报价或者已经完成报价
+     * @return 返回查询消息
+     */
+    @Transactional
+    public Map<String,Object> isOffered(String messCode,String companyCode,String operator) throws Exception {
+       Map<String,Object> map = new HashMap<>();
+
+        Notification notification = notificationRepository.findById(messCode).orElseThrow(()->new IOException("没有从数据库中查到"));
+
+        NotificationInquiry inquiry = notificationInquiryRepository.findById(messCode).orElseThrow(()->new IOException("没有从数据库中查到"));
+        if(!inquiry.getState().equals(OfferType.WAIT_OFFER)&&!inquiry.getOfferBy().equals(operator)){
+              map.put("code",204);
+              map.put("message","已完成报价，不可再次报价");
+              return map;
         }
-        var readed = notificationOperatorRepository.findByNotificationOperatorId_MessageCodeAndPushCompAndPushOperator(code,companyCode,operator).orElseThrow(()->new IOException("未查询到数据"));
-        if(readed.getReaded().equals(Whether.NO)) {
-            readed.setReaded(Whether.YES);
-            readed.setReadedAt(LocalDateTime.now());
-            notificationOperatorRepository.save(readed);
+        if(inquiry.getState().equals(OfferType.WAIT_OFFER)&&notification.getOperatedBy()!=null && !notification.getOperatedBy().equals(operator)){
+            map.put("code",204);
+            map.put("message","正在报价中，不可再次报价");
+            return map;
         }
-        return notification;
+
+        if(inquiry.getState().equals(OfferType.WAIT_OFFER)&&notification.getOperatedBy()==null){
+            notification.setOperatedBy(operator);
+            notificationRepository.save(notification);
+        }
+        map.put("code",200);
+        map.put("message","可以进行报价");
+        return map;
     }
 }

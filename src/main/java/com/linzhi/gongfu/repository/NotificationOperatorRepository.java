@@ -38,4 +38,12 @@ public interface NotificationOperatorRepository extends CrudRepository<Notificat
      */
     Optional<NotificationOperator> findByNotificationOperatorId_MessageCodeAndPushCompAndPushOperator(String mess_code,String companyCode,String operatorCode);
 
+    /**
+     * 查询该操作员未读的消息有多少条
+     * @param companyCode 公司编码
+     * @param operator 操作员编码
+     * @param readed 是否已读
+     * @return 消息条数
+     */
+    int countNotificationOperatorByPushCompAndAndPushOperatorAndReaded(String companyCode,String operator,Whether readed);
 }
