@@ -6,13 +6,17 @@ import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.NotificationService;
+import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -135,12 +139,29 @@ public class MessageController {
      */
     @PutMapping("/message/{code}/offer")
     public  VBaseResponse updateOffer(@RequestBody Optional<VOfferRequest> offer,@PathVariable String code) throws Exception {
-        
+
         notificationService.updateOffer(offer.orElseThrow(()->new NullPointerException("数据为空")),code);
         return VBaseResponse.builder()
             .code(200)
             .message("保存数据成功")
             .build();
     }
+
+    /**
+     * 导出产品
+     *
+     * @param code       消息编码
+     * @param response HttpServletResponse
+     */
+    @GetMapping("/message/offer/{code}/products")
+    public void exportOfferProduct(@PathVariable String code, HttpServletResponse response) {
+
+        List<LinkedHashMap<String, Object>> database = notificationService.exportProduct(code);
+        ExcelUtil.exportToExcel(response, "询价记录列表", database);
+    }
+
+
+
+
 }
 

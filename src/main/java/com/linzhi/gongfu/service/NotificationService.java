@@ -5,6 +5,7 @@ import com.linzhi.gongfu.dto.TNotification;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.OfferType;
+import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.NotificationInquiryMapper;
 import com.linzhi.gongfu.mapper.NotificationMapper;
@@ -264,5 +265,36 @@ public class NotificationService {
             throw  new Exception("数据保存失败");
         }
 
+    }
+
+    /**
+     * 导出询价记录列表
+     *
+     * @param code 消息主键
+     * @return 产品列表
+     */
+    public List<LinkedHashMap<String, Object>> exportProduct(String code) {
+        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
+        try {
+            NotificationInquiry inquiry = notificationInquiryRepository.findById(code).orElseThrow(()->new IOException(""));
+
+            inquiry.getRecords().forEach(record -> {
+                LinkedHashMap<String, Object> m = new LinkedHashMap<>();
+                m.put("产品代码", record.getProductCode());
+
+                m.put("数量", record.getAmount());
+                list.add(m);
+            });
+            if (list.size() == 0) {
+                LinkedHashMap<String, Object> m = new LinkedHashMap<>();
+                m.put("产品代码", "");
+                m.put("数量", "");
+                list.add(m);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

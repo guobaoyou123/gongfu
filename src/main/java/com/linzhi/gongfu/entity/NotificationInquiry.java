@@ -73,7 +73,7 @@ public class NotificationInquiry {
     /**
      * 报完价后对应推送给对方消息的消息编码
      */
-    @Column(name = "offered_mess_code",length = 50, nullable = false)
+    @Column(name = "offered_mess_code",length = 50)
     @NotNull
     @NotBlank
     private String offeredMessCode;
