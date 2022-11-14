@@ -38,6 +38,11 @@ public class VNotificationResponse extends VBaseResponse {
         private String content;
 
         /**
+         * 税模式
+         */
+        private String taxModel;
+
+        /**
          * 报价产品列表
          */
         private List<VProduct> products;
