@@ -2,14 +2,12 @@ package com.linzhi.gongfu.repository;
 
 
 import com.linzhi.gongfu.entity.InquiryRecordDetail;
-import com.linzhi.gongfu.entity.NotificationInquiryRecord;
 import com.linzhi.gongfu.entity.NotificationInquiryRecordId;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-import java.util.Map;
 
 
 /**

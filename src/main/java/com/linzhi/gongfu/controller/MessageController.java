@@ -1,8 +1,8 @@
 package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.converter.NotificationTypeConverter;
-import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.Whether;
+import com.linzhi.gongfu.mapper.NotificationInquiryMapper;
 import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.NotificationService;
@@ -30,7 +30,7 @@ import java.util.Optional;
 public class MessageController {
     private final NotificationService notificationService;
     private final NotificationMapper notificationMapper;
-
+    private final NotificationInquiryMapper notificationInquiryMapper;
     /**
      * 消息通知
      *
@@ -160,6 +160,21 @@ public class MessageController {
         ExcelUtil.exportToExcel(response, "询价记录列表", database);
     }
 
+    /**
+     * 查看询价记录详情
+     * @param code 消息详情
+     * @return 询价记录详情
+     */
+    @GetMapping("/message/{code}/offer")
+    public VOfferResponse getOfferDetail(@PathVariable String code) throws IOException {
+        var offer = notificationService.getOfferDetail(code)
+            .map(notificationInquiryMapper::toVInquiry);
+        return VOfferResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .offer(offer.orElseThrow(()->new NullPointerException("数据为空")))
+            .build();
+    }
 
 
 

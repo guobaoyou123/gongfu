@@ -138,4 +138,15 @@ public class TInquiryRecord {
      * 是否报价
      */
     private String isOffer;
+
+    /**
+     * 上次报价
+     */
+    private BigDecimal preOfferedPrice;
+
+    /**
+     * 上次卖给该客户价格
+     */
+    private BigDecimal preSalesPrice;
+
 }

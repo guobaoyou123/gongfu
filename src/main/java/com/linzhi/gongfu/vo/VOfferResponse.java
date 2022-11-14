@@ -22,20 +22,16 @@ public class VOfferResponse extends VBaseResponse {
     /**
      * 消息详情
      */
-    private VNotification offer;
+    private VInquiry offer;
 
     @Data
-    public static class VNotification {
+    public static class VInquiry {
 
         /**
          * 消息通知编码
          */
         private String code;
 
-        /**
-         * 通知内容
-         */
-        private String content;
 
         /**
          * 询价单主键
@@ -46,6 +42,11 @@ public class VOfferResponse extends VBaseResponse {
          * 税模式
          */
         private String taxModel;
+
+        /**
+         * 状态
+         */
+        private String state;
 
         /**
          * 报价产品列表

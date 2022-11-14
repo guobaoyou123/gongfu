@@ -2,17 +2,14 @@ package com.linzhi.gongfu.service;
 
 import com.linzhi.gongfu.converter.TaxModeConverter;
 import com.linzhi.gongfu.dto.TNotification;
+import com.linzhi.gongfu.dto.TNotificationInquiry;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.OfferType;
-import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.NotificationInquiryMapper;
 import com.linzhi.gongfu.mapper.NotificationMapper;
-import com.linzhi.gongfu.repository.NotificationInquiryRepository;
-import com.linzhi.gongfu.repository.NotificationOperatorRepository;
-import com.linzhi.gongfu.repository.NotificationRepository;
-import com.linzhi.gongfu.repository.OperatorBaseRepository;
+import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.vo.VOfferRequest;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -43,7 +40,7 @@ public class NotificationService {
     private final NotificationInquiryRepository notificationInquiryRepository;
     private final NotificationInquiryMapper notificationInquiryMapper;
     private final OperatorBaseRepository operatorBaseRepository;
-
+    private final NotificationInquiryRecordRepository notificationInquiryRecordRepository;
     /**
      * 查询消息列表
      *
@@ -201,8 +198,8 @@ public class NotificationService {
 
     /**
      * 查询该条消息是否正在报价或者已经完成报价
-     * @Param messCode 消息编码
-     * @Param operator 操作员编码
+     * @param messCode 消息编码
+     * @param operator 操作员编码
      * @return 返回查询消息
      */
     @Transactional
@@ -296,5 +293,24 @@ public class NotificationService {
             e.printStackTrace();
         }
         return list;
+    }
+
+    /**
+     * 查询询价记录详情
+     * @param messCode 消息编码
+     * @return 询价记录详情
+     * @throws IOException 异常
+     */
+    public Optional<TNotificationInquiry>  getOfferDetail(String messCode) throws IOException {
+        var inquiry = notificationInquiryRepository.findById(messCode)
+            .map(notificationInquiryMapper::toNotificationInquiry)
+            .orElseThrow(()->new IOException("未查询到数据"));
+
+        var records = notificationInquiryRecordRepository.findList(messCode).stream()
+            .map(notificationInquiryMapper::toInquiryProduct)
+            .collect(Collectors.toList());
+        inquiry.setProducts(records);
+
+        return Optional.of(inquiry);
     }
 }

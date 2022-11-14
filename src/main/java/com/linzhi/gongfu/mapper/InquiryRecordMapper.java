@@ -5,6 +5,7 @@ import com.linzhi.gongfu.entity.InquiryRecord;
 import com.linzhi.gongfu.entity.NotificationInquiryRecord;
 import com.linzhi.gongfu.vo.VInquiryDetailResponse;
 import com.linzhi.gongfu.vo.VNotificationResponse;
+import com.linzhi.gongfu.vo.VOfferResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -73,4 +74,17 @@ public interface InquiryRecordMapper {
     @Mapping(target = "brandName",source = "brand")
     @Mapping(target = "isOffer",expression = "java(record.getIsOffer()==null?true:record.getIsOffer().equals(\"1\")?true:false)")
     VNotificationResponse.VProduct totoVNotificationRecodeDetail(TInquiryRecord record);
+
+    /**
+     * 将获取的可供使用的报价明细(包括上次报价价格和上次销售价格)装换成页面展示的报价明细
+     * @param record 报价明细
+     * @return 前端展示的报价明细(包括上次报价价格和上次销售价格)
+     */
+    @Mapping(target = "itemNo",source = "code")
+    @Mapping(target = "id",source = "productId")
+    @Mapping(target = "code",source = "productCode")
+    @Mapping(target = "describe",source = "productDescription")
+    @Mapping(target = "brandName",source = "brand")
+    @Mapping(target = "isOffer",expression = "java(record.getIsOffer()==null?true:record.getIsOffer().equals(\"1\")?true:false)")
+    VOfferResponse.VProduct toVOfferDetail(TInquiryRecord record);
 }
