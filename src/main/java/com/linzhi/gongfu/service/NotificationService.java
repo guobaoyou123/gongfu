@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.service;
 
+import com.linzhi.gongfu.converter.TaxModeConverter;
 import com.linzhi.gongfu.dto.TNotification;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.NotificationType;
@@ -11,6 +12,7 @@ import com.linzhi.gongfu.repository.NotificationInquiryRepository;
 import com.linzhi.gongfu.repository.NotificationOperatorRepository;
 import com.linzhi.gongfu.repository.NotificationRepository;
 import com.linzhi.gongfu.repository.OperatorBaseRepository;
+import com.linzhi.gongfu.vo.VOfferRequest;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -198,10 +200,12 @@ public class NotificationService {
 
     /**
      * 查询该条消息是否正在报价或者已经完成报价
+     * @Param messCode 消息编码
+     * @Param operator 操作员编码
      * @return 返回查询消息
      */
     @Transactional
-    public Map<String,Object> isOffered(String messCode,String companyCode,String operator) throws Exception {
+    public Map<String,Object> isOffered(String messCode,String operator) throws Exception {
        Map<String,Object> map = new HashMap<>();
 
         Notification notification = notificationRepository.findById(messCode).orElseThrow(()->new IOException("没有从数据库中查到"));
@@ -212,6 +216,7 @@ public class NotificationService {
               map.put("message","已完成报价，不可再次报价");
               return map;
         }
+
         if(inquiry.getState().equals(OfferType.WAIT_OFFER)&&notification.getOperatedBy()!=null && !notification.getOperatedBy().equals(operator)){
             map.put("code",204);
             map.put("message","正在报价中，不可再次报价");
@@ -225,5 +230,39 @@ public class NotificationService {
         map.put("code",200);
         map.put("message","可以进行报价");
         return map;
+    }
+
+
+    /**
+     * 更新询价记录中的报价信息
+     * @param offer 报价信息
+     * @param messCode 消息编码
+     * @throws Exception 异常
+     */
+    @Transactional
+    public void updateOffer(VOfferRequest offer,String messCode) throws Exception {
+        try {
+             NotificationInquiry inquiry = notificationInquiryRepository.findById(messCode).orElseThrow(()->new IOException(""));
+            if(Optional.ofNullable(offer.getTaxModel()).orElse("").length()!=0){
+                inquiry.setOfferMode(new TaxModeConverter().convertToEntityAttribute(offer.getTaxModel().toCharArray()[0]));
+            }
+            if(offer.getProducts()!=null && offer.getProducts().size()>0){
+                Map<Integer,VOfferRequest.VProduct> priceMap = offer.getProducts().stream().collect(Collectors.toMap(VOfferRequest.VProduct::getCode,vProduct -> vProduct));
+
+                inquiry.getRecords().stream().map(r->{
+                    var price = priceMap.get(r.getNotificationInquiryRecordId().getCode());
+                    if(price!=null){
+                        r.setPrice(price.getPrice());
+                        r.setIsOffer(price.isOffered()?Whether.YES:Whether.NO);
+                    }
+                    return r;
+                });
+            }
+            notificationInquiryRepository.save(inquiry);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw  new Exception("数据保存失败");
+        }
+
     }
 }

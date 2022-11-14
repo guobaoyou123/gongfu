@@ -120,7 +120,7 @@ public class MessageController {
     public VBaseResponse isOffered(@PathVariable String code) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var map = notificationService.isOffered(code,session.getSession().getCompanyCode(),
+        var map = notificationService.isOffered(code,
             session.getSession().getOperatorCode());
         return VBaseResponse.builder()
             .code((Integer) map.get("code"))
@@ -128,6 +128,19 @@ public class MessageController {
             .build();
     }
 
-     
+    /**
+     * 更新询价记录的价格和税模式
+     * @param offer 报价信息
+     * @return 返回成功或者失败信息
+     */
+    @PutMapping("/message/{code}/offer")
+    public  VBaseResponse updateOffer(@RequestBody Optional<VOfferRequest> offer,@PathVariable String code) throws Exception {
+        
+        notificationService.updateOffer(offer.orElseThrow(()->new NullPointerException("数据为空")),code);
+        return VBaseResponse.builder()
+            .code(200)
+            .message("保存数据成功")
+            .build();
+    }
 }
 
