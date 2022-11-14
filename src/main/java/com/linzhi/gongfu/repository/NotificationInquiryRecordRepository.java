@@ -1,7 +1,6 @@
 package com.linzhi.gongfu.repository;
 
 
-import com.linzhi.gongfu.dto.TOfferRecord;
 import com.linzhi.gongfu.entity.InquiryRecordDetail;
 import com.linzhi.gongfu.entity.NotificationInquiryRecord;
 import com.linzhi.gongfu.entity.NotificationInquiryRecordId;
