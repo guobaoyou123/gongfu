@@ -49,7 +49,7 @@ public class NotificationService {
      * @param operatorCode 操作员编码
      * @return 返回消息列表
      */
-    public List<TNotification> listNotification(String companyCode, Whether readed, String operatorCode, List<String> scenes,NotificationType type) {
+    public List<TNotification> listNotification(String companyCode, Whether readed, String operatorCode, NotificationType type) {
         QNotification qNotification = QNotification.notification;
         QNotificationOperator qNotificationOperator = QNotificationOperator.notificationOperator;
         JPAQuery<Notification> query = queryFactory.select(qNotification).from(qNotification)
@@ -247,14 +247,13 @@ public class NotificationService {
             if(offer.getProducts()!=null && offer.getProducts().size()>0){
                 Map<Integer,VOfferRequest.VProduct> priceMap = offer.getProducts().stream().collect(Collectors.toMap(VOfferRequest.VProduct::getCode,vProduct -> vProduct));
 
-                inquiry.getRecords().stream().map(r->{
+                inquiry.setRecords(inquiry.getRecords().stream().peek(r->{
                     var price = priceMap.get(r.getNotificationInquiryRecordId().getCode());
                     if(price!=null){
                         r.setPrice(price.getPrice());
                         r.setIsOffer(price.isOffered()?Whether.YES:Whether.NO);
                     }
-                    return r;
-                });
+                }).collect(Collectors.toList()));
             }
             notificationInquiryRepository.save(inquiry);
         }catch (Exception e){
@@ -312,5 +311,31 @@ public class NotificationService {
         inquiry.setProducts(records);
 
         return Optional.of(inquiry);
+    }
+
+    /**
+     * 取消报价
+     * @param messCode 消息编码
+     * @throws Exception 异常
+     */
+    @Transactional
+    public void  cancelOffer(String messCode) throws Exception {
+        try{
+            var inquiry = notificationInquiryRepository.findById(messCode)
+                .orElseThrow(()->new IOException("未查询到数据"));
+            var message = notificationRepository.findById(messCode)
+                .orElseThrow(()->new IOException("未查询到数据"));
+            message.setOperatedBy(null);
+            inquiry.setRecords(inquiry.getRecords().stream().peek(r->{
+                r.setPrice(null);
+                r.setIsOffer(Whether.YES);
+            }).collect(Collectors.toList()));
+            notificationRepository.save(message);
+            notificationInquiryRepository.save(inquiry);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception("数据保存失败！");
+        }
+
     }
 }

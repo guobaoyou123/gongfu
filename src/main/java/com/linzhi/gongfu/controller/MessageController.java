@@ -9,7 +9,6 @@ import com.linzhi.gongfu.service.NotificationService;
 import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +31,7 @@ public class MessageController {
     private final NotificationMapper notificationMapper;
     private final NotificationInquiryMapper notificationInquiryMapper;
     /**
-     * 消息通知
+     * 消息通知列表
      *
      * @return 返回消息通知列表
      */
@@ -41,14 +40,12 @@ public class MessageController {
                                                     @RequestParam("type") Optional<String> type) throws NoSuchMethodException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var scenes = session.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .toList();
+
         var list = notificationService.listNotification(
             session.getSession().getCompanyCode(),
             state.orElseThrow(() -> new NullPointerException("数据为空")).equals("0") ? Whether.NO : Whether.YES,
             session.getSession().getOperatorCode(),
-            scenes, new NotificationTypeConverter().convertToEntityAttribute(type.orElse("0").toCharArray()[0])
+            new NotificationTypeConverter().convertToEntityAttribute(type.orElse("0").toCharArray()[0])
         );
         return VNotificationsResponse.builder()
             .code(200)
@@ -153,7 +150,7 @@ public class MessageController {
      * @param code       消息编码
      * @param response HttpServletResponse
      */
-    @GetMapping("/message/offer/{code}/products")
+    @GetMapping("/message/{code}/offer/products")
     public void exportOfferProduct(@PathVariable String code, HttpServletResponse response) {
 
         List<LinkedHashMap<String, Object>> database = notificationService.exportProduct(code);
@@ -176,7 +173,20 @@ public class MessageController {
             .build();
     }
 
+    /**
+     * 取消报价
+     * @param code 消息编码
+     * @return 成功或者失败信息
+     * @throws Exception 异常
+     */
+    @PostMapping("/message/{code}/offer")
+   public VBaseResponse cancelOffer(@PathVariable String code) throws Exception {
 
-
+        notificationService.cancelOffer(code);
+        return VBaseResponse.builder()
+            .code(200)
+            .message("取消报价成功")
+            .build();
+   }
 }
 
