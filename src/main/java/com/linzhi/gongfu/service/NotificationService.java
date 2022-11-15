@@ -103,7 +103,6 @@ public class NotificationService {
 
     }
 
-
     /**
      * 生成消息信息
      *
@@ -117,33 +116,33 @@ public class NotificationService {
      */
     public Notification createdNotification(String companyCode, String message, String operatorCode, NotificationType type, String id, String pushComp, List<String> pushOperatorCode) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyMMdd");
-            Notification notification = Notification.builder()
-                .code("XXTZ-" + type.getType() + "-" + companyCode + "-" + operatorCode + "-" + dtf.format(LocalDateTime.now()) + "-" + UUID.randomUUID().toString().substring(0, 8))
-                .createdAt(LocalDateTime.now())
-                .id(id)
-                .createdBy(operatorCode)
-                .createdCompBy(companyCode)
+        Notification notification = Notification.builder()
+            .code("XXTZ-" + type.getType() + "-" + companyCode + "-" + operatorCode + "-" + dtf.format(LocalDateTime.now()) + "-" + UUID.randomUUID().toString().substring(0, 8))
+            .createdAt(LocalDateTime.now())
+            .id(id)
+            .createdBy(operatorCode)
+            .createdCompBy(companyCode)
+            .pushComp(pushComp)
+            .type(type)
+            .message(message)
+            .build();
+        List<NotificationOperator> notifications = new ArrayList<>();
+        int i = 1;
+        for (String s : pushOperatorCode) {
+            var operator = NotificationOperator.builder()
+                .notificationOperatorId(NotificationOperatorId.builder()
+                    .messageCode(notification.getCode())
+                    .code(i)
+                    .build())
                 .pushComp(pushComp)
-                .type(type)
-                .message(message)
+                .pushOperator(s)
+                .readed(Whether.NO)
                 .build();
-            List<NotificationOperator> notifications = new ArrayList<>();
-            int i = 1;
-                for (String s : pushOperatorCode) {
-                    var operator = NotificationOperator.builder()
-                        .notificationOperatorId(NotificationOperatorId.builder()
-                            .messageCode(notification.getCode())
-                            .code(i)
-                            .build())
-                        .pushComp(pushComp)
-                        .pushOperator(s)
-                        .readed(Whether.NO)
-                        .build();
-                    notifications.add(operator);
-                }
+            notifications.add(operator);
+        }
 
-            notification.setOperatorList(notifications);
-            return  notification;
+        notification.setOperatorList(notifications);
+        return notification;
 
     }
 
@@ -246,14 +245,20 @@ public class NotificationService {
             }
             if(offer.getProducts()!=null && offer.getProducts().size()>0){
                 Map<Integer,VOfferRequest.VProduct> priceMap = offer.getProducts().stream().collect(Collectors.toMap(VOfferRequest.VProduct::getCode,vProduct -> vProduct));
-
-                inquiry.setRecords(inquiry.getRecords().stream().peek(r->{
+                for(int i = 0;i<inquiry.getRecords().size();i++){
+                    var price = priceMap.get(inquiry.getRecords().get(i).getNotificationInquiryRecordId().getCode());
+                    if(price!=null){
+                        inquiry.getRecords().get(i).setPrice(price.getPrice());
+                        inquiry.getRecords().get(i).setIsOffer(price.isOffered()?Whether.YES:Whether.NO);
+                    }
+                }
+               /* inquiry.setRecords(inquiry.getRecords().stream().peek(r->{
                     var price = priceMap.get(r.getNotificationInquiryRecordId().getCode());
                     if(price!=null){
                         r.setPrice(price.getPrice());
                         r.setIsOffer(price.isOffered()?Whether.YES:Whether.NO);
                     }
-                }).collect(Collectors.toList()));
+                }).collect(Collectors.toList()));*/
             }
             notificationInquiryRepository.save(inquiry);
         }catch (Exception e){
@@ -326,9 +331,10 @@ public class NotificationService {
             var message = notificationRepository.findById(messCode)
                 .orElseThrow(()->new IOException("未查询到数据"));
             message.setOperatedBy(null);
-            inquiry.setRecords(inquiry.getRecords().stream().peek(r->{
+            inquiry.setRecords(inquiry.getRecords().stream().map(r->{
                 r.setPrice(null);
                 r.setIsOffer(Whether.YES);
+                return r;
             }).collect(Collectors.toList()));
             notificationRepository.save(message);
             notificationInquiryRepository.save(inquiry);
@@ -337,5 +343,46 @@ public class NotificationService {
             throw new Exception("数据保存失败！");
         }
 
+    }
+
+    /**
+     * 应答
+     * @param messCode 消息编码
+     * @param companyCode 单位编码
+     * @param operatorCode 操作员编码
+     * @param companyName 公司名称
+     * @throws Exception 异常
+     */
+    @Transactional
+    public void  offerResponse(String messCode,String companyCode,String operatorCode,String companyName) throws Exception {
+        var inquiry = notificationInquiryRepository.findById(messCode)
+            .orElseThrow(()->new IOException("未查询到数据"));
+        if(!inquiry.getState().equals(OfferType.WAIT_OFFER))
+            throw new Exception("该报价已经应答！");
+        var notification = notificationRepository.findById(messCode)
+            .orElseThrow(()->new IOException("未查询到数据"));
+        try{
+
+            var message = createdNotification(
+                companyCode,
+                companyName+"已对编号为"+notification.getId()+"的询价单作出报价，请及时查看",
+                operatorCode,
+                NotificationType.INQUIRY_RESPONSE,
+                notification.getId(),
+                notification.getCreatedCompBy(),
+                List.of(notification.getCreatedBy())
+            );
+            inquiry.setOfferedMessCode(message.getCode());
+            inquiry.setState(OfferType.FINISH_OFFER);
+            inquiry.setOfferBy(operatorCode);
+            inquiry.setOfferCompBy(companyCode);
+            inquiry.setOfferedAt(LocalDateTime.now());
+            notificationInquiryRepository.updateState(OfferType.ABANDONED_OFFER,notification.getId());
+            notificationRepository.save(message);
+            notificationInquiryRepository.save(inquiry);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw  new Exception("保存数据");
+        }
     }
 }

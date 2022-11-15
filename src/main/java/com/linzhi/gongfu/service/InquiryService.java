@@ -2,7 +2,6 @@ package com.linzhi.gongfu.service;
 
 
 import com.linzhi.gongfu.dto.TInquiry;
-import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.*;
 import com.linzhi.gongfu.mapper.InquiryMapper;
@@ -14,7 +13,6 @@ import com.linzhi.gongfu.vo.VInquiryRequest;
 import com.linzhi.gongfu.vo.VUnfinishedInquiryListResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -828,7 +826,7 @@ public class InquiryService {
                 .orElse(0);
             //生成消息
             var notification=   notificationService.createdNotification(companyCode,
-                companyName+"第"+(number.intValue()+1)+"次询价",
+                companyName+"第"+(number +1)+"次询价",
                 operatorCode,
                 NotificationType.INQUIRY_CALL,inquiryId,inquiry.getSalerComp(), Arrays.asList(operators.split(",")));
             notificationRepository.save(notification);
@@ -843,7 +841,7 @@ public class InquiryService {
                  .offerMode(inquiry.getOfferMode())
                  .build();
              var offerRecords = records.stream().map(inquiryRecordMapper::toNotificationInquiryRecord)
-                 .map(s->{s.getNotificationInquiryRecordId().setMessageId(notification.getCode());
+                 .map(s->{s.getNotificationInquiryRecordId().setMessCode(notification.getCode());
                  return  s;}
                  ).toList();
             offer.setRecords(offerRecords);

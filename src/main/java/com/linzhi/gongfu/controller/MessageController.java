@@ -188,5 +188,21 @@ public class MessageController {
             .message("取消报价成功")
             .build();
    }
+
+    /**
+     * 应答
+     * @param code 消息编码
+     * @return 返回成功或者失败信息
+     */
+    @PostMapping("/message/{code}/offer/response")
+    public VBaseResponse offerResponse(@PathVariable String code) throws Exception {
+       OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+           .getContext().getAuthentication();
+       notificationService.offerResponse(code,session.getSession().getCompanyCode(),session.getSession().getOperatorCode(),session.getSession().getCompanyName());
+        return VBaseResponse.builder()
+            .code(200)
+            .message("应答成功")
+            .build();
+    }
 }
 

@@ -22,7 +22,7 @@ public class NotificationInquiryRecordId implements Serializable {
     @NotBlank
     @Getter
     @Setter
-    private String messageId;
+    private String messCode;
     /**
      * 序号
      */
