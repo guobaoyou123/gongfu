@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -438,9 +439,10 @@ public class InquiryService {
                 vat = null;
             }
             inquiry.setVat(vat);
-            inquiry.setTotalPrice(totalPrice == null ? null : totalPrice.setScale(2, RoundingMode.HALF_UP));
+            BigDecimal totalPrice1 = totalPrice == null ? null : totalPrice.setScale(2, RoundingMode.HALF_UP);
+            inquiry.setTotalPrice(totalPrice1);
             inquiry.setTotalPriceVat(totalPriceVat == null ? null : totalPriceVat.setScale(2, RoundingMode.HALF_UP));
-            inquiry.setDiscountedTotalPrice(totalPrice == null ? null : totalPrice.setScale(2, RoundingMode.HALF_UP));
+            inquiry.setDiscountedTotalPrice(totalPrice1);
             inquiryDetailRepository.save(inquiry);
             return true;
         } catch (Exception e) {
@@ -538,14 +540,13 @@ public class InquiryService {
             Inquiry inquiry = getInquiry(id);
             List<InquiryRecord> records = inquiry.getRecords();
             inquiryRecordRepository.removeProducts(id, codes);
-            return countSum(
-                records.stream()
-                    .filter(
-                        record ->
-                            !codes.contains(record.getInquiryRecordId().getCode())
-                    ).toList(),
-                id
-            );
+            if(!countSum(records.stream()
+                .filter(
+                    record ->
+                        !codes.contains(record.getInquiryRecordId().getCode())
+                ).toList(),id))
+                throw new Exception("保存数据失败");
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -610,7 +611,9 @@ public class InquiryService {
                 }));
             }
             inquiryRecordRepository.saveAll(records);
-            return countSum(records, id);
+            if(!countSum(records,id))
+                throw new Exception("保存数据失败");
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -645,7 +648,8 @@ public class InquiryService {
      * @param id 询价单主键或者合同主键
      * @return 产品列表
      */
-    public List<LinkedHashMap<String, Object>> exportProduct(String id) {
+    public Map<String,Object> exportProduct(String id) {
+        Map<String,Object> map = new HashMap<>();
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         try {
             Inquiry inquiry = getInquiry(id);
@@ -672,11 +676,12 @@ public class InquiryService {
                 m.put("数量", "");
                 list.add(m);
             }
-
+            map.put("list",list);
+            map.put("encode",inquiry.getCode());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
+        return map;
     }
 
     /**
@@ -725,9 +730,11 @@ public class InquiryService {
             }
             //删除原有的产品明细
             importProductTempRepository.deleteProduct(id, companyCode, operator);
+
             inquiryRecordRepository.saveAll(inquiryRecords);
-            if (countSum(inquiryRecords, id))
-                resultMap.put("code", 200);
+            if(!countSum(inquiryRecords,id))
+                throw new Exception("保存数据失败");
+            resultMap.put("code", 200);
             resultMap.put("message", "保存成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -739,14 +746,13 @@ public class InquiryService {
     /**
      * 更新询价单总价
      *
-     * @param inquiryRecords 询价单明细列表
-     * @param id             询价单主键
+     * @param list 询价单
      * @return 返回成功或者失败信息
      */
-    public boolean countSum(List<InquiryRecord> inquiryRecords, String id) {
+    public boolean countSum(List<InquiryRecord> list ,String id) {
         try {
             //判断是否需要重新计算价格
-            List<InquiryRecord> lists = inquiryRecords
+            List<InquiryRecord> lists = list
                 .stream()
                 .filter(inquiryRecord -> inquiryRecord.getPrice() == null)
                 .toList();
@@ -755,7 +761,7 @@ public class InquiryService {
             BigDecimal totalPriceVat = new BigDecimal("0");
             BigDecimal vat;
             if (lists.size() == 0) {
-                for (InquiryRecord inquiryRecord : inquiryRecords) {
+                for (InquiryRecord inquiryRecord : list) {
                     totalPrice = totalPrice.add(inquiryRecord.getTotalPrice());
                     totalPriceVat = totalPriceVat.add(inquiryRecord.getTotalPriceVat());
                 }
@@ -768,7 +774,9 @@ public class InquiryService {
             }
 
             BigDecimal totalPrice1 = totalPrice == null ? null : totalPrice.setScale(2, RoundingMode.HALF_UP);
-            inquiryDetailRepository.updateInquiry(totalPrice1, totalPriceVat == null ? null : totalPriceVat.setScale(2, RoundingMode.HALF_UP), vat, totalPrice1, id);
+
+            inquiryDetailRepository.updateInquiry(totalPrice1, totalPriceVat==null?null : totalPriceVat.setScale(2, RoundingMode.HALF_UP), vat, totalPrice1, id);
+
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -851,5 +859,91 @@ public class InquiryService {
         }
     }
 
+    /**
+     * 根据报价更新询价单
+     * @param messCode 消息编码
+     * @throws Exception 异常
+     */
+    @CacheEvict(value = "inquiry_detail;1800", key = "#result")
+    @Transactional
+    public String updateInquiryPrice(String messCode) throws Exception {
+        var message = notificationRepository.findById(messCode)
+            .orElseThrow(()->new IOException("未查询到数据"));
+        var offer = notificationInquiryRepository.findByOfferedMessCode(messCode)
+            .orElseThrow(()->new IOException("未查询到数据"));
+        var inquiry = getInquiry(message.getId());
+        var offerRecordMap = offer.getRecords().stream().collect(Collectors.toMap(r->r.getNotificationInquiryRecordId().getCode(),r->r));
+        try {
+            inquiry.setOfferMode(offer.getOfferMode());
+            inquiry.getRecords().forEach(r->{
+                var price = offerRecordMap.get(r.getInquiryRecordId().getCode());
+                if(inquiry.getOfferMode().equals(TaxMode.UNTAXED)){
+                    r.setPrice(price.getPrice());
+                    r.setPriceVat(CalculateUtil.calculateTaxedUnitPrice(price.getPrice(), r.getVatRate()));
+                }else{
+                    r.setPrice( CalculateUtil.calculateUntaxedUnitPrice(price.getPrice(), r.getVatRate()));
+                    r.setPriceVat(price.getPrice());
 
+                }
+                r.setTotalPrice(CalculateUtil.calculateSubtotal(r.getPrice(), r.getAmount()));
+                r.setTotalPriceVat(CalculateUtil.calculateSubtotal(r.getPriceVat(), r.getAmount()));
+            });
+            //重新计算价格
+            BigDecimal totalPrice = new BigDecimal("0");
+            BigDecimal totalPriceVat = new BigDecimal("0");
+            BigDecimal vat;
+            for (InquiryRecord inquiryRecord : inquiry.getRecords()) {
+                totalPrice = totalPrice.add(inquiryRecord.getTotalPrice());
+                totalPriceVat = totalPriceVat.add(inquiryRecord.getTotalPriceVat());
+            }
+            vat = totalPriceVat.setScale(2, RoundingMode.HALF_UP).subtract(totalPrice.setScale(2, RoundingMode.HALF_UP));
+            inquiry.setVat(vat);
+            inquiry.setTotalPrice(totalPrice);
+            inquiry.setTotalPriceVat(totalPriceVat);
+            inquiry.setDiscountedTotalPrice(totalPrice);
+            inquiryDetailRepository.save(inquiry);
+            return inquiry.getId();
+            //  inquiryDetailRepository.save(countSum(inquiry));
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception("更新数据失败");
+        }
+    }
+
+    /**
+     * 验证询价单与报价单是否一致
+     * @param messCode 消息编码
+     * @return  返回是否一致的消息
+     */
+    public Map<String,String> verification(String messCode) throws Exception {
+        Map<String,String> map  = new HashMap<>();
+        var message = notificationRepository.findById(messCode)
+            .orElseThrow(()->new IOException("未查询到数据"));
+        var offer = notificationInquiryRepository.findByOfferedMessCode(messCode)
+            .orElseThrow(()->new IOException("未查询到数据"));
+        var inquiry = getInquiry(message.getId());
+        AtomicBoolean flag = new AtomicBoolean(true);
+        //先判断供应商是否将全部询价产品给出价格
+        offer.getRecords().forEach(r->{
+            if(r.getIsOffer().equals(Whether.NO)){
+                flag.set(false);
+            }
+        });
+        if(!flag.get()){
+            map.put("code","205");
+            map.put("message","对方未完全报价，不可更新询价单");
+            return map;
+        }
+        //判断询价单的产品数量跟报价的是否一致
+        //形成指纹
+        String inquiryStr = String.join("-", inquiry.getRecords().stream().map(r->r.getProductId()+"-"+r.getAmount()).collect(Collectors.toList()));
+        String offerStr = String.join("-",offer.getRecords().stream().map(r->r.getProductId()+"-"+r.getAmount()).collect(Collectors.toList()));
+        if(!inquiryStr.equals(offerStr)){
+            map.put("code","206");
+            map.put("message","询价单已经发生变动，不可更新询价单");
+            return map;
+        }
+        map.put("code","200");
+        return map;
+    }
 }

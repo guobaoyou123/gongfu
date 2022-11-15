@@ -566,9 +566,9 @@ public class ContractController {
      */
     @GetMapping("/contract/purchase/inquiry/{id}/products/export")
     public void exportProduct(@PathVariable String id, HttpServletResponse response) {
-
-        List<LinkedHashMap<String, Object>> database = inquiryService.exportProduct(id);
-        ExcelUtil.exportToExcel(response, "询价单"+id, database);
+        var map = inquiryService.exportProduct(id);
+        List<LinkedHashMap<String, Object>> database = (List<LinkedHashMap<String, Object>>) map.get("list");
+        ExcelUtil.exportToExcel(response, "询价单"+ map.get("encode"), database);
     }
 
     /**

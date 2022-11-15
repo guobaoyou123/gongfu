@@ -5,6 +5,7 @@ import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.NotificationInquiryMapper;
 import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
+import com.linzhi.gongfu.service.InquiryService;
 import com.linzhi.gongfu.service.NotificationService;
 import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.*;
@@ -30,6 +31,7 @@ public class MessageController {
     private final NotificationService notificationService;
     private final NotificationMapper notificationMapper;
     private final NotificationInquiryMapper notificationInquiryMapper;
+    private final InquiryService inquiryService;
     /**
      * 消息通知列表
      *
@@ -199,10 +201,32 @@ public class MessageController {
        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
            .getContext().getAuthentication();
        notificationService.offerResponse(code,session.getSession().getCompanyCode(),session.getSession().getOperatorCode(),session.getSession().getCompanyName());
-        return VBaseResponse.builder()
+       return VBaseResponse.builder()
             .code(200)
             .message("应答成功")
             .build();
     }
+
+    /**
+     * 将报价更新到询价单中
+     * @param code 消息编码
+     * @return 成功或者失败信息
+     */
+    @PutMapping("/message/{code}/inquiry/price")
+    public VBaseResponse  updateInquiry(@PathVariable String code) throws Exception {
+        var map = inquiryService.verification(code);
+        if(!map.get("code").equals("200"))
+            return VBaseResponse.builder()
+                .code(Integer.parseInt(map.get("code")))
+                .message(map.get("message"))
+                .build();
+        inquiryService.updateInquiryPrice(code);
+        return VBaseResponse.builder()
+            .code(200)
+            .message("更新成功")
+            .build();
+    }
+
+
 }
 

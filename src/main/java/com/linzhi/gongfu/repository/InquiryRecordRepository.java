@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -60,4 +61,6 @@ public interface InquiryRecordRepository
         "  order by d.product_id ",
         nativeQuery = true)
     List<Map<String,Object>> findInquiryRecordTwins(String inquiryId);
+
+
 }
