@@ -308,19 +308,15 @@ public class InquiryService {
             //查找销售合同信息
             if (tInquiry.getSalesContractId() != null && !("").equals(tInquiry.getSalesContractId())) {
                 Map<String, Object> map = salesContractRepository.findSalesCode(id);
-                tInquiry.setSalesContractCode(map.get("code").toString());
-                tInquiry.setSalerOrderCode(map.get("order_code").toString());
+                tInquiry.setSalesContractCode(map.get("code")!=null?map.get("code").toString():null);
+                tInquiry.setSalerOrderCode(map.get("order_code")!=null?map.get("order_code").toString():null);
             }
             //判断是否为未完成得询价单，如果是的话，查询该询价单已经呼叫过的次数
             if(inquiry.getState().equals(InquiryState.UN_FINISHED)){
               Integer count =   notificationRepository.countNotificationByIdAndCreatedByAndCreatedCompByAndType(id,inquiry.getCreatedBy(),inquiry.getCreatedByComp(),NotificationType.INQUIRY_CALL).orElse(0);
                 tInquiry.setCallNum(count+1);
             }
-            if(inquiry.getSalerCompanys()!=null && inquiry.getSalerCompanys().getRole().equals(CompanyRole.SUPPLIER.getSign())&&records.size()>0){
-                tInquiry.setIsCall(true);
-            }else {
-                tInquiry.setIsCall(false);
-            }
+            tInquiry.setIsCall(inquiry.getSalerCompanys() != null && inquiry.getSalerCompanys().getRole().equals(CompanyRole.SUPPLIER.getSign()) && records.size() > 0);
             return tInquiry;
         } catch (Exception e) {
             e.printStackTrace();
