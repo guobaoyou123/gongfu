@@ -311,6 +311,16 @@ public class InquiryService {
                 tInquiry.setSalesContractCode(map.get("code").toString());
                 tInquiry.setSalerOrderCode(map.get("order_code").toString());
             }
+            //判断是否为未完成得询价单，如果是的话，查询该询价单已经呼叫过的次数
+            if(inquiry.getState().equals(InquiryState.UN_FINISHED)){
+              Integer count =   notificationRepository.countNotificationByIdAndCreatedByAndCreatedCompByAndType(id,inquiry.getCreatedBy(),inquiry.getCreatedByComp(),NotificationType.INQUIRY_CALL).orElse(0);
+                tInquiry.setCallNum(count+1);
+            }
+            if(inquiry.getSalerCompanys()!=null && inquiry.getSalerCompanys().getRole().equals(CompanyRole.SUPPLIER.getSign())&&records.size()>0){
+                tInquiry.setIsCall(true);
+            }else {
+                tInquiry.setIsCall(false);
+            }
             return tInquiry;
         } catch (Exception e) {
             e.printStackTrace();
@@ -883,7 +893,6 @@ public class InquiryService {
                 }else{
                     r.setPrice( CalculateUtil.calculateUntaxedUnitPrice(price.getPrice(), r.getVatRate()));
                     r.setPriceVat(price.getPrice());
-
                 }
                 r.setTotalPrice(CalculateUtil.calculateSubtotal(r.getPrice(), r.getAmount()));
                 r.setTotalPriceVat(CalculateUtil.calculateSubtotal(r.getPriceVat(), r.getAmount()));
@@ -903,7 +912,6 @@ public class InquiryService {
             inquiry.setDiscountedTotalPrice(totalPrice);
             inquiryDetailRepository.save(inquiry);
             return inquiry.getId();
-            //  inquiryDetailRepository.save(countSum(inquiry));
         }catch (Exception e){
             e.printStackTrace();
             throw new Exception("更新数据失败");
@@ -936,8 +944,8 @@ public class InquiryService {
         }
         //判断询价单的产品数量跟报价的是否一致
         //形成指纹
-        String inquiryStr = String.join("-", inquiry.getRecords().stream().map(r->r.getProductId()+"-"+r.getAmount()).collect(Collectors.toList()));
-        String offerStr = String.join("-",offer.getRecords().stream().map(r->r.getProductId()+"-"+r.getAmount()).collect(Collectors.toList()));
+        String inquiryStr = inquiry.getRecords().stream().map(r->r.getProductId()+"-"+r.getAmount()).collect(Collectors.joining("-"));
+        String offerStr = offer.getRecords().stream().map(r->r.getProductId()+"-"+r.getAmount()).collect(Collectors.joining("-"));
         if(!inquiryStr.equals(offerStr)){
             map.put("code","206");
             map.put("message","询价单已经发生变动，不可更新询价单");

@@ -93,6 +93,13 @@ public class Inquiry {
     @Column(name = "saler_comp_name", length = 100)
     private String salerCompName;
 
+    /**
+     * 供应商
+     */
+    @OneToOne
+    @JoinColumn(name = "saler_comp", referencedColumnName = "code", insertable = false, updatable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
+    private Company salerCompanys;
 
     /**
      * 货物税率

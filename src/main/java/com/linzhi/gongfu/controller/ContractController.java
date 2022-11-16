@@ -1,10 +1,8 @@
 package com.linzhi.gongfu.controller;
 
 
-import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.TemporaryPlanId;
 import com.linzhi.gongfu.enumeration.ContractState;
-import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.mapper.*;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.*;
@@ -44,8 +42,6 @@ public class ContractController {
     private final PurchaseContractService purchaseContractService;
     private final ContractMapper contractMapper;
     private final SalesContractService salesContractService;
-    private final OperatorService operatorService;
-    private final NotificationService notificationService;
     /**
      * 根据操作员编码、单位id查询该操作员的临时计划表
      *
