@@ -185,6 +185,15 @@ public class VInquiryDetailResponse extends VBaseResponse {
          */
         private BigDecimal discountedTotalPrice;
 
+        /**
+         * 呼叫次数
+         */
+        private int callNum;
+
+        /**
+         * 是否可以呼叫
+         */
+        private Boolean isCall;
     }
 
     @Data

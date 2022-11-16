@@ -220,6 +220,16 @@ public class TInquiry {
     private String counts;
 
     /**
+     * 呼叫次数
+     */
+    private int callNum;
+
+    /**
+     * 是否可以呼叫
+     */
+    private Boolean isCall;
+
+    /**
      * 询价单明细记录
      */
     private List<TInquiryRecord> records;
