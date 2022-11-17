@@ -54,7 +54,7 @@ public class TNotification {
     /**
      * 创建时间
      */
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     /**
      * 推送单位

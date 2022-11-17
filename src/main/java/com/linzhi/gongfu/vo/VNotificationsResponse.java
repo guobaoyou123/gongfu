@@ -56,5 +56,10 @@ public class VNotificationsResponse extends VBaseResponse {
          * 对应的申请记录主键或者供应商主键
          */
         private String id;
+
+        /**
+         * 创建时间
+         */
+        private String createdAt;
     }
 }

@@ -840,7 +840,7 @@ public class InquiryService {
                 .orElse(0);
             //生成消息
             var notification=   notificationService.createdNotification(companyCode,
-                companyName+"第"+(number +1)+"次询价",
+                companyName+"申请第"+(number +1)+"次询价",
                 operatorCode,
                 NotificationType.INQUIRY_CALL,inquiryId,inquiry.getSalerComp(), Arrays.asList(operators.split(",")));
             notificationRepository.save(notification);
