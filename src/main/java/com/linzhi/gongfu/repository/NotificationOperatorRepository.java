@@ -56,8 +56,8 @@ public interface NotificationOperatorRepository extends CrudRepository<Notificat
      * @param type 消息类型
      * @return 消息条数
      */
-    @Query(value = "select count(o.notificationOperatorId)  from NotificationOperator  o" +
+    @Query(value = "select count(n.id)  from NotificationOperator  o" +
         " left join Notification n on n.code = o.notificationOperatorId.messageCode" +
         " where o.pushComp=?1 and o.pushOperator=?2 and o.readed=?3 and n.type=?4 ")
-    int countNotification(String companyCode, String operator, Whether readed, NotificationType type);
+    int findNotificationNumber(String companyCode, String operator, Whether readed, NotificationType type);
 }

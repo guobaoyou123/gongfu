@@ -203,7 +203,7 @@ public class NotificationService {
             return  notificationOperatorRepository.countNotificationOperatorByPushCompAndAndPushOperatorAndReaded(companyCode,operatorCode,Whether.NO);
         }
 
-        return  notificationOperatorRepository.countNotification(companyCode,operatorCode,Whether.NO,new NotificationTypeConverter().convertToEntityAttribute(type.toCharArray()[0]));
+        return  notificationOperatorRepository.findNotificationNumber(companyCode,operatorCode,Whether.NO,new NotificationTypeConverter().convertToEntityAttribute(type.toCharArray()[0]));
     }
 
     /**
