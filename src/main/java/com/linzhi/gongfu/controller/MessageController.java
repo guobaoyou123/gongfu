@@ -8,8 +8,10 @@ import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.InquiryService;
 import com.linzhi.gongfu.service.NotificationService;
 import com.linzhi.gongfu.util.ExcelUtil;
+import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,26 +35,38 @@ public class MessageController {
     private final NotificationInquiryMapper notificationInquiryMapper;
     private final InquiryService inquiryService;
     /**
-     * 消息通知列表
-     *
+     * 消息通知列表2
+     * @param state      消息状态 0-未读 1-已读
+     * @param type     消息类型
+     * @param pageNum      页码
+     * @param pageSize     每页展示几条
      * @return 返回消息通知列表
      */
     @GetMapping("/message/notification")
     public VNotificationsResponse listNotifications(@RequestParam("state") Optional<String> state,
-                                                    @RequestParam("type") Optional<String> type) throws NoSuchMethodException {
+                                                    @RequestParam("type") Optional<String> type,
+                                                    @RequestParam("pageNum") Optional<String> pageNum,
+                                                    @RequestParam("pageSize") Optional<String> pageSize
+    ) throws NoSuchMethodException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
 
-        var list = notificationService.listNotification(
+        var page = notificationService.listNotification(
             session.getSession().getCompanyCode(),
             state.orElseThrow(() -> new NullPointerException("数据为空")).equals("0") ? Whether.NO : Whether.YES,
             session.getSession().getOperatorCode(),
-            type.orElse("").equals("")?null:new NotificationTypeConverter().convertToEntityAttribute(type.orElse("0").toCharArray()[0])
+            type.orElse("").equals("")?null:new NotificationTypeConverter().convertToEntityAttribute(type.orElse("0").toCharArray()[0]),
+            PageRequest.of(
+                pageNum.map(PageTools::verificationPageNum).orElse(0),
+                pageSize.map(PageTools::verificationPageSize).orElse(10)
+            )
         );
         return VNotificationsResponse.builder()
             .code(200)
             .message("获取数据成功")
-            .list(list.stream()
+            .current(page.getNumber() + 1)
+            .total(Integer.parseInt(String.valueOf(page.getTotalElements())))
+            .list(page.stream()
                 .map(notificationMapper::toVNotificationDo)
                 .toList()
             )

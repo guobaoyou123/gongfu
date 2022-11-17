@@ -19,6 +19,19 @@ import java.util.List;
 @SuperBuilder(toBuilder = true)
 public class VNotificationsResponse extends VBaseResponse {
 
+    /**
+     * 当前页
+     */
+    private int current;
+
+    /**
+     * 总条数
+     */
+    private int total;
+
+    /**
+     * 消息列表
+     */
     private List<VNotification> list;
 
     @Data

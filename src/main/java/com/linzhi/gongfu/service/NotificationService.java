@@ -11,20 +11,20 @@ import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.NotificationInquiryMapper;
 import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.repository.*;
+import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VOfferRequest;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -53,7 +53,7 @@ public class NotificationService {
      * @param operatorCode 操作员编码
      * @return 返回消息列表
      */
-    public List<TNotification> listNotification(String companyCode, Whether readed, String operatorCode, NotificationType type) {
+    public Page<TNotification> listNotification(String companyCode, Whether readed, String operatorCode, NotificationType type, Pageable pageable) {
         QNotification qNotification = QNotification.notification;
         QNotificationOperator qNotificationOperator = QNotificationOperator.notificationOperator;
         JPAQuery<Notification> query = queryFactory.select(qNotification).from(qNotification)
@@ -65,9 +65,10 @@ public class NotificationService {
         query.where(qNotification.pushComp.eq(companyCode));
         query.where(qNotificationOperator.pushOperator.eq(operatorCode));
         query.orderBy(qNotification.createdAt.desc());
-        return query.fetch().stream()
+        var list = query.fetch().stream()
             .map(notificationMapper::toTNotificationDo)
             .toList();
+        return  PageTools.listConvertToPage(list, pageable);
     }
 
     /**
