@@ -47,7 +47,7 @@ public class MessageController {
             session.getSession().getCompanyCode(),
             state.orElseThrow(() -> new NullPointerException("数据为空")).equals("0") ? Whether.NO : Whether.YES,
             session.getSession().getOperatorCode(),
-            new NotificationTypeConverter().convertToEntityAttribute(type.orElse("0").toCharArray()[0])
+            type.orElse("").equals("")?null:new NotificationTypeConverter().convertToEntityAttribute(type.orElse("0").toCharArray()[0])
         );
         return VNotificationsResponse.builder()
             .code(200)
@@ -103,10 +103,10 @@ public class MessageController {
      * @return 消息数量
      */
     @GetMapping("/message/count")
-    public VPNotificationAmountResponse getMessageAmount(){
+    public VPNotificationAmountResponse getMessageAmount(@RequestParam("type") Optional<String> type ) throws NoSuchMethodException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var count = notificationService.getMessageCount(session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
+        var count = notificationService.getMessageCount(session.getSession().getCompanyCode(),session.getSession().getOperatorCode(),type.orElse(""));
         return VPNotificationAmountResponse.builder()
             .code(200)
             .message("获取数据成功")

@@ -1,5 +1,6 @@
 package com.linzhi.gongfu.service;
 
+import com.linzhi.gongfu.converter.NotificationTypeConverter;
 import com.linzhi.gongfu.converter.TaxModeConverter;
 import com.linzhi.gongfu.dto.TNotification;
 import com.linzhi.gongfu.dto.TNotificationInquiry;
@@ -58,7 +59,9 @@ public class NotificationService {
         JPAQuery<Notification> query = queryFactory.select(qNotification).from(qNotification)
             .leftJoin(qNotificationOperator).on(qNotificationOperator.notificationOperatorId.messageCode.eq(qNotification.code));
         query.where(qNotificationOperator.readed.eq(readed));
-        query.where(qNotification.type.eq(type));
+        if(type!=null){
+            query.where(qNotification.type.eq(type));
+        }
         query.where(qNotification.pushComp.eq(companyCode));
         query.where(qNotificationOperator.pushOperator.eq(operatorCode));
         query.orderBy(qNotification.createdAt.desc());
@@ -194,8 +197,12 @@ public class NotificationService {
      * @param operatorCode 操作员编码
      * @return 消息条数
      */
-    public int getMessageCount(String companyCode,String operatorCode){
-        return  notificationOperatorRepository.countNotificationOperatorByPushCompAndAndPushOperatorAndReaded(companyCode,operatorCode,Whether.NO);
+    public int getMessageCount(String companyCode,String operatorCode,String type) throws NoSuchMethodException {
+        if(type.equals("")){
+            return  notificationOperatorRepository.countNotificationOperatorByPushCompAndAndPushOperatorAndReaded(companyCode,operatorCode,Whether.NO);
+        }
+
+        return  notificationOperatorRepository.countNotification(companyCode,operatorCode,Whether.NO,new NotificationTypeConverter().convertToEntityAttribute(type.toCharArray()[0]));
     }
 
     /**

@@ -3,6 +3,7 @@ package com.linzhi.gongfu.repository;
 import com.linzhi.gongfu.entity.Notification;
 import com.linzhi.gongfu.entity.NotificationOperator;
 import com.linzhi.gongfu.entity.NotificationOperatorId;
+import com.linzhi.gongfu.enumeration.NotificationType;
 import com.linzhi.gongfu.enumeration.Whether;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -46,4 +47,17 @@ public interface NotificationOperatorRepository extends CrudRepository<Notificat
      * @return 消息条数
      */
     int countNotificationOperatorByPushCompAndAndPushOperatorAndReaded(String companyCode,String operator,Whether readed);
+
+    /**
+     * 查询该操作员未读的消息有多少条
+     * @param companyCode 公司编码
+     * @param operator 操作员编码
+     * @param readed 是否已读
+     * @param type 消息类型
+     * @return 消息条数
+     */
+    @Query(value = "select count(o.notificationOperatorId)  from NotificationOperator  o" +
+        " left join Notification n on n.code = o.notificationOperatorId.messageCode" +
+        " where o.pushComp=?1 and o.pushOperator=?2 and o.readed=?3 and n.type=?4 ")
+    int countNotification(String companyCode, String operator, Whether readed, NotificationType type);
 }
