@@ -38,9 +38,29 @@ public class VNotificationResponse extends VBaseResponse {
         private String content;
 
         /**
+         * 消息类型
+         */
+        private String type;
+
+        /**
+         * 创建时间
+         */
+        private String createdAt;
+
+        /**
+         * 已读时间
+         */
+        private String readedAt;
+
+        /**
          * 税模式
          */
         private String taxModel;
+
+        /**
+         * 其他表的主键
+         */
+        private String id;
 
         /**
          * 报价产品列表

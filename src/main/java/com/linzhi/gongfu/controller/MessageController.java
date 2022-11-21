@@ -99,11 +99,11 @@ public class MessageController {
      * @param code 消息编码
      * @return 消息详情
      */
-    @GetMapping("/message/{code}/{type}")
-    public VNotificationResponse getNotificationDetail(@PathVariable String code,@PathVariable String type) throws Exception {
+    @GetMapping("/message/{code}")
+    public VNotificationResponse getNotificationDetail(@PathVariable String code) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        var notification = notificationService.getNotification(code,session.getSession().getCompanyCode(),session.getSession().getOperatorCode(), type);
+        var notification = notificationService.getNotification(code,session.getSession().getCompanyCode(),session.getSession().getOperatorCode());
         return VNotificationResponse.builder()
             .code(200)
             .message("获取数据成功")

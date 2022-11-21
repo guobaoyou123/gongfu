@@ -41,6 +41,7 @@ public interface NotificationMapper {
      */
     @Mapping(target = "content", source = "message")
     @Mapping(target = "products",source = "products")
+    @Mapping(target = "type",expression = "java(String.valueOf(tNotification.getType().getType()))")
     VNotificationResponse.VNotification toVNotificationDetail(TNotification tNotification);
 
 }

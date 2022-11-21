@@ -11,6 +11,7 @@ import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.NotificationInquiryMapper;
 import com.linzhi.gongfu.mapper.NotificationMapper;
 import com.linzhi.gongfu.repository.*;
+import com.linzhi.gongfu.util.DateConverter;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.VOfferRequest;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -162,22 +163,29 @@ public class NotificationService {
      * @throws IOException 异常
      */
     @Transactional
-    public TNotification getNotification(String code,String companyCode,String operator,String type) throws Exception {
+    public TNotification getNotification(String code,String companyCode,String operator) throws Exception {
         try {
             var notification = notificationRepository.findById(code)
-                .map(notificationMapper::toTNotificationDo).orElseThrow(()->new IOException("未查询到数据"));
+                .orElseThrow(()->new IOException("未查询到数据"));
+
+            var tNotification = Optional.of(notification)
+                .map(notificationMapper::toTNotificationDo).get();
+            var readedAt = notification.getOperatorList().stream()
+                .filter(n -> n.getPushOperator().equals(operator)).toList().get(0).getReadedAt();
+            tNotification.setReadedAt(readedAt!=null?DateConverter.dateFormat(readedAt):null);
+
             NotificationInquiry inquiry = null;
-            if(type.equals(NotificationType.INQUIRY_CALL.getType()+"")){
+            if(tNotification.getType().equals(NotificationType.INQUIRY_CALL)){
                 inquiry = notificationInquiryRepository.findById(code).orElse(null);
-            }else if(type.equals(NotificationType.INQUIRY_RESPONSE.getType()+"")){
+            }else if(tNotification.getType().equals(NotificationType.INQUIRY_RESPONSE)){
                 inquiry=notificationInquiryRepository.findByOfferedMessCode(code).orElse(null);
             }
             if(inquiry!=null){
-                notification.setTaxModel(inquiry.getOfferMode().getTaxMode()+"");
+                tNotification.setTaxModel(inquiry.getOfferMode().getTaxMode()+"");
                 var products = inquiry.getRecords().stream()
                     .map(notificationInquiryMapper::toInquiryProduct)
                     .toList();
-                notification.setProducts(products);
+                tNotification.setProducts(products);
             }
             var readed = notificationOperatorRepository.findByNotificationOperatorId_MessageCodeAndPushCompAndPushOperator(code,companyCode,operator).orElseThrow(()->new IOException("未查询到数据"));
             if(readed.getReaded().equals(Whether.NO)) {
@@ -185,7 +193,7 @@ public class NotificationService {
                 readed.setReadedAt(LocalDateTime.now());
                 notificationOperatorRepository.save(readed);
             }
-            return notification;
+            return tNotification;
         }catch (Exception e){
             throw new Exception("数据异常");
         }

@@ -350,13 +350,11 @@ public class PlanService {
                 .map(PreferenceSupplier::getCompany)
                 .collect(Collectors.toList());
             //该品牌下排除优选供应商的供应商列表，按照公司名称来排序
-            List<Company> noPrelist = compTradBrandsrMap.get(s).stream()
+            List<Company> noPrelist = compTradBrandsrMap.get(s)!=null?compTradBrandsrMap.get(s).stream()
                 .sorted(Comparator.comparing(Company::getNameInCN))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()):new ArrayList<Company>();
             //将两列表合并
-            for (Company c:noPrelist) {
-                preList.add(c);
-            }
+            preList.addAll(noPrelist);
             //选择的以及自动补齐的供应商列表
             List<Company> finalHasList;
             //将前端已经选择的供应商从优选供应商中筛选出来放入finalHasList列表
@@ -371,7 +369,9 @@ public class PlanService {
             if(finalHasList.size() < 5){
                 int i = 5-finalHasList.size();
                 for(int j =0;j<i;j++){
-                    finalHasList.add(preList.get(j));
+                    if(j<preList.size()){
+                        finalHasList.add(preList.get(j));
+                    }
                 }
             }
             if (finalHasList.size() > 5) {

@@ -57,6 +57,11 @@ public class TNotification {
     private String createdAt;
 
     /**
+     * 已读时间
+     */
+    private String readedAt;
+
+    /**
      * 推送单位
      */
     private String pushComp;
