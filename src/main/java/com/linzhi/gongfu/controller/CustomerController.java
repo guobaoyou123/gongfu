@@ -6,7 +6,6 @@ import com.linzhi.gongfu.enumeration.CompanyRole;
 import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.CompanyService;
-import com.linzhi.gongfu.service.NotificationService;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -153,7 +152,7 @@ public class CustomerController {
     public VForeignCustomerPageResponse foreignSuppliers(@RequestParam("name") Optional<String> name,
                                                          @RequestParam("pageNum") Optional<String> pageNum,
                                                          @RequestParam("pageSize") Optional<String> pageSize,
-                                                         @RequestParam("state") Optional<String> state) throws IOException {
+                                                         @RequestParam("state") Optional<String> state) {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext()
             .getAuthentication();
