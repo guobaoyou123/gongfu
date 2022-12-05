@@ -270,16 +270,9 @@ public class NotificationService {
                     var price = priceMap.get(inquiry.getRecords().get(i).getNotificationInquiryRecordId().getCode());
                     if(price!=null){
                         inquiry.getRecords().get(i).setPrice(price.getPrice());
-                        inquiry.getRecords().get(i).setIsOffer(price.isOffered()?Whether.YES:Whether.NO);
+                        inquiry.getRecords().get(i).setIsOffer(price.getPrice()!=null?Whether.YES:Whether.NO);
                     }
                 }
-               /* inquiry.setRecords(inquiry.getRecords().stream().peek(r->{
-                    var price = priceMap.get(r.getNotificationInquiryRecordId().getCode());
-                    if(price!=null){
-                        r.setPrice(price.getPrice());
-                        r.setIsOffer(price.isOffered()?Whether.YES:Whether.NO);
-                    }
-                }).collect(Collectors.toList()));*/
             }
             notificationInquiryRepository.save(inquiry);
         }catch (Exception e){

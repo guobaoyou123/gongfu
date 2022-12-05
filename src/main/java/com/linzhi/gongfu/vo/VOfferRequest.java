@@ -36,10 +36,5 @@ public class VOfferRequest {
          * 价格
          */
         private BigDecimal price;
-
-        /**
-         * 是否可以报价
-         */
-        private boolean isOffered;
     }
 }
