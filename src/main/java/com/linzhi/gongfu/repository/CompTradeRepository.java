@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 交易信息的Repository
@@ -138,4 +139,6 @@ public interface CompTradeRepository
 
     @Transactional(readOnly = true)
     List<CompTrade> findCompTradesByCompTradeId_CompSalerAndBuyerCompanys_RoleAndStateAndSalerBelongToContainsOrderByBuyerCompanys_codeAsc(String salerCode,String role,Availability state,String operator);
+
+    Optional<CompTrade> findByCompTradeIdAndState(CompTradeId compTradeId ,Availability state);
 }

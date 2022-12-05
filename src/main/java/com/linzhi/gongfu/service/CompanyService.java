@@ -432,10 +432,10 @@ public class CompanyService {
         var company = getEnrolledCompanyDetail(enrolledCode)
             .orElseThrow(() -> new IOException("未从数据库找到"));
         //是否为供应商
-        var compTrad1 = compTradeRepository.findById(CompTradeId.builder()
+        var compTrad1 = compTradeRepository.findByCompTradeIdAndState(CompTradeId.builder()
             .compSaler(enrolledCode)
             .compBuyer(companyCode)
-            .build()
+            .build(),Availability.ENABLED
         );
         if (compTrad1.isPresent())
             company.setIsSupplier(true);
