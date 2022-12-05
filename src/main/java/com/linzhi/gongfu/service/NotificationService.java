@@ -46,6 +46,8 @@ public class NotificationService {
     private final NotificationInquiryMapper notificationInquiryMapper;
     private final OperatorBaseRepository operatorBaseRepository;
     private final NotificationInquiryRecordRepository notificationInquiryRecordRepository;
+    private final CompanyRepository companyRepository;
+
     /**
      * 查询消息列表
      *
@@ -173,10 +175,10 @@ public class NotificationService {
             var readedAt = notification.getOperatorList().stream()
                 .filter(n -> n.getPushOperator().equals(operator)).toList().get(0).getReadedAt();
             tNotification.setReadedAt(readedAt!=null?DateConverter.dateFormat(readedAt):null);
-
             NotificationInquiry inquiry = null;
             if(tNotification.getType().equals(NotificationType.INQUIRY_CALL)){
                 inquiry = notificationInquiryRepository.findById(code).orElse(null);
+                tNotification.setOffered(inquiry.getState().equals(OfferType.WAIT_OFFER)?false:true);
             }else if(tNotification.getType().equals(NotificationType.INQUIRY_RESPONSE)){
                 inquiry=notificationInquiryRepository.findByOfferedMessCode(code).orElse(null);
             }
@@ -334,6 +336,9 @@ public class NotificationService {
             .collect(Collectors.toList());
         inquiry.setProducts(records);
 
+        //询价单位
+        Company company = companyRepository.getCompany(inquiry.getInquiryId()).orElseThrow(()->new IOException("没有找到公司信息"));
+        inquiry.setCustomerName(company.getNameInCN());
         return Optional.of(inquiry);
     }
 

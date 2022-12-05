@@ -87,6 +87,11 @@ public class TNotification {
     private String taxModel;
 
     /**
+     * 是否已经完成报价
+     */
+    private boolean offered;
+
+    /**
      * 产品列表
      */
     List<TInquiryRecord> products;

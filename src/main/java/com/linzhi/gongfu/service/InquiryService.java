@@ -135,7 +135,7 @@ public class InquiryService {
                             .chargeUnit(purchasePlanProduct.getChargeUnit())
                             .facePrice(purchasePlanProduct.getFacePrice())
                             .build(),
-                        null, null, supplier.getDemand(), goods.getRate(), null, compTradMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode()).getTaxModel()
+                        null, null, supplier.getDemand(), goods.getRate(), null, compTradMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode())==null?TaxMode.INCLUDED:compTradMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode()).getTaxModel()
                     );
                     List<InquiryRecord> list = supplierInquiryRecordMap.get(supplier.getPurchasePlanProductSupplierId().getSalerCode());
                     if (list == null) {
@@ -146,7 +146,6 @@ public class InquiryService {
                     supplierInquiryRecordMap.put(supplier.getPurchasePlanProductSupplierId().getSalerCode(), list);
                 }
             }));
-
             //查询询价单最大编号
             String maxCode = inquiryDetailRepository.getMaxCode(companyCode, operatorCode);
             if (maxCode == null)

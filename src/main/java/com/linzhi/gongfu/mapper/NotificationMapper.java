@@ -23,6 +23,7 @@ public interface NotificationMapper {
      * @return 返回可使用的消息通知信息
      */
     @Mapping(target = "createdAt", expression = "java(com.linzhi.gongfu.util.DateConverter.dateFormat(notification.getCreatedAt()))")
+    @Mapping(target = "offered",constant = "false")
     TNotification toTNotificationDo(Notification notification);
 
     /**

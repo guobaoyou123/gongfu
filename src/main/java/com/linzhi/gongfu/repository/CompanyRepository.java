@@ -8,6 +8,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 公司信息Repository
@@ -72,8 +73,13 @@ public interface CompanyRepository extends CrudRepository<Company, String>, Quer
         , nativeQuery = true)
     int checkRepeat(String shortName, String companyCode);
 
-    @Query(value = "select c.*  from comp_base c \n" +
-        "left join comp_trade t on t.comp_buyer = c.code\n" +
-        "where t.comp_saler=?1 and t.saler_belong_to like ?2", nativeQuery = true)
-    List<Company> findCustomers(String companyCode, String operator);
+    /**
+     * 根据询价单编码查找公司单位详情
+     * @param inquiry 询价编码
+     * @return 公司详情
+     */
+    @Query(value = "select  c.*  from comp_base c " +
+            "left join  inquiry_base q on q.created_by_comp = c.code " +
+            "where q.id = ?1",nativeQuery = true)
+    Optional<Company> getCompany(String inquiry);
 }

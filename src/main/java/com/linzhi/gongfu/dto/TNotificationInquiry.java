@@ -40,6 +40,11 @@ public class TNotificationInquiry {
     private String taxModel;
 
     /**
+     * 客户单位
+     */
+    private String customerName;
+
+    /**
      * 产品列表
      */
     List<TInquiryRecord> products;

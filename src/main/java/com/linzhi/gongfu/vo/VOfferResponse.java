@@ -49,6 +49,11 @@ public class VOfferResponse extends VBaseResponse {
         private String state;
 
         /**
+         * 客户单位
+         */
+        private String customerName;
+
+        /**
          * 报价产品列表
          */
         private List<VProduct> products;

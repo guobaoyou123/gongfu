@@ -63,6 +63,11 @@ public class VNotificationResponse extends VBaseResponse {
         private String id;
 
         /**
+         * 是否已报价完成
+         */
+        private Boolean offered;
+
+        /**
          * 报价产品列表
          */
         private List<VProduct> products;
