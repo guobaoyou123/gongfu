@@ -3,8 +3,8 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TProduct;
 import com.linzhi.gongfu.entity.Product;
 import com.linzhi.gongfu.vo.VProductDetailResponse;
-import com.linzhi.gongfu.vo.VProductListResponse;
-import com.linzhi.gongfu.vo.VProductPageResponse;
+import com.linzhi.gongfu.vo.trade.VProductListResponse;
+import com.linzhi.gongfu.vo.trade.VProductPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

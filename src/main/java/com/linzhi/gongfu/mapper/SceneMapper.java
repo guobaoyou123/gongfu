@@ -2,7 +2,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TScene;
 import com.linzhi.gongfu.entity.Scene;
-import com.linzhi.gongfu.vo.VSceneListResponse;
+import com.linzhi.gongfu.vo.trade.VSceneListResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

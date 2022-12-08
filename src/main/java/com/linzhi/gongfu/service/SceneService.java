@@ -3,7 +3,7 @@ package com.linzhi.gongfu.service;
 import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.entity.Scene;
 import com.linzhi.gongfu.enumeration.CompanyRole;
-import com.linzhi.gongfu.repository.EnrolledCompanyRepository;
+import com.linzhi.gongfu.repository.trade.EnrolledCompanyRepository;
 import com.linzhi.gongfu.repository.SceneRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;

@@ -2,7 +2,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TAddress;
 import com.linzhi.gongfu.entity.Address;
-import com.linzhi.gongfu.vo.VAddressResponse;
+import com.linzhi.gongfu.vo.trade.VAddressResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

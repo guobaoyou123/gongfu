@@ -2,7 +2,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TTemporaryPlan;
 import com.linzhi.gongfu.entity.TemporaryPlan;
-import com.linzhi.gongfu.vo.VTemporaryPlanResponse;
+import com.linzhi.gongfu.vo.trade.VTemporaryPlanResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

@@ -3,7 +3,7 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TCompareDetail;
 import com.linzhi.gongfu.entity.SysCompareDetail;
 import com.linzhi.gongfu.vo.VConnectionsResponse;
-import com.linzhi.gongfu.vo.VDriversResponse;
+import com.linzhi.gongfu.vo.trade.VDriversResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

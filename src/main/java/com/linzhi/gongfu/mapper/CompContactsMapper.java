@@ -2,7 +2,7 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TCompContacts;
 import com.linzhi.gongfu.entity.CompContacts;
-import com.linzhi.gongfu.vo.VCompContactsResponse;
+import com.linzhi.gongfu.vo.trade.VCompContactsResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

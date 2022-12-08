@@ -5,7 +5,8 @@ import com.linzhi.gongfu.entity.Brand;
 import com.linzhi.gongfu.entity.CompAllowedBrand;
 import com.linzhi.gongfu.entity.DcBrand;
 import com.linzhi.gongfu.entity.ViewBrand;
-import com.linzhi.gongfu.vo.*;
+import com.linzhi.gongfu.mapper.trade.PreferenceSupplierMapper;
+import com.linzhi.gongfu.vo.trade.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

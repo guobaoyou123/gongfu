@@ -12,7 +12,7 @@ import com.linzhi.gongfu.repository.MainProductClassRepository;
 import com.linzhi.gongfu.repository.ProductRepository;
 import com.linzhi.gongfu.repository.SysCompareTableRepository;
 import com.linzhi.gongfu.util.PageTools;
-import com.linzhi.gongfu.vo.VProductPageResponse;
+import com.linzhi.gongfu.vo.trade.VProductPageResponse;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

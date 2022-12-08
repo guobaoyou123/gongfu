@@ -2,14 +2,13 @@ package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TCompanyBaseInformation;
 import com.linzhi.gongfu.dto.TCompanyList;
-import com.linzhi.gongfu.dto.TEnrolledTradeCompanies;
 import com.linzhi.gongfu.dto.TEnrolledTradeCompany;
 import com.linzhi.gongfu.entity.CompTrade;
 import com.linzhi.gongfu.entity.Company;
 import com.linzhi.gongfu.entity.EnrolledCompany;
 import com.linzhi.gongfu.entity.EnrolledTrade;
 import com.linzhi.gongfu.vo.*;
-import com.querydsl.core.Tuple;
+import com.linzhi.gongfu.vo.trade.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

@@ -3,10 +3,10 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.Operator;
 import com.linzhi.gongfu.entity.OperatorBase;
-import com.linzhi.gongfu.vo.VForeignCustomerResponse;
-import com.linzhi.gongfu.vo.VOperatorDetailResponse;
-import com.linzhi.gongfu.vo.VOperatorListResponse;
-import com.linzhi.gongfu.vo.VOperatorPageResponse;
+import com.linzhi.gongfu.vo.trade.VForeignCustomerResponse;
+import com.linzhi.gongfu.vo.trade.VOperatorDetailResponse;
+import com.linzhi.gongfu.vo.trade.VOperatorListResponse;
+import com.linzhi.gongfu.vo.trade.VOperatorPageResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
