@@ -1,7 +1,6 @@
 package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.Availability;
-import com.linzhi.gongfu.enumeration.CompanyRole;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -25,7 +24,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "comp_warehouse")
-public class SelfWareHouse {
+public class WareHouse {
 
     /**
      * 库房编号
