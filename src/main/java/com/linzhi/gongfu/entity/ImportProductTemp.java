@@ -18,7 +18,7 @@ import java.io.Serializable;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "improt_product_temp")
+@Table(name = "import_product_temp")
 public class ImportProductTemp implements Serializable {
     @EmbeddedId
     private ImportProductTempId importProductTempId;
