@@ -32,6 +32,11 @@ public class TWareHouse {
     private String name;
 
     /**
+     * 类型0-未初始化 1-已经初始化没有产生出库单 2-已经产生出库单
+     */
+    private String  type;
+
+    /**
      * 库房面积
      */
     private BigDecimal acreage;
@@ -40,6 +45,22 @@ public class TWareHouse {
      * 创建时间
      */
     private String  createdAt;
+
+    /**
+     * 区域编码
+     */
+    private String  areaCode;
+
+    /**
+     * 区域名称
+     */
+    private String  areaName;
+
+    /**
+     * 详细地址
+     */
+    private String  address;
+
 
     /**
      * 授权操作员列表

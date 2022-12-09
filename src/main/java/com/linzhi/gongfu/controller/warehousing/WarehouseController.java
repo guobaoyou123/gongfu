@@ -4,12 +4,15 @@ import com.linzhi.gongfu.mapper.warehousing.WareHouseMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.warehousing.WarehouseService;
 import com.linzhi.gongfu.vo.warehousing.VWareHouseListResponse;
+import com.linzhi.gongfu.vo.warehousing.VWareHouseResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -46,6 +49,22 @@ public class WarehouseController {
 
     }
 
-
+    /**
+     * 库房详情
+     * @param code 库房编码
+     * @return 库房详情
+     */
+    @GetMapping("/warehouse/{code}")
+    public VWareHouseResponse wareHouseDetail(@PathVariable String code) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var detail = warehouseService.getWareHouseDetail(code,session.getSession().getCompanyCode())
+            .map(wareHouseMapper::toVWareHouseDetail);
+        return  VWareHouseResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .werahouse(detail.get())
+            .build();
+    }
 
 }
