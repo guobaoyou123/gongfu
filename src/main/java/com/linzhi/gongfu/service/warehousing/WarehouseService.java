@@ -2,13 +2,19 @@ package com.linzhi.gongfu.service.warehousing;
 
 import com.linzhi.gongfu.converter.AvailabilityConverter;
 import com.linzhi.gongfu.dto.TWareHouse;
+import com.linzhi.gongfu.entity.WareHouse;
+import com.linzhi.gongfu.entity.WareHouseOperator;
+import com.linzhi.gongfu.entity.WareHouseOperatorId;
 import com.linzhi.gongfu.mapper.warehousing.WareHouseMapper;
 import com.linzhi.gongfu.repository.warehousing.ProductStockRepository;
 import com.linzhi.gongfu.repository.warehousing.WareHouseRepository;
+import com.linzhi.gongfu.vo.warehousing.VWareHouseRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,20 +51,67 @@ public class WarehouseService {
 
     /**
      * 库房详情
+     *
      * @param code 库房编码
      * @return 库房详情
      */
     @Cacheable(value = "WareHouse_Detail;1800", unless = "#result == null ", key = "#code")
-    public Optional<TWareHouse>  getWareHouseDetail(String code,String companyCode){
+    public Optional<TWareHouse> getWareHouseDetail(String code, String companyCode) {
         var wareHouse = wareHouseRepository.findById(code)
             .map(wareHouseMapper::toTWareHouse);
         //查询库房是否已经初始化
-        int count =  productStockRepository.countProductStocksByProductStockId_CompIdAndProductStockId_WarehouseCode(companyCode,code);
-        if(count>0){
+        int count = productStockRepository.countProductStocksByProductStockId_CompIdAndProductStockId_WarehouseCode(companyCode, code);
+        if (count > 0) {
             wareHouse.get().setType("1");
         }
         // TODO 需要查询该库是否有出入库单
-        return  wareHouseRepository.findById(code)
-              .map(wareHouseMapper::toTWareHouse);
+        return wareHouseRepository.findById(code)
+            .map(wareHouseMapper::toTWareHouse);
+    }
+
+    /**
+     * 保存库房信息
+     *
+     * @param wareHouse 库房信息
+     * @param companyCode 单位编码
+     * @throws Exception 异常
+     */
+    @CacheEvict(value = "WareHouse_List;1800", key = "#companyCode+'_1'")
+    public void saveWareHouse(VWareHouseRequest wareHouse, String companyCode) throws Exception {
+        try {
+            var wareHouseDetail = WareHouse.builder()
+                .compId(companyCode)
+                .acreage(wareHouse.getAcreage())
+                .address(wareHouse.getAddress())
+                .areaCode(wareHouse.getAreaCode())
+                .name(wareHouse.getName())
+                .build();
+            //编码 单位号+两位数序号，查找库里最大编号
+            var maxCode = wareHouseRepository.findMaxCode(companyCode);
+            if (maxCode == null) {
+                maxCode = companyCode + "01";
+            }
+            wareHouseDetail.setCode(maxCode);
+            List<WareHouseOperator> operatorList = new ArrayList<>();
+
+            for (String s : wareHouse.getAuthorizedOperators()) {
+                operatorList.add(WareHouseOperator.builder()
+                    .wareHouseOperatorId(
+                        WareHouseOperatorId.builder()
+                            .code(maxCode)
+                            .compId(companyCode)
+                            .operatorCode(s)
+                            .build()
+                    )
+                    .build());
+            }
+            wareHouseDetail.setOperatorList(operatorList);
+            wareHouseRepository.save(wareHouseDetail);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception();
+        }
+
+
     }
 }

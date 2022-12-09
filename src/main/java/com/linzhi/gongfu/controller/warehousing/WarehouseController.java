@@ -3,14 +3,13 @@ package com.linzhi.gongfu.controller.warehousing;
 import com.linzhi.gongfu.mapper.warehousing.WareHouseMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.warehousing.WarehouseService;
+import com.linzhi.gongfu.vo.VBaseResponse;
 import com.linzhi.gongfu.vo.warehousing.VWareHouseListResponse;
+import com.linzhi.gongfu.vo.warehousing.VWareHouseRequest;
 import com.linzhi.gongfu.vo.warehousing.VWareHouseResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -67,4 +66,21 @@ public class WarehouseController {
             .build();
     }
 
+    /**
+     * 保存库房信息
+     * @param wareHouse 库房信息
+     * @return 返回成功或者失败信息
+     */
+    @PostMapping("/warehouse")
+    public VBaseResponse saveWareHouse(@RequestBody Optional<VWareHouseRequest> wareHouse) throws Exception {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        warehouseService.saveWareHouse(wareHouse.orElseThrow(()->new NullPointerException("数据为空")),
+            session.getSession().getCompanyCode()
+        );
+        return  VBaseResponse.builder()
+            .code(200)
+            .message("保存数据成功")
+            .build();
+    }
 }

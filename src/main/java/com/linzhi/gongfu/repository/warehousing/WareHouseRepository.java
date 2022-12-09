@@ -3,6 +3,7 @@ package com.linzhi.gongfu.repository.warehousing;
 
 import com.linzhi.gongfu.entity.WareHouse;
 import com.linzhi.gongfu.enumeration.Availability;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
@@ -23,4 +24,12 @@ public interface WareHouseRepository extends CrudRepository<WareHouse, String>, 
      * @return 库房列表
      */
     List<WareHouse> findWareHouseByCompIdAndSate(String companyCode, Availability state);
+
+    /**
+     * 查询最大编码
+     * @param companyCode 单位编码
+     * @return 最大编码
+     */
+    @Query(value = "select  (cast(max(code) as int)+1) from comp_warehouse where comp_id=?1 ", nativeQuery = true)
+    String  findMaxCode(String companyCode);
 }

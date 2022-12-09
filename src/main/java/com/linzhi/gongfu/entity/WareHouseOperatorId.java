@@ -53,7 +53,7 @@ public class WareHouseOperatorId implements Serializable {
     @NotBlank
     @Getter
     @Setter
-    private String operator_code;
+    private String operatorCode;
 
 
 }
