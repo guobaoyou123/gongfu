@@ -11,7 +11,6 @@ import com.linzhi.gongfu.repository.OperatorBaseRepository;
 import com.linzhi.gongfu.repository.OperatorRepository;
 import com.linzhi.gongfu.repository.OperatorSceneRepository;
 import com.linzhi.gongfu.repository.SceneRepository;
-import com.linzhi.gongfu.service.trade.AddressService;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.util.RNGUtil;
 import com.linzhi.gongfu.vo.trade.VOperatorPageResponse;

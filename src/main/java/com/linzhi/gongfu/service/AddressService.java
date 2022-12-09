@@ -1,4 +1,4 @@
-package com.linzhi.gongfu.service.trade;
+package com.linzhi.gongfu.service;
 
 import com.linzhi.gongfu.dto.TAddress;
 import com.linzhi.gongfu.dto.TArea;
@@ -9,7 +9,7 @@ import com.linzhi.gongfu.enumeration.Whether;
 import com.linzhi.gongfu.mapper.AddressMapper;
 import com.linzhi.gongfu.mapper.AdministrativeAreaMapper;
 import com.linzhi.gongfu.mapper.CompContactsMapper;
-import com.linzhi.gongfu.repository.*;
+import com.linzhi.gongfu.repository.AdministrativeAreaRepository;
 import com.linzhi.gongfu.repository.trade.AddressRepository;
 import com.linzhi.gongfu.repository.trade.CompContactsRepository;
 import com.linzhi.gongfu.repository.trade.DisabledAreaRepository;
@@ -49,7 +49,6 @@ public class AddressService {
     private final AddressRepository addressRepository;
     private final CompContactsRepository compContactsRepository;
     private final CompContactsMapper compContactsMapper;
-    private final OperatorRepository operatorRepository;
 
     /**
      * 三级行政区划查找（包括禁用区域状态）
@@ -62,9 +61,9 @@ public class AddressService {
             .map(administrativeAreaMapper::toDo)
             .toList();
         List<DisabledArea> disabledAreaList = listDisabledAreas(companyCode);
-        Map<String,DisabledArea> disabledAreaMap = disabledAreaList
+        Map<String, DisabledArea> disabledAreaMap = disabledAreaList
             .stream()
-            .collect(Collectors.toMap(d->d.getDisabledAreaId().getCode(),DisabledArea->DisabledArea));
+            .collect(Collectors.toMap(d -> d.getDisabledAreaId().getCode(), DisabledArea -> DisabledArea));
         list.forEach(tArea -> {
             DisabledArea disabledArea = disabledAreaMap.get(tArea.getCode());
             if (disabledArea != null)

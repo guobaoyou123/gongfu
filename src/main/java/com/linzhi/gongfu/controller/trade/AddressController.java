@@ -5,7 +5,7 @@ import com.linzhi.gongfu.mapper.AdministrativeAreaMapper;
 import com.linzhi.gongfu.mapper.CompContactsMapper;
 import com.linzhi.gongfu.mapper.trade.DisabledAreaMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
-import com.linzhi.gongfu.service.trade.AddressService;
+import com.linzhi.gongfu.service.AddressService;
 import com.linzhi.gongfu.vo.*;
 import com.linzhi.gongfu.vo.trade.*;
 import lombok.RequiredArgsConstructor;

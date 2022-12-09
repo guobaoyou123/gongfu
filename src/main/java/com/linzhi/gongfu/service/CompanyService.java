@@ -9,7 +9,6 @@ import com.linzhi.gongfu.mapper.CompanyMapper;
 import com.linzhi.gongfu.mapper.OperatorMapper;
 import com.linzhi.gongfu.repository.*;
 import com.linzhi.gongfu.repository.trade.*;
-import com.linzhi.gongfu.service.trade.AddressService;
 import com.linzhi.gongfu.service.trade.NotificationService;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.trade.*;
