@@ -2,13 +2,13 @@ package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.Availability;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 库房表
@@ -82,4 +82,15 @@ public class WareHouse {
      */
     @Column
     private Availability sate;
+
+    /**
+     * 授权操作员
+     */
+    @OneToMany
+    @JoinColumns({
+        @JoinColumn(name = "code", referencedColumnName = "code", insertable = true, updatable = true),
+        @JoinColumn(name = "comp_id", referencedColumnName = "comp_id", insertable = true, updatable = true)
+    })
+    @NotFound(action = NotFoundAction.IGNORE)
+    private List<WareHouseOperator> operatorList;
 }
