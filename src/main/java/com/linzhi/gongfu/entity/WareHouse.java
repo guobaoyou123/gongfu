@@ -6,6 +6,7 @@ import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "comp_warehouse")
-public class WareHouse {
+public class WareHouse implements Serializable {
 
     /**
      * 库房编号
@@ -80,17 +81,16 @@ public class WareHouse {
     /**
      * 状态
      */
-    @Column
-    private Availability sate;
+    @Column(name = "state")
+    private Availability state;
 
     /**
      * 授权操作员
      */
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumns({
         @JoinColumn(name = "code", referencedColumnName = "code", insertable = true, updatable = true),
         @JoinColumn(name = "comp_id", referencedColumnName = "comp_id", insertable = true, updatable = true)
     })
-    @NotFound(action = NotFoundAction.IGNORE)
     private List<WareHouseOperator> operatorList;
 }

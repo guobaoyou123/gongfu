@@ -3,6 +3,7 @@ package com.linzhi.gongfu.mapper;
 import com.linzhi.gongfu.dto.TOperatorInfo;
 import com.linzhi.gongfu.entity.Operator;
 import com.linzhi.gongfu.entity.OperatorBase;
+import com.linzhi.gongfu.entity.WareHouseOperator;
 import com.linzhi.gongfu.vo.trade.VForeignCustomerResponse;
 import com.linzhi.gongfu.vo.trade.VOperatorDetailResponse;
 import com.linzhi.gongfu.vo.trade.VOperatorListResponse;
@@ -10,6 +11,8 @@ import com.linzhi.gongfu.vo.trade.VOperatorPageResponse;
 import com.linzhi.gongfu.vo.warehousing.VWareHouseListResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.List;
 
 /**
  * 用于进行操作员相关信息的转换
@@ -45,4 +48,9 @@ public interface OperatorMapper {
 
     VForeignCustomerResponse.VOperator toForeignCustomerDetail(TOperatorInfo operatorInfo);
 
+    List<TOperatorInfo> toWareHouseOperators(List<WareHouseOperator> operators);
+
+    @Mapping(target = "code",source = "operator.identity.operatorCode")
+    @Mapping(target = "name",source = "operator.name")
+    TOperatorInfo  toWareHouseOperator(WareHouseOperator wareHouseOperator);
 }

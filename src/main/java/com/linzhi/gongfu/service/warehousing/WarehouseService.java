@@ -5,15 +5,22 @@ import com.linzhi.gongfu.dto.TWareHouse;
 import com.linzhi.gongfu.entity.WareHouse;
 import com.linzhi.gongfu.entity.WareHouseOperator;
 import com.linzhi.gongfu.entity.WareHouseOperatorId;
+import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.mapper.warehousing.WareHouseMapper;
 import com.linzhi.gongfu.repository.warehousing.ProductStockRepository;
 import com.linzhi.gongfu.repository.warehousing.WareHouseRepository;
+import com.linzhi.gongfu.service.AddressService;
 import com.linzhi.gongfu.vo.warehousing.VWareHouseRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +38,7 @@ public class WarehouseService {
     final private WareHouseRepository wareHouseRepository;
     final private WareHouseMapper wareHouseMapper;
     final private ProductStockRepository productStockRepository;
-
+    final private AddressService addressService;
     /**
      * 查找库房列表
      *
@@ -42,7 +49,7 @@ public class WarehouseService {
     @Cacheable(value = "WareHouse_List;1800", unless = "#result == null ", key = "#companyCode+'_'+#state")
     public List<TWareHouse> findWareHouseList(String state, String companyCode) throws NoSuchMethodException {
 
-        return wareHouseRepository.findWareHouseByCompIdAndSate
+        return wareHouseRepository.findWareHouseByCompIdAndState
                 (companyCode,
                     new AvailabilityConverter().convertToEntityAttribute(state.toCharArray()[0])
                 ).stream().map(wareHouseMapper::toTWareHouse)
@@ -77,23 +84,16 @@ public class WarehouseService {
      * @throws Exception 异常
      */
     @CacheEvict(value = "WareHouse_List;1800", key = "#companyCode+'_1'")
+    @Transactional
     public void saveWareHouse(VWareHouseRequest wareHouse, String companyCode) throws Exception {
         try {
-            var wareHouseDetail = WareHouse.builder()
-                .compId(companyCode)
-                .acreage(wareHouse.getAcreage())
-                .address(wareHouse.getAddress())
-                .areaCode(wareHouse.getAreaCode())
-                .name(wareHouse.getName())
-                .build();
             //编码 单位号+两位数序号，查找库里最大编号
             var maxCode = wareHouseRepository.findMaxCode(companyCode);
             if (maxCode == null) {
                 maxCode = companyCode + "01";
             }
-            wareHouseDetail.setCode(maxCode);
+            //查找区域名称
             List<WareHouseOperator> operatorList = new ArrayList<>();
-
             for (String s : wareHouse.getAuthorizedOperators()) {
                 operatorList.add(WareHouseOperator.builder()
                     .wareHouseOperatorId(
@@ -105,13 +105,66 @@ public class WarehouseService {
                     )
                     .build());
             }
-            wareHouseDetail.setOperatorList(operatorList);
+            String areaName = addressService.findByCode("",wareHouse.getAreaCode());
+            var wareHouseDetail = WareHouse.builder()
+                .code(maxCode)
+                .compId(companyCode)
+                .acreage(wareHouse.getAcreage())
+                .address(wareHouse.getAddress())
+                .areaCode(wareHouse.getAreaCode())
+                .areaName(areaName)
+                .name(wareHouse.getName())
+                .operatorList(operatorList)
+                .state(Availability.ENABLED)
+                .createdAt(LocalDateTime.now())
+                .build();
             wareHouseRepository.save(wareHouseDetail);
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception();
         }
+    }
 
+    /**
+     * 保存库房信息
+     *
+     * @param wareHouse 库房信息
+     * @param companyCode 单位编码
+     * @throws Exception 异常
+     */
+    @Caching(evict = {
+        @CacheEvict(value = "WareHouse_List;1800", key = "#companyCode+'_1'"),
+        @CacheEvict(value = "WareHouse_Detail",key = "#code")
+    })
+    @Transactional
+    public void editWareHouse(VWareHouseRequest wareHouse, String companyCode,String code) throws Exception {
+        try {
+            var house = wareHouseRepository.findById(code).orElseThrow(()->new IOException("没有找到数据"));
+            //删除授权操作员
 
+            //查找区域名称
+            List<WareHouseOperator> operatorList = new ArrayList<>();
+            for (String s : wareHouse.getAuthorizedOperators()) {
+                operatorList.add(WareHouseOperator.builder()
+                    .wareHouseOperatorId(
+                        WareHouseOperatorId.builder()
+                            .code(code)
+                            .compId(companyCode)
+                            .operatorCode(s)
+                            .build()
+                    )
+                    .build());
+            }
+            String areaName = addressService.findByCode("",wareHouse.getAreaCode());
+            house.setAreaCode(wareHouse.getAreaCode());
+            house.setAreaName(areaName);
+            house.setAcreage(house.getAcreage());
+            house.setAddress(house.getAddress());
+            house.setOperatorList(operatorList);
+            wareHouseRepository.save(house);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception();
+        }
     }
 }

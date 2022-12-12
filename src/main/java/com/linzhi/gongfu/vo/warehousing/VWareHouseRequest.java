@@ -3,6 +3,7 @@ package com.linzhi.gongfu.vo.warehousing;
 import com.linzhi.gongfu.vo.VBaseResponse;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
@@ -15,11 +16,10 @@ import java.util.List;
  * @author zhangguanghua
  * @create_at 2022-12-09
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
 @Jacksonized
-@SuperBuilder(toBuilder = true)
-public class VWareHouseRequest extends VBaseResponse {
+@NoArgsConstructor
+public class VWareHouseRequest{
 
         /**
          * 仓库名称
@@ -44,6 +44,6 @@ public class VWareHouseRequest extends VBaseResponse {
         /**
          * 授权操作员列表
          */
-        private List<String> AuthorizedOperators;
+        private List<String> authorizedOperators;
 
 }

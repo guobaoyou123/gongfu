@@ -83,4 +83,25 @@ public class WarehouseController {
             .message("保存数据成功")
             .build();
     }
+
+    /**
+     * 保存库房信息
+     * @param wareHouse 库房信息
+     * @return 返回成功或者失败信息
+     */
+    @PostMapping("/warehouse/{code}")
+    public VBaseResponse editWareHouse(@PathVariable("code") String code ,
+                                       @RequestBody Optional<VWareHouseRequest> wareHouse
+    ) throws Exception {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        warehouseService.saveWareHouse(wareHouse.orElseThrow(()->new NullPointerException("数据为空")),
+            session.getSession().getCompanyCode()
+        );
+        return  VBaseResponse.builder()
+            .code(200)
+            .message("保存数据成功")
+            .build();
+    }
+
 }

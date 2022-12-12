@@ -25,4 +25,11 @@ public class WareHouseOperator {
 
     @EmbeddedId
     private WareHouseOperatorId wareHouseOperatorId;
+
+    @OneToOne
+    @JoinColumns({
+        @JoinColumn(name = "comp_id", referencedColumnName = "dc_comp_id", insertable = false, updatable = false)
+   ,  @JoinColumn(name = "operator_code", referencedColumnName = "code", insertable = false, updatable = false)
+    })
+   private OperatorBase operator;
 }

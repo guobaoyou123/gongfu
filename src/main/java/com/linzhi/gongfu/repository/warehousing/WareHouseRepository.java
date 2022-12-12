@@ -23,7 +23,7 @@ public interface WareHouseRepository extends CrudRepository<WareHouse, String>, 
      * @param state 状态
      * @return 库房列表
      */
-    List<WareHouse> findWareHouseByCompIdAndSate(String companyCode, Availability state);
+    List<WareHouse> findWareHouseByCompIdAndState(String companyCode, Availability state);
 
     /**
      * 查询最大编码
