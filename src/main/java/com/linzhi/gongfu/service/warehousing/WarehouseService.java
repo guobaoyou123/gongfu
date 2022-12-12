@@ -8,6 +8,7 @@ import com.linzhi.gongfu.entity.WareHouseOperatorId;
 import com.linzhi.gongfu.enumeration.Availability;
 import com.linzhi.gongfu.mapper.warehousing.WareHouseMapper;
 import com.linzhi.gongfu.repository.warehousing.ProductStockRepository;
+import com.linzhi.gongfu.repository.warehousing.WareHouseOperatorRepository;
 import com.linzhi.gongfu.repository.warehousing.WareHouseRepository;
 import com.linzhi.gongfu.service.AddressService;
 import com.linzhi.gongfu.vo.warehousing.VWareHouseRequest;
@@ -39,6 +40,7 @@ public class WarehouseService {
     final private WareHouseMapper wareHouseMapper;
     final private ProductStockRepository productStockRepository;
     final private AddressService addressService;
+    final private WareHouseOperatorRepository wareHouseOperatorRepository;
     /**
      * 查找库房列表
      *
@@ -141,7 +143,7 @@ public class WarehouseService {
         try {
             var house = wareHouseRepository.findById(code).orElseThrow(()->new IOException("没有找到数据"));
             //删除授权操作员
-
+            wareHouseOperatorRepository.deleteWareHouseOperatorByWareHouseOperatorId_CodeAndWareHouseOperatorId_CompId(code,companyCode);
             //查找区域名称
             List<WareHouseOperator> operatorList = new ArrayList<>();
             for (String s : wareHouse.getAuthorizedOperators()) {

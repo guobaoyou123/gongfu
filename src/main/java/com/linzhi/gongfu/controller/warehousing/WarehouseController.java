@@ -85,7 +85,7 @@ public class WarehouseController {
     }
 
     /**
-     * 保存库房信息
+     * 修改库房信息
      * @param wareHouse 库房信息
      * @return 返回成功或者失败信息
      */
@@ -95,13 +95,13 @@ public class WarehouseController {
     ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        warehouseService.saveWareHouse(wareHouse.orElseThrow(()->new NullPointerException("数据为空")),
-            session.getSession().getCompanyCode()
+        warehouseService.editWareHouse(wareHouse.orElseThrow(()->new NullPointerException("数据为空")),
+            session.getSession().getCompanyCode(),code
         );
         return  VBaseResponse.builder()
             .code(200)
             .message("保存数据成功")
             .build();
     }
-
+    
 }
