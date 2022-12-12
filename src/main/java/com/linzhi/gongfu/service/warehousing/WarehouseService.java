@@ -22,9 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * 仓库信息及处理业务服务
@@ -178,15 +176,29 @@ public class WarehouseService {
      * @param state 状态
      * @throws Exception 异常
      */
-
      @CacheEvict(value = "WareHouse_List;1800", key = "#companyCode+'_*'")
     @Transactional
-    public void editWareHouseState(String companyCode,String code,String state) throws Exception {
-        try {
+    public Map<String,String> editWareHouseState(String companyCode, String code, String state) throws Exception {
+        Map<String,String> map = new HashMap<>();
+         try {
+            if(state.equals("0")){
+                //判断可发库存是否等于0
+               var amount= productStockRepository.getVendibleStock(code,companyCode);
+               if(amount!=null&&amount.floatValue()>0){
+                   map.put("code","207");
+                   map.put("message","可发库存大于0");
+                   return map;
+               }
+                //TODO:判断是否存在出库单
+            }
             wareHouseRepository.updateState(new AvailabilityConverter().convertToEntityAttribute(state.toCharArray()[0]),code);
+             map.put("code","200");
+             map.put("message","更新成功");
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception();
         }
+
+         return map;
     }
 }

@@ -117,12 +117,12 @@ public class WarehouseController {
     ) throws Exception {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
-        warehouseService.editWareHouseState(
+        var map =  warehouseService.editWareHouseState(
             session.getSession().getCompanyCode(),code,state
         );
         return  VBaseResponse.builder()
-            .code(200)
-            .message("操作数据成功")
+            .code(Integer.parseInt(map.get("code")))
+            .message(map.get("message"))
             .build();
     }
 
