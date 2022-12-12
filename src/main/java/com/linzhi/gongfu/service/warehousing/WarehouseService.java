@@ -170,4 +170,23 @@ public class WarehouseService {
             throw new Exception();
         }
     }
+
+    /**
+     * 修改库房状态
+     * @param companyCode 单位编码
+     * @param code 库房编码
+     * @param state 状态
+     * @throws Exception 异常
+     */
+
+     @CacheEvict(value = "WareHouse_List;1800", key = "#companyCode+'_*'")
+    @Transactional
+    public void editWareHouseState(String companyCode,String code,String state) throws Exception {
+        try {
+            wareHouseRepository.updateState(new AvailabilityConverter().convertToEntityAttribute(state.toCharArray()[0]),code);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception();
+        }
+    }
 }

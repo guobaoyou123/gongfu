@@ -3,6 +3,7 @@ package com.linzhi.gongfu.repository.warehousing;
 
 import com.linzhi.gongfu.entity.WareHouse;
 import com.linzhi.gongfu.enumeration.Availability;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
@@ -32,4 +33,13 @@ public interface WareHouseRepository extends CrudRepository<WareHouse, String>, 
      */
     @Query(value = "select  (cast(max(code) as int)+1) from comp_warehouse where comp_id=?1 ", nativeQuery = true)
     String  findMaxCode(String companyCode);
+
+    /**
+     * 更新库房状态
+     * @param state 状态
+     * @param code 库房编码
+     */
+    @Modifying
+    @Query(value = "UPDATE WareHouse AS w SET w.state=?1 where w.code=?2")
+    void updateState(Availability state ,String code);
 }

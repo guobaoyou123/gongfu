@@ -104,5 +104,26 @@ public class WarehouseController {
             .build();
     }
 
+    /**
+     * 禁用、启用库房
+     * @param code 库房编码
+     * @param state 状态 0-禁用 1-启用
+     * @return 成功或者失败信息
+     * @throws Exception 异常
+     */
+    @PostMapping("/warehouse/{code}/{state}")
+    public VBaseResponse editWareHouse(@PathVariable("code") String code ,
+                                       @PathVariable("state") String state
+    ) throws Exception {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        warehouseService.editWareHouseState(
+            session.getSession().getCompanyCode(),code,state
+        );
+        return  VBaseResponse.builder()
+            .code(200)
+            .message("操作数据成功")
+            .build();
+    }
 
 }
