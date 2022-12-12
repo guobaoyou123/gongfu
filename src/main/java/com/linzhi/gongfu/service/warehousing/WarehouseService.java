@@ -162,8 +162,9 @@ public class WarehouseService {
             house.setAreaName(areaName);
             house.setAcreage(house.getAcreage());
             house.setAddress(house.getAddress());
-            house.setOperatorList(operatorList);
+           // house.setOperatorList(operatorList);
             wareHouseRepository.save(house);
+            wareHouseOperatorRepository.saveAll(operatorList);
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception();

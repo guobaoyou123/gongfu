@@ -89,7 +89,7 @@ public class WarehouseController {
      * @param wareHouse 库房信息
      * @return 返回成功或者失败信息
      */
-    @PostMapping("/warehouse/{code}")
+    @PutMapping("/warehouse/{code}")
     public VBaseResponse editWareHouse(@PathVariable("code") String code ,
                                        @RequestBody Optional<VWareHouseRequest> wareHouse
     ) throws Exception {
@@ -103,5 +103,6 @@ public class WarehouseController {
             .message("保存数据成功")
             .build();
     }
-    
+
+
 }

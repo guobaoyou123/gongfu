@@ -2,6 +2,8 @@ package com.linzhi.gongfu.entity;
 
 import com.linzhi.gongfu.enumeration.Availability;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -29,7 +31,8 @@ public class WareHouseOperator {
     @OneToOne
     @JoinColumns({
         @JoinColumn(name = "comp_id", referencedColumnName = "dc_comp_id", insertable = false, updatable = false)
-   ,  @JoinColumn(name = "operator_code", referencedColumnName = "code", insertable = false, updatable = false)
+        , @JoinColumn(name = "operator_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
-   private OperatorBase operator;
+    @NotFound(action = NotFoundAction.IGNORE)
+    private OperatorBase operator;
 }

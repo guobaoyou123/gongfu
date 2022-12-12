@@ -89,8 +89,9 @@ public class WareHouse implements Serializable {
      */
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumns({
-        @JoinColumn(name = "code", referencedColumnName = "code", insertable = true, updatable = true),
-        @JoinColumn(name = "comp_id", referencedColumnName = "comp_id", insertable = true, updatable = true)
+        @JoinColumn(name = "code", referencedColumnName = "code", insertable = true, updatable = false),
+        @JoinColumn(name = "comp_id", referencedColumnName = "comp_id", insertable = true, updatable = false)
     })
+    @NotFound(action=NotFoundAction.IGNORE)
     private List<WareHouseOperator> operatorList;
 }
