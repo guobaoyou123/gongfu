@@ -193,13 +193,15 @@ public class ProductController {
      * @return 安全库存列表
      */
     @GetMapping("/product/safestock/list")
-   public VSafetyStockListResponse productSafetyStockList(@RequestParam("name") Optional<String> name){
+   public VSafetyStockListResponse productSafetyStockList(@RequestParam("name") Optional<String> name,
+                                                          @RequestParam("brandCode") Optional<String> brandCode){
 
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         var list = productService.listProductSafetyStock(
             session.getSession().getCompanyCode(),
-            name.orElse("")
+            name.orElse(""),
+            brandCode.orElse("")
         ).stream().map(productStockMapper::toVSafetyStock)
             .toList();
         return VSafetyStockListResponse.builder()

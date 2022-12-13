@@ -185,8 +185,8 @@ public class ProductService {
      * @param name 编码/描述
      * @return 安全库存列表
      */
-    @Cacheable(value = "Product_Safety_Stock_List;1800",key="#companyCode+'_'+#name", unless = "#result == null")
-    public List<TProductStockSum> listProductSafetyStock(String companyCode, String name){
+    @Cacheable(value = "Product_Safety_Stock_List;1800",key="#companyCode+'_'+#brandCode+'_'+#name", unless = "#result == null")
+    public List<TProductStockSum> listProductSafetyStock(String companyCode, String name,String brandCode){
        QProductStockSum qProductStockSum = QProductStockSum.productStockSum;
 
        JPAQuery<ProductStockSum> query = queryFactory.select(qProductStockSum).from(qProductStockSum);
@@ -194,6 +194,9 @@ public class ProductService {
        if(!name.equals("")){
            query.where(qProductStockSum.product.code.like(name).or(qProductStockSum.product.describe.like(name)));
        }
+        if(!brandCode.equals("")){
+            query.where(qProductStockSum.product.brandCode.eq(brandCode));
+        }
         query.orderBy(qProductStockSum.safetyStock.safetyStock.desc());
 
         List<ProductStockSum> productStockSums = query
