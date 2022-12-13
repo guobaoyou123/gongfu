@@ -3,6 +3,7 @@ package com.linzhi.gongfu.controller.warehousing;
 import com.linzhi.gongfu.mapper.warehousing.WareHouseMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.warehousing.WarehouseService;
+import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.VBaseResponse;
 import com.linzhi.gongfu.vo.warehousing.VWareHouseListResponse;
 import com.linzhi.gongfu.vo.warehousing.VWareHouseRequest;
@@ -11,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -45,7 +48,6 @@ public class WarehouseController {
             .message("获取数据成功")
             .list(list)
             .build();
-
     }
 
     /**
@@ -125,5 +127,20 @@ public class WarehouseController {
             .message(map.get("message"))
             .build();
     }
+
+    /**
+     * 导出产品库存模板
+     *
+     * @param response HttpServletResponse
+     */
+    @GetMapping("/product/stock/template")
+    public void exportProductStockTemplate(
+        HttpServletResponse response
+    ) {
+
+        List<LinkedHashMap<String, Object>> database  = warehouseService.exportProductStockTemplate();
+        ExcelUtil.exportToExcel(response, "产品库存模板" , database);
+    }
+
 
 }

@@ -12,6 +12,7 @@ import com.linzhi.gongfu.repository.warehousing.WareHouseOperatorRepository;
 import com.linzhi.gongfu.repository.warehousing.WareHouseRepository;
 import com.linzhi.gongfu.service.AddressService;
 import com.linzhi.gongfu.vo.warehousing.VWareHouseRequest;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -39,6 +39,8 @@ public class WarehouseService {
     final private ProductStockRepository productStockRepository;
     final private AddressService addressService;
     final private WareHouseOperatorRepository wareHouseOperatorRepository;
+
+
     /**
      * 查找库房列表
      *
@@ -200,5 +202,24 @@ public class WarehouseService {
         }
 
          return map;
+    }
+
+    /**
+     * 导出产品库存模板
+     *
+     * @return 产品库存列表
+     */
+    public List<LinkedHashMap<String, Object>> exportProductStockTemplate() {
+        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
+        try {
+            LinkedHashMap<String, Object> m = new LinkedHashMap<>();
+            m.put("产品代码", "");
+            m.put("库存", "");
+            list.add(m);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }
