@@ -25,6 +25,12 @@ import java.util.Set;
 public class MainMenu extends BaseMenu {
 
     /**
+     * 菜单类型 1-交易 2-仓储
+     */
+    @Column(name = "type")
+    private String type;
+
+    /**
      * 访问菜单所需要的场景（权限）
      */
     @ManyToMany
@@ -34,6 +40,7 @@ public class MainMenu extends BaseMenu {
         @JoinColumn(name = "scene_code", referencedColumnName = "code", insertable = false, updatable = false)
     })
     private Set<Scene> scenes;
+
     /**
      * 菜单项下所拥有的二级菜单
      */

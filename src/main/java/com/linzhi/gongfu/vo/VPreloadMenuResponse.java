@@ -52,6 +52,11 @@ public class VPreloadMenuResponse extends VBaseResponse {
         private List<String> scene;
 
         /**
+         * 菜单类型 1-交易 2-仓储
+         */
+        private String type;
+
+        /**
          * 主菜单所携带的子菜单集合
          */
         private Set<VSubMenu> children;

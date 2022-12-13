@@ -50,6 +50,11 @@ public class TMenu {
     private Set<TScene> scenes;
 
     /**
+     * 菜单类型 1-交易 2-仓储
+     */
+    private String type;
+
+    /**
      * 子菜单列表
      */
     private Set<TMenu> children;
