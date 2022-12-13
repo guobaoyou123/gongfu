@@ -2,11 +2,9 @@ package com.linzhi.gongfu.entity;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Builder
 @Getter
@@ -32,6 +30,8 @@ public class ProductSafetyStock {
      */
     @Column(name = "single_purchase_quantity")
     private BigDecimal singlePurchaseQuantity;
+
+
 }
 
 

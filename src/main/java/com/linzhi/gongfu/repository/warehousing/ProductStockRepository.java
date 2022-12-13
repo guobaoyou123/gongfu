@@ -21,8 +21,15 @@ public interface ProductStockRepository extends CrudRepository<ProductStock, Pro
      */
       int countProductStocksByProductStockId_CompIdAndProductStockId_WarehouseCode(String companyCode,String wareHouseCode);
 
+    /**
+     * 该库的某个产品的可销库存
+     * @param wareHouseCode 库房编码
+     * @param companyCode 单位编码
+     * @return 可销库存数量
+     */
       @Query(value = "select sum(phy_stock)-sum(not_out_stock) from product_stock\n" +
           "\n" +
           "where warehouse_code=?1 and comp_id=?2",nativeQuery = true)
       BigDecimal  getVendibleStock(String wareHouseCode,String companyCode);
+
 }

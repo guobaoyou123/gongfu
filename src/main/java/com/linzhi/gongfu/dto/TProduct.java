@@ -1,6 +1,5 @@
 package com.linzhi.gongfu.dto;
 
-import com.linzhi.gongfu.enumeration.Whether;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -3,14 +3,17 @@ package com.linzhi.gongfu.service;
 import com.linzhi.gongfu.dto.TCompareDetail;
 import com.linzhi.gongfu.dto.TProduct;
 import com.linzhi.gongfu.dto.TProductClass;
-import com.linzhi.gongfu.entity.Product;
-import com.linzhi.gongfu.entity.QProduct;
+import com.linzhi.gongfu.dto.TProductStockSum;
+import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.mapper.MainProductClassMapper;
 import com.linzhi.gongfu.mapper.ProductMapper;
 import com.linzhi.gongfu.mapper.SysCompareDetailMapper;
+import com.linzhi.gongfu.mapper.warehousing.ProductStockMapper;
 import com.linzhi.gongfu.repository.MainProductClassRepository;
 import com.linzhi.gongfu.repository.ProductRepository;
 import com.linzhi.gongfu.repository.SysCompareTableRepository;
+import com.linzhi.gongfu.repository.warehousing.ProductSafetyStockRepository;
+import com.linzhi.gongfu.repository.warehousing.ProductStockRepository;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.trade.VProductPageResponse;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -43,6 +46,7 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final JPAQueryFactory queryFactory;
     private final ProductRepository productRepository;
+    private final ProductStockMapper productStockMapper;
 
     /**
      * 获取产品一级二级分类信息
@@ -173,5 +177,30 @@ public class ProductService {
     public List<TProduct> listProductsByCode(String productCode) {
         return productRepository.findProductByCode(productCode).stream()
             .map(productMapper::toProduct).collect(Collectors.toList());
+    }
+
+    /**
+     * 安全库存列表
+     * @param companyCode 公司编码
+     * @param name 编码/描述
+     * @return 安全库存列表
+     */
+    @Cacheable(value = "Product_Safety_Stock_List;1800",key="#companyCode+'_'+#name", unless = "#result == null")
+    public List<TProductStockSum> listProductSafetyStock(String companyCode, String name){
+       QProductStockSum qProductStockSum = QProductStockSum.productStockSum;
+
+       JPAQuery<ProductStockSum> query = queryFactory.select(qProductStockSum).from(qProductStockSum);
+       query.where(qProductStockSum.productStockSumId.compId.eq(companyCode));
+       if(!name.equals("")){
+           query.where(qProductStockSum.product.code.like(name).or(qProductStockSum.product.describe.like(name)));
+       }
+        query.orderBy(qProductStockSum.safetyStock.safetyStock.desc());
+
+        List<ProductStockSum> productStockSums = query
+            .offset(0)
+            .limit(20)
+            .fetch();
+        return productStockSums.stream().map(productStockMapper::toTProductStockSum)
+             .toList();
     }
 }

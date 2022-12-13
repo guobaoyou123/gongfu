@@ -2,11 +2,9 @@ package com.linzhi.gongfu.entity;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Builder
 @Getter
@@ -38,6 +36,13 @@ public class ProductStock {
      */
     @Column(name = "not_instorage_stock")
     private BigDecimal notInStorageStock;
+
+    /**
+     * 库房详情
+     */
+    @OneToOne
+    @JoinColumn(name = "warehouse_code", referencedColumnName = "code", insertable = false, updatable = false)
+    private  WareHouse wareHouse;
 }
 
 

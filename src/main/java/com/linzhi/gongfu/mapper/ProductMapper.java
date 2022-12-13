@@ -1,6 +1,7 @@
 package com.linzhi.gongfu.mapper;
 
 import com.linzhi.gongfu.dto.TProduct;
+import com.linzhi.gongfu.dto.TProductStockSum;
 import com.linzhi.gongfu.entity.Product;
 import com.linzhi.gongfu.vo.VProductDetailResponse;
 import com.linzhi.gongfu.vo.trade.VProductListResponse;

@@ -3,14 +3,18 @@ package com.linzhi.gongfu.controller;
 import com.linzhi.gongfu.mapper.MainProductClassMapper;
 import com.linzhi.gongfu.mapper.ProductMapper;
 import com.linzhi.gongfu.mapper.SysCompareDetailMapper;
+import com.linzhi.gongfu.mapper.warehousing.ProductStockMapper;
+import com.linzhi.gongfu.security.token.OperatorSessionToken;
 import com.linzhi.gongfu.service.ProductService;
 import com.linzhi.gongfu.util.PageTools;
 import com.linzhi.gongfu.vo.*;
 import com.linzhi.gongfu.vo.trade.VDriversResponse;
 import com.linzhi.gongfu.vo.trade.VProductListResponse;
 import com.linzhi.gongfu.vo.trade.VProductPageResponse;
+import com.linzhi.gongfu.vo.warehousing.VSafetyStockListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,6 +38,7 @@ public class ProductController {
     private final MainProductClassMapper mainProductClassMapper;
     private final SysCompareDetailMapper sysCompareDetailMapper;
     private final ProductMapper productMapper;
+    private final ProductStockMapper productStockMapper;
 
     /**
      * 查询所有产品分类
@@ -182,4 +187,25 @@ public class ProductController {
             .build();
     }
 
+    /**
+     * 安全库存列表
+     * @param name 产品编码\产品描述
+     * @return 安全库存列表
+     */
+    @GetMapping("/product/safestock/list")
+   public VSafetyStockListResponse productSafetyStockList(@RequestParam("name") Optional<String> name){
+
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var list = productService.listProductSafetyStock(
+            session.getSession().getCompanyCode(),
+            name.orElse("")
+        ).stream().map(productStockMapper::toVSafetyStock)
+            .toList();
+        return VSafetyStockListResponse.builder()
+            .code(200)
+            .message("获取数据成功")
+            .products(list)
+            .build();
+   }
 }
