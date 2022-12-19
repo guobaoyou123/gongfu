@@ -1,13 +1,13 @@
-package com.linzhi.gongfu.controller.warehousing;
+package com.linzhi.gongfu.controller.storage;
 
-import com.linzhi.gongfu.mapper.warehousing.WareHouseMapper;
+import com.linzhi.gongfu.mapper.storage.WareHouseMapper;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
-import com.linzhi.gongfu.service.warehousing.WarehouseService;
+import com.linzhi.gongfu.service.storage.WarehouseService;
 import com.linzhi.gongfu.util.ExcelUtil;
 import com.linzhi.gongfu.vo.VBaseResponse;
-import com.linzhi.gongfu.vo.warehousing.VWareHouseListResponse;
-import com.linzhi.gongfu.vo.warehousing.VWareHouseRequest;
-import com.linzhi.gongfu.vo.warehousing.VWareHouseResponse;
+import com.linzhi.gongfu.vo.storage.VWareHouseListResponse;
+import com.linzhi.gongfu.vo.storage.VWareHouseRequest;
+import com.linzhi.gongfu.vo.storage.VWareHouseResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;

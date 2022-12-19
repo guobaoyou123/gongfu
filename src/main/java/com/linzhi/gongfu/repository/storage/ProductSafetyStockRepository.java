@@ -1,4 +1,4 @@
-package com.linzhi.gongfu.repository.warehousing;
+package com.linzhi.gongfu.repository.storage;
 
 import com.linzhi.gongfu.entity.ProductSafetyStock;
 import com.linzhi.gongfu.entity.ProductSafetyStockId;

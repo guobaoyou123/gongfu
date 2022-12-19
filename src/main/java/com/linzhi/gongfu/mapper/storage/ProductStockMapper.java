@@ -1,10 +1,10 @@
-package com.linzhi.gongfu.mapper.warehousing;
+package com.linzhi.gongfu.mapper.storage;
 
 import com.linzhi.gongfu.dto.TProductStock;
 import com.linzhi.gongfu.dto.TProductStockSum;
 import com.linzhi.gongfu.entity.ProductStock;
 import com.linzhi.gongfu.entity.ProductStockSum;
-import com.linzhi.gongfu.vo.warehousing.VSafetyStockListResponse;
+import com.linzhi.gongfu.vo.storage.VSafetyStockListResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

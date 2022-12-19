@@ -1,10 +1,7 @@
-package com.linzhi.gongfu.vo.warehousing;
+package com.linzhi.gongfu.vo.storage;
 
-import com.linzhi.gongfu.vo.VBaseResponse;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;

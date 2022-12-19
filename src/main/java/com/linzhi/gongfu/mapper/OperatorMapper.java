@@ -8,7 +8,6 @@ import com.linzhi.gongfu.vo.trade.VForeignCustomerResponse;
 import com.linzhi.gongfu.vo.trade.VOperatorDetailResponse;
 import com.linzhi.gongfu.vo.trade.VOperatorListResponse;
 import com.linzhi.gongfu.vo.trade.VOperatorPageResponse;
-import com.linzhi.gongfu.vo.warehousing.VWareHouseListResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

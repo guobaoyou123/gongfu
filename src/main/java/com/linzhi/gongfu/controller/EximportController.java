@@ -1,4 +1,4 @@
-package com.linzhi.gongfu.controller.trade;
+package com.linzhi.gongfu.controller;
 
 import com.linzhi.gongfu.enumeration.TaxMode;
 import com.linzhi.gongfu.security.token.OperatorSessionToken;
@@ -198,5 +198,32 @@ public class EximportController {
             map = salesContractService.findTaxModelAndEnCode(id, 1);
         }
         return map;
+    }
+
+    /**
+     * 初始化库存
+     *
+     * @param file 导入文件
+     * @param id   库房编码
+     * @return 导入产品列表
+     */
+    @PostMapping("/import/products/stock/{id}")
+    public VImportProductTempResponse importProductStock(@RequestParam("products") MultipartFile file, @PathVariable String id) throws IOException {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var map = eximportService.importProductStock(
+            file,
+            id,
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            "1"
+        );
+        if ((int) map.get("code") != 200)
+            return VImportProductTempResponse.builder()
+                .code((int) map.get("code"))
+                .message((String) map.get("message"))
+                .build();
+
+        return null;
     }
 }

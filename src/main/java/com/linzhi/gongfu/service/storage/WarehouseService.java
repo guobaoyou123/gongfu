@@ -1,4 +1,4 @@
-package com.linzhi.gongfu.service.warehousing;
+package com.linzhi.gongfu.service.storage;
 
 import com.linzhi.gongfu.converter.AvailabilityConverter;
 import com.linzhi.gongfu.dto.TWareHouse;
@@ -6,13 +6,12 @@ import com.linzhi.gongfu.entity.WareHouse;
 import com.linzhi.gongfu.entity.WareHouseOperator;
 import com.linzhi.gongfu.entity.WareHouseOperatorId;
 import com.linzhi.gongfu.enumeration.Availability;
-import com.linzhi.gongfu.mapper.warehousing.WareHouseMapper;
-import com.linzhi.gongfu.repository.warehousing.ProductStockRepository;
-import com.linzhi.gongfu.repository.warehousing.WareHouseOperatorRepository;
-import com.linzhi.gongfu.repository.warehousing.WareHouseRepository;
+import com.linzhi.gongfu.mapper.storage.WareHouseMapper;
+import com.linzhi.gongfu.repository.storage.ProductStockRepository;
+import com.linzhi.gongfu.repository.storage.WareHouseOperatorRepository;
+import com.linzhi.gongfu.repository.storage.WareHouseRepository;
 import com.linzhi.gongfu.service.AddressService;
-import com.linzhi.gongfu.vo.warehousing.VWareHouseRequest;
-import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.linzhi.gongfu.vo.storage.VWareHouseRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;

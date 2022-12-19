@@ -1,6 +1,5 @@
-package com.linzhi.gongfu.repository.warehousing;
+package com.linzhi.gongfu.repository.storage;
 
-import com.linzhi.gongfu.entity.WareHouse;
 import com.linzhi.gongfu.entity.WareHouseOperator;
 import com.linzhi.gongfu.entity.WareHouseOperatorId;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;

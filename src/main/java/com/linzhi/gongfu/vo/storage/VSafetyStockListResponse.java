@@ -1,4 +1,4 @@
-package com.linzhi.gongfu.vo.warehousing;
+package com.linzhi.gongfu.vo.storage;
 
 import com.linzhi.gongfu.vo.VBaseResponse;
 import lombok.Data;

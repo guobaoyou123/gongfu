@@ -1,10 +1,10 @@
-package com.linzhi.gongfu.mapper.warehousing;
+package com.linzhi.gongfu.mapper.storage;
 
 import com.linzhi.gongfu.dto.TWareHouse;
 import com.linzhi.gongfu.entity.WareHouse;
 import com.linzhi.gongfu.mapper.OperatorMapper;
-import com.linzhi.gongfu.vo.warehousing.VWareHouseListResponse;
-import com.linzhi.gongfu.vo.warehousing.VWareHouseResponse;
+import com.linzhi.gongfu.vo.storage.VWareHouseListResponse;
+import com.linzhi.gongfu.vo.storage.VWareHouseResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

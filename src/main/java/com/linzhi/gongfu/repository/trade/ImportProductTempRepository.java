@@ -1,4 +1,4 @@
-package com.linzhi.gongfu.repository;
+package com.linzhi.gongfu.repository.trade;
 
 import com.linzhi.gongfu.entity.ImportProductTemp;
 import com.linzhi.gongfu.entity.ImportProductTempId;
