@@ -211,6 +211,7 @@ public class EximportController {
     public VImportProductTempResponse importProductStock(@RequestParam("products") MultipartFile file, @PathVariable String id) throws IOException {
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
+
         var map = eximportService.importProductStock(
             file,
             id,
@@ -218,12 +219,36 @@ public class EximportController {
             session.getSession().getOperatorCode(),
             "1"
         );
-        if ((int) map.get("code") != 200)
-            return VImportProductTempResponse.builder()
+
+        return VImportProductTempResponse.builder()
                 .code((int) map.get("code"))
                 .message((String) map.get("message"))
                 .build();
+    }
 
-        return null;
+
+    /**
+     * 导入安全库存
+     *
+     * @param file 导入文件
+     * @return 导入产品安全库存列表
+     */
+    @PostMapping("/import/products/safetystock")
+    public VImportProductTempResponse importProductSafetyStock(@RequestParam("products") MultipartFile file){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+
+        var map = eximportService.importProductStock(
+            file,
+            "0",
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            "2"
+        );
+
+        return VImportProductTempResponse.builder()
+            .code((int) map.get("code"))
+            .message((String) map.get("message"))
+            .build();
     }
 }
