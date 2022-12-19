@@ -7,6 +7,7 @@ import com.linzhi.gongfu.service.trade.InquiryService;
 import com.linzhi.gongfu.service.trade.PurchaseContractService;
 import com.linzhi.gongfu.service.trade.SalesContractService;
 import com.linzhi.gongfu.vo.VBaseResponse;
+import com.linzhi.gongfu.vo.VImportProductStockTempRequest;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
 import com.linzhi.gongfu.vo.VImportProductTempResponse;
 import lombok.RequiredArgsConstructor;
@@ -272,15 +273,35 @@ public class EximportController {
      * @param type 类型
      * @return 返回导入产品列表
      */
-    @GetMapping("/import/products")
+    @GetMapping("/import/products/stock")
     public VImportProductTempResponse findImportProductStock(@RequestParam("code") Optional<String> code, @RequestParam("type") Optional<String> type){
         OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
             .getContext().getAuthentication();
         return eximportService.getVImportProductStockTempResponse(
             session.getSession().getCompanyCode(),
             session.getSession().getOperatorCode(),
-            code.orElse("1"),
+            code.orElse("0"),
             type.orElse("2")
         );
+    }
+
+    /**
+     * 修改导入产品库存
+     *
+     * @return 成功或者失败的信息
+     */
+    @PutMapping("/import/products/stock")
+    public VBaseResponse modifyImportProductStock(@RequestBody Optional<VImportProductStockTempRequest> vImportProductTempRequest) {
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        var map = eximportService.modifyImportProductStock(
+            vImportProductTempRequest.orElseThrow(),
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode()
+        );
+        return VBaseResponse.builder()
+            .code((int) map.get("code"))
+            .message((String) map.get("message"))
+            .build();
     }
 }

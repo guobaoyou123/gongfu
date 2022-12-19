@@ -10,6 +10,7 @@ import com.linzhi.gongfu.repository.trade.ImportProductTempRepository;
 import com.linzhi.gongfu.repository.ProductRepository;
 import com.linzhi.gongfu.repository.storage.ImportProductStockTempRepository;
 import com.linzhi.gongfu.util.ExcelUtil;
+import com.linzhi.gongfu.vo.VImportProductStockTempRequest;
 import com.linzhi.gongfu.vo.VImportProductTempRequest;
 import com.linzhi.gongfu.vo.VImportProductTempResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -449,6 +447,55 @@ public class EximportService {
             .map(importProductTempMapper::toVProduct)
             .toList());
         return map;
+    }
+
+    /**
+     * 修改暂存导入产品库存
+     *
+     * @param vImportProductTempRequests   修改产品列表
+     * @return 返回成功或者失败信息
+     */
+    @Transactional
+    public Map<String, Object> modifyImportProductStock(VImportProductStockTempRequest vImportProductTempRequests,String companyCode,String operator) {
+        Map<String, Object> resultMap = new HashMap<>();
+        List<ImportProductStockTemp> list = new ArrayList<>();
+        Map<ImportProductStockTempId,ImportProductStockTemp> stockTempMaps = importProductStockTempRepository.
+            findImportProductStockTempByImportProductStockTempId_DcCompIdAndImportProductStockTempId_OperatorAndImpAndImportProductStockTempId_WerahouseCodeAndImportProductStockTempId_Type(companyCode,
+                operator,
+                vImportProductTempRequests.getType().equals("1")?vImportProductTempRequests.getCode():"0",
+                vImportProductTempRequests.getType()
+            ).stream().collect(Collectors.toMap(
+                ImportProductStockTemp::getImportProductStockTempId,o-> o));
+
+        try {
+            for (var vImport : vImportProductTempRequests.getProducts()) {
+
+              var productTemp =   stockTempMaps.get(ImportProductStockTempId.builder()
+                        .type(vImportProductTempRequests.getType())
+                        .werahouseCode(vImportProductTempRequests.getType().equals("1")?vImportProductTempRequests.getCode():"0")
+                        .operator(operator)
+                        .dcCompId(companyCode)
+                        .itemNo(vImport.getItemNo())
+                    .build());
+                Product product = productRepository.findProductByCodeAndBrandCode(productTemp.getCode(), vImport.getBrandCode())
+                    .orElseThrow(() -> new IOException("数据库中找不到该产品"));
+                productTemp.setProductId(product.getId());
+                productTemp.setBrandCode(product.getBrandCode());
+                productTemp.setBrandName(product.getBrand());
+                list.add(productTemp);
+            }
+            importProductStockTempRepository.saveAll(list);
+            resultMap.put("code", 200);
+            resultMap.put("message", "修改成功");
+
+            return resultMap;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resultMap.put("code", 500);
+            resultMap.put("message", "保存失败");
+            return resultMap;
+        }
     }
 
 }
