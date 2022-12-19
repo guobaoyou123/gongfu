@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
+
 /**
  * 导入临时产品库存的Repository
  *
@@ -26,5 +28,13 @@ public interface ImportProductStockTempRepository
     @Query("delete from ImportProductStockTemp as c  where c.importProductStockTempId.werahouseCode=?1 and c.importProductStockTempId.dcCompId=?2")
     void deleteProduct(String wareHouseCode, String dcCompId);
 
-   /* List<>*/
+    /**
+     * 查找导入到临时库存表中的库存列表或者安全库存列表
+     * @param compId 单位编码
+     * @param operator 操作员编码
+     * @param warehouseCode 仓库编码
+     * @param type 类型 1-库存 2-安全库存
+     * @return 返回产品库存列表或者安全库存列表
+     */
+   List<ImportProductStockTemp> findImportProductStockTempByImportProductStockTempId_DcCompIdAndImportProductStockTempId_OperatorAndImpAndImportProductStockTempId_WerahouseCodeAndImportProductStockTempId_Type(String compId,String operator,String warehouseCode,String type);
 }

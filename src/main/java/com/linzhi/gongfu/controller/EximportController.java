@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 用于处理导入导出信息
@@ -219,11 +220,17 @@ public class EximportController {
             session.getSession().getOperatorCode(),
             "1"
         );
-
-        return VImportProductTempResponse.builder()
+        if ((int) map.get("code") != 200)
+            return VImportProductTempResponse.builder()
                 .code((int) map.get("code"))
                 .message((String) map.get("message"))
                 .build();
+        return eximportService.getVImportProductStockTempResponse(
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            id,
+            "1"
+        );
     }
 
 
@@ -245,10 +252,35 @@ public class EximportController {
             session.getSession().getOperatorCode(),
             "2"
         );
+        if ((int) map.get("code") != 200)
+            return VImportProductTempResponse.builder()
+                .code((int) map.get("code"))
+                .message((String) map.get("message"))
+                .build();
+        return eximportService.getVImportProductStockTempResponse(
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+           "1",
+            "2"
+        );
+    }
 
-        return VImportProductTempResponse.builder()
-            .code((int) map.get("code"))
-            .message((String) map.get("message"))
-            .build();
+    /**
+     * 查询导入的产品
+     *
+     * @param code 仓库编码
+     * @param type 类型
+     * @return 返回导入产品列表
+     */
+    @GetMapping("/import/products")
+    public VImportProductTempResponse findImportProductStock(@RequestParam("code") Optional<String> code, @RequestParam("type") Optional<String> type){
+        OperatorSessionToken session = (OperatorSessionToken) SecurityContextHolder
+            .getContext().getAuthentication();
+        return eximportService.getVImportProductStockTempResponse(
+            session.getSession().getCompanyCode(),
+            session.getSession().getOperatorCode(),
+            code.orElse("1"),
+            type.orElse("2")
+        );
     }
 }

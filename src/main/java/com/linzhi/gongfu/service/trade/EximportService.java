@@ -4,7 +4,8 @@ import com.linzhi.gongfu.dto.TBrand;
 import com.linzhi.gongfu.dto.TImportProductTemp;
 import com.linzhi.gongfu.entity.*;
 import com.linzhi.gongfu.enumeration.TaxMode;
-import com.linzhi.gongfu.mapper.ImportProductTempMapper;
+import com.linzhi.gongfu.mapper.storage.ImportProductStockTempMapper;
+import com.linzhi.gongfu.mapper.trade.ImportProductTempMapper;
 import com.linzhi.gongfu.repository.trade.ImportProductTempRepository;
 import com.linzhi.gongfu.repository.ProductRepository;
 import com.linzhi.gongfu.repository.storage.ImportProductStockTempRepository;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 产品导入信息处理及业务服务
@@ -37,7 +39,7 @@ public class EximportService {
     private final ProductRepository productRepository;
     private final ImportProductTempMapper importProductTempMapper;
     private final ImportProductStockTempRepository importProductStockTempRepository;
-
+    private final ImportProductStockTempMapper importProductStockTempMapper;
     /**
      * 判断 字符串是否为数字
      *
@@ -347,18 +349,17 @@ public class EximportService {
     /**
      * 查询暂存产品详情
      *
-     * @param id          库房编码
      * @param companyCode 本单位编码
      * @param operator    操作员编码
      * @param code        合同编码或者询价单编码
-     * @param taxMode     税模式
+     * @param type     类型
      * @return 返回暂存产品列
      */
-    public VImportProductTempResponse getVImportProductStockTempResponse(String id, String companyCode, String operator, String code, TaxMode taxMode) {
-        /*var map = findImportProductStockDetail(
+    public VImportProductTempResponse getVImportProductStockTempResponse(String companyCode, String operator, String code, String type) {
+        var map = findImportProductStockDetail(
             companyCode,
             operator,
-            id, code, taxMode
+             code, type
         );
         var list = (List<VImportProductTempResponse.VProduct>) map.get("products");
         return VImportProductTempResponse.builder()
@@ -367,8 +368,7 @@ public class EximportService {
             .confirmable(list.stream().filter(vProduct -> vProduct.getMessages().size() > 0 || vProduct.getConfirmedBrand() == null).toList().size() == 0)
             .products(list)
             .enCode((String) map.get("enCode"))
-            .build();*/
-        return null;
+            .build();
     }
 
     /**
@@ -379,17 +379,34 @@ public class EximportService {
      * @param id          仓库编码
      * @return 返回导入产品列表信息
      */
-    public Map<String, Object> findImportProductStockDetail(String companyCode, String operator, String id) {
+    public Map<String, Object> findImportProductStockDetail(String companyCode, String operator, String id,String type) {
         Map<String, Object> map = new HashMap<>();
-        /*List<ImportProductTemp> list = importProductStockTempRepository.
-            findImportProductTempsByImportProductTempId_DcCompIdAndImportProductTempId_OperatorAndImportProductTempId_InquiryId(companyCode, operator, id);
+        List<ImportProductStockTemp> list = importProductStockTempRepository.
+            findImportProductStockTempByImportProductStockTempId_DcCompIdAndImportProductStockTempId_OperatorAndImpAndImportProductStockTempId_WerahouseCodeAndImportProductStockTempId_Type(companyCode, operator, id,type);
         List<TImportProductTemp> importProductTemps = list.stream()
-            .map(importProductTempMapper::toTImportProductTemp)
+            .map(importProductStockTempMapper::toTImportProductTemp)
             .toList();
+        //将数据根据产品编码进行分组
+
+        Map<String,List<ImportProductStockTemp>> maps= list.stream().collect(Collectors.groupingBy(i->i.getCode()+"_"+i.getBrandCode()));
+
+
         importProductTemps.forEach(tImportProductTemp -> {
             //错误数据
             List<String> errorList = new ArrayList<>();
             List<TBrand> tBrands = new ArrayList<>();
+            List<ImportProductStockTemp> list1 =  maps.get(tImportProductTemp.getCode()+"_"+tImportProductTemp.getConfirmedBrand());
+            if(list1!=null&&list1.size()>1){
+               var str =  list1.stream().map(i->{
+                   if(i.getImportProductStockTempId().getItemNo().intValue()==tImportProductTemp.getItemNo().intValue()){
+                       return "";
+                   }else {
+                       return i.getImportProductStockTempId().getItemNo() +"";
+                   }
+
+               } ).collect(Collectors.joining(","));
+               errorList.add("产品代码与第"+str+"行产品代码重复");
+            }
             if (tImportProductTemp.getProductId() == null && tImportProductTemp.getCode() == null) {
                 errorList.add("产品代码不能为空");
             } else if (tImportProductTemp.getProductId() == null && tImportProductTemp.getCode() != null) {
@@ -426,21 +443,11 @@ public class EximportService {
                 }
             }
 
-            if (tImportProductTemp.getPrice() != null) {
-                //验证 数量是否为数字
-                if (isNumeric(tImportProductTemp.getPrice())) {
-                    errorList.add("单价应为数字");
-                }
-                if (!taxMode.equals(tImportProductTemp.getFlag())) {
-                    //  String offerMode=taxMode.equals(TaxMode.UNTAXED)?"未税单价":"含税单价";
-                    errorList.add("导入的单价与该目标单据的报价模式不一致");
-                }
-            }
             tImportProductTemp.setMessages(errorList);
         });
         map.put("products", importProductTemps.stream()
             .map(importProductTempMapper::toVProduct)
-            .toList());*/
+            .toList());
         return map;
     }
 
